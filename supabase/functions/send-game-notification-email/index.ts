@@ -425,67 +425,47 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Sending email notifications to ${allRecipients.length} recipients (${(users || []).length} registered users + ${(subscribers || []).length} newsletter subscribers, deduplicated)`);
+    console.log(`Queueing email notifications for ${allRecipients.length} recipients (${(users || []).length} registered users + ${(subscribers || []).length} newsletter subscribers, deduplicated)`);
     const savedEmojis = await loadSavedEmojis(supabase);
     const emailHtml = getEmailTemplate(title, message, gameInfo, notificationType, url, imageUrl, savedEmojis);
 
-    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const results: Array<{ success: boolean; messageId?: string; error?: string }> = [];
 
-    const results: Array<{ success: boolean; error?: string }> = [];
+    for (const recipient of allRecipients) {
+      try {
+        const messageId = await queueEmail(
+          supabase,
+          recipient.email,
+          `${title} - MetsXMFanZone`,
+          emailHtml,
+          notificationType
+        );
 
-    for (let i = 0; i < allRecipients.length; i++) {
-      const recipient = allRecipients[i];
-      let sent = false;
-      let lastError = 'Unknown error';
-
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          await sendEmail(
-            resendApiKey,
-            recipient.email,
-            `${title} - MetsXMFanZone`,
-            emailHtml
-          );
-          sent = true;
-          console.log(`Email sent to [REDACTED]`);
-          break;
-        } catch (error: any) {
-          lastError = error?.message || 'Unknown error';
-          const isRateLimited =
-            lastError.includes('rate_limit_exceeded') ||
-            lastError.includes('"statusCode":429');
-
-          if (isRateLimited && attempt < 3) {
-            const backoffMs = 700 * attempt;
-            console.warn(`Rate limit encountered, retrying [REDACTED] in ${backoffMs}ms (attempt ${attempt + 1}/3)`);
-            await delay(backoffMs);
-            continue;
-          }
-
-          console.error(`Failed to send email to [REDACTED]:`, lastError);
-          break;
-        }
-      }
-
-      results.push(sent ? { success: true } : { success: false, error: lastError });
-
-      // Resend limit is 2 requests/sec; keep well below the threshold.
-      if (i < allRecipients.length - 1) {
-        await delay(600);
+        results.push({ success: true, messageId });
+        console.log(`Email queued for [REDACTED]`, { messageId });
+      } catch (error: any) {
+        const errorMessage = error?.message || 'Unknown error';
+        console.error(`Failed to queue email for [REDACTED]:`, errorMessage);
+        results.push({ success: false, error: errorMessage });
       }
     }
 
     const successCount = results.filter(r => r.success).length;
-    console.log(`Emails sent: ${successCount}/${allRecipients.length}`);
+    const failedCount = allRecipients.length - successCount;
+    const responseStatus = successCount > 0 ? 200 : 500;
+
+    console.log(`Emails queued: ${successCount}/${allRecipients.length}`);
 
     return new Response(
       JSON.stringify({
-        message: `Sent ${successCount} email notifications`,
+        message: successCount > 0
+          ? `Queued ${successCount} email notifications`
+          : 'Failed to queue email notifications',
         total: allRecipients.length,
         successful: successCount,
-        failed: allRecipients.length - successCount
+        failed: failedCount
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: responseStatus, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
     console.error("Error in send-game-notification-email:", error);
