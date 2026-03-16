@@ -23,7 +23,7 @@ const AppInstallSection = () => {
             <Crown className="h-4 w-4" /> PREMIUM MEMBERSHIP
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
-            Join for Only <span className="text-primary">$12.99/month</span>
+            Join for Only <span className="text-primary">$9.99/month</span>
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto mb-4">
             Get unlimited access to all streams with no ads, no providers, and live 24/7 content

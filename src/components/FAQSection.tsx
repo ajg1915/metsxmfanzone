@@ -16,7 +16,7 @@ const FAQSection = () => {
     },
     {
       question: "How much does MetsXMFanZone cost?",
-      answer: "We offer FREE Spring Training access when you sign up. After Spring Training, it's just $12.99/month for unlimited access to live streams, exclusive content, and more."
+      answer: "We offer FREE Spring Training access when you sign up. After Spring Training, it's just $9.99/month for unlimited access to live streams, exclusive content, and more."
     },
     {
       question: "What content is available on MetsXMFanZone?",

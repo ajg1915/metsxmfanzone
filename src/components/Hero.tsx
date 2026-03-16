@@ -201,7 +201,7 @@ const Hero = () => {
                 {!user && (
                   <div className="mt-3 sm:mt-4">
                     <button onClick={() => navigate("/auth")} className="text-[10px] sm:text-xs text-white/60 hover:text-white/80">
-                      ⚡ <span className="text-primary font-semibold">FREE Spring Training</span> access · Regular season <span className="text-primary font-semibold">$12.99/mo</span>
+                      ⚡ <span className="text-primary font-semibold">FREE Spring Training</span> access · Regular season <span className="text-primary font-semibold">$9.99/mo</span>
                     </button>
                   </div>
                 )}

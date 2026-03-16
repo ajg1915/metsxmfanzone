@@ -1264,7 +1264,7 @@ const Auth = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="free">Free (Spring Training) - $0</SelectItem>
-                      <SelectItem value="premium">Premium - $12.99/month</SelectItem>
+                      <SelectItem value="premium">Premium - $9.99/month</SelectItem>
                       <SelectItem value="annual">Annual - $129.99/year (Best Value)</SelectItem>
                     </SelectContent>
                   </Select>

@@ -161,7 +161,7 @@ const Dashboard = () => {
   if (!user) return null;
 
   const planLabel = userPlan === "annual" ? "Annual" : userPlan === "premium" ? "Premium" : "Free";
-  const planPrice = userPlan === "free" ? "$0" : userPlan === "premium" ? "$12.99/mo" : "$129.99/yr";
+  const planPrice = userPlan === "free" ? "$0" : userPlan === "premium" ? "$9.99/mo" : "$129.99/yr";
 
   const quickLinks = [
     { label: "Watch Live", icon: Tv, href: "/metsxmfanzone", premium: true },
