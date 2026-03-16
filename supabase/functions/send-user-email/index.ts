@@ -38,9 +38,7 @@ const sendEmail = async (apiKey: string, to: string, subject: string, html: stri
       "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      from: useTestSender
-        ? "MetsXMFanZone <onboarding@resend.dev>"
-        : "MetsXMFanZone <noreply@metsxmfanzone.com>",
+      from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
       to: [to],
       subject,
       html,
