@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
         </html>
       `,
       headers: {
-        "List-Unsubscribe": "<mailto:unsubscribe@metsxmfanzone.com>",
+        "List-Unsubscribe": "<mailto:unsubscribe@notify.www.metsxmfanzone.com>",
       },
     });
 
