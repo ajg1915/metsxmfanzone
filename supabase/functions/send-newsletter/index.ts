@@ -39,12 +39,12 @@ const sendEmail = async (apiKey: string, to: string, subject: string, html: stri
       "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+      from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
       to: [to],
       subject,
       html,
       headers: {
-        "List-Unsubscribe": "<mailto:unsubscribe@metsxmfanzone.com>",
+        "List-Unsubscribe": "<mailto:unsubscribe@notify.www.metsxmfanzone.com>",
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
       },
     }),

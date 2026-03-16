@@ -300,7 +300,7 @@ serve(async (req) => {
       // Send the email
       try {
         const emailResponse = await resend.emails.send({
-          from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+          from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
           to: [profile.email],
           subject: emailSubject,
           html: emailHtml,

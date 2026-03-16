@@ -188,14 +188,14 @@ https://metsxmfanzone.com
     `.trim();
 
     const emailResponse = await resend.emails.send({
-      from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+      from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
       to: [email],
       subject: subject,
       html: emailContent,
       text: plainText, // Add plain text for better deliverability
       headers: {
         "X-Entity-Ref-ID": userId,
-        "List-Unsubscribe": "<mailto:unsubscribe@metsxmfanzone.com>",
+        "List-Unsubscribe": "<mailto:unsubscribe@notify.www.metsxmfanzone.com>",
         "X-Priority": "1", // High priority
         "Importance": "high",
       },

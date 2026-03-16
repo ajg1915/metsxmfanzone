@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
 
       try {
         await resend.emails.send({
-          from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+          from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
           to: [profile.email],
           subject: "⭐ How's your first 48 hours? We'd love your feedback!",
           html: emailHtml,

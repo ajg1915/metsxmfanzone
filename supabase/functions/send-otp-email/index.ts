@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+      from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
       to: [to],
       subject: "Your MetsXMFanZone Verification Code",
       text: `Your MetsXMFanZone verification code is ${otp}. It expires in 5 minutes. IMPORTANT: If another company asks for this PIN, do not share it.`,
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
         </html>
       `,
       headers: {
-        "List-Unsubscribe": "<mailto:unsubscribe@metsxmfanzone.com>",
+        "List-Unsubscribe": "<mailto:unsubscribe@notify.www.metsxmfanzone.com>",
       },
     });
 
