@@ -6,62 +6,137 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const METS_TEAM_ID = 121;
-
 function getPlayerImageUrl(playerId: number): string {
   return `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${playerId}/headshot/67/current`;
 }
 
-// Hardcoded 2026 Mets active roster - ensures predictions always use real players
-const METS_2026_ROSTER: Array<{ name: string; id: number; position: string }> = [
-  // Everyday Hitters
-  { name: "Francisco Lindor", id: 596019, position: "SS" },
-  { name: "Juan Soto", id: 665742, position: "OF" },
-  { name: "Mark Vientos", id: 668901, position: "3B" },
-  { name: "Francisco Alvarez", id: 682626, position: "C" },
-  { name: "Marcus Semien", id: 543760, position: "2B" },
-  { name: "Bo Bichette", id: 666182, position: "SS/2B" },
-  { name: "Luis Robert Jr.", id: 673357, position: "OF" },
-  { name: "MJ Melendez", id: 669004, position: "OF/C" },
-  { name: "Brett Baty", id: 683146, position: "3B/1B" },
-  { name: "Jorge Polanco", id: 593871, position: "IF" },
-  { name: "Ronny Mauricio", id: 677595, position: "IF" },
-  { name: "Tyrone Taylor", id: 621438, position: "OF" },
-  { name: "Vidal Brujan", id: 660644, position: "IF" },
-  { name: "Hayden Senger", id: 663584, position: "C" },
-  { name: "Luis Torrens", id: 620443, position: "C" },
-  { name: "Nick Morabito", id: 703492, position: "OF" },
-  { name: "Jared Young", id: 676724, position: "OF/1B" },
-  // Starting Pitchers
-  { name: "Kodai Senga", id: 673540, position: "SP" },
-  { name: "Sean Manaea", id: 640455, position: "SP" },
-  { name: "David Peterson", id: 656849, position: "SP" },
-  { name: "Clay Holmes", id: 605280, position: "SP" },
-  { name: "Freddy Peralta", id: 642547, position: "SP" },
-  { name: "Christian Scott", id: 681035, position: "SP" },
-  { name: "Tobias Myers", id: 668964, position: "SP" },
-  { name: "Jonah Tong", id: 804636, position: "SP" },
-  // Closers / Relievers
-  { name: "Devin Williams", id: 642207, position: "CL" },
-  { name: "Luke Weaver", id: 596133, position: "RP" },
-  { name: "A.J. Minter", id: 621345, position: "RP" },
-  { name: "Dedniel Núñez", id: 673380, position: "RP" },
-  { name: "Brooks Raley", id: 548384, position: "RP" },
-  { name: "Huascar Brazobán", id: 623211, position: "RP" },
-  { name: "Nolan McLean", id: 690997, position: "RP" },
-  { name: "Alex Carrillo", id: 692024, position: "RP" },
-  { name: "Luis Garcia", id: 472610, position: "RP" },
-  { name: "Joey Gerber", id: 680702, position: "RP" },
-  { name: "Justin Hagenman", id: 663795, position: "RP" },
-  { name: "Bryan Hudson", id: 663542, position: "RP" },
-  { name: "Jonathan Pintaro", id: 702752, position: "RP" },
-  { name: "Dylan Ross", id: 697811, position: "RP" },
-  { name: "Austin Warren", id: 681810, position: "RP" },
-];
+interface PlayerStats {
+  name: string;
+  id: number;
+  position: string;
+  is_pitcher: boolean;
+  // Hitter stats
+  avg?: string;
+  hr?: number;
+  rbi?: number;
+  runs?: number;
+  sb?: number;
+  ops?: string;
+  hits?: number;
+  ab?: number;
+  // Pitcher stats
+  era?: string;
+  strikeouts?: number;
+  wins?: number;
+  losses?: number;
+  innings_pitched?: string;
+  saves?: number;
+  walks_allowed?: number;
+  hr_allowed?: number;
+  whip?: string;
+}
 
-async function fetchMetsRoster(): Promise<Array<{ name: string; id: number; position: string }>> {
-  // Use the hardcoded active roster to guarantee correct 2026 players
-  return METS_2026_ROSTER;
+async function fetchPlayerStats(playerId: number, playerName: string, position: string): Promise<PlayerStats | null> {
+  const isPitcher = ["SP", "CL", "RP", "P"].includes(position);
+  const group = isPitcher ? "pitching" : "hitting";
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}?hydrate=stats(group=[${group}],type=[season],season=2026)`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const person = data.people?.[0];
+    if (!person) return null;
+
+    const stats = person.stats?.[0]?.splits?.[0]?.stat;
+
+    if (isPitcher) {
+      return {
+        name: playerName,
+        id: playerId,
+        position,
+        is_pitcher: true,
+        era: stats?.era ?? "-",
+        strikeouts: stats?.strikeOuts ?? 0,
+        wins: stats?.wins ?? 0,
+        losses: stats?.losses ?? 0,
+        innings_pitched: stats?.inningsPitched ?? "0.0",
+        saves: stats?.saves ?? 0,
+        walks_allowed: stats?.baseOnBalls ?? 0,
+        hr_allowed: stats?.homeRuns ?? 0,
+        whip: stats?.whip ?? "-",
+      };
+    } else {
+      return {
+        name: playerName,
+        id: playerId,
+        position,
+        is_pitcher: false,
+        avg: stats?.avg ?? ".000",
+        hr: stats?.homeRuns ?? 0,
+        rbi: stats?.rbi ?? 0,
+        runs: stats?.runs ?? 0,
+        sb: stats?.stolenBases ?? 0,
+        ops: stats?.ops ?? ".000",
+        hits: stats?.hits ?? 0,
+        ab: stats?.atBats ?? 0,
+      };
+    }
+  } catch (e) {
+    console.error(`Failed to fetch stats for ${playerName} (${playerId}):`, e);
+    return null;
+  }
+}
+
+function generateDescription(stats: PlayerStats, opponent?: string): string {
+  const vs = opponent ? ` vs ${opponent}` : "";
+  if (stats.is_pitcher) {
+    const era = stats.era !== "-" ? `${stats.era} ERA` : "no ERA yet";
+    const k = stats.strikeouts ?? 0;
+    const record = `${stats.wins ?? 0}-${stats.losses ?? 0}`;
+    return `${stats.name} takes the mound${vs} with a ${era} and ${k} K's on the season (${record}). ${stats.whip !== "-" ? `WHIP: ${stats.whip}.` : ""}`;
+  } else {
+    const avg = stats.avg !== ".000" ? stats.avg : "-";
+    const hr = stats.hr ?? 0;
+    const rbi = stats.rbi ?? 0;
+    const ops = stats.ops !== ".000" ? stats.ops : "-";
+    return `${stats.name} is batting ${avg} with ${hr} HR and ${rbi} RBI${vs}. OPS: ${ops}. ${hr > 5 ? "Power surge!" : rbi > 15 ? "Run producer!" : stats.sb && stats.sb > 3 ? "Speed threat on the bases." : "Looking to make an impact."}`;
+  }
+}
+
+function determineStatus(stats: PlayerStats): "hot" | "cold" {
+  if (stats.is_pitcher) {
+    const era = parseFloat(stats.era ?? "9");
+    if (isNaN(era)) return "hot"; // No ERA = new/fresh
+    return era <= 3.50 ? "hot" : "cold";
+  } else {
+    const avg = parseFloat(stats.avg ?? ".000");
+    const ops = parseFloat(stats.ops ?? ".000");
+    if (isNaN(avg) || avg === 0) return "hot"; // No stats yet = benefit of the doubt
+    return (avg >= 0.270 || ops >= 0.800) ? "hot" : "cold";
+  }
+}
+
+function calculateConfidence(stats: PlayerStats): number {
+  if (stats.is_pitcher) {
+    const era = parseFloat(stats.era ?? "9");
+    const ip = parseFloat(stats.innings_pitched ?? "0");
+    if (isNaN(era) || ip < 5) return 55; // Not enough data
+    if (era <= 2.5) return 90;
+    if (era <= 3.5) return 80;
+    if (era <= 4.5) return 65;
+    return 55;
+  } else {
+    const avg = parseFloat(stats.avg ?? ".000");
+    const ops = parseFloat(stats.ops ?? ".000");
+    const ab = stats.ab ?? 0;
+    if (ab < 10) return 55; // Not enough data
+    if (ops >= 0.900) return 90;
+    if (ops >= 0.800) return 80;
+    if (avg >= 0.280) return 75;
+    if (avg >= 0.250) return 65;
+    return 55;
+  }
 }
 
 serve(async (req) => {
@@ -72,39 +147,37 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let forceStarPlayers: number[] = [];
     let forceRegenerate = false;
     let triggerType = "manual";
     let lineupPlayerIds: number[] = [];
     let lineupPlayers: Array<{ name: string; id: number; position: string }> = [];
-    let gameContext = "";
-    
+    let opponent = "";
+
     try {
       const body = await req.json();
-      if (body.forceStarPlayers && Array.isArray(body.forceStarPlayers)) forceStarPlayers = body.forceStarPlayers;
       if (body.forceRegenerate === true) forceRegenerate = true;
       if (body.triggerType) triggerType = body.triggerType;
       if (body.triggeredBy) triggerType = body.triggeredBy;
       if (body.lineupPlayerIds && Array.isArray(body.lineupPlayerIds)) lineupPlayerIds = body.lineupPlayerIds;
       if (body.lineupPlayers && Array.isArray(body.lineupPlayers)) lineupPlayers = body.lineupPlayers;
-      if (body.opponent) gameContext += `Today's game: Mets vs ${body.opponent}. `;
-      if (body.gameTime) gameContext += `Game time: ${body.gameTime}. `;
-      if (body.location) gameContext += `Location: ${body.location}. `;
+      if (body.opponent) opponent = body.opponent;
+      if (body.forceStarPlayers && Array.isArray(body.forceStarPlayers)) {
+        // Treat star player IDs as lineup player IDs for manual override
+        lineupPlayerIds = [...lineupPlayerIds, ...body.forceStarPlayers];
+      }
     } catch { /* defaults */ }
 
-    const today = new Date().toISOString().split('T')[0];
-    
+    const today = new Date().toISOString().split("T")[0];
+
+    // Check for existing predictions
     const { data: existingPredictions } = await supabase
       .from("daily_player_predictions")
       .select("*")
       .eq("prediction_date", today);
 
-    const shouldSkip = existingPredictions && existingPredictions.length > 0 && !forceRegenerate && forceStarPlayers.length === 0;
-
-    if (shouldSkip) {
+    if (existingPredictions && existingPredictions.length > 0 && !forceRegenerate) {
       return new Response(
         JSON.stringify({ message: "Predictions already exist for today", predictions: existingPredictions }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -115,213 +188,100 @@ serve(async (req) => {
       await supabase.from("daily_player_predictions").delete().eq("prediction_date", today);
     }
 
-    if (!lovableApiKey) throw new Error("LOVABLE_API_KEY is not configured");
+    // If no lineup players provided, try to pull from today's lineup card
+    if (lineupPlayers.length === 0 && lineupPlayerIds.length === 0) {
+      console.log("No lineup data provided, fetching from today's lineup card...");
+      const { data: lineupCard } = await supabase
+        .from("lineup_cards")
+        .select("*")
+        .eq("game_date", today)
+        .eq("published", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
 
-    const metsPlayers = await fetchMetsRoster();
-    console.log(`Fetched ${metsPlayers.length} players from Mets roster`);
+      if (lineupCard) {
+        opponent = lineupCard.opponent || opponent;
+        const lineupData = lineupCard.lineup_data as any;
+        const startingPitcher = lineupCard.starting_pitcher as any;
 
-    // When lineup players are provided directly, use them as the primary source
-    // This ensures players NOT in the hardcoded roster (e.g. spring training call-ups) are included
-    const availableLineupPlayers: Array<{ name: string; id: number; position: string }> = 
-      lineupPlayers.length > 0 
-        ? lineupPlayers 
-        : lineupPlayerIds.length > 0 
-          ? metsPlayers.filter(p => lineupPlayerIds.includes(p.id))
-          : [];
-
-    let selectedPlayers: Array<{ name: string; id: number; position: string }> = [];
-    
-    // Priority 1: Force star players (admin override)
-    if (forceStarPlayers.length > 0) {
-      const allKnownPlayers = [...availableLineupPlayers, ...metsPlayers];
-      selectedPlayers = [...allKnownPlayers.filter(p => forceStarPlayers.includes(p.id))];
-      // Deduplicate by id
-      selectedPlayers = selectedPlayers.filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i);
-    }
-    
-    // Priority 2: Lineup players (when triggered by lineup fetch)
-    if (availableLineupPlayers.length > 0 && selectedPlayers.length < 6) {
-      const lineupNotSelected = availableLineupPlayers.filter(
-        p => !selectedPlayers.some(sp => sp.id === p.id)
-      );
-      const shuffledLineup = [...lineupNotSelected].sort(() => 0.5 - Math.random());
-      const slotsAvailable = 6 - selectedPlayers.length;
-      selectedPlayers = [...selectedPlayers, ...shuffledLineup.slice(0, slotsAvailable)];
-      console.log(`Selected ${Math.min(shuffledLineup.length, slotsAvailable)} players from today's lineup`);
-    }
-    
-    // Priority 3: Fill remaining slots
-    const remainingSlots = 6 - selectedPlayers.length;
-    if (remainingSlots > 0) {
-      if (availableLineupPlayers.length > 0) {
-        // Only use players from today's actual lineup — never random roster players
-        const lineupOnly = availableLineupPlayers.filter(
-          p => !selectedPlayers.some(sp => sp.id === p.id)
-        );
-        const shuffled = [...lineupOnly].sort(() => 0.5 - Math.random());
-        selectedPlayers = [...selectedPlayers, ...shuffled.slice(0, remainingSlots)];
-        console.log(`Filled ${Math.min(shuffled.length, remainingSlots)} remaining slots from lineup players only`);
-      } else {
-        // Manual/scheduled trigger — fill with roster mix
-        const available = metsPlayers.filter(p => !selectedPlayers.some(sp => sp.id === p.id));
-        const hitters = available.filter(p => !["SP","CL","RP"].includes(p.position));
-        const pitchers = available.filter(p => ["SP","CL","RP"].includes(p.position));
-        const shuffledHitters = [...hitters].sort(() => 0.5 - Math.random());
-        const shuffledPitchers = [...pitchers].sort(() => 0.5 - Math.random());
-        const hittersNeeded = Math.min(Math.max(remainingSlots - 2, 3), remainingSlots, shuffledHitters.length);
-        const pitchersNeeded = Math.min(remainingSlots - hittersNeeded, shuffledPitchers.length);
-        selectedPlayers = [
-          ...selectedPlayers,
-          ...shuffledHitters.slice(0, hittersNeeded),
-          ...shuffledPitchers.slice(0, pitchersNeeded),
-        ];
-        const stillNeeded = 6 - selectedPlayers.length;
-        if (stillNeeded > 0) {
-          const remaining = available.filter(p => !selectedPlayers.some(sp => sp.id === p.id));
-          selectedPlayers = [...selectedPlayers, ...remaining.sort(() => 0.5 - Math.random()).slice(0, stillNeeded)];
-        }
-      }
-    }
-
-    let contextNote = "";
-    if (triggerType === "lineup-card") contextNote = `Lineup card just dropped! These players are confirmed in today's lineup. ${gameContext}Give your sharpest takes based on the matchup.`;
-    else if (triggerType === "morning") contextNote = `It's early morning. ${gameContext}Focus on trending players.`;
-    else if (triggerType === "pregame") contextNote = `Pre-game time! ${gameContext}Give your hottest takes.`;
-    else if (gameContext) contextNote = gameContext;
-
-    const playerList = selectedPlayers.map(p => `${p.name} (${p.position})`).join(", ");
-
-    const prompt = `You are Anthony, a passionate Mets baseball analyst and betting expert. ${contextNote}
-
-These are CONFIRMED 2026 New York Mets players. For each player, use their position to determine their role and predict their stat line for today's game. Be realistic with numbers.
-
-Players: ${playerList}
-
-Respond with ONLY a valid JSON array (no markdown, no extra text):
-[
-  {
-    "name": "Player Name",
-    "status": "hot" or "cold",
-    "is_pitcher": true/false,
-    "description": "1-2 sentence betting tip about this player",
-    "confidence": 50-95,
-    "predicted_hr": 0-2 (hitters only, 0 for pitchers),
-    "predicted_rbis": 0-5 (hitters only, 0 for pitchers),
-    "predicted_runs": 0-3 (hitters only, 0 for pitchers),
-    "predicted_sb": 0-2 (hitters only, 0 for pitchers),
-    "predicted_strikeouts": 0-12 (pitchers: strikeouts thrown, hitters: 0),
-    "predicted_innings_pitched": 0-9 (pitchers only, 0 for hitters),
-    "predicted_saves": 0-1 (closers only, 0 for others),
-    "predicted_win_loss": "W" or "L" or null (starters only, null for hitters/closers),
-    "predicted_walks_allowed": 0-5 (pitchers only, 0 for hitters),
-    "predicted_hr_allowed": 0-3 (pitchers only, 0 for hitters),
-    "predicted_walks": 0-3 (hitters only, 0 for pitchers)
-  }
-]`;
-
-    // Retry up to 2 times if AI returns malformed JSON
-    let predictions: any[] | null = null;
-    let lastError = "";
-    
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${lovableApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
-            max_tokens: 4000,
-            messages: [
-              { role: "system", content: "You are Anthony, a Mets baseball analyst. Respond ONLY with a raw JSON array (no markdown, no code fences, no explanation). Be realistic with stat predictions." },
-              { role: "user", content: prompt }
-            ],
-          }),
-        });
-
-        if (!aiResponse.ok) {
-          if (aiResponse.status === 429) throw new Error("Rate limit exceeded. Please try again later.");
-          if (aiResponse.status === 402) throw new Error("AI credits depleted. Please add credits.");
-          throw new Error(`AI API error: ${aiResponse.status}`);
-        }
-
-        const aiData = await aiResponse.json();
-        const aiContent = aiData.choices?.[0]?.message?.content;
-        if (!aiContent) throw new Error("No content in AI response");
-
-        let cleanContent = aiContent.trim();
-        // Strip markdown code fences
-        if (cleanContent.startsWith("```json")) cleanContent = cleanContent.slice(7);
-        else if (cleanContent.startsWith("```")) cleanContent = cleanContent.slice(3);
-        if (cleanContent.endsWith("```")) cleanContent = cleanContent.slice(0, -3);
-        cleanContent = cleanContent.trim();
-        
-        // Try to extract valid JSON array even if response was truncated
-        if (!cleanContent.endsWith("]")) {
-          console.warn("AI response appears truncated, attempting to fix...");
-          // Find the last complete object by finding last "},"  or "}"
-          const lastCompleteObj = cleanContent.lastIndexOf("}");
-          if (lastCompleteObj > 0) {
-            cleanContent = cleanContent.substring(0, lastCompleteObj + 1);
-            // Remove trailing comma if present
-            if (cleanContent.trimEnd().endsWith(",")) {
-              cleanContent = cleanContent.trimEnd().slice(0, -1);
+        // Extract batters from lineup_data
+        if (Array.isArray(lineupData)) {
+          for (const player of lineupData) {
+            if (player.playerId || player.id) {
+              lineupPlayers.push({
+                name: player.name || player.fullName || "Unknown",
+                id: player.playerId || player.id,
+                position: player.position || player.pos || "IF",
+              });
             }
-            cleanContent += "]";
           }
         }
-        
-        predictions = JSON.parse(cleanContent);
-        if (Array.isArray(predictions) && predictions.length > 0) {
-          console.log(`AI returned ${predictions.length} predictions on attempt ${attempt + 1}`);
-          break; // Success
+
+        // Add starting pitcher
+        if (startingPitcher && (startingPitcher.playerId || startingPitcher.id)) {
+          lineupPlayers.push({
+            name: startingPitcher.name || startingPitcher.fullName || "Unknown",
+            id: startingPitcher.playerId || startingPitcher.id,
+            position: "SP",
+          });
         }
-        lastError = "AI returned empty predictions array";
-      } catch (e) {
-        lastError = e instanceof Error ? e.message : String(e);
-        console.error(`Attempt ${attempt + 1} failed:`, lastError);
-        if (attempt === 0) {
-          console.log("Retrying prediction generation...");
-          await new Promise(r => setTimeout(r, 2000));
-        }
+
+        console.log(`Pulled ${lineupPlayers.length} players from today's lineup card vs ${opponent}`);
+      } else {
+        console.log("No lineup card found for today");
+        return new Response(
+          JSON.stringify({ error: "No lineup card found for today. Post a lineup card first, then generate predictions." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
     }
-    
-    if (!predictions || predictions.length === 0) {
-      throw new Error(`Failed to generate predictions after 2 attempts: ${lastError}`);
+
+    // Deduplicate by ID
+    const uniquePlayers = lineupPlayers.filter((p, i, arr) => arr.findIndex(x => x.id === p.id) === i);
+    console.log(`Fetching real MLB stats for ${uniquePlayers.length} players...`);
+
+    // Fetch real stats from MLB API for all players in parallel
+    const statsPromises = uniquePlayers.map(p => fetchPlayerStats(p.id, p.name, p.position));
+    const allStats = await Promise.all(statsPromises);
+    const validStats = allStats.filter((s): s is PlayerStats => s !== null);
+
+    console.log(`Got stats for ${validStats.length} of ${uniquePlayers.length} players`);
+
+    if (validStats.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Could not fetch stats for any players. The MLB API may be unavailable." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    // Cleanup old predictions
+    // Cleanup old predictions (older than 7 days)
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
-    await supabase.from("daily_player_predictions").delete().lt("prediction_date", weekAgo.toISOString().split('T')[0]);
+    await supabase.from("daily_player_predictions").delete().lt("prediction_date", weekAgo.toISOString().split("T")[0]);
 
-    const predictionsToInsert = predictions.map((pred: any) => {
-      const player = selectedPlayers.find(p => p.name.toLowerCase() === pred.name.toLowerCase());
-      return {
-        player_name: pred.name,
-        player_id: player?.id,
-        player_image_url: player ? getPlayerImageUrl(player.id) : null,
-        status: pred.status.toLowerCase(),
-        description: pred.description,
-        prediction_date: today,
-        is_pitcher: pred.is_pitcher ?? false,
-        confidence: pred.confidence ?? 50,
-        predicted_hr: pred.predicted_hr ?? 0,
-        predicted_rbis: pred.predicted_rbis ?? 0,
-        predicted_runs: pred.predicted_runs ?? 0,
-        predicted_sb: pred.predicted_sb ?? 0,
-        predicted_strikeouts: pred.predicted_strikeouts ?? 0,
-        predicted_innings_pitched: pred.predicted_innings_pitched ?? 0,
-        predicted_saves: pred.predicted_saves ?? 0,
-        predicted_win_loss: pred.predicted_win_loss ?? null,
-        predicted_walks: pred.predicted_walks ?? 0,
-        predicted_walks_allowed: pred.predicted_walks_allowed ?? 0,
-        predicted_hr_allowed: pred.predicted_hr_allowed ?? 0,
-      };
-    });
+    // Build predictions from real stats
+    const predictionsToInsert = validStats.map(stats => ({
+      player_name: stats.name,
+      player_id: stats.id,
+      player_image_url: getPlayerImageUrl(stats.id),
+      status: determineStatus(stats),
+      description: generateDescription(stats, opponent || undefined),
+      prediction_date: today,
+      is_pitcher: stats.is_pitcher,
+      confidence: calculateConfidence(stats),
+      predicted_hr: stats.is_pitcher ? (stats.hr_allowed ?? 0) : (stats.hr ?? 0),
+      predicted_rbis: stats.is_pitcher ? 0 : (stats.rbi ?? 0),
+      predicted_runs: stats.is_pitcher ? 0 : (stats.runs ?? 0),
+      predicted_sb: stats.is_pitcher ? 0 : (stats.sb ?? 0),
+      predicted_strikeouts: stats.is_pitcher ? (stats.strikeouts ?? 0) : 0,
+      predicted_innings_pitched: stats.is_pitcher ? parseFloat(stats.innings_pitched ?? "0") : 0,
+      predicted_saves: stats.is_pitcher ? (stats.saves ?? 0) : 0,
+      predicted_win_loss: stats.is_pitcher ? `${stats.wins ?? 0}-${stats.losses ?? 0}` : null,
+      predicted_walks: stats.is_pitcher ? 0 : 0,
+      predicted_walks_allowed: stats.is_pitcher ? (stats.walks_allowed ?? 0) : 0,
+      predicted_hr_allowed: stats.is_pitcher ? (stats.hr_allowed ?? 0) : 0,
+    }));
 
     const { data: insertedPredictions, error: insertError } = await supabase
       .from("daily_player_predictions")
@@ -330,13 +290,12 @@ Respond with ONLY a valid JSON array (no markdown, no extra text):
 
     if (insertError) throw insertError;
 
-    console.log(`Successfully generated ${insertedPredictions?.length} predictions (trigger: ${triggerType})`);
+    console.log(`Successfully generated ${insertedPredictions?.length} stat-based predictions (trigger: ${triggerType})`);
 
     return new Response(
-      JSON.stringify({ message: "Predictions generated successfully", triggerType, predictions: insertedPredictions }),
+      JSON.stringify({ message: `Predictions generated from real MLB stats for ${insertedPredictions?.length} players`, triggerType, predictions: insertedPredictions }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-
   } catch (error) {
     console.error("Error generating predictions:", error);
     return new Response(
