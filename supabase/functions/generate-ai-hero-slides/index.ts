@@ -58,7 +58,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are MetsXMFanZone.com's marketing AI. Generate hero slide content designed to convert visitors into members. The brand is a Mets fan community platform with live streaming, podcasts, news, and community features. Pricing: Free Spring Training access, then $12.99/mo for premium. Tone: passionate, energetic, authentic NY Mets fan voice. Always use action-oriented CTAs.`
+            content: `You are MetsXMFanZone.com's marketing AI. Generate hero slide content designed to convert visitors into members. The brand is a Mets fan community platform with live streaming, podcasts, news, and community features. Pricing: Free Spring Training access, then $9.99/mo for premium. Tone: passionate, energetic, authentic NY Mets fan voice. Always use action-oriented CTAs.`
           },
           {
             role: "user",
