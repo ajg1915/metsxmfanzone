@@ -44,7 +44,7 @@ const sendEmail = async (apiKey: string, to: string, subject: string, html: stri
       subject,
       html,
       headers: {
-        "List-Unsubscribe": "<mailto:unsubscribe@metsxmfanzone.com>",
+        "List-Unsubscribe": "<mailto:unsubscribe@notify.www.metsxmfanzone.com>",
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
       },
     }),

@@ -116,7 +116,7 @@ Deno.serve(async (req) => {
               method: "POST",
               headers: { "Authorization": `Bearer ${resendApiKey}`, "Content-Type": "application/json" },
               body: JSON.stringify({
-                from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+                from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
                 to: [profile.email],
                 subject: "⚠️ Action Required: Your MetsXMFanZone Payment is Overdue",
                 html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">

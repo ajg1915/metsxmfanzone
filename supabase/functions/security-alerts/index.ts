@@ -206,7 +206,7 @@ const handler = async (req: Request): Promise<Response> => {
       for (const adminEmail of adminEmails) {
         try {
           await resend.emails.send({
-            from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+            from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
             to: [adminEmail],
             subject: alertSubject,
             html: `

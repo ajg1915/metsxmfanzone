@@ -188,7 +188,7 @@ https://metsxmfanzone.com
     `.trim();
 
     const emailResponse = await resend.emails.send({
-      from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+      from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
       to: [email],
       subject: subject,
       html: emailContent,

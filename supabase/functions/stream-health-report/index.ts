@@ -296,7 +296,7 @@ async function sendMaintenanceEmails(supabase: any, issueType: string, alertMess
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${resendApiKey}` },
         body: JSON.stringify({
-          from: 'MetsXMFanZone <noreply@metsxmfanzone.com>',
+          from: 'MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>',
           to: [profile.email],
           subject,
           html,

@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
       adminEmails.map(async (email) => {
         try {
           await resend.emails.send({
-            from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+            from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
             to: [email],
             subject: `🎉 New ${safePlanType} Member: ${memberName} — MetsXMFanZone`,
             html: emailHtml,
