@@ -37,7 +37,17 @@ const sendNotifications = async (
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceKey}` },
       body: JSON.stringify(emailPayload),
     });
-    const emailResult = await emailRes.json();
+    const emailText = await emailRes.text();
+    const emailResult = emailText ? JSON.parse(emailText) : null;
+
+    if (!emailRes.ok) {
+      throw new Error(`HTTP ${emailRes.status}: ${emailText}`);
+    }
+
+    if (!emailResult?.successful) {
+      throw new Error(emailResult?.message || 'No gameday emails were sent');
+    }
+
     console.log(`Email sent for "${title}":`, { successful: emailResult.successful, total: emailResult.total });
 
     await supabase
@@ -57,7 +67,17 @@ const sendNotifications = async (
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceKey}` },
       body: JSON.stringify(pushPayload),
     });
-    const pushResult = await pushRes.json();
+    const pushText = await pushRes.text();
+    const pushResult = pushText ? JSON.parse(pushText) : null;
+
+    if (!pushRes.ok) {
+      throw new Error(`HTTP ${pushRes.status}: ${pushText}`);
+    }
+
+    if (!pushResult?.sent) {
+      throw new Error(pushResult?.message || 'No push notifications were sent');
+    }
+
     console.log(`Push sent for "${title}":`, { sent: pushResult.sent });
 
     await supabase

@@ -81,31 +81,59 @@ interface GameNotificationRequest {
   imageUrl?: string;
 }
 
-const sendEmail = async (apiKey: string, to: string, subject: string, html: string) => {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
-      to: [to],
-      subject,
-      html,
-      headers: {
-        "List-Unsubscribe": "<mailto:unsubscribe@metsxmfanzone.com>",
-        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-      },
-    }),
+const VERIFIED_EMAIL_DOMAIN = 'notify.www.metsxmfanzone.com';
+const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`;
+const EMAIL_QUEUE_NAME = 'transactional_emails';
+
+const getTemplateName = (notificationType: GameNotificationRequest['notificationType']) =>
+  `game_notification_${notificationType}`;
+
+const queueEmail = async (
+  supabase: ReturnType<typeof createClient>,
+  to: string,
+  subject: string,
+  html: string,
+  notificationType: GameNotificationRequest['notificationType']
+) => {
+  const messageId = crypto.randomUUID();
+
+  const payload = {
+    run_id: crypto.randomUUID(),
+    to,
+    from: VERIFIED_FROM_ADDRESS,
+    sender_domain: VERIFIED_EMAIL_DOMAIN,
+    subject,
+    html,
+    text: subject,
+    purpose: 'transactional',
+    label: getTemplateName(notificationType),
+    idempotency_key: `game-notification:${notificationType}:${to.toLowerCase()}:${messageId}`,
+    message_id: messageId,
+    queued_at: new Date().toISOString(),
+  };
+
+  const { error: queueError } = await supabase.rpc('enqueue_email', {
+    queue_name: EMAIL_QUEUE_NAME,
+    payload,
   });
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Resend API error: ${error}`);
+  if (queueError) {
+    throw queueError;
   }
 
-  return await response.json();
+  const { error: logError } = await supabase.from('email_send_log').insert({
+    message_id: messageId,
+    template_name: getTemplateName(notificationType),
+    recipient_email: to,
+    status: 'pending',
+    metadata: { notificationType },
+  });
+
+  if (logError) {
+    console.error('Failed to log queued email:', logError.message);
+  }
+
+  return messageId;
 };
 
 const DEFAULT_EMOJIS: Record<string, string> = {
@@ -326,11 +354,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      throw new Error("RESEND_API_KEY not configured");
-    }
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -402,67 +425,47 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log(`Sending email notifications to ${allRecipients.length} recipients (${(users || []).length} registered users + ${(subscribers || []).length} newsletter subscribers, deduplicated)`);
+    console.log(`Queueing email notifications for ${allRecipients.length} recipients (${(users || []).length} registered users + ${(subscribers || []).length} newsletter subscribers, deduplicated)`);
     const savedEmojis = await loadSavedEmojis(supabase);
     const emailHtml = getEmailTemplate(title, message, gameInfo, notificationType, url, imageUrl, savedEmojis);
 
-    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    const results: Array<{ success: boolean; messageId?: string; error?: string }> = [];
 
-    const results: Array<{ success: boolean; error?: string }> = [];
+    for (const recipient of allRecipients) {
+      try {
+        const messageId = await queueEmail(
+          supabase,
+          recipient.email,
+          `${title} - MetsXMFanZone`,
+          emailHtml,
+          notificationType
+        );
 
-    for (let i = 0; i < allRecipients.length; i++) {
-      const recipient = allRecipients[i];
-      let sent = false;
-      let lastError = 'Unknown error';
-
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          await sendEmail(
-            resendApiKey,
-            recipient.email,
-            `${title} - MetsXMFanZone`,
-            emailHtml
-          );
-          sent = true;
-          console.log(`Email sent to [REDACTED]`);
-          break;
-        } catch (error: any) {
-          lastError = error?.message || 'Unknown error';
-          const isRateLimited =
-            lastError.includes('rate_limit_exceeded') ||
-            lastError.includes('"statusCode":429');
-
-          if (isRateLimited && attempt < 3) {
-            const backoffMs = 700 * attempt;
-            console.warn(`Rate limit encountered, retrying [REDACTED] in ${backoffMs}ms (attempt ${attempt + 1}/3)`);
-            await delay(backoffMs);
-            continue;
-          }
-
-          console.error(`Failed to send email to [REDACTED]:`, lastError);
-          break;
-        }
-      }
-
-      results.push(sent ? { success: true } : { success: false, error: lastError });
-
-      // Resend limit is 2 requests/sec; keep well below the threshold.
-      if (i < allRecipients.length - 1) {
-        await delay(600);
+        results.push({ success: true, messageId });
+        console.log(`Email queued for [REDACTED]`, { messageId });
+      } catch (error: any) {
+        const errorMessage = error?.message || 'Unknown error';
+        console.error(`Failed to queue email for [REDACTED]:`, errorMessage);
+        results.push({ success: false, error: errorMessage });
       }
     }
 
     const successCount = results.filter(r => r.success).length;
-    console.log(`Emails sent: ${successCount}/${allRecipients.length}`);
+    const failedCount = allRecipients.length - successCount;
+    const responseStatus = successCount > 0 ? 200 : 500;
+
+    console.log(`Emails queued: ${successCount}/${allRecipients.length}`);
 
     return new Response(
       JSON.stringify({
-        message: `Sent ${successCount} email notifications`,
+        message: successCount > 0
+          ? `Queued ${successCount} email notifications`
+          : 'Failed to queue email notifications',
         total: allRecipients.length,
         successful: successCount,
-        failed: allRecipients.length - successCount
+        failed: failedCount
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: responseStatus, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
     console.error("Error in send-game-notification-email:", error);
