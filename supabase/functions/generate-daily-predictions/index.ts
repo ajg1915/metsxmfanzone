@@ -205,26 +205,36 @@ serve(async (req) => {
         const lineupData = lineupCard.lineup_data as any;
         const startingPitcher = lineupCard.starting_pitcher as any;
 
+        // Helper: extract player ID from imageUrl like .../people/668901/headshot/...
+        const extractIdFromUrl = (url: string): number | null => {
+          const match = url?.match(/\/people\/(\d+)\//);
+          return match ? parseInt(match[1], 10) : null;
+        };
+
         // Extract batters from lineup_data
         if (Array.isArray(lineupData)) {
           for (const player of lineupData) {
-            if (player.playerId || player.id) {
+            const pid = player.playerId || player.id || extractIdFromUrl(player.imageUrl);
+            if (pid) {
               lineupPlayers.push({
                 name: player.name || player.fullName || "Unknown",
-                id: player.playerId || player.id,
-                position: player.position || player.pos || "IF",
+                id: pid,
+                position: player.fieldPosition || player.position || "IF",
               });
             }
           }
         }
 
         // Add starting pitcher
-        if (startingPitcher && (startingPitcher.playerId || startingPitcher.id)) {
-          lineupPlayers.push({
-            name: startingPitcher.name || startingPitcher.fullName || "Unknown",
-            id: startingPitcher.playerId || startingPitcher.id,
-            position: "SP",
-          });
+        if (startingPitcher) {
+          const spId = startingPitcher.playerId || startingPitcher.id || extractIdFromUrl(startingPitcher.imageUrl);
+          if (spId) {
+            lineupPlayers.push({
+              name: startingPitcher.name || startingPitcher.fullName || "Unknown",
+              id: spId,
+              position: "SP",
+            });
+          }
         }
 
         console.log(`Pulled ${lineupPlayers.length} players from today's lineup card vs ${opponent}`);
