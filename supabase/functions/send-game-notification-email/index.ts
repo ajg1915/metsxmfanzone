@@ -81,6 +81,9 @@ interface GameNotificationRequest {
   imageUrl?: string;
 }
 
+const VERIFIED_EMAIL_DOMAIN = 'notify.www.metsxmfanzone.com';
+const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`;
+
 const sendEmail = async (apiKey: string, to: string, subject: string, html: string) => {
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -89,23 +92,24 @@ const sendEmail = async (apiKey: string, to: string, subject: string, html: stri
       "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+      from: VERIFIED_FROM_ADDRESS,
       to: [to],
       subject,
       html,
       headers: {
-        "List-Unsubscribe": "<mailto:unsubscribe@metsxmfanzone.com>",
+        "List-Unsubscribe": `<mailto:unsubscribe@${VERIFIED_EMAIL_DOMAIN}>`,
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
       },
     }),
   });
 
+  const responseText = await response.text();
+
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Resend API error: ${error}`);
+    throw new Error(`Resend API error (${response.status}): ${responseText}`);
   }
 
-  return await response.json();
+  return responseText ? JSON.parse(responseText) : null;
 };
 
 const DEFAULT_EMOJIS: Record<string, string> = {
