@@ -433,7 +433,7 @@ export default function SubscriptionManagement() {
 
   const getPlanPrice = (planType: string) => {
     switch (planType) {
-      case "premium": return "$12.99 / month";
+      case "premium": return "$9.99 / month";
       case "annual": return "$129.99 / year";
       default: return "Free";
     }

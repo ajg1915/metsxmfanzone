@@ -113,7 +113,7 @@ const PremiumContent = () => {
                     </Link>{" "}
                     page
                   </li>
-                  <li>Select either Premium ($12.99/month) or Annual ($129.99/year)</li>
+                  <li>Select either Premium ($9.99/month) or Annual ($129.99/year)</li>
                   <li>Complete the checkout process</li>
                   <li>Start enjoying premium content immediately</li>
                 </ol>

@@ -20,7 +20,7 @@ const FAQs = () => {
     },
     {
       question: "What's the difference between Free and Premium plans?",
-      answer: "Free plan gives you basic access to highlights and community features. Premium ($12.99/month) unlocks all live streams, full game replays, HD quality, ad-free experience, and exclusive content. Annual plan ($129.99/year) includes everything in Premium plus 2 months free savings.",
+      answer: "Free plan gives you basic access to highlights and community features. Premium ($9.99/month) unlocks all live streams, full game replays, HD quality, ad-free experience, and exclusive content. Annual plan ($129.99/year) includes everything in Premium plus 2 months free savings.",
     },
     {
       question: "Can I switch between monthly and yearly billing?",

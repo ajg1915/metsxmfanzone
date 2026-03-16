@@ -35,7 +35,7 @@ const WatchStreams = () => {
                 <ul className="space-y-3 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>
-                    <span>Active Premium ($12.99/month) or Annual ($129.99/year) subscription</span>
+                    <span>Active Premium ($9.99/month) or Annual ($129.99/year) subscription</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary font-bold">✓</span>

@@ -125,8 +125,8 @@ const Plans = () => {
     {
       id: "premium",
       name: "Premium",
-      price: "$12.99",
-      priceValue: 12.99,
+      price: "$9.99",
+      priceValue: 9.99,
       period: "per month",
       billingNote: "Billed monthly",
       description: "Most popular for true fans",

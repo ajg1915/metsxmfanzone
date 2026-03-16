@@ -62,7 +62,7 @@ const CreateAccount = () => {
                     <strong>Free Plan:</strong> Access to basic content and community features
                   </li>
                   <li>
-                    <strong>Premium Plan ($9.99/month):</strong>Premium Plan ($12.99/month):
+                    <strong>Premium Plan ($9.99/month):</strong> All premium features including live streams and replays
                   </li>
                   <li>
                     <strong>Annual Plan ($129.99/year):</strong> All premium features with significant savings
