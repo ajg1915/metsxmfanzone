@@ -275,6 +275,12 @@ export default function AdminDashboard() {
             functionName="fetch-mets-schedule"
             successMessage="Schedule fetched successfully!"
           />
+          <ManualFetchButton
+            label="Generate Predictions"
+            icon={<Sparkles className="h-4 w-4" />}
+            functionName="generate-daily-predictions"
+            successMessage="Anthony's Predictions generated successfully!"
+          />
         </div>
       </div>
 
