@@ -83,33 +83,57 @@ interface GameNotificationRequest {
 
 const VERIFIED_EMAIL_DOMAIN = 'notify.www.metsxmfanzone.com';
 const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`;
+const EMAIL_QUEUE_NAME = 'transactional_emails';
 
-const sendEmail = async (apiKey: string, to: string, subject: string, html: string) => {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      from: VERIFIED_FROM_ADDRESS,
-      to: [to],
-      subject,
-      html,
-      headers: {
-        "List-Unsubscribe": `<mailto:unsubscribe@${VERIFIED_EMAIL_DOMAIN}>`,
-        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-      },
-    }),
+const getTemplateName = (notificationType: GameNotificationRequest['notificationType']) =>
+  `game_notification_${notificationType}`;
+
+const queueEmail = async (
+  supabase: ReturnType<typeof createClient>,
+  to: string,
+  subject: string,
+  html: string,
+  notificationType: GameNotificationRequest['notificationType']
+) => {
+  const messageId = crypto.randomUUID();
+
+  const payload = {
+    run_id: crypto.randomUUID(),
+    to,
+    from: VERIFIED_FROM_ADDRESS,
+    sender_domain: VERIFIED_EMAIL_DOMAIN,
+    subject,
+    html,
+    text: subject,
+    purpose: 'transactional',
+    label: getTemplateName(notificationType),
+    idempotency_key: `game-notification:${notificationType}:${to.toLowerCase()}:${messageId}`,
+    message_id: messageId,
+    queued_at: new Date().toISOString(),
+  };
+
+  const { error: queueError } = await supabase.rpc('enqueue_email', {
+    queue_name: EMAIL_QUEUE_NAME,
+    payload,
   });
 
-  const responseText = await response.text();
-
-  if (!response.ok) {
-    throw new Error(`Resend API error (${response.status}): ${responseText}`);
+  if (queueError) {
+    throw queueError;
   }
 
-  return responseText ? JSON.parse(responseText) : null;
+  const { error: logError } = await supabase.from('email_send_log').insert({
+    message_id: messageId,
+    template_name: getTemplateName(notificationType),
+    recipient_email: to,
+    status: 'pending',
+    metadata: { notificationType },
+  });
+
+  if (logError) {
+    console.error('Failed to log queued email:', logError.message);
+  }
+
+  return messageId;
 };
 
 const DEFAULT_EMOJIS: Record<string, string> = {
