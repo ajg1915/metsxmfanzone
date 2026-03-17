@@ -8,7 +8,7 @@ const corsHeaders = {
   "X-Frame-Options": "DENY",
 };
 
-const SITE_URL = Deno.env.get("PUBLIC_SITE_URL") || "https://www.metsxmfanzone.com";
+const SITE_URL = Deno.env.get("PUBLIC_SITE_URL") || "https://metsxmfanzone.com";
 
 const escapeHtml = (input: string) =>
   input.replace(/[&<>"']/g, (m) =>

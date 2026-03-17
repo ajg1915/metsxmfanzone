@@ -23,7 +23,7 @@ interface SEOHeadProps {
   wordCount?: number;
 }
 
-const BASE_URL = "https://www.metsxmfanzone.com";
+const BASE_URL = "https://metsxmfanzone.com";
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 const FALLBACK_IMAGE = `${BASE_URL}/logo-512.png`;
 const SITE_NAME = "MetsXMFanZone";
@@ -56,7 +56,9 @@ export default function SEOHead({
     : description;
   const finalImage = ogImage || DEFAULT_IMAGE;
   const finalImageAlt = ogImageAlt || title;
-  const canonicalUrl = canonical || (typeof window !== 'undefined' ? window.location.href.split('?')[0] : BASE_URL);
+  const rawCanonical = canonical || (typeof window !== 'undefined' ? window.location.href.split('?')[0] : BASE_URL);
+  // Normalize: strip www. to prevent 3XX redirect issues
+  const canonicalUrl = rawCanonical.replace('://www.metsxmfanzone.com', '://metsxmfanzone.com');
 
   // Clean up image URL
   let socialImage = finalImage;
