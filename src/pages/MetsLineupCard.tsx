@@ -278,7 +278,7 @@ export default function MetsLineupCard() {
     }
   };
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
   const todayLineup = upcomingLineups.find((l) => l.game_date?.startsWith(today));
   const futureLineups = upcomingLineups.filter((l) => l.game_date > today);
   const pastLineups2026 = upcomingLineups.filter((l) => l.game_date < today);

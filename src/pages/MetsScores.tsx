@@ -324,7 +324,7 @@ const MetsScores = () => {
       const endDate = new Date(today);
       endDate.setDate(today.getDate() + 7); // Next 7 days
 
-      const formatDate = (date: Date) => date.toISOString().split('T')[0];
+      const formatDate = (date: Date) => date.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const response = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=121&startDate=${formatDate(startDate)}&endDate=${formatDate(endDate)}&hydrate=linescore,team,venue`);
       if (!response.ok) throw new Error('Failed to fetch games');
       const data = await response.json();

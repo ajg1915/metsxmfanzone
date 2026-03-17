@@ -110,7 +110,7 @@ export default function PredictionsManagement() {
   const { data: todayLineup } = useQuery({
     queryKey: ["today-lineup-card"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const { data, error } = await supabase
         .from("lineup_cards")
         .select("*")
@@ -125,7 +125,7 @@ export default function PredictionsManagement() {
   const { data: predictions, isLoading } = useQuery({
     queryKey: ["admin-predictions"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const { data, error } = await supabase
         .from("daily_player_predictions")
         .select("*")
@@ -158,7 +158,7 @@ export default function PredictionsManagement() {
   const regenerateMutation = useMutation({
     mutationFn: async () => {
       if (forceRegenerate && predictions && predictions.length > 0) {
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
         const { error: deleteError } = await supabase
           .from("daily_player_predictions")
           .delete()
@@ -188,7 +188,7 @@ export default function PredictionsManagement() {
       if (!manual.player_name.trim() || !manual.description.trim()) {
         throw new Error("Player name and description are required");
       }
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const starPlayer = STAR_PLAYERS.find(p => p.name === manual.player_name);
       const playerId = manual.player_id ? parseInt(manual.player_id) : (starPlayer?.id || null);
       const imageUrl = playerId
@@ -254,7 +254,7 @@ export default function PredictionsManagement() {
     }
   };
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 
   return (
     <div className="space-y-6">
@@ -424,7 +424,7 @@ export default function PredictionsManagement() {
                   onClick={async () => {
                     setIsSyncingLineup(true);
                     try {
-                      const today = new Date().toISOString().split("T")[0];
+                      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
                       
                       // Delete existing predictions
                       const { error: deleteError } = await supabase

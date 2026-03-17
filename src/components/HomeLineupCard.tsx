@@ -112,8 +112,8 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
     queryKey: ["mlb-mets-upcoming-games"],
     queryFn: async (): Promise<UpcomingGame[]> => {
       const today = new Date();
-      const startDate = today.toISOString().split("T")[0];
-      const endDate = new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+      const startDate = today.toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+      const endDate = new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const response = await fetch(
         `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=121&startDate=${startDate}&endDate=${endDate}&gameType=R&hydrate=probablePitcher,team`
       );

@@ -69,7 +69,7 @@ const MetsGamecast = () => {
   useEffect(() => {
     const fetchGameData = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
         const [metsRes, allRes] = await Promise.all([
           fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=121&date=${today}&hydrate=linescore,team,venue`),
           fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=team,linescore`),
