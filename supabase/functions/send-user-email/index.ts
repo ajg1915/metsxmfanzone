@@ -11,14 +11,18 @@ const corsHeaders = {
   "X-Frame-Options": "DENY",
 };
 
+const VERIFIED_EMAIL_DOMAIN = "notify.www.metsxmfanzone.com";
+const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`;
+const EMAIL_QUEUE_NAME = "transactional_emails";
+
 const escapeHtml = (str: string): string => {
-  if (!str) return '';
+  if (!str) return "";
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 };
 
 const sanitizeHtml = (html: string): string => {
@@ -30,31 +34,59 @@ const sanitizeHtml = (html: string): string => {
   }
 };
 
-const sendEmail = async (apiKey: string, to: string, subject: string, html: string, useTestSender: boolean) => {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
-      to: [to],
-      subject,
-      html,
-      headers: {
-        "List-Unsubscribe": "<mailto:unsubscribe@notify.www.metsxmfanzone.com>",
-        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
-      },
-    }),
-  });
-  
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Resend API error: ${error}`);
+const getTemplateName = (recipientType: EmailRequest["recipientType"], useTestSender: boolean) => {
+  if (useTestSender) return "manual_campaign_test";
+  switch (recipientType) {
+    case "all_users":
+      return "manual_campaign_all_users";
+    case "subscribers":
+      return "manual_campaign_subscribers";
+    default:
+      return "manual_campaign_specific";
   }
-  
-  return await response.json();
+};
+
+const queueEmail = async (
+  supabase: ReturnType<typeof createClient>,
+  to: string,
+  subject: string,
+  html: string,
+  templateName: string,
+) => {
+  const messageId = crypto.randomUUID();
+
+  const payload = {
+    run_id: crypto.randomUUID(),
+    to,
+    from: VERIFIED_FROM_ADDRESS,
+    sender_domain: VERIFIED_EMAIL_DOMAIN,
+    subject,
+    html,
+    text: subject,
+    purpose: "transactional",
+    label: templateName,
+    idempotency_key: `${templateName}:${to.toLowerCase()}:${messageId}`,
+    message_id: messageId,
+    queued_at: new Date().toISOString(),
+  };
+
+  const { error: queueError } = await supabase.rpc("enqueue_email", {
+    queue_name: EMAIL_QUEUE_NAME,
+    payload,
+  });
+
+  if (queueError) throw queueError;
+
+  const { error: logError } = await supabase.from("email_send_log").insert({
+    message_id: messageId,
+    template_name: templateName,
+    recipient_email: to,
+    status: "pending",
+  });
+
+  if (logError) {
+    console.error("Failed to log queued email:", logError.message);
+  }
 };
 
 interface EmailRequest {
@@ -71,11 +103,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      throw new Error("RESEND_API_KEY not configured");
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -86,7 +113,10 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
       throw new Error("Unauthorized");
@@ -110,6 +140,7 @@ Deno.serve(async (req) => {
     }
 
     const sanitizedContent = sanitizeHtml(content);
+    const templateName = getTemplateName(recipientType, useTestSender || false);
 
     let recipients: { email: string; name?: string }[] = [];
 
@@ -125,9 +156,8 @@ Deno.serve(async (req) => {
       }
 
       recipients = (profiles || [])
-        .filter(p => p.email)
-        .map(p => ({ email: p.email!, name: p.full_name || undefined }));
-
+        .filter((profile) => profile.email)
+        .map((profile) => ({ email: profile.email!, name: profile.full_name || undefined }));
     } else if (recipientType === "subscribers") {
       const { data: subscribers, error: subscribersError } = await supabase
         .from("newsletter_subscribers")
@@ -139,16 +169,26 @@ Deno.serve(async (req) => {
         throw new Error("Failed to fetch subscribers");
       }
 
-      recipients = (subscribers || []).map(s => ({ email: s.email, name: s.full_name || undefined }));
-
+      recipients = (subscribers || []).map((subscriber) => ({
+        email: subscriber.email,
+        name: subscriber.full_name || undefined,
+      }));
     } else if (recipientType === "specific" && specificEmails) {
-      recipients = specificEmails.map(email => ({ email }));
+      recipients = specificEmails.map((email) => ({ email }));
     }
 
-    if (recipients.length === 0) {
+    const dedupedRecipients = Array.from(
+      new Map(
+        recipients
+          .filter((recipient) => recipient.email)
+          .map((recipient) => [recipient.email.toLowerCase(), recipient]),
+      ).values(),
+    );
+
+    if (dedupedRecipients.length === 0) {
       return new Response(
-        JSON.stringify({ message: "No recipients found", sent: 0, failed: 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ message: "No recipients found", sent: 0, failed: 0, total: 0 }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -156,55 +196,51 @@ Deno.serve(async (req) => {
     let failureCount = 0;
     let lastFailureMessage: string | null = null;
 
-    console.log(`Sending email to ${recipients.length} recipients (type: ${recipientType})`);
-
-    for (const recipient of recipients) {
+    for (const recipient of dedupedRecipients) {
       try {
         const personalizedContent = sanitizedContent
           .replace(/\{\{name\}\}/g, escapeHtml(recipient.name || "Fan"))
           .replace(/\{\{email\}\}/g, escapeHtml(recipient.email));
 
-        await sendEmail(resendApiKey, recipient.email, subject, personalizedContent, useTestSender || false);
+        await queueEmail(supabase, recipient.email, subject, personalizedContent, templateName);
         successCount++;
       } catch (error: any) {
         lastFailureMessage =
           (typeof error?.message === "string" && error.message) ||
           (typeof error?.name === "string" ? error.name : null) ||
-          "Email provider rejected the request";
+          "Failed to queue email";
 
-        console.error(`Failed to send to [REDACTED]:`, error);
+        console.error("Failed to queue campaign email:", lastFailureMessage);
         failureCount++;
       }
     }
 
-    console.log(`Email campaign complete: ${successCount} successful, ${failureCount} failed`);
-
     if (successCount === 0 && failureCount > 0) {
       return new Response(
         JSON.stringify({
-          error: lastFailureMessage || "Failed to send email",
-          sent: successCount,
+          error: lastFailureMessage || "Failed to queue email",
+          sent: 0,
           failed: failureCount,
-          total: recipients.length,
+          total: dedupedRecipients.length,
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     return new Response(
       JSON.stringify({
-        message: `Email sent successfully to ${successCount} recipients`,
+        message: `Email campaign queued for ${successCount} recipients`,
         sent: successCount,
         failed: failureCount,
-        total: recipients.length,
+        total: dedupedRecipients.length,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     console.error("Error in send-user-email function:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
