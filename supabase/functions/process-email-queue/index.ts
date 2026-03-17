@@ -7,6 +7,24 @@ const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
 
+type QueueName = 'auth_emails' | 'transactional_emails'
+
+type EmailQueuePayload = {
+  run_id?: string
+  to?: string
+  from?: string
+  sender_domain?: string
+  subject?: string
+  html?: string
+  text?: string
+  purpose?: string
+  label?: string
+  idempotency_key?: string
+  unsubscribe_token?: string
+  message_id?: string
+  queued_at?: string
+}
+
 // Check if an error is a rate-limit (429) response.
 // Uses EmailAPIError.status when available (email-js >=0.x with structured errors),
 // falls back to parsing the error message for older versions.
@@ -41,6 +59,34 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
   } catch {
     return null
   }
+}
+
+function buildEmailRequest(payload: EmailQueuePayload, queue: QueueName) {
+  const request = {
+    to: payload.to,
+    from: payload.from,
+    sender_domain: payload.sender_domain,
+    subject: payload.subject,
+    html: payload.html,
+    text: payload.text,
+    purpose: payload.purpose,
+    label: payload.label,
+    idempotency_key: payload.idempotency_key,
+    unsubscribe_token: payload.unsubscribe_token,
+    message_id: payload.message_id,
+  }
+
+  // Only auth emails should forward a real workflow run_id.
+  // Transactional/bulk emails are queued independently and synthetic UUIDs
+  // trigger `run_not_found` errors from the Lovable Email API.
+  if (queue === 'auth_emails' && payload.run_id) {
+    return {
+      ...request,
+      run_id: payload.run_id,
+    }
+  }
+
+  return request
 }
 
 Deno.serve(async (req) => {
@@ -93,7 +139,7 @@ Deno.serve(async (req) => {
 
   const batchSize = state?.batch_size ?? DEFAULT_BATCH_SIZE
   const sendDelayMs = state?.send_delay_ms ?? DEFAULT_SEND_DELAY_MS
-  const ttlMinutes: Record<string, number> = {
+  const ttlMinutes: Record<QueueName, number> = {
     auth_emails: state?.auth_email_ttl_minutes ?? DEFAULT_AUTH_TTL_MINUTES,
     transactional_emails: state?.transactional_email_ttl_minutes ?? DEFAULT_TRANSACTIONAL_TTL_MINUTES,
   }
@@ -101,7 +147,7 @@ Deno.serve(async (req) => {
   let totalProcessed = 0
 
   // 2. Process auth_emails first (priority), then transactional_emails
-  for (const queue of ['auth_emails', 'transactional_emails']) {
+  for (const queue of ['auth_emails', 'transactional_emails'] as const) {
     const dlq = `${queue}_dlq`
     const { data: messages, error: readError } = await supabase.rpc('read_email_batch', {
       queue_name: queue,
@@ -157,7 +203,7 @@ Deno.serve(async (req) => {
 
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i]
-      const payload = msg.message
+      const payload = msg.message as EmailQueuePayload
       const failedAttempts =
         payload?.message_id && typeof payload.message_id === 'string'
           ? (failedAttemptsByMessageId.get(payload.message_id) ?? 0)
@@ -243,20 +289,7 @@ Deno.serve(async (req) => {
 
       try {
         await sendLovableEmail(
-          {
-            run_id: payload.run_id,
-            to: payload.to,
-            from: payload.from,
-            sender_domain: payload.sender_domain,
-            subject: payload.subject,
-            html: payload.html,
-            text: payload.text,
-            purpose: payload.purpose,
-            label: payload.label,
-            idempotency_key: payload.idempotency_key,
-            unsubscribe_token: payload.unsubscribe_token,
-            message_id: payload.message_id,
-          },
+          buildEmailRequest(payload, queue),
           // sendUrl is optional — when LOVABLE_SEND_URL is not set, the library
           // falls back to the default Lovable API endpoint (https://api.lovable.dev).
           // Set LOVABLE_SEND_URL as a Supabase secret to override (e.g. for local dev).
