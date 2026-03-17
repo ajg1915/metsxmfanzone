@@ -98,7 +98,6 @@ const queueEmail = async (
   const messageId = crypto.randomUUID();
 
   const payload = {
-    run_id: crypto.randomUUID(),
     to,
     from: VERIFIED_FROM_ADDRESS,
     sender_domain: VERIFIED_EMAIL_DOMAIN,
