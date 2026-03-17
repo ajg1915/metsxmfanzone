@@ -188,7 +188,7 @@ export default function PredictionsManagement() {
       if (!manual.player_name.trim() || !manual.description.trim()) {
         throw new Error("Player name and description are required");
       }
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const starPlayer = STAR_PLAYERS.find(p => p.name === manual.player_name);
       const playerId = manual.player_id ? parseInt(manual.player_id) : (starPlayer?.id || null);
       const imageUrl = playerId
