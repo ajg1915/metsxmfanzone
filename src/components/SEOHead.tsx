@@ -56,7 +56,9 @@ export default function SEOHead({
     : description;
   const finalImage = ogImage || DEFAULT_IMAGE;
   const finalImageAlt = ogImageAlt || title;
-  const canonicalUrl = canonical || (typeof window !== 'undefined' ? window.location.href.split('?')[0] : BASE_URL);
+  const rawCanonical = canonical || (typeof window !== 'undefined' ? window.location.href.split('?')[0] : BASE_URL);
+  // Normalize: strip www. to prevent 3XX redirect issues
+  const canonicalUrl = rawCanonical.replace('://www.metsxmfanzone.com', '://metsxmfanzone.com');
 
   // Clean up image URL
   let socialImage = finalImage;
