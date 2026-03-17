@@ -125,7 +125,7 @@ export default function PredictionsManagement() {
   const { data: predictions, isLoading } = useQuery({
     queryKey: ["admin-predictions"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const { data, error } = await supabase
         .from("daily_player_predictions")
         .select("*")
