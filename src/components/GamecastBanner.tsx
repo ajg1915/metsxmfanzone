@@ -23,8 +23,9 @@ export default function GamecastBanner() {
   useEffect(() => {
     const fetchGame = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
-        const res = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=121&date=${today}&hydrate=linescore,team,venue`);
+        // Use ET date since MLB schedules are ET-based
+        const etDate = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+        const res = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=121&date=${etDate}&hydrate=linescore,team,venue`);
         const data = await res.json();
         if (data.dates?.[0]?.games?.[0]) {
           setGame(data.dates[0].games[0]);
