@@ -158,7 +158,7 @@ export default function PredictionsManagement() {
   const regenerateMutation = useMutation({
     mutationFn: async () => {
       if (forceRegenerate && predictions && predictions.length > 0) {
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
         const { error: deleteError } = await supabase
           .from("daily_player_predictions")
           .delete()
