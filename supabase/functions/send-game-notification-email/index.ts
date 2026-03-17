@@ -88,6 +88,22 @@ const EMAIL_QUEUE_NAME = 'transactional_emails';
 const getTemplateName = (notificationType: GameNotificationRequest['notificationType']) =>
   `game_notification_${notificationType}`;
 
+const getOrCreateUnsubscribeToken = async (
+  supabase: ReturnType<typeof createClient>,
+  email: string,
+): Promise<string> => {
+  const normalizedEmail = email.trim().toLowerCase();
+  const { data: existing } = await supabase
+    .from('email_unsubscribe_tokens')
+    .select('token')
+    .eq('email', normalizedEmail)
+    .maybeSingle();
+  if (existing?.token) return existing.token;
+  const token = crypto.randomUUID();
+  await supabase.from('email_unsubscribe_tokens').insert({ email: normalizedEmail, token });
+  return token;
+};
+
 const queueEmail = async (
   supabase: ReturnType<typeof createClient>,
   to: string,
@@ -96,6 +112,7 @@ const queueEmail = async (
   notificationType: GameNotificationRequest['notificationType']
 ) => {
   const messageId = crypto.randomUUID();
+  const unsubscribeToken = await getOrCreateUnsubscribeToken(supabase, to);
 
   const payload = {
     to,
@@ -108,6 +125,7 @@ const queueEmail = async (
     label: getTemplateName(notificationType),
     idempotency_key: `game-notification:${notificationType}:${to.toLowerCase()}:${messageId}`,
     message_id: messageId,
+    unsubscribe_token: unsubscribeToken,
     queued_at: new Date().toISOString(),
   };
 
