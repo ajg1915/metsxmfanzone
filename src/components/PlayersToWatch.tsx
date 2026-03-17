@@ -38,7 +38,7 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
     queryKey: ["daily-player-predictions", lineupGameDate],
     queryFn: async () => {
       // First try today's predictions
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const { data: todayData, error: todayError } = await supabase
         .from("daily_player_predictions")
         .select("*")
