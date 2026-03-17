@@ -110,7 +110,7 @@ export default function PredictionsManagement() {
   const { data: todayLineup } = useQuery({
     queryKey: ["today-lineup-card"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
       const { data, error } = await supabase
         .from("lineup_cards")
         .select("*")
