@@ -28,12 +28,37 @@ export const createServiceClient = () => {
   return createClient(supabaseUrl, supabaseServiceKey)
 }
 
+export const getOrCreateUnsubscribeToken = async (
+  supabase: ServiceClient,
+  email: string
+): Promise<string> => {
+  const normalizedEmail = email.trim().toLowerCase()
+
+  // Check for existing token
+  const { data: existing } = await supabase
+    .from('email_unsubscribe_tokens')
+    .select('token')
+    .eq('email', normalizedEmail)
+    .maybeSingle()
+
+  if (existing?.token) return existing.token
+
+  const token = crypto.randomUUID()
+  await supabase.from('email_unsubscribe_tokens').insert({
+    email: normalizedEmail,
+    token,
+  })
+
+  return token
+}
+
 export const queueTransactionalEmail = async (
   supabase: ServiceClient,
   { to, subject, html, text, label, metadata, purpose = 'transactional', idempotencyKey }: QueueEmailOptions
 ) => {
   const normalizedTo = to.trim().toLowerCase()
   const messageId = crypto.randomUUID()
+  const unsubscribeToken = await getOrCreateUnsubscribeToken(supabase, to)
 
   const payload = {
     to,
@@ -46,6 +71,7 @@ export const queueTransactionalEmail = async (
     label,
     idempotency_key: idempotencyKey ?? `${label}:${normalizedTo}:${messageId}`,
     message_id: messageId,
+    unsubscribe_token: unsubscribeToken,
     queued_at: new Date().toISOString(),
   }
 
