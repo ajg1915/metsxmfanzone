@@ -7,7 +7,7 @@ const corsHeaders = {
   "Cache-Control": "public, max-age=3600, s-maxage=3600",
 };
 
-const BASE_URL = "https://www.metsxmfanzone.com";
+const BASE_URL = "https://metsxmfanzone.com";
 
 // All static pages with their SEO priorities and change frequencies
 const staticPages = [

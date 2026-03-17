@@ -23,7 +23,7 @@ interface SEOHeadProps {
   wordCount?: number;
 }
 
-const BASE_URL = "https://www.metsxmfanzone.com";
+const BASE_URL = "https://metsxmfanzone.com";
 const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 const FALLBACK_IMAGE = `${BASE_URL}/logo-512.png`;
 const SITE_NAME = "MetsXMFanZone";
