@@ -179,7 +179,8 @@ export default function PredictionsManagement() {
     },
     onError: (error) => {
       console.error("Regeneration error:", error);
-      toast.error("Failed to regenerate predictions. If AI credits are depleted, use Manual Entry instead.");
+      toast.error("AI generation failed — Manual Entry form has been opened for you.");
+      setShowManualForm(true);
     },
   });
 
