@@ -477,7 +477,8 @@ export default function PredictionsManagement() {
                       toast.success(`Predictions synced with lineup! ${data?.count || 6} players generated.`);
                     } catch (err: any) {
                       console.error("Lineup sync error:", err);
-                      toast.error("Failed to sync predictions with lineup. Try manual entry if AI credits are depleted.");
+                      toast.error("AI sync failed — Manual Entry form has been opened for you.");
+                      setShowManualForm(true);
                     } finally {
                       setIsSyncingLineup(false);
                     }
