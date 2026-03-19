@@ -40,6 +40,7 @@ const mediaItems = [
   { title: "Clubhouse Studio", url: "/admin/studio", icon: Radio },
   { title: "Newsletter", url: "/admin/newsletter", icon: Mail },
   { title: "Email Editor", url: "/admin/email-editor", icon: Send },
+  { title: "Email Templates", url: "/admin/email-templates", icon: Palette },
 ];
 
 // Settings items (moved to prominent position)
