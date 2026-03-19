@@ -277,6 +277,7 @@ const AppContent = () => {
         {/* Removed: ExitIntentPopup, most toasts. Only Live/Offline kept */}
         <StreamExitDialog />
         <SocialMediaBar />
+        <ForceNotificationPrompt />
         
         <Suspense fallback={<PageLoader />}>
           <Routes>
