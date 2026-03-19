@@ -290,7 +290,17 @@ Respond with ONLY a valid JSON array (no markdown, no extra text):
     }
     
     if (!predictions || predictions.length === 0) {
-      throw new Error(`Failed to generate predictions after 2 attempts: ${lastError}`);
+      // Return 402 for credit issues so frontend can handle gracefully
+      const isCreditsIssue = lastError.includes("credits") || lastError.includes("402");
+      const statusCode = isCreditsIssue ? 402 : 500;
+      return new Response(
+        JSON.stringify({ 
+          error: `Failed to generate predictions after 2 attempts: ${lastError}`,
+          creditsExhausted: isCreditsIssue,
+          suggestion: "Use manual entry in the admin portal instead."
+        }),
+        { status: statusCode, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Cleanup old predictions
