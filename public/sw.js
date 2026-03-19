@@ -42,14 +42,17 @@ self.addEventListener('push', (event) => {
     }
   }
   
+  const isLiveGame = data.tag === 'live-game' || data.tag === 'game-alert' || (data.title && data.title.toLowerCase().includes('live'));
+  
   const options = {
     body: data.body,
     icon: data.icon || '/logo-192.png',
     badge: data.badge || '/logo-192.png',
-    vibrate: [200, 100, 200],
+    vibrate: isLiveGame ? [300, 100, 300, 100, 300] : [200, 100, 200],
     tag: data.tag || 'metsxm-notification',
     renotify: true,
-    requireInteraction: false,
+    requireInteraction: isLiveGame, // Force user to interact with live game alerts
+    silent: false,
     data: {
       url: data.url || '/',
       dateOfArrival: Date.now()
@@ -57,7 +60,7 @@ self.addEventListener('push', (event) => {
     actions: [
       {
         action: 'open',
-        title: 'View Now'
+        title: isLiveGame ? '🏟️ Watch Now' : 'View Now'
       },
       {
         action: 'dismiss',
