@@ -156,7 +156,7 @@ const MetsVsNationals = lazy(() => import("./pages/matchups/MetsVsNationals"));
 const MetsVsRedSox = lazy(() => import("./pages/matchups/MetsVsRedSox"));
 const MetsVsYankees = lazy(() => import("./pages/matchups/MetsVsYankees"));
 const MetsVsBlueJays = lazy(() => import("./pages/matchups/MetsVsBlueJays"));
-
+const EmailTemplateSettings = lazy(() => import("./pages/admin/EmailTemplateSettings"));
 
 
 
