@@ -1,6 +1,6 @@
 import { 
   Home, FileText, Video, Radio, Bell, Mic, TrendingUp, 
-  MessageSquare, ChevronDown, Users, Mail, 
+  MessageSquare, ChevronDown, Users, Mail, Palette,
   Megaphone, BookOpen, CalendarDays, Trophy, UserCog, Send, Wallpaper, ShoppingBag, 
   Activity, PenLine, HeartPulse, Globe, Settings, Layers, Sparkles, 
   ClipboardList, Star, BarChart3, Share2, FolderOpen
