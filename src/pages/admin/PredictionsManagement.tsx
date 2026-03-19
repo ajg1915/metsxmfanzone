@@ -539,6 +539,11 @@ export default function PredictionsManagement() {
               <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>No predictions generated for today yet</p>
               <p className="text-xs mt-1">Use the manual form above or AI generation below</p>
+              {!showManualForm && (
+                <Button variant="outline" className="mt-3" onClick={() => setShowManualForm(true)}>
+                  <PenLine className="h-4 w-4 mr-2" /> Open Manual Entry
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
