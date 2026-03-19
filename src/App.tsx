@@ -16,6 +16,7 @@ import { StreamExitDialog } from "@/components/StreamExitDialog";
 import { LiveStreamToast } from "@/components/LiveStreamToast";
 import SocialMediaBar from "@/components/SocialMediaBar";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
+import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
 
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 
