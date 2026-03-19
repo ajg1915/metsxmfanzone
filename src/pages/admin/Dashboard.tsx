@@ -301,6 +301,7 @@ export default function AdminDashboard() {
             icon={<Sparkles className="h-4 w-4" />}
             functionName="generate-daily-predictions"
             successMessage="Anthony's Predictions generated successfully!"
+            onCreditsExhausted={() => navigate("/admin/predictions")}
           />
         </div>
       </div>
