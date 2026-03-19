@@ -16,16 +16,37 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-function ManualFetchButton({ label, icon, functionName, successMessage }: { label: string; icon: React.ReactNode; functionName: string; successMessage: string }) {
+function ManualFetchButton({ label, icon, functionName, successMessage, onCreditsExhausted }: { label: string; icon: React.ReactNode; functionName: string; successMessage: string; onCreditsExhausted?: () => void }) {
   const [loading, setLoading] = useState(false);
   const handleFetch = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke(functionName);
-      if (error) throw error;
+      if (error) {
+        // Check if the error response contains credits exhausted info
+        try {
+          const errorBody = JSON.parse(error.message || "{}");
+          if (errorBody.creditsExhausted || error.message?.includes("402") || error.message?.includes("credits")) {
+            toast.error("AI Credits Exhausted", { 
+              description: "Use manual entry in Predictions Management instead.",
+              action: onCreditsExhausted ? { label: "Go to Manual Entry", onClick: onCreditsExhausted } : undefined
+            });
+            return;
+          }
+        } catch { /* not JSON, fall through */ }
+        throw error;
+      }
       toast.success(successMessage, { description: data?.message || JSON.stringify(data) });
     } catch (err: any) {
-      toast.error("Fetch failed", { description: err.message || "Unknown error" });
+      const msg = err.message || "Unknown error";
+      if (msg.includes("credits") || msg.includes("402")) {
+        toast.error("AI Credits Exhausted", { 
+          description: "Use manual entry in Predictions Management instead.",
+          action: onCreditsExhausted ? { label: "Go to Manual Entry", onClick: onCreditsExhausted } : undefined
+        });
+      } else {
+        toast.error("Fetch failed", { description: msg });
+      }
     } finally {
       setLoading(false);
     }
