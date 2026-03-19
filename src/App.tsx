@@ -156,7 +156,7 @@ const MetsVsNationals = lazy(() => import("./pages/matchups/MetsVsNationals"));
 const MetsVsRedSox = lazy(() => import("./pages/matchups/MetsVsRedSox"));
 const MetsVsYankees = lazy(() => import("./pages/matchups/MetsVsYankees"));
 const MetsVsBlueJays = lazy(() => import("./pages/matchups/MetsVsBlueJays"));
-
+const EmailTemplateSettings = lazy(() => import("./pages/admin/EmailTemplateSettings"));
 
 
 
@@ -348,6 +348,7 @@ const AppContent = () => {
               <Route path="tutorial" element={<TutorialManagement />} />
               <Route path="newsletter" element={<NewsletterGenerator />} />
               <Route path="email-editor" element={<EmailEditor />} />
+              <Route path="email-templates" element={<EmailTemplateSettings />} />
               <Route path="feedbacks" element={<FeedbackManagement />} />
               <Route path="posts" element={<PostsManagement />} />
               <Route path="business-ads" element={<BusinessAdsManagement />} />

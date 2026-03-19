@@ -582,6 +582,48 @@ export type Database = {
         }
         Relationships: []
       }
+      email_template_settings: {
+        Row: {
+          body_bg_color: string
+          button_border_radius: string
+          card_bg_color: string
+          footer_text: string
+          heading_color: string
+          id: number
+          logo_url: string
+          logo_width: number
+          primary_color: string
+          text_color: string
+          updated_at: string
+        }
+        Insert: {
+          body_bg_color?: string
+          button_border_radius?: string
+          card_bg_color?: string
+          footer_text?: string
+          heading_color?: string
+          id?: number
+          logo_url?: string
+          logo_width?: number
+          primary_color?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Update: {
+          body_bg_color?: string
+          button_border_radius?: string
+          card_bg_color?: string
+          footer_text?: string
+          heading_color?: string
+          id?: number
+          logo_url?: string
+          logo_width?: number
+          primary_color?: string
+          text_color?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_unsubscribe_tokens: {
         Row: {
           created_at: string

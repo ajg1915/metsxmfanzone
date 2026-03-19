@@ -14,36 +14,44 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
-interface ReauthenticationEmailProps {
+import type { EmailStyleProps } from './signup.tsx'
+
+interface ReauthenticationEmailProps extends EmailStyleProps {
   token: string
 }
 
-const LOGO_URL = 'https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/metsxmfanzone-logo.png'
-
-export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
+export const ReauthenticationEmail = ({
+  token,
+  logoUrl = 'https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/metsxmfanzone-logo.png',
+  primaryColor = '#FF5910',
+  cardBgColor = '#1a1a2e',
+  bodyBgColor = '#0a0a0a',
+  headingColor = '#ffffff',
+  textColor = '#d1d5db',
+  footerText = '© 2026 MetsXMFanZone — The Ultimate Mets Fan Community',
+  logoWidth = 85,
+}: ReauthenticationEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head>
       <meta name="color-scheme" content="dark" />
       <meta name="supported-color-schemes" content="dark" />
     </Head>
     <Preview>Your verification code</Preview>
-    <Body style={main}>
-      <Container style={wrapper}>
-        <Section style={header}>
-          <Img src={LOGO_URL} width="85" height="85" alt="MetsXMFanZone" style={logo} />
+    <Body style={{ backgroundColor: bodyBgColor, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', padding: '20px 0' }}>
+      <Container style={{ maxWidth: '600px', margin: '0 auto' }}>
+        <Section style={{ textAlign: 'center' as const, padding: '30px 0 20px' }}>
+          <Img src={logoUrl} width={String(logoWidth)} height={String(logoWidth)} alt="MetsXMFanZone" style={{ margin: '0 auto', borderRadius: '12px' }} />
         </Section>
-        <Section style={card}>
-          <Heading style={h1}>Confirm Your Identity 🔒</Heading>
-          <Text style={text}>Use the code below to confirm your identity:</Text>
-          <Text style={codeStyle}>{token}</Text>
-          <Text style={subtext}>
-            This code will expire shortly. If you didn't request this, you can safely ignore this email.
+        <Section style={{ backgroundColor: cardBgColor, borderRadius: '16px', padding: '32px 28px', margin: '0 16px', border: `1px solid ${primaryColor}33` }}>
+          <Heading style={{ fontSize: '24px', fontWeight: 'bold' as const, color: headingColor, margin: '0 0 20px', textAlign: 'center' as const }}>Confirm Your Identity 🔒</Heading>
+          <Text style={{ fontSize: '15px', color: textColor, lineHeight: '1.6', margin: '0 0 20px', textAlign: 'center' as const }}>Use the code below to confirm your identity:</Text>
+          <Text style={{ fontFamily: 'Courier, monospace', fontSize: '32px', fontWeight: 'bold' as const, color: primaryColor, margin: '0 0 24px', textAlign: 'center' as const, letterSpacing: '6px', backgroundColor: `${primaryColor}1a`, padding: '16px', borderRadius: '10px' }}>{token}</Text>
+          <Text style={{ fontSize: '13px', color: '#9ca3af', textAlign: 'center' as const, margin: '0' }}>
+            This code will expire shortly.
           </Text>
         </Section>
-        <Section style={footerSection}>
-          <Text style={footerBrand}>
-            © {new Date().getFullYear()} MetsXMFanZone — The Ultimate Mets Fan Community
-          </Text>
+        <Section style={{ padding: '24px 16px', textAlign: 'center' as const }}>
+          <Text style={{ fontSize: '11px', color: '#4b5563', margin: '0', textAlign: 'center' as const }}>{footerText}</Text>
         </Section>
       </Container>
     </Body>
@@ -51,36 +59,3 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
 )
 
 export default ReauthenticationEmail
-
-const main = {
-  backgroundColor: '#0a0a0a',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-  padding: '20px 0',
-}
-const wrapper = { maxWidth: '600px', margin: '0 auto' }
-const header = { textAlign: 'center' as const, padding: '30px 0 20px' }
-const logo = { margin: '0 auto', borderRadius: '12px' }
-const card = {
-  backgroundColor: '#1a1a2e',
-  borderRadius: '16px',
-  padding: '32px 28px',
-  margin: '0 16px',
-  border: '1px solid rgba(255, 89, 16, 0.2)',
-}
-const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#ffffff', margin: '0 0 20px', textAlign: 'center' as const }
-const text = { fontSize: '15px', color: '#d1d5db', lineHeight: '1.6', margin: '0 0 20px', textAlign: 'center' as const }
-const codeStyle = {
-  fontFamily: 'Courier, monospace',
-  fontSize: '32px',
-  fontWeight: 'bold' as const,
-  color: '#FF5910',
-  margin: '0 0 24px',
-  textAlign: 'center' as const,
-  letterSpacing: '6px',
-  backgroundColor: 'rgba(255, 89, 16, 0.1)',
-  padding: '16px',
-  borderRadius: '10px',
-}
-const subtext = { fontSize: '13px', color: '#9ca3af', textAlign: 'center' as const, margin: '0' }
-const footerSection = { padding: '24px 16px', textAlign: 'center' as const }
-const footerBrand = { fontSize: '11px', color: '#4b5563', margin: '0', textAlign: 'center' as const }

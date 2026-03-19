@@ -1,6 +1,6 @@
 import { 
   Home, FileText, Video, Radio, Bell, Mic, TrendingUp, 
-  MessageSquare, ChevronDown, Users, Mail, 
+  MessageSquare, ChevronDown, Users, Mail, Palette,
   Megaphone, BookOpen, CalendarDays, Trophy, UserCog, Send, Wallpaper, ShoppingBag, 
   Activity, PenLine, HeartPulse, Globe, Settings, Layers, Sparkles, 
   ClipboardList, Star, BarChart3, Share2, FolderOpen
@@ -40,6 +40,7 @@ const mediaItems = [
   { title: "Clubhouse Studio", url: "/admin/studio", icon: Radio },
   { title: "Newsletter", url: "/admin/newsletter", icon: Mail },
   { title: "Email Editor", url: "/admin/email-editor", icon: Send },
+  { title: "Email Templates", url: "/admin/email-templates", icon: Palette },
 ];
 
 // Settings items (moved to prominent position)
