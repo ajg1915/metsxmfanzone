@@ -218,6 +218,37 @@ async function handleWebhook(req: Request): Promise<Response> {
   }
 
   // Build template props from payload.data (HookData structure)
+  // Fetch dynamic style settings from DB
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  )
+
+  let styleProps: Record<string, any> = {}
+  try {
+    const { data: styleData } = await supabase
+      .from('email_template_settings')
+      .select('*')
+      .eq('id', 1)
+      .single()
+
+    if (styleData) {
+      styleProps = {
+        logoUrl: styleData.logo_url,
+        primaryColor: styleData.primary_color,
+        cardBgColor: styleData.card_bg_color,
+        bodyBgColor: styleData.body_bg_color,
+        headingColor: styleData.heading_color,
+        textColor: styleData.text_color,
+        footerText: styleData.footer_text,
+        buttonBorderRadius: styleData.button_border_radius,
+        logoWidth: styleData.logo_width,
+      }
+    }
+  } catch (e) {
+    console.warn('Could not fetch email style settings, using defaults', e)
+  }
+
   const templateProps = {
     siteName: SITE_NAME,
     siteUrl: `https://${ROOT_DOMAIN}`,
@@ -226,6 +257,7 @@ async function handleWebhook(req: Request): Promise<Response> {
     token: payload.data.token,
     email: payload.data.email,
     newEmail: payload.data.new_email,
+    ...styleProps,
   }
 
   // Render React Email to HTML and plain text
