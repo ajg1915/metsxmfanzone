@@ -179,7 +179,8 @@ export default function PredictionsManagement() {
     },
     onError: (error) => {
       console.error("Regeneration error:", error);
-      toast.error("Failed to regenerate predictions. If AI credits are depleted, use Manual Entry instead.");
+      toast.error("AI generation failed — Manual Entry form has been opened for you.");
+      setShowManualForm(true);
     },
   });
 
@@ -476,7 +477,8 @@ export default function PredictionsManagement() {
                       toast.success(`Predictions synced with lineup! ${data?.count || 6} players generated.`);
                     } catch (err: any) {
                       console.error("Lineup sync error:", err);
-                      toast.error("Failed to sync predictions with lineup. Try manual entry if AI credits are depleted.");
+                      toast.error("AI sync failed — Manual Entry form has been opened for you.");
+                      setShowManualForm(true);
                     } finally {
                       setIsSyncingLineup(false);
                     }
@@ -537,6 +539,11 @@ export default function PredictionsManagement() {
               <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>No predictions generated for today yet</p>
               <p className="text-xs mt-1">Use the manual form above or AI generation below</p>
+              {!showManualForm && (
+                <Button variant="outline" className="mt-3" onClick={() => setShowManualForm(true)}>
+                  <PenLine className="h-4 w-4 mr-2" /> Open Manual Entry
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
