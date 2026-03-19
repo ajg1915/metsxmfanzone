@@ -75,6 +75,7 @@ const usersItems = [
 const communityItems = [
   { title: "Posts", url: "/admin/posts", icon: FileText },
   { title: "Feedback", url: "/admin/feedbacks", icon: MessageSquare },
+  { title: "Predictions", url: "/admin/predictions", icon: Star },
   { title: "Business Ads", url: "/admin/business-ads", icon: Megaphone },
   { title: "Shop", url: "/admin/shop", icon: ShoppingBag },
   { title: "Polls", url: "/admin/polls", icon: BarChart3 },
