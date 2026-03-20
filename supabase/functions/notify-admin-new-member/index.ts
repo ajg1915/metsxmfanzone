@@ -1,5 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
-import { Resend } from "npm:resend@2.0.0";
+import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,16 +17,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      throw new Error("RESEND_API_KEY not configured");
-    }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const resend = new Resend(resendApiKey);
-
+    const supabase = createServiceClient();
     const { userId, planType, amount, source } = await req.json();
 
     if (!userId || !planType) {
@@ -37,7 +27,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get the new member's profile
     const { data: memberProfile } = await supabase
       .from("profiles")
       .select("email, full_name")
@@ -50,33 +39,27 @@ Deno.serve(async (req) => {
     const safeAmount = escapeHtml(amount || (planType === "annual" ? "$99.99" : "$9.99"));
     const safeSource = escapeHtml(source || "Online Payment");
 
-    // Get all admin users
     const { data: adminRoles } = await supabase
       .from("user_roles")
       .select("user_id")
       .eq("role", "admin");
 
     if (!adminRoles || adminRoles.length === 0) {
-      console.log("No admin users found to notify");
       return new Response(
         JSON.stringify({ message: "No admins to notify" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Get admin emails
     const adminIds = adminRoles.map((r) => r.user_id);
     const { data: adminProfiles } = await supabase
       .from("profiles")
       .select("id, email, full_name")
       .in("id", adminIds);
 
-    const adminEmails = (adminProfiles || [])
-      .filter((p) => p.email)
-      .map((p) => p.email!);
+    const adminEmails = (adminProfiles || []).filter((p) => p.email).map((p) => p.email!);
 
     if (adminEmails.length === 0) {
-      console.log("No admin emails found");
       return new Response(
         JSON.stringify({ message: "No admin emails" }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -102,64 +85,39 @@ Deno.serve(async (req) => {
         <p style="color: white; font-size: 16px; font-weight: bold; margin: 8px 0 0 0;">New Fan Joined!</p>
       </div>
       <table style="width: 100%; border-collapse: collapse;">
-        <tr>
-          <td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Member</td>
-          <td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; font-weight: 600; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${memberName}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Email</td>
-          <td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${memberEmail}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Plan</td>
-          <td style="padding: 8px 0; color: #FF4500; font-size: 13px; font-weight: bold; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${safePlanType.toUpperCase()}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Amount</td>
-          <td style="padding: 8px 0; color: #10B981; font-size: 13px; font-weight: bold; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${safeAmount}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Source</td>
-          <td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${safeSource}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 0; color: #9CA3AF; font-size: 13px;">Date</td>
-          <td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; text-align: right;">${now} ET</td>
-        </tr>
+        <tr><td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Member</td><td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; font-weight: 600; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${memberName}</td></tr>
+        <tr><td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Email</td><td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${memberEmail}</td></tr>
+        <tr><td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Plan</td><td style="padding: 8px 0; color: #FF4500; font-size: 13px; font-weight: bold; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${safePlanType.toUpperCase()}</td></tr>
+        <tr><td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Amount</td><td style="padding: 8px 0; color: #10B981; font-size: 13px; font-weight: bold; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${safeAmount}</td></tr>
+        <tr><td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Source</td><td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${safeSource}</td></tr>
+        <tr><td style="padding: 8px 0; color: #9CA3AF; font-size: 13px;">Date</td><td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; text-align: right;">${now} ET</td></tr>
       </table>
       <div style="text-align: center; margin-top: 20px;">
-        <a href="${dashboardUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF4500, #FF6A33); color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 13px;">
-          View in Admin Dashboard
-        </a>
+        <a href="${dashboardUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF4500, #FF6A33); color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 13px;">View in Admin Dashboard</a>
       </div>
     </div>
-    <p style="color: #6B7280; font-size: 10px; text-align: center; margin-top: 15px;">
-      © ${new Date().getFullYear()} <span style="color: #FF4500;">MetsXMFanZone</span> — Admin Notification
-    </p>
+    <p style="color: #6B7280; font-size: 10px; text-align: center; margin-top: 15px;">© ${new Date().getFullYear()} <span style="color: #FF4500;">MetsXMFanZone</span> — Admin Notification</p>
   </div>
 </body>
 </html>`;
 
-    // Send to all admins
-    const results = await Promise.all(
-      adminEmails.map(async (email) => {
-        try {
-          await resend.emails.send({
-            from: "MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>",
-            to: [email],
-            subject: `🎉 New ${safePlanType} Member: ${memberName} — MetsXMFanZone`,
-            html: emailHtml,
-          });
-          return { success: true, email };
-        } catch (err: any) {
-          console.error(`Failed to notify admin ${email}:`, err.message);
-          return { success: false, email, error: err.message };
-        }
-      })
-    );
+    const subject = `🎉 New ${safePlanType} Member: ${memberName} — MetsXMFanZone`;
 
-    const sent = results.filter((r) => r.success).length;
-    console.log(`Admin notifications sent: ${sent}/${adminEmails.length}`);
+    let sent = 0;
+    for (const email of adminEmails) {
+      try {
+        await queueTransactionalEmail(supabase, {
+          to: email,
+          subject,
+          html: emailHtml,
+          label: "admin_new_member",
+          idempotencyKey: `admin-new-member:${userId}:${email.toLowerCase()}`,
+        });
+        sent++;
+      } catch (err: any) {
+        console.error(`Failed to queue admin notification for ${email}:`, err.message);
+      }
+    }
 
     // Also send push notification to admins
     try {
