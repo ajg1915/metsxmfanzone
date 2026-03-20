@@ -62,6 +62,7 @@ const MetsXMFanZone = lazy(() => import("./pages/MetsXMFanZone"));
 const MLBNetwork = lazy(() => import("./pages/MLBNetwork"));
 const ESPNNetwork = lazy(() => import("./pages/ESPNNetwork"));
 const PIX11Network = lazy(() => import("./pages/PIX11Network"));
+const LiveStream = lazy(() => import("./pages/LiveStream"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
@@ -406,6 +407,7 @@ const AppContent = () => {
             <Route path="/mlb-network" element={<MLBNetwork />} />
             <Route path="/espn-network" element={<ESPNNetwork />} />
             <Route path="/pix11-network" element={<PIX11Network />} />
+            <Route path="/live/:streamId" element={<LiveStream />} />
             <Route path="/matchup/astros" element={<MetsVsAstros />} />
             <Route path="/matchup/braves" element={<MetsVsBraves />} />
             <Route path="/matchup/cardinals" element={<MetsVsCardinals />} />

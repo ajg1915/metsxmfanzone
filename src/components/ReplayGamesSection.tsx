@@ -75,7 +75,7 @@ const ReplayGamesSection = () => {
     if (networkPages.includes('espn-network')) return '/espn-network';
     if (networkPages.includes('pix11-network')) return '/pix11-network';
     if (networkPages.includes('spring-training-live')) return '/spring-training-live';
-    return '/live';
+    return `/live/${stream.id}`;
   };
 
   const handleStreamClick = (stream: LiveStream) => {

@@ -249,12 +249,21 @@ export function StreamPlayer({
 
   const fetchStream = async () => {
     try {
-      const { data, error } = await supabase
+      // Support direct stream ID lookup for dynamic pages (stream-<uuid>)
+      const streamIdMatch = pageName.match(/^stream-(.+)$/);
+      let query = supabase
         .from("live_streams")
         .select("*")
         .eq("published", true)
-        .eq("status", "live")
-        .contains("assigned_pages", [pageName])
+        .eq("status", "live");
+
+      if (streamIdMatch) {
+        query = query.eq("id", streamIdMatch[1]);
+      } else {
+        query = query.contains("assigned_pages", [pageName]);
+      }
+
+      const { data, error } = await query
         .order("scheduled_start", { ascending: false })
         .limit(1)
         .maybeSingle();
