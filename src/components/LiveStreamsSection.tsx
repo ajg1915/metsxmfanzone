@@ -318,17 +318,24 @@ const LiveStreamsSection = () => {
 
     setStreams(reordered);
 
-    // Save new display_order to DB
-    const updates = reordered.map((stream, index) => ({
-      id: stream.id,
-      display_order: index,
-    }));
-
-    for (const u of updates) {
-      await supabase.from('live_streams').update({ display_order: u.display_order }).eq('id', u.id);
+    let hasError = false;
+    for (let i = 0; i < reordered.length; i++) {
+      const { error } = await supabase
+        .from('live_streams')
+        .update({ display_order: i })
+        .eq('id', reordered[i].id);
+      if (error) {
+        console.error(`Failed to update order for ${reordered[i].id}:`, error);
+        hasError = true;
+      }
     }
 
-    toast.success("Stream order saved");
+    if (hasError) {
+      toast.error("Some order changes failed to save — refreshing");
+      await fetchStreams();
+    } else {
+      toast.success("Stream order saved & published");
+    }
   };
 
   const scroll = (direction: 'left' | 'right') => {
