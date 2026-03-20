@@ -62,6 +62,7 @@ const MetsXMFanZone = lazy(() => import("./pages/MetsXMFanZone"));
 const MLBNetwork = lazy(() => import("./pages/MLBNetwork"));
 const ESPNNetwork = lazy(() => import("./pages/ESPNNetwork"));
 const PIX11Network = lazy(() => import("./pages/PIX11Network"));
+const LiveStream = lazy(() => import("./pages/LiveStream"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
