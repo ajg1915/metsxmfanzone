@@ -410,6 +410,7 @@ const AppContent = () => {
             <Route path="/mlb-network" element={<MLBNetwork />} />
             <Route path="/espn-network" element={<ESPNNetwork />} />
             <Route path="/pix11-network" element={<PIX11Network />} />
+            <Route path="/msg-network" element={<MSGNetwork />} />
             <Route path="/live/:streamId" element={<LiveStream />} />
             <Route path="/matchup/astros" element={<MetsVsAstros />} />
             <Route path="/matchup/braves" element={<MetsVsBraves />} />
