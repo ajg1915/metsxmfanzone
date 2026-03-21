@@ -166,8 +166,18 @@ const PopupNotificationsManagement = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label>Image URL (optional)</Label>
-              <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." />
+              <Label>Image (optional)</Label>
+              <div className="flex gap-2 mt-1">
+                {form.image_url ? (
+                  <div className="relative w-20 h-14 rounded border overflow-hidden flex-shrink-0">
+                    <img src={form.image_url} alt="" className="w-full h-full object-cover" />
+                    <button onClick={() => setForm({ ...form, image_url: "" })} className="absolute top-0 right-0 bg-black/60 text-white text-[10px] px-1 rounded-bl">✕</button>
+                  </div>
+                ) : null}
+                <Button type="button" variant="outline" size="sm" onClick={openMediaPicker} className="gap-1.5">
+                  <Image className="w-3.5 h-3.5" /> {form.image_url ? "Change" : "Select from Media Library"}
+                </Button>
+              </div>
             </div>
             <div>
               <Label>Button URL (optional)</Label>
