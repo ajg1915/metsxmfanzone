@@ -36,6 +36,7 @@ const InstallPrompt = lazy(() => import("@/components/InstallPrompt"));
 const OnboardingWalkthrough = lazy(() => import("@/components/OnboardingWalkthrough"));
 const NotificationPrompt = lazy(() => import("@/components/NotificationPrompt"));
 const ToastPoll = lazy(() => import("@/components/ToastPoll"));
+const PopupNotification = lazy(() => import("@/components/PopupNotification"));
 
 
 // Section loading skeleton
