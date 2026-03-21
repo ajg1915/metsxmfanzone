@@ -145,6 +145,7 @@ const PlayerOfTheMonthManagement = lazy(() => import("./pages/admin/PlayerOfTheM
 const SocialMediaSettings = lazy(() => import("./pages/admin/SocialMediaSettings"));
 const MediaLibrary = lazy(() => import("./pages/admin/MediaLibrary"));
 const ToastPromptManagement = lazy(() => import("./pages/admin/ToastPromptManagement"));
+const PopupNotificationsManagement = lazy(() => import("./pages/admin/PopupNotificationsManagement"));
 const ShopManagement = lazy(() => import("./pages/admin/ShopManagement"));
 const Shop = lazy(() => import("./pages/Shop"));
 const OrderSuccess = lazy(() => import("./pages/OrderSuccess"));
