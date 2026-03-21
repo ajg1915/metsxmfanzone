@@ -36,6 +36,7 @@ const InstallPrompt = lazy(() => import("@/components/InstallPrompt"));
 const OnboardingWalkthrough = lazy(() => import("@/components/OnboardingWalkthrough"));
 const NotificationPrompt = lazy(() => import("@/components/NotificationPrompt"));
 const ToastPoll = lazy(() => import("@/components/ToastPoll"));
+const PopupNotification = lazy(() => import("@/components/PopupNotification"));
 
 
 // Section loading skeleton
@@ -140,6 +141,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
+      {/* Popup notification modal */}
+      <Suspense fallback={null}>
+        <PopupNotification />
+      </Suspense>
+
       {/* Poll Toast notification */}
       <Suspense fallback={null}>
         <ToastPoll />

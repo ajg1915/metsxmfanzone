@@ -1532,6 +1532,48 @@ export type Database = {
         }
         Relationships: []
       }
+      popup_notifications: {
+        Row: {
+          button_text: string | null
+          button_url: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          message: string
+          show_once_per_session: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          button_text?: string | null
+          button_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          message: string
+          show_once_per_session?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          button_text?: string | null
+          button_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          message?: string
+          show_once_per_session?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           content: string
