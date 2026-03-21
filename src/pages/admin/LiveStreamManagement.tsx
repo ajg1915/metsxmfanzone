@@ -778,26 +778,73 @@ export default function LiveStreamManagement() {
                 <div>
                   <Label htmlFor="assigned_pages">Assign to Pages *</Label>
                   <div className="space-y-2 mt-2">
-                    {['guide', 'live', 'metsxmfanzone', 'mlb-network', 'espn-network', 'pix11-network', 'msg-network', 'spring-training-live', 'spring-training-games', 'replay-games'].map((page) => (
-                      <div key={page} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          id={page}
-                          checked={formData.assigned_pages.includes(page)}
-                          onChange={(e) => {
-                            const newPages = e.target.checked
-                              ? [...formData.assigned_pages, page]
-                              : formData.assigned_pages.filter(p => p !== page);
-                            setFormData({ ...formData, assigned_pages: newPages });
-                          }}
-                          className="rounded border-border"
-                        />
-                        <Label htmlFor={page} className="cursor-pointer font-normal">
-                          {PAGE_LABELS[page] || page}
-                        </Label>
-                      </div>
-                    ))}
+                    {(() => {
+                      const defaultPages = ['guide', 'live', 'metsxmfanzone', 'mlb-network', 'espn-network', 'pix11-network', 'msg-network', 'spring-training-live', 'spring-training-games', 'replay-games'];
+                      const customPages = formData.assigned_pages.filter(p => !defaultPages.includes(p));
+                      const allPages = [...defaultPages, ...customPages];
+                      return allPages.map((page) => (
+                        <div key={page} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            id={page}
+                            checked={formData.assigned_pages.includes(page)}
+                            onChange={(e) => {
+                              const newPages = e.target.checked
+                                ? [...formData.assigned_pages, page]
+                                : formData.assigned_pages.filter(p => p !== page);
+                              setFormData({ ...formData, assigned_pages: newPages });
+                            }}
+                            className="rounded border-border"
+                          />
+                          <Label htmlFor={page} className="cursor-pointer font-normal">
+                            {PAGE_LABELS[page] || page}
+                          </Label>
+                          {!defaultPages.includes(page) && (
+                            <button
+                              type="button"
+                              onClick={() => setFormData({ ...formData, assigned_pages: formData.assigned_pages.filter(p => p !== page) })}
+                              className="text-xs text-destructive hover:underline ml-1"
+                            >
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      ));
+                    })()}
                   </div>
+                  <div className="flex items-center gap-2 mt-3">
+                    <Input
+                      placeholder="Add custom page (e.g. yes-network)"
+                      className="flex-1 text-sm"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const val = (e.target as HTMLInputElement).value.trim().toLowerCase().replace(/\s+/g, '-');
+                          if (val && !formData.assigned_pages.includes(val)) {
+                            setFormData({ ...formData, assigned_pages: [...formData.assigned_pages, val] });
+                            (e.target as HTMLInputElement).value = '';
+                          }
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const input = document.getElementById('custom-page-input') as HTMLInputElement;
+                        if (!input) return;
+                        const val = input.value.trim().toLowerCase().replace(/\s+/g, '-');
+                        if (val && !formData.assigned_pages.includes(val)) {
+                          setFormData({ ...formData, assigned_pages: [...formData.assigned_pages, val] });
+                          input.value = '';
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Type a custom page slug and press Enter or click Add</p>
                 </div>
               </div>
 
