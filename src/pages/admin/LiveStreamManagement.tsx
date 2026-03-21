@@ -793,7 +793,7 @@ export default function LiveStreamManagement() {
                           className="rounded border-border"
                         />
                         <Label htmlFor={page} className="cursor-pointer font-normal">
-                          {page === 'guide' ? 'Guide Page' : page === 'live' ? 'Live Page' : page === 'metsxmfanzone' ? 'MetsXMFanZone TV' : page === 'mlb-network' ? 'MLB Network' : page === 'espn-network' ? 'ESPN Network' : page === 'pix11-network' ? 'PIX11 Network' : page === 'spring-training-live' ? 'Spring Training Live' : page === 'spring-training-games' ? 'Spring Training Games' : 'Replay Games'}
+                          {PAGE_LABELS[page] || page}
                         </Label>
                       </div>
                     ))}
