@@ -814,6 +814,7 @@ export default function LiveStreamManagement() {
                   </div>
                   <div className="flex items-center gap-2 mt-3">
                     <Input
+                      id="custom-page-input"
                       placeholder="Add custom page (e.g. yes-network)"
                       className="flex-1 text-sm"
                       onKeyDown={(e) => {
