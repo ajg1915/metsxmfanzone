@@ -243,6 +243,45 @@ const PopupNotificationsManagement = () => {
           </Card>
         ))}
       </div>
+
+      {/* Media Library Picker */}
+      <Dialog open={mediaPickerOpen} onOpenChange={setMediaPickerOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Select Image from Media Library</DialogTitle>
+          </DialogHeader>
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder="Search images..." value={mediaSearch} onChange={(e) => setMediaSearch(e.target.value)} className="pl-9" />
+          </div>
+          <ScrollArea className="h-[50vh]">
+            {mediaLoading ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+            ) : filteredMedia.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No images found</p>
+            ) : (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {filteredMedia.map((file) => (
+                  <button
+                    key={file.id}
+                    onClick={() => {
+                      setForm({ ...form, image_url: file.file_url });
+                      setMediaPickerOpen(false);
+                      toast({ title: "Image selected", description: file.file_name });
+                    }}
+                    className="group relative aspect-square rounded-md overflow-hidden border border-border hover:border-primary transition-colors"
+                  >
+                    <img src={file.file_url} alt={file.file_name} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end">
+                      <span className="text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity p-1 truncate w-full">{file.file_name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
