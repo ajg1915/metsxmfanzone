@@ -49,6 +49,7 @@ const settingsNavItems = [
   { title: "Backgrounds", url: "/admin/backgrounds", icon: Wallpaper },
   { title: "Social Media", url: "/admin/social-media", icon: Share2 },
   { title: "Toast Prompts", url: "/admin/toast-prompts", icon: Bell },
+  { title: "Popup Alerts", url: "/admin/popup-notifications", icon: Megaphone },
   { title: "Tutorials", url: "/admin/tutorials", icon: BookOpen },
 ];
 

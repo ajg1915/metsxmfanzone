@@ -141,6 +141,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background relative">
+      {/* Popup notification modal */}
+      <Suspense fallback={null}>
+        <PopupNotification />
+      </Suspense>
+
       {/* Poll Toast notification */}
       <Suspense fallback={null}>
         <ToastPoll />

@@ -378,6 +378,7 @@ const AppContent = () => {
               <Route path="tutorials" element={<TutorialManagement />} />
               <Route path="media-library" element={<MediaLibrary />} />
               <Route path="toast-prompts" element={<ToastPromptManagement />} />
+              <Route path="popup-notifications" element={<PopupNotificationsManagement />} />
               <Route path="shop" element={<ShopManagement />} />
               <Route path="player-of-the-month" element={<PlayerOfTheMonthManagement />} />
             </Route>
