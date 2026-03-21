@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Eye } from "lucide-react";
+import { Plus, Trash2, Edit, Eye, Image, Search } from "lucide-react";
 import { format } from "date-fns";
 
 interface PopupNotif {
@@ -35,7 +37,32 @@ const PopupNotificationsManagement = () => {
     is_active: false,
     show_once_per_session: true,
   });
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<{ id: string; file_url: string; file_name: string; file_type: string | null }[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [mediaSearch, setMediaSearch] = useState("");
   const { toast } = useToast();
+
+  const fetchMediaFiles = async () => {
+    setMediaLoading(true);
+    const { data } = await supabase
+      .from("media_library")
+      .select("id, file_url, file_name, file_type")
+      .order("created_at", { ascending: false });
+    if (data) setMediaFiles(data);
+    setMediaLoading(false);
+  };
+
+  const openMediaPicker = () => {
+    setMediaSearch("");
+    if (mediaFiles.length === 0) fetchMediaFiles();
+    setMediaPickerOpen(true);
+  };
+
+  const filteredMedia = mediaFiles.filter(f =>
+    f.file_name.toLowerCase().includes(mediaSearch.toLowerCase()) &&
+    (f.file_type?.startsWith("image") ?? true)
+  );
 
   useEffect(() => { fetchPopups(); }, []);
 
@@ -139,8 +166,18 @@ const PopupNotificationsManagement = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label>Image URL (optional)</Label>
-              <Input value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="https://..." />
+              <Label>Image (optional)</Label>
+              <div className="flex gap-2 mt-1">
+                {form.image_url ? (
+                  <div className="relative w-20 h-14 rounded border overflow-hidden flex-shrink-0">
+                    <img src={form.image_url} alt="" className="w-full h-full object-cover" />
+                    <button onClick={() => setForm({ ...form, image_url: "" })} className="absolute top-0 right-0 bg-black/60 text-white text-[10px] px-1 rounded-bl">✕</button>
+                  </div>
+                ) : null}
+                <Button type="button" variant="outline" size="sm" onClick={openMediaPicker} className="gap-1.5">
+                  <Image className="w-3.5 h-3.5" /> {form.image_url ? "Change" : "Select from Media Library"}
+                </Button>
+              </div>
             </div>
             <div>
               <Label>Button URL (optional)</Label>
@@ -206,6 +243,45 @@ const PopupNotificationsManagement = () => {
           </Card>
         ))}
       </div>
+
+      {/* Media Library Picker */}
+      <Dialog open={mediaPickerOpen} onOpenChange={setMediaPickerOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Select Image from Media Library</DialogTitle>
+          </DialogHeader>
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input placeholder="Search images..." value={mediaSearch} onChange={(e) => setMediaSearch(e.target.value)} className="pl-9" />
+          </div>
+          <ScrollArea className="h-[50vh]">
+            {mediaLoading ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
+            ) : filteredMedia.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">No images found</p>
+            ) : (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {filteredMedia.map((file) => (
+                  <button
+                    key={file.id}
+                    onClick={() => {
+                      setForm({ ...form, image_url: file.file_url });
+                      setMediaPickerOpen(false);
+                      toast({ title: "Image selected", description: file.file_name });
+                    }}
+                    className="group relative aspect-square rounded-md overflow-hidden border border-border hover:border-primary transition-colors"
+                  >
+                    <img src={file.file_url} alt={file.file_name} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-end">
+                      <span className="text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity p-1 truncate w-full">{file.file_name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
