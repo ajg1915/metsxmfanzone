@@ -6,8 +6,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Eye } from "lucide-react";
+import { Plus, Trash2, Edit, Eye, Image, Search } from "lucide-react";
 import { format } from "date-fns";
 
 interface PopupNotif {
