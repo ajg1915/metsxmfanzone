@@ -87,7 +87,7 @@ interface LiveStream {
   display_order: number;
 }
 
-const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'mlb-network': 'MLB Network', 'espn-network': 'ESPN Network', 'pix11-network': 'PIX11 Network', 'spring-training-live': 'Spring Training Live', 'spring-training-games': 'Spring Training Games', 'replay-games': 'Replay Games' };
+const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'mlb-network': 'MLB Network', 'espn-network': 'ESPN Network', 'pix11-network': 'PIX11 Network', 'msg-network': 'MSG Network', 'spring-training-live': 'Spring Training Live', 'spring-training-games': 'Spring Training Games', 'replay-games': 'Replay Games' };
 
 function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect }: {
   stream: LiveStream;
@@ -778,7 +778,7 @@ export default function LiveStreamManagement() {
                 <div>
                   <Label htmlFor="assigned_pages">Assign to Pages *</Label>
                   <div className="space-y-2 mt-2">
-                    {['guide', 'live', 'metsxmfanzone', 'mlb-network', 'espn-network', 'pix11-network', 'spring-training-live', 'spring-training-games', 'replay-games'].map((page) => (
+                    {['guide', 'live', 'metsxmfanzone', 'mlb-network', 'espn-network', 'pix11-network', 'msg-network', 'spring-training-live', 'spring-training-games', 'replay-games'].map((page) => (
                       <div key={page} className="flex items-center space-x-2">
                         <input
                           type="checkbox"
@@ -793,7 +793,7 @@ export default function LiveStreamManagement() {
                           className="rounded border-border"
                         />
                         <Label htmlFor={page} className="cursor-pointer font-normal">
-                          {page === 'guide' ? 'Guide Page' : page === 'live' ? 'Live Page' : page === 'metsxmfanzone' ? 'MetsXMFanZone TV' : page === 'mlb-network' ? 'MLB Network' : page === 'espn-network' ? 'ESPN Network' : page === 'pix11-network' ? 'PIX11 Network' : page === 'spring-training-live' ? 'Spring Training Live' : page === 'spring-training-games' ? 'Spring Training Games' : 'Replay Games'}
+                          {PAGE_LABELS[page] || page}
                         </Label>
                       </div>
                     ))}
