@@ -37,7 +37,32 @@ const PopupNotificationsManagement = () => {
     is_active: false,
     show_once_per_session: true,
   });
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [mediaFiles, setMediaFiles] = useState<{ id: string; file_url: string; file_name: string; file_type: string | null }[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
+  const [mediaSearch, setMediaSearch] = useState("");
   const { toast } = useToast();
+
+  const fetchMediaFiles = async () => {
+    setMediaLoading(true);
+    const { data } = await supabase
+      .from("media_library")
+      .select("id, file_url, file_name, file_type")
+      .order("created_at", { ascending: false });
+    if (data) setMediaFiles(data);
+    setMediaLoading(false);
+  };
+
+  const openMediaPicker = () => {
+    setMediaSearch("");
+    if (mediaFiles.length === 0) fetchMediaFiles();
+    setMediaPickerOpen(true);
+  };
+
+  const filteredMedia = mediaFiles.filter(f =>
+    f.file_name.toLowerCase().includes(mediaSearch.toLowerCase()) &&
+    (f.file_type?.startsWith("image") ?? true)
+  );
 
   useEffect(() => { fetchPopups(); }, []);
 
