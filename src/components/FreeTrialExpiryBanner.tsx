@@ -27,7 +27,7 @@ const FreeTrialExpiryBanner = () => {
   const daysUntilEnd = Math.max(
     0,
     Math.ceil(
-      (new Date("2026-03-31T23:59:59").getTime() - now.getTime()) /
+      (new Date("2026-03-26T23:59:59").getTime() - now.getTime()) /
         (1000 * 60 * 60 * 24)
     )
   );

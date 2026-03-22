@@ -337,7 +337,7 @@ const Plans = () => {
                 You will <strong className="text-foreground">not be charged</strong> for the Free Spring Training plan.
               </p>
               <p>
-                However, this plan <strong className="text-foreground">expires on March 31, 2026</strong> when Spring Training ends. After that date, you must select a paid plan (Premium or Annual) or your account will be <strong className="text-foreground">deactivated</strong>.
+                However, this plan <strong className="text-foreground">expires on March 26, 2026</strong> when Spring Training ends. After that date, you must select a paid plan (Premium or Annual) or your account will be <strong className="text-foreground">deactivated</strong>.
               </p>
               <p className="text-xs">
                 By confirming, you acknowledge that continued access after Spring Training requires a paid subscription.
