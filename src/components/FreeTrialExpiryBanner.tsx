@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { AlertTriangle, X, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const FREE_PLAN_EXPIRY_DATE = new Date("2026-03-23T00:00:00");
+const FREE_PLAN_EXPIRY_DATE = new Date("2026-03-22T00:00:00");
 const BANNER_DISMISS_KEY = "free_expiry_banner_dismissed";
 
 const FreeTrialExpiryBanner = () => {
@@ -27,7 +27,7 @@ const FreeTrialExpiryBanner = () => {
   const daysUntilEnd = Math.max(
     0,
     Math.ceil(
-      (new Date("2026-03-31T23:59:59").getTime() - now.getTime()) /
+      (new Date("2026-03-26T23:59:59").getTime() - now.getTime()) /
         (1000 * 60 * 60 * 24)
     )
   );
