@@ -108,20 +108,23 @@ const Plans = () => {
     }
   };
 
-  const plans = [
-    {
+  const now = new Date();
+  const freeExpired = now >= new Date("2026-03-26T00:00:00");
+
+  const allPlans = [
+    ...(!freeExpired ? [{
       id: "free",
       name: "Free (Spring Training)",
       price: "$0",
       priceValue: 0,
       period: "Spring Training",
       description: "Free access through end of Spring Training",
-      trialNote: "Free access expires March 31, 2026. Upgrade to keep watching!",
+      trialNote: "Free access expires March 26, 2026. Upgrade to keep watching!",
       features: ["Limited highlights access", "Community forum access", "Game schedules", "Free Spring Training Live"],
       notIncluded: ["Live streaming", "Full game replays", "Exclusive content", "Ad-free experience"],
       cta: "Start Free (Spring Training)",
       popular: false,
-    },
+    }] : []),
     {
       id: "premium",
       name: "Premium",
@@ -165,6 +168,8 @@ const Plans = () => {
       popular: false,
     },
   ];
+
+  const plans = allPlans;
 
   const selectedPlanData = plans.find((p) => p.id === selectedPlan);
 
