@@ -210,7 +210,7 @@ const LiveStreamsSection = () => {
         .from("live_streams")
         .select("*")
         .eq("published", true)
-        .order("display_order", { ascending: true })
+        .order("scheduled_start", { ascending: true, nullsFirst: false })
         .limit(20);
 
       // Non-admins only see live streams
