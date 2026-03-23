@@ -269,8 +269,8 @@ export default function LiveStreamManagement() {
       const { data, error } = await supabase
         .from("live_streams")
         .select("*")
-        .order("display_order", { ascending: true })
-        .order("scheduled_start", { ascending: false });
+        .order("scheduled_start", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setStreams(data as LiveStream[] || []);

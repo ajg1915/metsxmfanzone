@@ -210,7 +210,7 @@ const LiveStreamsSection = () => {
         .from("live_streams")
         .select("*")
         .eq("published", true)
-        .order("display_order", { ascending: true })
+        .order("scheduled_start", { ascending: true, nullsFirst: false })
         .limit(20);
 
       // Non-admins only see live streams
@@ -222,16 +222,12 @@ const LiveStreamsSection = () => {
       if (error) throw error;
 
       const sorted = (data || []).sort((a, b) => {
-        // Primary: display_order
-        if ((a.display_order ?? 999) !== (b.display_order ?? 999)) {
-          return (a.display_order ?? 999) - (b.display_order ?? 999);
-        }
-        // Secondary: metsxmfanzone first
-        const aIsMets = a.assigned_pages?.includes('metsxmfanzone');
-        const bIsMets = b.assigned_pages?.includes('metsxmfanzone');
-        if (aIsMets && !bIsMets) return -1;
-        if (!aIsMets && bIsMets) return 1;
-        return 0;
+        // Primary: sort by scheduled_start date ascending
+        const aDate = a.scheduled_start ? new Date(a.scheduled_start).getTime() : Infinity;
+        const bDate = b.scheduled_start ? new Date(b.scheduled_start).getTime() : Infinity;
+        if (aDate !== bDate) return aDate - bDate;
+        // Secondary: by created_at descending
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
 
       setStreams(sorted as LiveStream[]);
