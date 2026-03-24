@@ -58,6 +58,10 @@ const FAQs = () => {
       question: "How do I report inappropriate content?",
       answer: "Use the report button on any post or comment. Our moderation team reviews all reports within 24 hours.",
     },
+    {
+      question: "Are there any blackouts on MetsXMFanZone streams?",
+      answer: "No! There are absolutely no blackouts on any of our streams. You can watch every game without restrictions. If there is ever a rare schedule change or stream update, we will announce it on our Social Wall or on our official social media channels — so make sure to follow us to stay informed.",
+    },
   ];
 
   return (
