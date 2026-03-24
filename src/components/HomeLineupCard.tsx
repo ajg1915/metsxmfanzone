@@ -173,7 +173,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
       const fetchLeaderCategory = async (category: string) => {
         const buildUrl = (season: number) =>
           `https://statsapi.mlb.com/api/v1/teams/121/leaders?leaderCategories=${category}&season=${season}&limit=1`;
-        const primaryRes = await fetch(buildUrl(primarySeason));
+        const primaryRes = await fetch(buildUrl(currentSeason));
         const response = primaryRes.ok ? primaryRes : await fetch(buildUrl(fallbackSeason));
         if (!response.ok) return null;
         const data = await response.json();
