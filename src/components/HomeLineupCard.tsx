@@ -168,10 +168,8 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
   const { data: teamLeaders } = useQuery({
     queryKey: ["mlb-mets-leaders-2026"],
     queryFn: async () => {
-      const now = new Date();
-      const currentSeason = now.getFullYear();
-      const primarySeason = now.getMonth() < 3 ? currentSeason - 1 : currentSeason;
-      const fallbackSeason = primarySeason - 1;
+      const currentSeason = 2026;
+      const fallbackSeason = 2025;
       const fetchLeaderCategory = async (category: string) => {
         const buildUrl = (season: number) =>
           `https://statsapi.mlb.com/api/v1/teams/121/leaders?leaderCategories=${category}&season=${season}&limit=1`;
