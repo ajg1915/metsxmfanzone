@@ -41,6 +41,10 @@ const FAQSection = () => {
     {
       question: "Does MetsXMFanZone have a mobile app?",
       answer: "Yes! MetsXMFanZone is available as a Progressive Web App (PWA). Simply visit our website and click 'Install' when prompted to add it to your home screen for quick access."
+    },
+    {
+      question: "Are there any blackouts on MetsXMFanZone streams?",
+      answer: "No! There are absolutely no blackouts on any of our streams. You can watch every game without restrictions. If there is ever a rare schedule change or stream update, we will announce it on our Social Wall or on our official social media channels — so make sure to follow us to stay informed."
     }
   ];
 
