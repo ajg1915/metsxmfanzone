@@ -601,7 +601,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                     <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span className="font-black text-xs sm:text-sm">Team Leaders</span>
                   </div>
-                  <span className="text-[8px] sm:text-[9px] bg-white/15 px-1.5 sm:px-2 py-0.5 rounded-md font-bold">2025</span>
+                  <span className="text-[8px] sm:text-[9px] bg-white/15 px-1.5 sm:px-2 py-0.5 rounded-md font-bold">2026</span>
                 </div>
               </div>
               <div className="p-2 sm:p-3">
