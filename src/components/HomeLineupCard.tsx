@@ -168,14 +168,12 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
   const { data: teamLeaders } = useQuery({
     queryKey: ["mlb-mets-leaders-2026"],
     queryFn: async () => {
-      const now = new Date();
-      const currentSeason = now.getFullYear();
-      const primarySeason = now.getMonth() < 3 ? currentSeason - 1 : currentSeason;
-      const fallbackSeason = primarySeason - 1;
+      const currentSeason = 2026;
+      const fallbackSeason = 2025;
       const fetchLeaderCategory = async (category: string) => {
         const buildUrl = (season: number) =>
           `https://statsapi.mlb.com/api/v1/teams/121/leaders?leaderCategories=${category}&season=${season}&limit=1`;
-        const primaryRes = await fetch(buildUrl(primarySeason));
+        const primaryRes = await fetch(buildUrl(currentSeason));
         const response = primaryRes.ok ? primaryRes : await fetch(buildUrl(fallbackSeason));
         if (!response.ok) return null;
         const data = await response.json();
@@ -603,7 +601,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                     <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     <span className="font-black text-xs sm:text-sm">Team Leaders</span>
                   </div>
-                  <span className="text-[8px] sm:text-[9px] bg-white/15 px-1.5 sm:px-2 py-0.5 rounded-md font-bold">2025</span>
+                  <span className="text-[8px] sm:text-[9px] bg-white/15 px-1.5 sm:px-2 py-0.5 rounded-md font-bold">2026</span>
                 </div>
               </div>
               <div className="p-2 sm:p-3">
