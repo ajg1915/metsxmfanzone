@@ -238,11 +238,9 @@ const LiveStreamsSection = () => {
     }
   };
 
-  const isSpringTrainingStream = (stream: LiveStream) => {
-    return stream.assigned_pages?.includes('spring-training-live') && !stream.assigned_pages?.includes('metsxmfanzone');
-  };
+  const isSpringTrainingStream = (_stream: LiveStream) => false;
 
-  const isProStream = (stream: LiveStream) => !isSpringTrainingStream(stream);
+  const isProStream = (_stream: LiveStream) => true;
 
   const getStreamPageUrl = (stream: LiveStream) => {
     const networkPages = (stream.assigned_pages || []).filter(page => page !== 'live' && page !== 'guide');
@@ -250,7 +248,6 @@ const LiveStreamsSection = () => {
     if (networkPages.includes('mlb-network')) return '/mlb-network';
     if (networkPages.includes('espn-network')) return '/espn-network';
     if (networkPages.includes('pix11-network')) return '/pix11-network';
-    if (networkPages.includes('spring-training-live')) return '/spring-training-live';
     return `/live/${stream.id}`;
   };
 
@@ -259,11 +256,8 @@ const LiveStreamsSection = () => {
       navigate(getStreamPageUrl(stream));
       return;
     }
-    if (isSpringTrainingStream(stream)) {
-      if (!user) navigate("/auth");
-      else navigate(getStreamPageUrl(stream));
-      return;
-    }
+    // All streams now require premium or admin access
+
     if (stream.assigned_pages?.includes('metsxmfanzone')) {
       if (!user) navigate("/auth");
       else navigate(getStreamPageUrl(stream));
