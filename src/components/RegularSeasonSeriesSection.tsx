@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, ChevronRight, Radio, Users } from "lucide-react";
+import { Calendar, ChevronRight, ChevronLeft, Radio, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -24,13 +24,12 @@ interface SeriesGroup {
   opponent: string;
   streams: LiveStream[];
   hasLive: boolean;
+  earliestDate: string | null;
 }
 
 const extractOpponent = (title: string): string => {
-  // Try to extract opponent from title like "Mets vs Yankees" or "NYM @ ATL"
   const vsMatch = title.match(/(?:mets|nym)\s*(?:vs\.?|@|at)\s*(.+)/i);
   if (vsMatch) return vsMatch[1].trim().split(/\s*[-–—|]/)[0].trim();
-  // Fallback: use entire title
   return title;
 };
 
@@ -40,6 +39,7 @@ const RegularSeasonSeriesSection = () => {
   const { tier, isAdmin } = useSubscription();
   const [seriesGroups, setSeriesGroups] = useState<SeriesGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   useEffect(() => {
     fetchGames();
@@ -56,8 +56,6 @@ const RegularSeasonSeriesSection = () => {
       if (error) throw error;
 
       const games = (data || []) as LiveStream[];
-
-      // Group by opponent
       const groupMap = new Map<string, LiveStream[]>();
       for (const game of games) {
         const opponent = extractOpponent(game.title);
@@ -65,23 +63,26 @@ const RegularSeasonSeriesSection = () => {
         groupMap.get(opponent)!.push(game);
       }
 
-      const groups: SeriesGroup[] = Array.from(groupMap.entries()).map(([opponent, streams]) => ({
-        opponent,
-        streams: streams.sort((a, b) => {
-          const aDate = a.scheduled_start ? new Date(a.scheduled_start).getTime() : Infinity;
-          const bDate = b.scheduled_start ? new Date(b.scheduled_start).getTime() : Infinity;
-          return aDate - bDate;
-        }),
-        hasLive: streams.some(s => s.status === 'live'),
-      }));
+      const groups: SeriesGroup[] = Array.from(groupMap.entries()).map(([opponent, streams]) => {
+        const sorted = streams.sort((a, b) => {
+          const aD = a.scheduled_start ? new Date(a.scheduled_start).getTime() : Infinity;
+          const bD = b.scheduled_start ? new Date(b.scheduled_start).getTime() : Infinity;
+          return aD - bD;
+        });
+        return {
+          opponent,
+          streams: sorted,
+          hasLive: sorted.some(s => s.status === 'live'),
+          earliestDate: sorted[0]?.scheduled_start || null,
+        };
+      });
 
-      // Sort groups: those with live games first, then by earliest game date
       groups.sort((a, b) => {
         if (a.hasLive && !b.hasLive) return -1;
         if (!a.hasLive && b.hasLive) return 1;
-        const aFirst = a.streams[0]?.scheduled_start ? new Date(a.streams[0].scheduled_start).getTime() : Infinity;
-        const bFirst = b.streams[0]?.scheduled_start ? new Date(b.streams[0].scheduled_start).getTime() : Infinity;
-        return aFirst - bFirst;
+        const aT = a.earliestDate ? new Date(a.earliestDate).getTime() : Infinity;
+        const bT = b.earliestDate ? new Date(b.earliestDate).getTime() : Infinity;
+        return aT - bT;
       });
 
       setSeriesGroups(groups);
@@ -92,35 +93,50 @@ const RegularSeasonSeriesSection = () => {
     }
   };
 
-  const handleGameClick = (stream: LiveStream) => {
+  const handleSeriesClick = (group: SeriesGroup) => {
     if (!user) {
       navigate("/auth");
       return;
     }
     if (isAdmin || tier === "premium" || tier === "annual") {
-      navigate(`/metsxmfanzone`);
+      navigate("/metsxmfanzone");
     } else {
       navigate("/plans");
     }
   };
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "TBD";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const formatDateRange = (streams: LiveStream[]) => {
+    const dates = streams
+      .map(s => s.scheduled_start)
+      .filter(Boolean) as string[];
+    if (dates.length === 0) return "TBD";
+    const first = new Date(dates[0]);
+    const last = dates.length > 1 ? new Date(dates[dates.length - 1]) : null;
+    const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return last ? `${fmt(first)} – ${fmt(last)}` : fmt(first);
   };
 
-  const formatTime = (dateStr: string | null) => {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  const scroll = (direction: 'left' | 'right') => {
+    const container = document.getElementById('series-scroll');
+    if (container) {
+      const scrollAmount = container.clientWidth * 0.8;
+      const newPosition = direction === 'left'
+        ? Math.max(0, scrollPosition - scrollAmount)
+        : scrollPosition + scrollAmount;
+      container.scrollTo({ left: newPosition, behavior: 'smooth' });
+      setScrollPosition(newPosition);
+    }
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    setScrollPosition(e.currentTarget.scrollLeft);
   };
 
   if (loading) {
     return (
       <section className="py-6 sm:py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <div className="text-center text-muted-foreground text-sm">Loading regular season games...</div>
+          <div className="text-center text-muted-foreground text-sm">Loading regular season series...</div>
         </div>
       </section>
     );
@@ -129,12 +145,12 @@ const RegularSeasonSeriesSection = () => {
   if (seriesGroups.length === 0) return null;
 
   return (
-    <section className="py-6 sm:py-8">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
+    <section className="py-6 sm:py-8 relative">
+      <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Calendar className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
+            <h2 className="text-sm sm:text-xl md:text-2xl font-bold text-foreground">
               Regular Season Series
             </h2>
           </div>
@@ -146,82 +162,109 @@ const RegularSeasonSeriesSection = () => {
             <ChevronRight className="w-4 h-4" />
           </a>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="relative group/carousel">
+        {scrollPosition > 0 && (
+          <button
+            onClick={() => scroll('left')}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
+          >
+            <ChevronLeft className="w-8 h-8 text-foreground" />
+          </button>
+        )}
+
+        <div
+          id="series-scroll"
+          onScroll={handleScroll}
+          className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-4 sm:px-6 lg:px-8"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          <div className="flex-shrink-0 w-0 lg:w-[calc((100vw-1280px)/2)]" />
+
           {seriesGroups.map((group) => (
             <div
               key={group.opponent}
+              onClick={() => handleSeriesClick(group)}
               className={cn(
-                "rounded-xl border border-border bg-card/60 backdrop-blur-sm overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/5",
-                group.hasLive && "ring-1 ring-red-500/40"
+                "flex-shrink-0 w-[240px] sm:w-[280px] md:w-[320px] lg:w-[380px] cursor-pointer group/card relative",
               )}
             >
-              {/* Series header */}
-              <div className="px-4 py-3 bg-muted/30 border-b border-border flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-foreground">
-                    Mets vs {group.opponent}
-                  </span>
-                  <Badge variant="secondary" className="text-[10px] px-1.5">
-                    {group.streams.length} Game{group.streams.length > 1 ? "s" : ""}
-                  </Badge>
-                </div>
-                {group.hasLive && (
-                  <Badge className="bg-red-600/90 text-white text-[10px] px-1.5 py-0.5 animate-pulse">
-                    <Radio className="w-2.5 h-2.5 mr-1" />
-                    LIVE
-                  </Badge>
+              <div
+                className={cn(
+                  "relative overflow-hidden rounded-md sm:rounded-lg transition-all duration-300 group-hover/card:scale-105 group-hover/card:z-10 group-hover/card:shadow-2xl group-hover/card:shadow-primary/20",
+                  group.hasLive && "ring-1 ring-red-500/50"
                 )}
-              </div>
-
-              {/* Games in the series */}
-              <div className="divide-y divide-border/50">
-                {group.streams.map((stream) => (
-                  <div
-                    key={stream.id}
-                    onClick={() => handleGameClick(stream)}
-                    className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-muted/20 transition-colors"
-                  >
-                    {stream.thumbnail_url ? (
-                      <img
-                        src={stream.thumbnail_url}
-                        alt={stream.title}
-                        className="w-12 h-8 rounded object-cover flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-12 h-8 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                        <Radio className="w-3 h-3 text-muted-foreground" />
-                      </div>
-                    )}
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-foreground truncate">{stream.title}</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {formatDate(stream.scheduled_start)}
-                        {stream.scheduled_start && ` • ${formatTime(stream.scheduled_start)}`}
-                      </p>
+              >
+                <div className="aspect-video relative">
+                  {group.streams[0]?.thumbnail_url ? (
+                    <img
+                      src={group.streams[0].thumbnail_url}
+                      alt={`Mets vs ${group.opponent}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                      <Radio className="w-8 h-8 text-muted-foreground" />
                     </div>
+                  )}
 
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      {stream.status === 'live' ? (
-                        <Badge className="bg-red-600 text-white text-[9px] px-1.5 py-0">
-                          LIVE
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
-                          {stream.status === 'scheduled' ? 'UPCOMING' : 'ENDED'}
-                        </Badge>
-                      )}
-                      {!isAdmin && tier !== "premium" && tier !== "annual" && (
-                        <PremiumBadge size="sm" />
-                      )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent opacity-70 group-hover/card:opacity-85 transition-opacity" />
+
+                  {/* Play button on hover */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg transform scale-75 group-hover/card:scale-100 transition-transform">
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground ml-0.5" fill="currentColor" />
                     </div>
                   </div>
-                ))}
+
+                  {/* Top badges */}
+                  <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                    {!isAdmin && tier !== "premium" && tier !== "annual" && (
+                      <PremiumBadge size="sm" />
+                    )}
+                    {group.hasLive ? (
+                      <Badge className="text-[10px] sm:text-xs px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-red-600/90 text-white shadow-lg shadow-red-600/50">
+                        <Radio className="w-2.5 h-2.5 mr-1 animate-pulse" />
+                        LIVE
+                      </Badge>
+                    ) : (
+                      <Badge className="text-[10px] sm:text-xs px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-secondary/80 text-secondary-foreground">
+                        UPCOMING
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Game count badge */}
+                  <div className="absolute top-2 left-2">
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 backdrop-blur-sm bg-background/80 text-foreground">
+                      {group.streams.length} Game{group.streams.length > 1 ? "s" : ""}
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Bottom info */}
+                <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 bg-gradient-to-t from-background to-transparent">
+                  <p className="text-foreground text-xs sm:text-sm font-bold line-clamp-1">
+                    Mets vs {group.opponent}
+                  </p>
+                  <p className="text-muted-foreground text-[10px] sm:text-xs mt-0.5">
+                    {formatDateRange(group.streams)}
+                  </p>
+                </div>
               </div>
             </div>
           ))}
+
+          <div className="flex-shrink-0 w-0 lg:w-[calc((100vw-1280px)/2)]" />
         </div>
+
+        <button
+          onClick={() => scroll('right')}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
+        >
+          <ChevronRight className="w-8 h-8 text-foreground" />
+        </button>
       </div>
     </section>
   );
