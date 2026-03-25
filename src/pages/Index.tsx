@@ -19,7 +19,7 @@ const GameHighlightsSection = lazy(() => import("@/components/GameHighlightsSect
 const ReplayGamesSection = lazy(() => import("@/components/ReplayGamesSection"));
 const PlayerOfTheMonthSection = lazy(() => import("@/components/PlayerOfTheMonthSection"));
 const PlayersToWatch = lazy(() => import("@/components/PlayersToWatch"));
-
+const RegularSeasonSeriesSection = lazy(() => import("@/components/RegularSeasonSeriesSection"));
 
 const BlogSection = lazy(() => import("@/components/BlogSection"));
 const HomeLineupCard = lazy(() => import("@/components/HomeLineupCard"));
