@@ -192,6 +192,12 @@ const Index = () => {
           <LiveStreamsSection />
         </Suspense>
 
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <RegularSeasonSeriesSection />
+          </Suspense>
+        </LazySection>
+
         {/* Below-the-fold: only mount when scrolled into view */}
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
