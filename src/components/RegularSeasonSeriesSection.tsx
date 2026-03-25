@@ -27,10 +27,14 @@ interface SeriesGroup {
   earliestDate: string | null;
 }
 
-const extractOpponent = (title: string): string => {
-  const vsMatch = title.match(/(?:mets|nym)\s*(?:vs\.?|@|at)\s*(.+)/i);
-  if (vsMatch) return vsMatch[1].trim().split(/\s*[-–—|]/)[0].trim();
-  return title;
+const extractOpponent = (title: string): string | null => {
+  const normalizedTitle = title
+    .replace(/\s+\d{1,2}\/\d{1,2}\/\d{2,4}$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const matchup = normalizedTitle.match(/(?:mets|nym)\s*(?:vs\.?|@|at)\s+(.+)$/i);
+  return matchup ? matchup[1].trim() : null;
 };
 
 const RegularSeasonSeriesSection = () => {
@@ -51,28 +55,40 @@ const RegularSeasonSeriesSection = () => {
         .from("live_streams")
         .select("*")
         .eq("published", true)
-        .order("scheduled_start", { ascending: true });
+        .order("scheduled_start", { ascending: true, nullsFirst: false });
 
       if (error) throw error;
 
-      const games = (data || []) as LiveStream[];
+      const games = ((data || []) as LiveStream[]).filter((game) => {
+        const isRegularSeasonAssigned = game.assigned_pages?.includes("regular-season-games");
+        const hasMatchupTitle = extractOpponent(game.title) !== null;
+        return isRegularSeasonAssigned || hasMatchupTitle;
+      });
+
       const groupMap = new Map<string, LiveStream[]>();
+
       for (const game of games) {
         const opponent = extractOpponent(game.title);
-        if (!groupMap.has(opponent)) groupMap.set(opponent, []);
+        if (!opponent) continue;
+
+        if (!groupMap.has(opponent)) {
+          groupMap.set(opponent, []);
+        }
+
         groupMap.get(opponent)!.push(game);
       }
 
       const groups: SeriesGroup[] = Array.from(groupMap.entries()).map(([opponent, streams]) => {
-        const sorted = streams.sort((a, b) => {
+        const sorted = [...streams].sort((a, b) => {
           const aD = a.scheduled_start ? new Date(a.scheduled_start).getTime() : Infinity;
           const bD = b.scheduled_start ? new Date(b.scheduled_start).getTime() : Infinity;
           return aD - bD;
         });
+
         return {
           opponent,
           streams: sorted,
-          hasLive: sorted.some(s => s.status === 'live'),
+          hasLive: sorted.some((stream) => stream.status === "live"),
           earliestDate: sorted[0]?.scheduled_start || null,
         };
       });
@@ -80,6 +96,7 @@ const RegularSeasonSeriesSection = () => {
       groups.sort((a, b) => {
         if (a.hasLive && !b.hasLive) return -1;
         if (!a.hasLive && b.hasLive) return 1;
+
         const aT = a.earliestDate ? new Date(a.earliestDate).getTime() : Infinity;
         const bT = b.earliestDate ? new Date(b.earliestDate).getTime() : Infinity;
         return aT - bT;
@@ -93,11 +110,12 @@ const RegularSeasonSeriesSection = () => {
     }
   };
 
-  const handleSeriesClick = (group: SeriesGroup) => {
+  const handleSeriesClick = () => {
     if (!user) {
       navigate("/auth");
       return;
     }
+
     if (isAdmin || tier === "premium" || tier === "annual") {
       navigate("/metsxmfanzone");
     } else {
@@ -107,25 +125,31 @@ const RegularSeasonSeriesSection = () => {
 
   const formatDateRange = (streams: LiveStream[]) => {
     const dates = streams
-      .map(s => s.scheduled_start)
+      .map((stream) => stream.scheduled_start)
       .filter(Boolean) as string[];
+
     if (dates.length === 0) return "TBD";
+
     const first = new Date(dates[0]);
     const last = dates.length > 1 ? new Date(dates[dates.length - 1]) : null;
-    const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    return last ? `${fmt(first)} – ${fmt(last)}` : fmt(first);
+    const format = (date: Date) =>
+      date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    return last ? `${format(first)} – ${format(last)}` : format(first);
   };
 
-  const scroll = (direction: 'left' | 'right') => {
-    const container = document.getElementById('series-scroll');
-    if (container) {
-      const scrollAmount = container.clientWidth * 0.8;
-      const newPosition = direction === 'left'
+  const scroll = (direction: "left" | "right") => {
+    const container = document.getElementById("series-scroll");
+    if (!container) return;
+
+    const scrollAmount = container.clientWidth * 0.8;
+    const newPosition =
+      direction === "left"
         ? Math.max(0, scrollPosition - scrollAmount)
         : scrollPosition + scrollAmount;
-      container.scrollTo({ left: newPosition, behavior: 'smooth' });
-      setScrollPosition(newPosition);
-    }
+
+    container.scrollTo({ left: newPosition, behavior: "smooth" });
+    setScrollPosition(newPosition);
   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
@@ -167,7 +191,7 @@ const RegularSeasonSeriesSection = () => {
       <div className="relative group/carousel">
         {scrollPosition > 0 && (
           <button
-            onClick={() => scroll('left')}
+            onClick={() => scroll("left")}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
           >
             <ChevronLeft className="w-8 h-8 text-foreground" />
@@ -178,14 +202,14 @@ const RegularSeasonSeriesSection = () => {
           id="series-scroll"
           onScroll={handleScroll}
           className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-4 sm:px-6 lg:px-8"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           <div className="flex-shrink-0 w-0 lg:w-[calc((100vw-1280px)/2)]" />
 
           {seriesGroups.map((group) => (
             <div
               key={group.opponent}
-              onClick={() => handleSeriesClick(group)}
+              onClick={handleSeriesClick}
               className="flex-shrink-0 w-[240px] sm:w-[280px] md:w-[320px] lg:w-[380px] cursor-pointer group/card relative"
             >
               <div
@@ -209,14 +233,12 @@ const RegularSeasonSeriesSection = () => {
 
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent opacity-70 group-hover/card:opacity-85 transition-opacity" />
 
-                  {/* Play button on hover */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg transform scale-75 group-hover/card:scale-100 transition-transform">
                       <Play className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground ml-0.5" fill="currentColor" />
                     </div>
                   </div>
 
-                  {/* Top badges */}
                   <div className="absolute top-2 right-2 flex items-center gap-1.5">
                     {!isAdmin && tier !== "premium" && tier !== "annual" && (
                       <PremiumBadge size="sm" />
@@ -233,7 +255,6 @@ const RegularSeasonSeriesSection = () => {
                     )}
                   </div>
 
-                  {/* Game count badge */}
                   <div className="absolute top-2 left-2">
                     <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5 backdrop-blur-sm bg-background/80 text-foreground">
                       {group.streams.length} Game{group.streams.length > 1 ? "s" : ""}
@@ -241,7 +262,6 @@ const RegularSeasonSeriesSection = () => {
                   </div>
                 </div>
 
-                {/* Bottom info */}
                 <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 bg-gradient-to-t from-background to-transparent">
                   <p className="text-foreground text-xs sm:text-sm font-bold line-clamp-1">
                     Mets vs {group.opponent}
@@ -258,7 +278,7 @@ const RegularSeasonSeriesSection = () => {
         </div>
 
         <button
-          onClick={() => scroll('right')}
+          onClick={() => scroll("right")}
           className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
         >
           <ChevronRight className="w-8 h-8 text-foreground" />
