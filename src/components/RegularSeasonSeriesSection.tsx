@@ -186,7 +186,7 @@ const RegularSeasonSeriesSection = () => {
             <div
               key={group.opponent}
               onClick={() => handleSeriesClick(group)}
-              className="flex-shrink-0 w-[110px] sm:w-[200px] md:w-[250px] lg:w-[300px] cursor-pointer group/card relative"
+              className="flex-shrink-0 w-[calc(33.333%-8px)] min-w-[120px] sm:min-w-[180px] md:min-w-[220px] lg:min-w-[280px] cursor-pointer group/card relative"
             >
               <div
                 className={cn(
