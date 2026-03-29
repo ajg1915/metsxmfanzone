@@ -1,5 +1,5 @@
 import SEOHead from "@/components/SEOHead";
-import { supabase } from "@/integrations/supabase/client";
+
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,20 +14,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import CheckoutModal from "@/components/CheckoutModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
-import { AlertTriangle } from "lucide-react";
 
 const Plans = () => {
   const navigate = useNavigate();
@@ -36,7 +25,6 @@ const Plans = () => {
   const { tier, loading: subscriptionLoading } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [freeConfirmOpen, setFreeConfirmOpen] = useState(false);
   
   // Check if user must select a plan (coming from signup)
   const pendingPlan = localStorage.getItem("pending_signup_plan");
@@ -63,38 +51,9 @@ const Plans = () => {
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
-    
-    if (planId === "free") {
-      // Show confirmation dialog for free plan
-      setFreeConfirmOpen(true);
-      return;
-    }
-    
     setCheckoutOpen(true);
   };
 
-  const handleConfirmFreePlan = async () => {
-    setFreeConfirmOpen(false);
-    localStorage.removeItem("pending_signup_plan");
-    setHasPlanSelected(true);
-    
-    // Send welcome email for new users (especially Google OAuth)
-    if (user) {
-      try {
-        await supabase.functions.invoke('send-welcome-email', {
-          body: {
-            email: user.email,
-            name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Fan',
-          },
-        });
-      } catch (err) {
-        console.error("Welcome email error (non-blocking):", err);
-      }
-    }
-    
-    navigate("/");
-  };
-  
   const handleCheckoutClose = (open: boolean) => {
     setCheckoutOpen(open);
     
@@ -108,23 +67,7 @@ const Plans = () => {
     }
   };
 
-  const now = new Date();
-  const freeExpired = now >= new Date("2026-03-26T00:00:00");
-
   const allPlans = [
-    ...(!freeExpired ? [{
-      id: "free",
-      name: "Free (Spring Training)",
-      price: "$0",
-      priceValue: 0,
-      period: "Spring Training",
-      description: "Free access through end of Spring Training",
-      trialNote: "Free access expires March 26, 2026. Upgrade to keep watching!",
-      features: ["Limited highlights access", "Community forum access", "Game schedules", "Free Spring Training Live"],
-      notIncluded: ["Live streaming", "Full game replays", "Exclusive content", "Ad-free experience"],
-      cta: "Start Free (Spring Training)",
-      popular: false,
-    }] : []),
     {
       id: "premium",
       name: "Premium",
@@ -175,9 +118,9 @@ const Plans = () => {
 
   const faqs = [
     {
-      question: "What's the difference between Free and Premium plans?",
+      question: "What's the difference between Premium and Annual plans?",
       answer:
-        "Free plan gives you basic access to highlights and community features. Premium unlocks all live streams, full game replays, HD quality, ad-free experience, and exclusive content.",
+        "Both plans give you full access to all live streams, replays, HD quality, ad-free experience, and exclusive content. The Annual plan saves you $20/year compared to monthly billing and includes priority support, early access, and VIP perks.",
     },
     {
       question: "Can I switch between monthly and yearly billing?",
@@ -200,11 +143,6 @@ const Plans = () => {
         "We offer a 7-day money-back guarantee for first-time subscribers. This trial applies only to the regular season (not Spring Training or off-season). If you're not satisfied, contact support within 7 days for a full refund.",
     },
     {
-      question: "How long does the Free plan last?",
-      answer:
-        "The Free plan is available for 30 days during February and March only. After that, you'll need to upgrade to a paid plan (Premium or Annual) to continue accessing content.",
-    },
-    {
       question: "Can I watch on multiple devices?",
       answer:
         "Premium and Annual plans allow streaming on up to 2 devices simultaneously. Accounts found accessing from more than 2 devices may be restricted.",
@@ -215,7 +153,7 @@ const Plans = () => {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Mets Fan Pricing - Premium Access"
-        description="Choose your MetsXMFanZone membership. Get unlimited access to live Mets streams, game replays, exclusive content, and more. Start your free trial today."
+        description="Choose your MetsXMFanZone membership. Get unlimited access to live Mets streams, game replays, exclusive content, and more."
         keywords="Mets subscription, Mets premium, baseball streaming pricing, Mets fan membership, live stream subscription"
         canonical="https://www.metsxmfanzone.com/plans"
       />
@@ -229,8 +167,8 @@ const Plans = () => {
                 <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
                   <h3 className="font-semibold text-foreground">Please Select a Plan</h3>
-                  <p className="text-sm text-muted-foreground">
-                    To complete your account setup, please select a subscription plan below. You can choose the Free plan if you want basic access, or upgrade to Premium for full features.
+                   <p className="text-sm text-muted-foreground">
+                    To complete your account setup, please select a subscription plan below.
                   </p>
                 </div>
               </div>
@@ -324,34 +262,6 @@ const Plans = () => {
       </main>
       {!mustSelectPlan && <Footer />}
 
-      {/* Free Plan Confirmation Dialog */}
-      <AlertDialog open={freeConfirmOpen} onOpenChange={setFreeConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-[hsl(var(--mets-orange))]/10 flex items-center justify-center mb-2">
-              <AlertTriangle className="w-6 h-6 text-[hsl(var(--mets-orange))]" />
-            </div>
-            <AlertDialogTitle className="text-center">Free (Spring Training) Plan</AlertDialogTitle>
-            <AlertDialogDescription className="text-center space-y-3">
-              <p>
-                You will <strong className="text-foreground">not be charged</strong> for the Free Spring Training plan.
-              </p>
-              <p>
-                However, this plan <strong className="text-foreground">expires on March 26, 2026</strong> when Spring Training ends. After that date, you must select a paid plan (Premium or Annual) or your account will be <strong className="text-foreground">deactivated</strong>.
-              </p>
-              <p className="text-xs">
-                By confirming, you acknowledge that continued access after Spring Training requires a paid subscription.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="sm:justify-center gap-2">
-            <AlertDialogCancel>Go Back</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmFreePlan} className="bg-[hsl(var(--mets-orange))] hover:bg-[hsl(var(--mets-orange))]/90">
-              I Understand, Activate Free Plan
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Checkout Modal */}
       <CheckoutModal

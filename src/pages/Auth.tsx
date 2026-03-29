@@ -106,7 +106,7 @@ const signupSchema = z.object({
   agreeToTerms: z.literal(true, {
     errorMap: () => ({ message: "You must agree to the Terms & Privacy Policy" }),
   }),
-  selectedPlan: z.enum(["free", "premium", "annual"], {
+  selectedPlan: z.enum(["premium", "annual"], {
     errorMap: () => ({ message: "Please select a plan" }),
   }),
   paymentMethod: z.enum(["paypal"], {
@@ -554,7 +554,7 @@ const Auth = () => {
         phoneNumber, 
         smsOptIn,
         agreeToTerms: agreeToTerms as true,
-        selectedPlan: selectedPlan as "free" | "premium" | "annual",
+        selectedPlan: selectedPlan as "premium" | "annual",
         paymentMethod: paymentMethod as "paypal",
       });
       setLoading(true);
@@ -1263,7 +1263,6 @@ const Auth = () => {
                       <SelectValue placeholder="Choose a plan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="free">Free (Spring Training) - $0</SelectItem>
                       <SelectItem value="premium">Premium - $9.99/month</SelectItem>
                       <SelectItem value="annual">Annual - $129.99/year (Best Value)</SelectItem>
                     </SelectContent>
@@ -1279,7 +1278,7 @@ const Auth = () => {
                     <span className="text-sm text-foreground font-medium">PayPal</span>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    All payments are processed securely via PayPal. Free plans won't be charged.
+                    All payments are processed securely via PayPal.
                   </p>
                 </div>
                 <div className="flex items-start space-x-2">
