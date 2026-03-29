@@ -118,9 +118,9 @@ const Plans = () => {
 
   const faqs = [
     {
-      question: "What's the difference between Free and Premium plans?",
+      question: "What's the difference between Premium and Annual plans?",
       answer:
-        "Free plan gives you basic access to highlights and community features. Premium unlocks all live streams, full game replays, HD quality, ad-free experience, and exclusive content.",
+        "Both plans give you full access to all live streams, replays, HD quality, ad-free experience, and exclusive content. The Annual plan saves you $20/year compared to monthly billing and includes priority support, early access, and VIP perks.",
     },
     {
       question: "Can I switch between monthly and yearly billing?",
@@ -143,11 +143,6 @@ const Plans = () => {
         "We offer a 7-day money-back guarantee for first-time subscribers. This trial applies only to the regular season (not Spring Training or off-season). If you're not satisfied, contact support within 7 days for a full refund.",
     },
     {
-      question: "How long does the Free plan last?",
-      answer:
-        "The Free plan is available for 30 days during February and March only. After that, you'll need to upgrade to a paid plan (Premium or Annual) to continue accessing content.",
-    },
-    {
       question: "Can I watch on multiple devices?",
       answer:
         "Premium and Annual plans allow streaming on up to 2 devices simultaneously. Accounts found accessing from more than 2 devices may be restricted.",
@@ -158,7 +153,7 @@ const Plans = () => {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Mets Fan Pricing - Premium Access"
-        description="Choose your MetsXMFanZone membership. Get unlimited access to live Mets streams, game replays, exclusive content, and more. Start your free trial today."
+        description="Choose your MetsXMFanZone membership. Get unlimited access to live Mets streams, game replays, exclusive content, and more."
         keywords="Mets subscription, Mets premium, baseball streaming pricing, Mets fan membership, live stream subscription"
         canonical="https://www.metsxmfanzone.com/plans"
       />
@@ -172,8 +167,8 @@ const Plans = () => {
                 <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div>
                   <h3 className="font-semibold text-foreground">Please Select a Plan</h3>
-                  <p className="text-sm text-muted-foreground">
-                    To complete your account setup, please select a subscription plan below. You can choose the Free plan if you want basic access, or upgrade to Premium for full features.
+                   <p className="text-sm text-muted-foreground">
+                    To complete your account setup, please select a subscription plan below.
                   </p>
                 </div>
               </div>
