@@ -36,7 +36,6 @@ const Plans = () => {
   const { tier, loading: subscriptionLoading } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [freeConfirmOpen, setFreeConfirmOpen] = useState(false);
   
   // Check if user must select a plan (coming from signup)
   const pendingPlan = localStorage.getItem("pending_signup_plan");
@@ -63,38 +62,9 @@ const Plans = () => {
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
-    
-    if (planId === "free") {
-      // Show confirmation dialog for free plan
-      setFreeConfirmOpen(true);
-      return;
-    }
-    
     setCheckoutOpen(true);
   };
 
-  const handleConfirmFreePlan = async () => {
-    setFreeConfirmOpen(false);
-    localStorage.removeItem("pending_signup_plan");
-    setHasPlanSelected(true);
-    
-    // Send welcome email for new users (especially Google OAuth)
-    if (user) {
-      try {
-        await supabase.functions.invoke('send-welcome-email', {
-          body: {
-            email: user.email,
-            name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Fan',
-          },
-        });
-      } catch (err) {
-        console.error("Welcome email error (non-blocking):", err);
-      }
-    }
-    
-    navigate("/");
-  };
-  
   const handleCheckoutClose = (open: boolean) => {
     setCheckoutOpen(open);
     
