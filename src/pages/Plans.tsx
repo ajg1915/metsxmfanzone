@@ -278,34 +278,6 @@ const Plans = () => {
       </main>
       {!mustSelectPlan && <Footer />}
 
-      {/* Free Plan Confirmation Dialog */}
-      <AlertDialog open={freeConfirmOpen} onOpenChange={setFreeConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="mx-auto w-12 h-12 rounded-full bg-[hsl(var(--mets-orange))]/10 flex items-center justify-center mb-2">
-              <AlertTriangle className="w-6 h-6 text-[hsl(var(--mets-orange))]" />
-            </div>
-            <AlertDialogTitle className="text-center">Free (Spring Training) Plan</AlertDialogTitle>
-            <AlertDialogDescription className="text-center space-y-3">
-              <p>
-                You will <strong className="text-foreground">not be charged</strong> for the Free Spring Training plan.
-              </p>
-              <p>
-                However, this plan <strong className="text-foreground">expires on March 26, 2026</strong> when Spring Training ends. After that date, you must select a paid plan (Premium or Annual) or your account will be <strong className="text-foreground">deactivated</strong>.
-              </p>
-              <p className="text-xs">
-                By confirming, you acknowledge that continued access after Spring Training requires a paid subscription.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="sm:justify-center gap-2">
-            <AlertDialogCancel>Go Back</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmFreePlan} className="bg-[hsl(var(--mets-orange))] hover:bg-[hsl(var(--mets-orange))]/90">
-              I Understand, Activate Free Plan
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Checkout Modal */}
       <CheckoutModal
