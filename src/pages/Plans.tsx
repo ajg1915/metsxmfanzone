@@ -1,5 +1,5 @@
 import SEOHead from "@/components/SEOHead";
-import { supabase } from "@/integrations/supabase/client";
+
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,20 +14,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import CheckoutModal from "@/components/CheckoutModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
-import { AlertTriangle } from "lucide-react";
 
 const Plans = () => {
   const navigate = useNavigate();
