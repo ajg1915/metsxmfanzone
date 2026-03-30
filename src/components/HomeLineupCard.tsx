@@ -346,7 +346,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
 
                     {/* Anthony's Predictions */}
                     {hasPredictions && (
-                      <div>
+                      <div className="relative">
                         <div className="flex items-center gap-1.5 mb-3">
                           <div className="w-1 h-4 rounded-full bg-secondary" />
                           <p className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground flex items-center gap-1">
@@ -354,24 +354,46 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                             Anthony's Predictions
                           </p>
                         </div>
-                        <div className="space-y-1.5">
-                          {predictions!.slice(0, 3).map((pred: any) => (
-                            <div key={pred.id} className="flex items-center gap-2 p-2 rounded-xl bg-secondary/5 border border-secondary/15 hover:border-secondary/30 transition-all">
-                              <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-[11px] truncate">{pred.player_name}</p>
-                                <p className="text-[9px] text-muted-foreground truncate">{pred.description}</p>
-                              </div>
-                              {pred.confidence && (
-                                <span className="text-[9px] font-bold text-secondary bg-secondary/10 px-1.5 py-0.5 rounded-md shrink-0">
-                                  {pred.confidence}%
-                                </span>
-                              )}
+                        {!user ? (
+                          <div className="relative">
+                            <div className="space-y-1.5 blur-sm pointer-events-none select-none">
+                              {predictions!.slice(0, 3).map((pred: any) => (
+                                <div key={pred.id} className="flex items-center gap-2 p-2 rounded-xl bg-secondary/5 border border-secondary/15">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-[11px] truncate">{pred.player_name}</p>
+                                    <p className="text-[9px] text-muted-foreground truncate">{pred.description}</p>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                          <Link to="/mets-lineup-card" className="flex items-center justify-center gap-1 text-[10px] text-secondary hover:text-secondary/80 font-bold pt-1 transition-colors">
-                            View All Predictions <ArrowRight className="w-3 h-3" />
-                          </Link>
-                        </div>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px] rounded-xl">
+                              <Lock className="w-6 h-6 text-secondary mb-1.5" />
+                              <p className="text-[11px] font-bold text-foreground">Sign in to unlock</p>
+                              <Link to="/auth" className="text-[10px] text-secondary hover:text-secondary/80 font-semibold mt-1 transition-colors">
+                                Log In →
+                              </Link>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {predictions!.slice(0, 3).map((pred: any) => (
+                              <div key={pred.id} className="flex items-center gap-2 p-2 rounded-xl bg-secondary/5 border border-secondary/15 hover:border-secondary/30 transition-all">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-semibold text-[11px] truncate">{pred.player_name}</p>
+                                  <p className="text-[9px] text-muted-foreground truncate">{pred.description}</p>
+                                </div>
+                                {pred.confidence && (
+                                  <span className="text-[9px] font-bold text-secondary bg-secondary/10 px-1.5 py-0.5 rounded-md shrink-0">
+                                    {pred.confidence}%
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                            <Link to="/mets-lineup-card" className="flex items-center justify-center gap-1 text-[10px] text-secondary hover:text-secondary/80 font-bold pt-1 transition-colors">
+                              View All Predictions <ArrowRight className="w-3 h-3" />
+                            </Link>
+                          </div>
+                        )}
                       </div>
                     )}
 
