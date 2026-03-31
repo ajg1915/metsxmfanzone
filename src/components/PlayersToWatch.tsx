@@ -1,12 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Flame, Snowflake, TrendingUp, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Flame, Snowflake, TrendingUp, RefreshCw, CheckCircle2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useState } from "react";
 import GlassCard from "@/components/GlassCard";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
+import PremiumBadge from "@/components/PremiumBadge";
+import { Link } from "react-router-dom";
 
 interface PlayerPrediction {
   id: string;
@@ -33,6 +37,9 @@ interface PlayerPrediction {
 
 const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const { user } = useAuth();
+  const { isPremium, isAdmin } = useSubscription();
+  const canViewParlays = isAdmin || isPremium;
 
   const { data: predictions, isLoading, refetch } = useQuery({
     queryKey: ["daily-player-predictions", lineupGameDate],
@@ -96,6 +103,7 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
                 <h2 className="text-sm sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary via-orange-400 to-primary bg-clip-text text-transparent">
                   Anthony's Predictions
                 </h2>
+              {!canViewParlays && <PremiumBadge size="xs" noGlow />}
                 <p className="text-[10px] sm:text-sm text-muted-foreground">
                   Daily parlay picks & stat projections
                 </p>
@@ -140,7 +148,7 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
           {!noGameToday && predictions && predictions.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {predictions.map((player) => (
-                <ParlayCard key={player.id} player={player} isPitcher={isPitcherPlayer(player)} isCloser={isCloser(player)} isStarter={isStarter(player)} />
+                <ParlayCard key={player.id} player={player} isPitcher={isPitcherPlayer(player)} isCloser={isCloser(player)} isStarter={isStarter(player)} canFlip={canViewParlays} />
               ))}
             </div>
           )}
@@ -160,10 +168,12 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
 
 // Individual Parlay Card Component
 const ParlayCard = ({ player, isPitcher, isCloser, isStarter }: { 
+const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: { 
   player: PlayerPrediction; 
   isPitcher: boolean;
   isCloser: boolean;
   isStarter: boolean;
+  canFlip: boolean;
 }) => {
   const [flipped, setFlipped] = useState(false);
   const roleLabel = isCloser ? "CLOSER" : isStarter ? "STARTER" : "HITTER";
@@ -189,7 +199,7 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter }: {
   return (
     <div
       className="relative h-[340px] cursor-pointer perspective-1000"
-      onClick={() => setFlipped((f) => !f)}
+      onClick={() => canFlip && setFlipped((f) => !f)}
     >
       <div className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${flipped ? "rotate-y-180" : ""}`}>
         {/* FRONT */}
@@ -298,7 +308,19 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter }: {
 
             {/* Tap hint */}
             <div className="mt-auto px-4 pb-3 text-center">
-              <span className="text-xs text-muted-foreground">Tap for parlay breakdown</span>
+              {canFlip ? (
+                <span className="text-xs text-muted-foreground">Tap for parlay breakdown</span>
+              ) : (
+                <div className="flex flex-col items-center gap-1">
+                  <div className="flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-secondary" />
+                    <span className="text-xs font-semibold text-secondary">PRO Members Only</span>
+                  </div>
+                  <Link to="/pricing" className="text-[10px] text-primary hover:underline font-medium" onClick={(e) => e.stopPropagation()}>
+                    Upgrade to unlock parlays →
+                  </Link>
+                </div>
+              )}
             </div>
 
             {/* Bottom bar */}
