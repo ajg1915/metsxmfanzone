@@ -21,7 +21,7 @@ const socials = [
     name: "X (Twitter)",
     icon: Twitter,
     url: "https://twitter.com/metsxmfanzone",
-    color: "from-foreground to-foreground/80",
+    color: "from-black to-black",
     handle: "@metsxmfanzone",
   },
   {
