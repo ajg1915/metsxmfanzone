@@ -208,7 +208,7 @@ const Navigation = () => {
               onClick={() => handleProtectedNavigation("/community")}
               className="text-foreground hover:text-primary transition-colors"
             >
-              Community
+              Mets Connect
             </button>
 
             <button
