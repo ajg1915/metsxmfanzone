@@ -228,7 +228,31 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const clearPendingSignupPlan = useCallback(() => {
+    localStorage.removeItem("pending_signup_plan");
+    localStorage.removeItem("pending_signup_payment_method");
+  }, []);
+
+  const persistPendingPaidSignup = useCallback(() => {
+    if (selectedPlan === "premium" || selectedPlan === "annual") {
+      localStorage.setItem("pending_signup_plan", selectedPlan);
+      localStorage.setItem("pending_signup_payment_method", paymentMethod);
+      return true;
+    }
+
+    return false;
+  }, [paymentMethod, selectedPlan]);
+
   const handleGoogleSignIn = async () => {
+    if (!isLogin && !persistPendingPaidSignup()) {
+      toast({
+        title: "Paid plan required",
+        description: "Select Premium or Annual before continuing with Google.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setGoogleLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
@@ -253,6 +277,15 @@ const Auth = () => {
   };
 
   const handleAppleSignIn = async () => {
+    if (!isLogin && !persistPendingPaidSignup()) {
+      toast({
+        title: "Paid plan required",
+        description: "Select Premium or Annual before continuing with Apple.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setAppleLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("apple", {
@@ -470,10 +503,13 @@ const Auth = () => {
         // Check if user has a subscription
         const { data: subscriptions } = await supabase
           .rpc("get_user_subscription_safe", { p_user_id: authUser.id });
-        
-        const activeSubscription = subscriptions?.find((s: any) => s.status === "active");
-        
-        if (!activeSubscription) {
+
+        const activePaidSubscription = subscriptions?.find(
+          (s: any) =>
+            s.status === "active" && (s.plan_type === "premium" || s.plan_type === "annual")
+        );
+
+        if (!activePaidSubscription) {
           // New user or no plan - send to pricing
           // Mark email as verified for Google OAuth users (they verified via Google)
           const provider = authUser.app_metadata?.provider;
@@ -485,12 +521,13 @@ const Auth = () => {
           }
           navigate("/pricing?required=true", { replace: true });
         } else {
+          clearPendingSignupPlan();
           navigate("/", { replace: true });
         }
       };
       checkAndRedirect();
     }
-  }, [authUser, authLoading, navigate, isRememberedLogin, isResettingPassword]);
+  }, [authUser, authLoading, clearPendingSignupPlan, navigate, isRememberedLogin, isResettingPassword, showPinSetup]);
 
 
 
@@ -630,7 +667,7 @@ const Auth = () => {
           console.error("Error sending confirmation email:", err);
         }
 
-        // Store selected plan and payment method in localStorage for after confirmation
+        // Store selected paid plan and payment method in localStorage for after confirmation
         localStorage.setItem("pending_signup_plan", validated.selectedPlan);
         localStorage.setItem("pending_signup_payment_method", validated.paymentMethod);
         
@@ -906,6 +943,7 @@ const Auth = () => {
       const subscription = subscriptions?.find(s => s.status === "active");
 
       if (subscription && (subscription.plan_type === "premium" || subscription.plan_type === "annual")) {
+        clearPendingSignupPlan();
         navigate("/", { replace: true });
       } else {
         navigate("/pricing?required=true", { replace: true });
@@ -1187,7 +1225,7 @@ const Auth = () => {
             {!isLogin && !isForgotPassword && !isResettingPassword && (
               <>
                 <div className="bg-muted/50 border border-border rounded-md p-3 text-sm text-muted-foreground">
-                  <p>Your account will be created instantly. Welcome emails may be delayed but this won't affect your access.</p>
+                  <p>All signups require a paid membership. Choose Premium or Annual to continue.</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name</Label>
@@ -1268,7 +1306,7 @@ const Auth = () => {
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    You can upgrade or change your plan anytime after signup.
+                    Google, Apple, and email signups all require a paid plan selection first.
                   </p>
                 </div>
                 <div className="space-y-2">
