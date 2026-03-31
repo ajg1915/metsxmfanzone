@@ -190,8 +190,59 @@ const LiveStreamsSection = () => {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
+  // Auto-check stream statuses based on scheduled times
+  const runAutoStatusCheck = useCallback(async () => {
+    try {
+      const now = new Date().toISOString();
+      let changed = false;
+
+      const { data: toGoLive } = await supabase
+        .from("live_streams")
+        .select("id, title")
+        .eq("status", "scheduled")
+        .eq("published", true)
+        .lte("scheduled_start", now)
+        .not("scheduled_start", "is", null);
+
+      if (toGoLive && toGoLive.length > 0) {
+        for (const stream of toGoLive) {
+          await supabase
+            .from("live_streams")
+            .update({ status: "live", actual_start: now })
+            .eq("id", stream.id);
+        }
+        changed = true;
+      }
+
+      const { data: toEnd } = await supabase
+        .from("live_streams")
+        .select("id")
+        .eq("status", "live")
+        .lte("scheduled_end", now)
+        .not("scheduled_end", "is", null);
+
+      if (toEnd && toEnd.length > 0) {
+        for (const stream of toEnd) {
+          await supabase
+            .from("live_streams")
+            .update({ status: "ended", actual_end: now })
+            .eq("id", stream.id);
+        }
+        changed = true;
+      }
+
+      if (changed) fetchStreams();
+    } catch (err) {
+      console.error("Auto status check error:", err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchStreams();
+    runAutoStatusCheck();
+
+    // Check every 60 seconds
+    const interval = setInterval(runAutoStatusCheck, 60000);
 
     const channel = supabase.channel('live-streams-changes').on('postgres_changes', {
       event: '*',
@@ -201,7 +252,10 @@ const LiveStreamsSection = () => {
       if (!adminMode) fetchStreams();
     }).subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { 
+      clearInterval(interval);
+      supabase.removeChannel(channel); 
+    };
   }, [adminMode]);
 
   const fetchStreams = async () => {
