@@ -32,7 +32,7 @@ const socials = [
   },
   {
     name: "TikTok",
-    icon: Video,
+    icon: TikTokIcon,
     url: "https://www.tiktok.com/@metsxmfanzone",
     color: "from-black to-black",
     handle: "@metsxmfanzone",
