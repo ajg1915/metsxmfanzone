@@ -200,6 +200,15 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: {
       className="relative h-[340px] cursor-pointer perspective-1000"
       onClick={() => canFlip && setFlipped((f) => !f)}
     >
+      {!canFlip && (
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-2xl bg-background/60 backdrop-blur-sm">
+          <Lock className="w-8 h-8 text-secondary mb-2" />
+          <span className="text-sm font-bold text-secondary">PRO Only</span>
+          <Link to="/pricing" className="text-xs text-primary hover:underline mt-1" onClick={(e) => e.stopPropagation()}>
+            Upgrade →
+          </Link>
+        </div>
+      )}
       <div className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${flipped ? "rotate-y-180" : ""}`}>
         {/* FRONT */}
         <div className="absolute inset-0 backface-hidden">
@@ -305,20 +314,9 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: {
               </div>
             )}
 
-            {/* Tap hint */}
             <div className="mt-auto px-4 pb-3 text-center">
-              {canFlip ? (
+              {canFlip && (
                 <span className="text-xs text-muted-foreground">Tap for parlay breakdown</span>
-              ) : (
-                <div className="flex flex-col items-center gap-1">
-                  <div className="flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-secondary" />
-                    <span className="text-xs font-semibold text-secondary">PRO Members Only</span>
-                  </div>
-                  <Link to="/pricing" className="text-[10px] text-primary hover:underline font-medium" onClick={(e) => e.stopPropagation()}>
-                    Upgrade to unlock parlays →
-                  </Link>
-                </div>
               )}
             </div>
 
