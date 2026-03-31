@@ -7,8 +7,46 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Send, MessageCircle } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const FAQs = () => {
+  const [contactForm, setContactForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contactForm.name.trim() || !contactForm.email.trim() || !contactForm.message.trim()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.from("contact_submissions").insert({
+        name: contactForm.name.trim(),
+        email: contactForm.email.trim(),
+        subject: contactForm.subject.trim() || null,
+        message: contactForm.message.trim(),
+        user_id: user?.id || null,
+      } as any);
+      if (error) throw error;
+      toast.success("Your question has been submitted! We'll get back to you soon.");
+      setContactForm({ name: "", email: "", subject: "", message: "" });
+    } catch {
+      toast.error("Failed to submit. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const faqs = [
     {
       question: "What is MetsXMFanZone?",
@@ -104,6 +142,72 @@ const FAQs = () => {
               ))}
             </Accordion>
           </div>
+
+          {/* Contact Form Section */}
+          <Card className="mt-12 border-primary/20">
+            <CardHeader className="text-center">
+              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
+                <MessageCircle className="w-7 h-7 text-primary" />
+              </div>
+              <CardTitle className="text-xl sm:text-2xl text-primary">Still Have Questions?</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">Send us a message and we'll get back to you as soon as possible.</p>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleContactSubmit} className="space-y-4 max-w-lg mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="contact-name">Name *</Label>
+                    <Input
+                      id="contact-name"
+                      placeholder="Your name"
+                      value={contactForm.name}
+                      onChange={(e) => setContactForm(prev => ({ ...prev, name: e.target.value }))}
+                      maxLength={100}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="contact-email">Email *</Label>
+                    <Input
+                      id="contact-email"
+                      type="email"
+                      placeholder="your@email.com"
+                      value={contactForm.email}
+                      onChange={(e) => setContactForm(prev => ({ ...prev, email: e.target.value }))}
+                      maxLength={255}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contact-subject">Subject</Label>
+                  <Input
+                    id="contact-subject"
+                    placeholder="What's this about?"
+                    value={contactForm.subject}
+                    onChange={(e) => setContactForm(prev => ({ ...prev, subject: e.target.value }))}
+                    maxLength={200}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contact-message">Message *</Label>
+                  <Textarea
+                    id="contact-message"
+                    placeholder="Tell us your question or concern..."
+                    value={contactForm.message}
+                    onChange={(e) => setContactForm(prev => ({ ...prev, message: e.target.value }))}
+                    maxLength={1000}
+                    rows={5}
+                    required
+                  />
+                </div>
+                <Button type="submit" disabled={submitting} className="w-full">
+                  <Send className="w-4 h-4 mr-2" />
+                  {submitting ? "Sending..." : "Submit Question"}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </main>
       <Footer />
