@@ -390,28 +390,22 @@ const Navigation = () => {
                         Fan Community
                       </button>
                       <button
-                        onClick={() => { setCommunityOpen(false); setMobileMenuOpen(false); handleProNavigation("/events"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
-                      >
-                        <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
-                        Events
-                      </button>
-                      <button
                         onClick={() => { setCommunityOpen(false); setMobileMenuOpen(false); handleProNavigation("/blog"); }}
                         className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
                       >
                         <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
                         Blog
                       </button>
-                      <button
-                        onClick={() => { setCommunityOpen(false); setMobileMenuOpen(false); navigate("/shop"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
-                      >
-                        <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
-                        Shop
-                      </button>
                     </CollapsibleContent>
                   </Collapsible>
+
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); navigate("/shop"); }}
+                    className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-secondary" />
+                    <span className="font-medium">Shop</span>
+                  </button>
                   
                   {/* Divider */}
                   <div className="h-px bg-muted/20 my-1.5 mx-1" />
