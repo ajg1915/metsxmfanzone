@@ -383,11 +383,13 @@ export type Database = {
       }
       daily_player_predictions: {
         Row: {
+          bet_amount: string | null
           confidence: number | null
           created_at: string
           description: string
           id: string
           is_pitcher: boolean | null
+          payout: string | null
           player_id: number | null
           player_image_url: string | null
           player_name: string
@@ -407,11 +409,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bet_amount?: string | null
           confidence?: number | null
           created_at?: string
           description: string
           id?: string
           is_pitcher?: boolean | null
+          payout?: string | null
           player_id?: number | null
           player_image_url?: string | null
           player_name: string
@@ -431,11 +435,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bet_amount?: string | null
           confidence?: number | null
           created_at?: string
           description?: string
           id?: string
           is_pitcher?: boolean | null
+          payout?: string | null
           player_id?: number | null
           player_image_url?: string | null
           player_name?: string

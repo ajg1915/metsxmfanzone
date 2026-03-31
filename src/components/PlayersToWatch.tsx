@@ -33,6 +33,8 @@ interface PlayerPrediction {
   predicted_walks_allowed: number | null;
   predicted_hr_allowed: number | null;
   confidence: number | null;
+  bet_amount: string | null;
+  payout: string | null;
 }
 
 const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) => {
@@ -290,6 +292,24 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: {
                   <StatBox label="RBI" value={player.predicted_rbis ?? 0} />
                   <StatBox label="R" value={player.predicted_runs ?? 0} />
                   <StatBox label="SB" value={player.predicted_sb ?? 0} />
+                </div>
+              )}
+
+              {/* Bet Amount & Payout */}
+              {(player.bet_amount || player.payout) && (
+                <div className="flex items-center justify-between mt-2 px-1">
+                  {player.bet_amount && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground">Bet:</span>
+                      <span className="text-xs font-bold text-foreground">{player.bet_amount}</span>
+                    </div>
+                  )}
+                  {player.payout && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground">Payout:</span>
+                      <span className="text-xs font-bold text-green-400">{player.payout}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

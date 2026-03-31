@@ -96,6 +96,8 @@ const DEFAULT_MANUAL = {
   predicted_saves: 0,
   predicted_win_loss: "",
   confidence: 75,
+  bet_amount: "",
+  payout: "",
 };
 
 export default function PredictionsManagement() {
@@ -214,7 +216,9 @@ export default function PredictionsManagement() {
         predicted_saves: manual.is_pitcher ? manual.predicted_saves : 0,
         predicted_win_loss: manual.is_pitcher ? manual.predicted_win_loss : null,
         confidence: manual.confidence,
-      });
+        bet_amount: manual.bet_amount || null,
+        payout: manual.payout || null,
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -334,6 +338,17 @@ export default function PredictionsManagement() {
               <div>
                 <Label>Confidence %</Label>
                 <Input type="number" min={0} max={100} value={manual.confidence} onChange={e => setManual(p => ({ ...p, confidence: parseInt(e.target.value) || 0 }))} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>Bet Amount (e.g. $10)</Label>
+                <Input value={manual.bet_amount} onChange={e => setManual(p => ({ ...p, bet_amount: e.target.value }))} placeholder="e.g. $10" />
+              </div>
+              <div>
+                <Label>Payout (e.g. $150)</Label>
+                <Input value={manual.payout} onChange={e => setManual(p => ({ ...p, payout: e.target.value }))} placeholder="e.g. $150" />
               </div>
             </div>
 
