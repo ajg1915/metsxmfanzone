@@ -6,8 +6,8 @@ import { Radio, Music2, Facebook, Headphones, Music, Podcast as PodcastIcon, Vid
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import SEOHead from "@/components/SEOHead";
-import SocialShareButtons from "@/components/SocialShareButtons";
 import { Badge } from "@/components/ui/badge";
+import BlogSection from "@/components/BlogSection";
 
 interface PodcastLiveStream {
   id: string;
@@ -192,14 +192,8 @@ const Podcast = () => {
             </div>
           </section>
 
-          {/* Social Share */}
-          <section className="mb-8 sm:mb-12">
-            <Card>
-              <CardContent className="py-4 sm:py-6">
-                <SocialShareButtons title="MetsXMFanZone" />
-              </CardContent>
-            </Card>
-          </section>
+          {/* Blog Section */}
+          <BlogSection />
         </div>
       </main>
       <Footer />
