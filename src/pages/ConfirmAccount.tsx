@@ -245,7 +245,7 @@ export default function ConfirmAccount() {
               </p>
               <Button
                 onClick={handleContinueAfterConfirmation}
-                className="w-full bg-[#FF5910] hover:bg-[#FF5910]/90"
+                className="w-full"
               >
                 {hasPendingPlan ? "Select Your Plan" : "Continue to Login"}
               </Button>

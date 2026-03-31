@@ -500,6 +500,9 @@ const Auth = () => {
     if (!authLoading && authUser && !isRememberedLogin && !isResettingPassword && !showPinSetup) {
       // Check if this is a new Google OAuth user who needs to select a plan
       const checkAndRedirect = async () => {
+        const pendingPlan = localStorage.getItem("pending_signup_plan");
+        const provider = authUser.app_metadata?.provider;
+
         // Check if user has a subscription
         const { data: subscriptions } = await supabase
           .rpc("get_user_subscription_safe", { p_user_id: authUser.id });
@@ -510,15 +513,25 @@ const Auth = () => {
         );
 
         if (!activePaidSubscription) {
-          // New user or no plan - send to pricing
-          // Mark email as verified for Google OAuth users (they verified via Google)
-          const provider = authUser.app_metadata?.provider;
+          // Mark email as verified for Google/Apple OAuth users (they verified via provider)
           if (provider === "google" || provider === "apple") {
             await supabase
               .from("profiles")
               .update({ email_verified: true })
               .eq("id", authUser.id);
           }
+
+          if ((provider === "google" || provider === "apple") && !pendingPlan) {
+            await supabase.auth.signOut({ scope: "local" });
+            toast({
+              title: "Paid plan required",
+              description: "Choose Premium or Annual before creating an account with Google or Apple.",
+              variant: "destructive",
+            });
+            navigate("/auth?mode=signup", { replace: true });
+            return;
+          }
+
           navigate("/pricing?required=true", { replace: true });
         } else {
           clearPendingSignupPlan();
@@ -527,7 +540,7 @@ const Auth = () => {
       };
       checkAndRedirect();
     }
-  }, [authUser, authLoading, clearPendingSignupPlan, navigate, isRememberedLogin, isResettingPassword, showPinSetup]);
+  }, [authUser, authLoading, clearPendingSignupPlan, navigate, isRememberedLogin, isResettingPassword, showPinSetup, toast]);
 
 
 
