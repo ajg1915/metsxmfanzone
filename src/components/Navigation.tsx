@@ -173,7 +173,7 @@ const Navigation = () => {
             {/* Mets Dropdown */}
             <div className="relative group">
               <button className="text-foreground hover:text-primary transition-colors py-2">
-                Mets
+                Mets Connect
               </button>
               <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="bg-background border border-border rounded-lg shadow-lg min-w-[160px] py-1">
@@ -208,7 +208,7 @@ const Navigation = () => {
               onClick={() => handleProtectedNavigation("/community")}
               className="text-foreground hover:text-primary transition-colors"
             >
-              Mets Connect
+              Community
             </button>
 
             <button
@@ -370,7 +370,7 @@ const Navigation = () => {
                     <CollapsibleTrigger className="flex items-center justify-between w-full px-2.5 py-2 rounded-lg hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-2.5">
                         <img src={`https://www.mlbstatic.com/team-logos/121.svg`} alt="" className="w-3.5 h-3.5 object-contain" />
-                        <span className="font-medium text-xs">Mets</span>
+                        <span className="font-medium text-xs">Mets Connect</span>
                       </div>
                       <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform duration-200 ${tvScheduleOpen ? 'rotate-180' : ''}`} />
                     </CollapsibleTrigger>
@@ -406,7 +406,7 @@ const Navigation = () => {
                     className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
                   >
                     <Users className="w-3.5 h-3.5 text-primary" />
-                    <span className="font-medium">Mets Connect</span>
+                    <span className="font-medium">Community</span>
                   </button>
 
                   <button
