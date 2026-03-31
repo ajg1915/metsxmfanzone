@@ -314,20 +314,9 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: {
               </div>
             )}
 
-            {/* Tap hint */}
             <div className="mt-auto px-4 pb-3 text-center">
-              {canFlip ? (
+              {canFlip && (
                 <span className="text-xs text-muted-foreground">Tap for parlay breakdown</span>
-              ) : (
-                <div className="flex flex-col items-center gap-1">
-                  <div className="flex items-center gap-1.5">
-                    <Lock className="w-3.5 h-3.5 text-secondary" />
-                    <span className="text-xs font-semibold text-secondary">PRO Members Only</span>
-                  </div>
-                  <Link to="/pricing" className="text-[10px] text-primary hover:underline font-medium" onClick={(e) => e.stopPropagation()}>
-                    Upgrade to unlock parlays →
-                  </Link>
-                </div>
               )}
             </div>
 
