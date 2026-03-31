@@ -166,7 +166,7 @@ export default function ConfirmAccount() {
   const hasPendingPlan = localStorage.getItem("pending_signup_plan");
   const pendingPaymentMethod = localStorage.getItem("pending_signup_payment_method");
 
-  // Handle post-verification: create free sub if needed + always notify admins
+  // Handle post-verification: notify admins and keep unpaid users in plan selection
   useEffect(() => {
     if (verificationState !== "success") return;
 
@@ -175,47 +175,22 @@ export default function ConfirmAccount() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        let planType = "free";
-        let amount = "$0.00";
-        let paymentMethod = "free";
+        let planType = hasPendingPlan || "pending_paid_signup";
+        let amount = planType === "annual" ? "$129.99" : "$9.99";
+        let paymentMethod = pendingPaymentMethod || user.user_metadata?.preferred_payment_method || "paypal";
 
-        // Create free subscription if pending
-        if (hasPendingPlan === "free") {
-          const { data: existing } = await supabase
-            .from("subscriptions")
-            .select("id")
-            .eq("user_id", user.id)
-            .maybeSingle();
+        const { data: sub } = await supabase
+          .from("subscriptions")
+          .select("plan_type, amount, payment_method")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-          if (!existing) {
-            paymentMethod = pendingPaymentMethod || user.user_metadata?.preferred_payment_method || "free";
-
-            await supabase.from("subscriptions").insert({
-              user_id: user.id,
-              plan_type: "free",
-              status: "active",
-              amount: 0,
-              payment_method: paymentMethod,
-            });
-          }
-
-          localStorage.removeItem("pending_signup_plan");
-          localStorage.removeItem("pending_signup_payment_method");
-        } else {
-          // Check existing subscription for notification details
-          const { data: sub } = await supabase
-            .from("subscriptions")
-            .select("plan_type, amount, payment_method")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          if (sub) {
-            planType = sub.plan_type || "free";
-            amount = sub.amount ? `$${Number(sub.amount).toFixed(2)}` : "$0.00";
-            paymentMethod = sub.payment_method || "online";
-          }
+        if (sub && (sub.plan_type === "premium" || sub.plan_type === "annual")) {
+          planType = sub.plan_type;
+          amount = sub.amount ? `$${Number(sub.amount).toFixed(2)}` : planType === "annual" ? "$129.99" : "$9.99";
+          paymentMethod = sub.payment_method || paymentMethod;
         }
 
         // Always notify admins about verified signup
@@ -225,7 +200,7 @@ export default function ConfirmAccount() {
               userId: user.id,
               planType,
               amount,
-              source: `${planType === "free" ? "Free Plan" : planType.charAt(0).toUpperCase() + planType.slice(1)} (${paymentMethod})`,
+              source: `${planType === "premium" || planType === "annual" ? `${planType.charAt(0).toUpperCase() + planType.slice(1)} (${paymentMethod})` : `Pending Paid Signup (${paymentMethod})`}`,
             },
           });
         } catch (notifyErr) {
@@ -264,7 +239,7 @@ export default function ConfirmAccount() {
             <CardContent className="space-y-6 text-center">
               <p className="text-muted-foreground">
                 {hasPendingPlan 
-                  ? "Your account is now active. Please select your subscription plan to continue."
+                  ? "Your account is verified. Complete your paid plan signup to continue."
                   : "Your account has been successfully verified. You can now log in and start enjoying MetsXMFanZone!"
                 }
               </p>
