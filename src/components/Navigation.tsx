@@ -173,7 +173,7 @@ const Navigation = () => {
             {/* Mets Dropdown */}
             <div className="relative group">
               <button className="text-foreground hover:text-primary transition-colors py-2">
-                Mets
+                Mets Connect
               </button>
               <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="bg-background border border-border rounded-lg shadow-lg min-w-[160px] py-1">
