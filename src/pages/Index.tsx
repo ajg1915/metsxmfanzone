@@ -23,8 +23,7 @@ const RegularSeasonSeriesSection = lazy(() => import("@/components/RegularSeason
 
 const BlogSection = lazy(() => import("@/components/BlogSection"));
 const HomeLineupCard = lazy(() => import("@/components/HomeLineupCard"));
-const PodcastSection = lazy(() => import("@/components/PodcastSection"));
-const JoinPodcastSection = lazy(() => import("@/components/JoinPodcastSection"));
+const FindUsSection = lazy(() => import("@/components/FindUsSection"));
 const HotStoveGuide = lazy(() => import("@/components/HotStoveGuide"));
 const StoriesSection = lazy(() => import("@/components/StoriesSection"));
 const GamecastBanner = lazy(() => import("@/components/GamecastBanner"));
@@ -248,33 +247,7 @@ const Index = () => {
         <div className="section-divider my-1" />
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
-            <PodcastSection />
-          </Suspense>
-        </LazySection>
-
-        <div className="section-divider my-1" />
-
-        <div id="social">
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <PlayerOfTheMonthSection />
-          </Suspense>
-        </LazySection>
-        </div>
-
-        <div className="section-divider my-1" />
-
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <CommunityPreviewSection />
-          </Suspense>
-        </LazySection>
-
-        <div className="section-divider my-1" />
-
-        <LazySection fallback={<SectionSkeleton height="h-48" />}>
-          <Suspense fallback={<SectionSkeleton height="h-48" />}>
-            <JoinPodcastSection />
+            <FindUsSection />
           </Suspense>
         </LazySection>
 
