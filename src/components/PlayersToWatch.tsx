@@ -294,6 +294,24 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: {
                   <StatBox label="SB" value={player.predicted_sb ?? 0} />
                 </div>
               )}
+
+              {/* Bet Amount & Payout */}
+              {(player.bet_amount || player.payout) && (
+                <div className="flex items-center justify-between mt-2 px-1">
+                  {player.bet_amount && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground">Bet:</span>
+                      <span className="text-xs font-bold text-foreground">{player.bet_amount}</span>
+                    </div>
+                  )}
+                  {player.payout && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] text-muted-foreground">Payout:</span>
+                      <span className="text-xs font-bold text-green-400">{player.payout}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Confidence Bar */}

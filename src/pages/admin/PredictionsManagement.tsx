@@ -341,6 +341,17 @@ export default function PredictionsManagement() {
               </div>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label>Bet Amount (e.g. $10)</Label>
+                <Input value={manual.bet_amount} onChange={e => setManual(p => ({ ...p, bet_amount: e.target.value }))} placeholder="e.g. $10" />
+              </div>
+              <div>
+                <Label>Payout (e.g. $150)</Label>
+                <Input value={manual.payout} onChange={e => setManual(p => ({ ...p, payout: e.target.value }))} placeholder="e.g. $150" />
+              </div>
+            </div>
+
             <div>
               <Label>Description / Parlay Line *</Label>
               <Textarea value={manual.description} onChange={e => setManual(p => ({ ...p, description: e.target.value }))} placeholder="e.g. Lindor goes 2-for-4 with a homer and 3 RBIs tonight" rows={2} />
