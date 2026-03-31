@@ -570,26 +570,41 @@ export default function PredictionsManagement() {
                       </Button>
                     </div>
                   </div>
-                  {/* Inline Bet/Payout Editor */}
-                  {editingId === pred.id ? (
-                    <div className="flex items-center gap-2">
-                      <Input className="h-7 text-xs" placeholder="Bet e.g. $10" value={editBet} onChange={e => setEditBet(e.target.value)} />
-                      <Input className="h-7 text-xs" placeholder="Payout e.g. $150" value={editPayout} onChange={e => setEditPayout(e.target.value)} />
-                      <Button size="sm" className="h-7 text-xs px-2" onClick={() => updateBetPayoutMutation.mutate({ id: pred.id, bet_amount: editBet, payout: editPayout })} disabled={updateBetPayoutMutation.isPending}>Save</Button>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setEditingId(null)}>✕</Button>
+                  {/* Separate Bet Amount & Payout Fields */}
+                  <div className="mt-2 grid grid-cols-2 gap-2 p-2 rounded-md bg-background/50 border border-border/50">
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Bet Amount</Label>
+                      {editingId === pred.id ? (
+                        <Input className="h-8 text-sm mt-0.5" placeholder="e.g. $10" value={editBet} onChange={e => setEditBet(e.target.value)} />
+                      ) : (
+                        <p className="text-sm font-semibold text-foreground mt-0.5">
+                          {pred.bet_amount || <span className="text-muted-foreground/50 font-normal">Not set</span>}
+                        </p>
+                      )}
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3 text-xs">
-                        {(pred as any).bet_amount && <span className="text-muted-foreground">Bet: <span className="font-semibold text-foreground">{(pred as any).bet_amount}</span></span>}
-                        {(pred as any).payout && <span className="text-muted-foreground">Payout: <span className="font-semibold text-green-400">{(pred as any).payout}</span></span>}
-                        {!(pred as any).bet_amount && !(pred as any).payout && <span className="text-muted-foreground/50 text-xs">No bet/payout set</span>}
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Payout</Label>
+                      {editingId === pred.id ? (
+                        <Input className="h-8 text-sm mt-0.5" placeholder="e.g. $150" value={editPayout} onChange={e => setEditPayout(e.target.value)} />
+                      ) : (
+                        <p className="text-sm font-semibold text-green-400 mt-0.5">
+                          {pred.payout || <span className="text-muted-foreground/50 font-normal">Not set</span>}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex justify-end mt-1">
+                    {editingId === pred.id ? (
+                      <div className="flex gap-1">
+                        <Button size="sm" className="h-7 text-xs px-3" onClick={() => updateBetPayoutMutation.mutate({ id: pred.id, bet_amount: editBet, payout: editPayout })} disabled={updateBetPayoutMutation.isPending}>Save</Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setEditingId(null)}>Cancel</Button>
                       </div>
-                      <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => { setEditingId(pred.id); setEditBet((pred as any).bet_amount || ""); setEditPayout((pred as any).payout || ""); }}>
+                    ) : (
+                      <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => { setEditingId(pred.id); setEditBet(pred.bet_amount || ""); setEditPayout(pred.payout || ""); }}>
                         <PenLine className="h-3 w-3 mr-1" /> Edit
                       </Button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

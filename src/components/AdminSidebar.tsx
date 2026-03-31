@@ -173,8 +173,6 @@ export function AdminSidebar() {
         {/* Live & Streaming */}
         {renderCollapsibleSection("Live", Radio, liveItems, eventsOpen, setEventsOpen)}
 
-        {/* Events & Schedules */}
-        {renderCollapsibleSection("Events", CalendarDays, eventsItems, eventsOpen, setEventsOpen)}
 
         {/* Users & Accounts */}
         {renderCollapsibleSection("Users", Users, usersItems, usersOpen, setUsersOpen)}
