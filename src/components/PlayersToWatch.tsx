@@ -167,7 +167,6 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
 };
 
 // Individual Parlay Card Component
-const ParlayCard = ({ player, isPitcher, isCloser, isStarter }: { 
 const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: { 
   player: PlayerPrediction; 
   isPitcher: boolean;
