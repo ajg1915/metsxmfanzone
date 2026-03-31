@@ -107,6 +107,26 @@ export default function PredictionsManagement() {
   const [showManualForm, setShowManualForm] = useState(false);
   const [manual, setManual] = useState(DEFAULT_MANUAL);
   const [isSyncingLineup, setIsSyncingLineup] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editBet, setEditBet] = useState("");
+  const [editPayout, setEditPayout] = useState("");
+
+  const updateBetPayoutMutation = useMutation({
+    mutationFn: async ({ id, bet_amount, payout }: { id: string; bet_amount: string; payout: string }) => {
+      const { error } = await supabase
+        .from("daily_player_predictions")
+        .update({ bet_amount: bet_amount || null, payout: payout || null } as any)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-predictions"] });
+      queryClient.invalidateQueries({ queryKey: ["daily-predictions"] });
+      toast.success("Bet/Payout updated!");
+      setEditingId(null);
+    },
+    onError: () => toast.error("Failed to update"),
+  });
 
   // Fetch today's lineup card to check sync status
   const { data: todayLineup } = useQuery({
