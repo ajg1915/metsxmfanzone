@@ -178,23 +178,12 @@ const Navigation = () => {
               </button>
             )}
             
-            {/* TV Schedule Dropdown - Hover Based */}
-            <div className="relative group">
-              <button className="text-foreground hover:text-primary transition-colors py-2">
-                TV Schedule
-              </button>
-              <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <div className="bg-background border border-border rounded-lg shadow-lg min-w-[160px] py-1">
-                  <button
-                    onClick={() => handleProtectedNavigation("/mets-schedule-2026")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Schedule
-                  </button>
-                </div>
-              </div>
-            </div>
+            <button
+              onClick={() => handleProtectedNavigation("/mets-schedule-2026")}
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Schedule
+            </button>
 
             {/* Community Dropdown - Hover Based */}
             <div className="relative group">
