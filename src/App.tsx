@@ -396,7 +396,7 @@ const AppContent = () => {
             <Route path="/mets-schedule-2026" element={<MetsSchedule2026 />} />
             <Route path="/broadcast-schedule" element={<TVBroadcastSchedule />} />
             <Route path="/tv" element={<TVDashboard />} />
-            <Route path="/mets-lineup-card" element={<MetsLineupCard />} />
+            {/* Lineup Card page removed - kept on main page */}
             <Route path="/mets-scores" element={<MetsScores />} />
             <Route path="/mets-gamecast" element={<MetsGamecast />} />
             <Route path="/video-gallery" element={<VideoGallery />} />
