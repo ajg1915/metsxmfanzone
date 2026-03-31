@@ -96,6 +96,8 @@ const DEFAULT_MANUAL = {
   predicted_saves: 0,
   predicted_win_loss: "",
   confidence: 75,
+  bet_amount: "",
+  payout: "",
 };
 
 export default function PredictionsManagement() {
