@@ -178,23 +178,12 @@ const Navigation = () => {
               </button>
             )}
             
-            {/* TV Schedule Dropdown - Hover Based */}
-            <div className="relative group">
-              <button className="text-foreground hover:text-primary transition-colors py-2">
-                TV Schedule
-              </button>
-              <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <div className="bg-background border border-border rounded-lg shadow-lg min-w-[160px] py-1">
-                  <button
-                    onClick={() => handleProtectedNavigation("/mets-schedule-2026")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Schedule
-                  </button>
-                </div>
-              </div>
-            </div>
+            <button
+              onClick={() => handleProtectedNavigation("/mets-schedule-2026")}
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Schedule
+            </button>
 
             {/* Community Dropdown - Hover Based */}
             <div className="relative group">
@@ -211,29 +200,22 @@ const Navigation = () => {
                     Fan Community
                   </button>
                   <button
-                    onClick={() => handleProNavigation("/events")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Events
-                  </button>
-                  <button
                     onClick={() => handleProNavigation("/blog")}
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                   >
                     <img src={logo} alt="" className="w-4 h-4 object-contain" />
                     Blog
                   </button>
-                  <button
-                    onClick={() => navigate("/shop")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    Shop
-                  </button>
                 </div>
               </div>
             </div>
+
+            <button
+              onClick={() => navigate("/shop")}
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Shop
+            </button>
 
             {!user && (
               <NavLink 
@@ -382,25 +364,13 @@ const Navigation = () => {
                   {/* Divider */}
                   <div className="h-px bg-muted/20 my-1.5 mx-1" />
 
-                  {/* TV Schedule collapsible */}
-                  <Collapsible open={tvScheduleOpen} onOpenChange={setTvScheduleOpen}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full px-2.5 py-2 rounded-lg hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center gap-2.5">
-                        <Tv className="w-3.5 h-3.5 text-secondary" />
-                        <span className="font-medium text-xs">TV Schedule</span>
-                      </div>
-                      <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform duration-200 ${tvScheduleOpen ? 'rotate-180' : ''}`} />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-0.5 mt-0.5 ml-6">
-                      <button
-                        onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); handleProtectedNavigation("/mets-schedule-2026"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
-                      >
-                        <img src={`https://www.mlbstatic.com/team-logos/121.svg`} alt="" className="w-3.5 h-3.5 object-contain" />
-                        Schedule
-                      </button>
-                    </CollapsibleContent>
-                  </Collapsible>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); handleProtectedNavigation("/mets-schedule-2026"); }}
+                    className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                  >
+                    <CalendarDays className="w-3.5 h-3.5 text-secondary" />
+                    <span className="font-medium">Schedule</span>
+                  </button>
 
                   {/* Community collapsible */}
                   <Collapsible open={communityOpen} onOpenChange={setCommunityOpen}>
@@ -420,28 +390,22 @@ const Navigation = () => {
                         Fan Community
                       </button>
                       <button
-                        onClick={() => { setCommunityOpen(false); setMobileMenuOpen(false); handleProNavigation("/events"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
-                      >
-                        <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
-                        Events
-                      </button>
-                      <button
                         onClick={() => { setCommunityOpen(false); setMobileMenuOpen(false); handleProNavigation("/blog"); }}
                         className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
                       >
                         <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
                         Blog
                       </button>
-                      <button
-                        onClick={() => { setCommunityOpen(false); setMobileMenuOpen(false); navigate("/shop"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
-                      >
-                        <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
-                        Shop
-                      </button>
                     </CollapsibleContent>
                   </Collapsible>
+
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); navigate("/shop"); }}
+                    className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-secondary" />
+                    <span className="font-medium">Shop</span>
+                  </button>
                   
                   {/* Divider */}
                   <div className="h-px bg-muted/20 my-1.5 mx-1" />
