@@ -545,27 +545,49 @@ export default function PredictionsManagement() {
           ) : predictions && predictions.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {predictions.map((pred) => (
-                <div key={pred.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 border group">
-                  {pred.player_image_url ? (
-                    <img src={pred.player_image_url} alt={pred.player_name} className="w-12 h-12 rounded-full object-cover bg-background" />
+                <div key={pred.id} className="p-3 rounded-lg bg-muted/50 border group space-y-2">
+                  <div className="flex items-center gap-3">
+                    {pred.player_image_url ? (
+                      <img src={pred.player_image_url} alt={pred.player_name} className="w-12 h-12 rounded-full object-cover bg-background" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-lg font-bold text-primary">{pred.player_name.charAt(0)}</span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{pred.player_name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{pred.description}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant={pred.status === "hot" ? "destructive" : "secondary"} className="flex items-center gap-1">
+                        {pred.status === "hot" ? <Flame className="h-3 w-3" /> : <Snowflake className="h-3 w-3" />}
+                        {pred.status.toUpperCase()}
+                      </Badge>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => deleteMutation.mutate(pred.id)}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Inline Bet/Payout Editor */}
+                  {editingId === pred.id ? (
+                    <div className="flex items-center gap-2">
+                      <Input className="h-7 text-xs" placeholder="Bet e.g. $10" value={editBet} onChange={e => setEditBet(e.target.value)} />
+                      <Input className="h-7 text-xs" placeholder="Payout e.g. $150" value={editPayout} onChange={e => setEditPayout(e.target.value)} />
+                      <Button size="sm" className="h-7 text-xs px-2" onClick={() => updateBetPayoutMutation.mutate({ id: pred.id, bet_amount: editBet, payout: editPayout })} disabled={updateBetPayoutMutation.isPending}>Save</Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setEditingId(null)}>✕</Button>
+                    </div>
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-lg font-bold text-primary">{pred.player_name.charAt(0)}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-xs">
+                        {(pred as any).bet_amount && <span className="text-muted-foreground">Bet: <span className="font-semibold text-foreground">{(pred as any).bet_amount}</span></span>}
+                        {(pred as any).payout && <span className="text-muted-foreground">Payout: <span className="font-semibold text-green-400">{(pred as any).payout}</span></span>}
+                        {!(pred as any).bet_amount && !(pred as any).payout && <span className="text-muted-foreground/50 text-xs">No bet/payout set</span>}
+                      </div>
+                      <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => { setEditingId(pred.id); setEditBet((pred as any).bet_amount || ""); setEditPayout((pred as any).payout || ""); }}>
+                        <PenLine className="h-3 w-3 mr-1" /> Edit
+                      </Button>
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{pred.player_name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{pred.description}</p>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Badge variant={pred.status === "hot" ? "destructive" : "secondary"} className="flex items-center gap-1">
-                      {pred.status === "hot" ? <Flame className="h-3 w-3" /> : <Snowflake className="h-3 w-3" />}
-                      {pred.status.toUpperCase()}
-                    </Badge>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => deleteMutation.mutate(pred.id)}>
-                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                    </Button>
-                  </div>
                 </div>
               ))}
             </div>
