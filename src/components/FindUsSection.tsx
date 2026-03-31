@@ -28,7 +28,7 @@ const socials = [
     name: "TikTok",
     icon: Video,
     url: "https://www.tiktok.com/@metsxmfanzone",
-    color: "from-foreground to-foreground/80",
+    color: "from-black to-black",
     handle: "@metsxmfanzone",
   },
 ];
