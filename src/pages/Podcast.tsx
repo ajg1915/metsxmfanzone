@@ -192,14 +192,8 @@ const Podcast = () => {
             </div>
           </section>
 
-          {/* Social Share */}
-          <section className="mb-8 sm:mb-12">
-            <Card>
-              <CardContent className="py-4 sm:py-6">
-                <SocialShareButtons title="MetsXMFanZone" />
-              </CardContent>
-            </Card>
-          </section>
+          {/* Blog Section */}
+          <BlogSection />
         </div>
       </main>
       <Footer />
