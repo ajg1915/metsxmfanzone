@@ -129,7 +129,7 @@ export default function SpringTraining({ className }: SpringTrainingProps) {
               size="sm"
               className="text-xs sm:text-sm glass-card border-border/30 hover:border-primary/50"
             >
-              <Link to="/spring-training-live">
+              <Link to="/mets-schedule-2026">
                 See Matchup Overview
               </Link>
             </Button>
