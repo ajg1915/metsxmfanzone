@@ -260,8 +260,64 @@ export default function LiveStreamManagement() {
     }
   };
 
+  // Auto-check stream statuses based on scheduled times
+  const runAutoStatusCheck = async () => {
+    try {
+      const now = new Date().toISOString();
+      
+      // Start scheduled streams whose start time has passed
+      const { data: toGoLive } = await supabase
+        .from("live_streams")
+        .select("id, title")
+        .eq("status", "scheduled")
+        .eq("published", true)
+        .lte("scheduled_start", now)
+        .not("scheduled_start", "is", null);
+
+      if (toGoLive && toGoLive.length > 0) {
+        for (const stream of toGoLive) {
+          await supabase
+            .from("live_streams")
+            .update({ status: "live", actual_start: now })
+            .eq("id", stream.id);
+          sendLiveNotification(stream.title, stream.id);
+        }
+        toast({ title: "Streams auto-started", description: `${toGoLive.length} stream(s) went live` });
+      }
+
+      // End live streams whose end time has passed
+      const { data: toEnd } = await supabase
+        .from("live_streams")
+        .select("id")
+        .eq("status", "live")
+        .lte("scheduled_end", now)
+        .not("scheduled_end", "is", null);
+
+      if (toEnd && toEnd.length > 0) {
+        for (const stream of toEnd) {
+          await supabase
+            .from("live_streams")
+            .update({ status: "ended", actual_end: now })
+            .eq("id", stream.id);
+        }
+        toast({ title: "Streams auto-ended", description: `${toEnd.length} stream(s) ended` });
+      }
+
+      if ((toGoLive && toGoLive.length > 0) || (toEnd && toEnd.length > 0)) {
+        fetchStreams();
+      }
+    } catch (err) {
+      console.error("Auto status check error:", err);
+    }
+  };
+
   useEffect(() => {
     fetchStreams();
+    runAutoStatusCheck();
+
+    // Check every 60 seconds for status transitions
+    const interval = setInterval(runAutoStatusCheck, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchStreams = async () => {
