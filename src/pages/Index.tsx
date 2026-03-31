@@ -23,8 +23,7 @@ const RegularSeasonSeriesSection = lazy(() => import("@/components/RegularSeason
 
 const BlogSection = lazy(() => import("@/components/BlogSection"));
 const HomeLineupCard = lazy(() => import("@/components/HomeLineupCard"));
-const PodcastSection = lazy(() => import("@/components/PodcastSection"));
-const JoinPodcastSection = lazy(() => import("@/components/JoinPodcastSection"));
+const FindUsSection = lazy(() => import("@/components/FindUsSection"));
 const HotStoveGuide = lazy(() => import("@/components/HotStoveGuide"));
 const StoriesSection = lazy(() => import("@/components/StoriesSection"));
 const GamecastBanner = lazy(() => import("@/components/GamecastBanner"));
