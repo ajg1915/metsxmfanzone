@@ -60,11 +60,7 @@ const liveItems = [
   { title: "Podcast Live", url: "/admin/podcast-live-stream", icon: Mic },
 ];
 
-// Events & Schedules
-const eventsItems = [
-  { title: "Events", url: "/admin/events", icon: CalendarDays },
-  { title: "Spring Training", url: "/admin/spring-training", icon: Trophy },
-];
+// Events & Schedules (removed Events and Spring Training per user request)
 
 // Users & Community - Users, Roles, Subscriptions, Feedback, Posts, etc.
 const usersItems = [
