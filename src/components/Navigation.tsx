@@ -364,25 +364,13 @@ const Navigation = () => {
                   {/* Divider */}
                   <div className="h-px bg-muted/20 my-1.5 mx-1" />
 
-                  {/* TV Schedule collapsible */}
-                  <Collapsible open={tvScheduleOpen} onOpenChange={setTvScheduleOpen}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full px-2.5 py-2 rounded-lg hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center gap-2.5">
-                        <Tv className="w-3.5 h-3.5 text-secondary" />
-                        <span className="font-medium text-xs">TV Schedule</span>
-                      </div>
-                      <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform duration-200 ${tvScheduleOpen ? 'rotate-180' : ''}`} />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-0.5 mt-0.5 ml-6">
-                      <button
-                        onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); handleProtectedNavigation("/mets-schedule-2026"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
-                      >
-                        <img src={`https://www.mlbstatic.com/team-logos/121.svg`} alt="" className="w-3.5 h-3.5 object-contain" />
-                        Schedule
-                      </button>
-                    </CollapsibleContent>
-                  </Collapsible>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); handleProtectedNavigation("/mets-schedule-2026"); }}
+                    className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                  >
+                    <CalendarDays className="w-3.5 h-3.5 text-secondary" />
+                    <span className="font-medium">Schedule</span>
+                  </button>
 
                   {/* Community collapsible */}
                   <Collapsible open={communityOpen} onOpenChange={setCommunityOpen}>
