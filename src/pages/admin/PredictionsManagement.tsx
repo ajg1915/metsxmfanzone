@@ -216,7 +216,9 @@ export default function PredictionsManagement() {
         predicted_saves: manual.is_pitcher ? manual.predicted_saves : 0,
         predicted_win_loss: manual.is_pitcher ? manual.predicted_win_loss : null,
         confidence: manual.confidence,
-      });
+        bet_amount: manual.bet_amount || null,
+        payout: manual.payout || null,
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
