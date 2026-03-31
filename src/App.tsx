@@ -402,7 +402,7 @@ const AppContent = () => {
             <Route path="/video-gallery" element={<VideoGallery />} />
             <Route path="/social" element={<SocialMediaHub />} />
             <Route path="/nl-scores" element={<NLScores />} />
-            <Route path="/events" element={<Events />} />
+            {/* Events standalone page removed - kept in community section */}
             <Route path="/mets-roster" element={<MetsRoster />} />
             <Route path="/player/:playerId" element={<PlayerStats />} />
             <Route path="/mets-history" element={<MetsHistory />} />
