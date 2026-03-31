@@ -387,7 +387,7 @@ const AppContent = () => {
             <Route path="/writer" element={<WriterDashboard />} />
             <Route path="/writer/new-article" element={<WriterArticleEditor />} />
             <Route path="/writer/edit/:id" element={<WriterArticleEditor />} />
-            <Route path="/spring-training-live" element={<SpringTrainingLive />} />
+            {/* Spring Training page removed */}
             <Route path="/replay-games" element={<ReplayGames />} />
             <Route path="/merch" element={<Merch />} />
             <Route path="/shop" element={<Shop />} />
@@ -396,13 +396,13 @@ const AppContent = () => {
             <Route path="/mets-schedule-2026" element={<MetsSchedule2026 />} />
             <Route path="/broadcast-schedule" element={<TVBroadcastSchedule />} />
             <Route path="/tv" element={<TVDashboard />} />
-            <Route path="/mets-lineup-card" element={<MetsLineupCard />} />
+            {/* Lineup Card page removed - kept on main page */}
             <Route path="/mets-scores" element={<MetsScores />} />
             <Route path="/mets-gamecast" element={<MetsGamecast />} />
             <Route path="/video-gallery" element={<VideoGallery />} />
             <Route path="/social" element={<SocialMediaHub />} />
             <Route path="/nl-scores" element={<NLScores />} />
-            <Route path="/events" element={<Events />} />
+            {/* Events standalone page removed - kept in community section */}
             <Route path="/mets-roster" element={<MetsRoster />} />
             <Route path="/player/:playerId" element={<PlayerStats />} />
             <Route path="/mets-history" element={<MetsHistory />} />

@@ -190,21 +190,7 @@ const Navigation = () => {
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                   >
                     <CalendarDays className="w-4 h-4" />
-                    2026 Schedule
-                  </button>
-                  <button
-                    onClick={() => handleProtectedNavigation("/spring-training-live")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Spring Training
-                  </button>
-                  <button
-                    onClick={() => handleProtectedNavigation("/mets-lineup-card")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <Users className="w-4 h-4" />
-                    Lineup Cards
+                    Schedule
                   </button>
                 </div>
               </div>
@@ -411,21 +397,7 @@ const Navigation = () => {
                         className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
                       >
                         <img src={`https://www.mlbstatic.com/team-logos/121.svg`} alt="" className="w-3.5 h-3.5 object-contain" />
-                        2026 Schedule
-                      </button>
-                      <button
-                        onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); handleProtectedNavigation("/spring-training-live"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
-                      >
-                        <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
-                        Spring Training
-                      </button>
-                      <button
-                        onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); handleProtectedNavigation("/mets-lineup-card"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
-                      >
-                        <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
-                        Lineup Cards
+                        Schedule
                       </button>
                     </CollapsibleContent>
                   </Collapsible>
