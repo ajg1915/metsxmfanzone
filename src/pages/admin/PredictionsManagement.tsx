@@ -78,6 +78,8 @@ interface Prediction {
   description: string;
   prediction_date: string;
   created_at: string;
+  bet_amount: string | null;
+  payout: string | null;
 }
 
 const DEFAULT_MANUAL = {
