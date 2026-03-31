@@ -190,21 +190,7 @@ const Navigation = () => {
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                   >
                     <CalendarDays className="w-4 h-4" />
-                    2026 Schedule
-                  </button>
-                  <button
-                    onClick={() => handleProtectedNavigation("/spring-training-live")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Spring Training
-                  </button>
-                  <button
-                    onClick={() => handleProtectedNavigation("/mets-lineup-card")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <Users className="w-4 h-4" />
-                    Lineup Cards
+                    Schedule
                   </button>
                 </div>
               </div>
