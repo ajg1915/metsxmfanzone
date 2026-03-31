@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Twitter, Video, ExternalLink } from "lucide-react";
+import { Facebook, Instagram, Twitter, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import GlassCard from "@/components/GlassCard";
 
