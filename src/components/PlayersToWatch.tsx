@@ -33,6 +33,8 @@ interface PlayerPrediction {
   predicted_walks_allowed: number | null;
   predicted_hr_allowed: number | null;
   confidence: number | null;
+  bet_amount: string | null;
+  payout: string | null;
 }
 
 const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) => {
