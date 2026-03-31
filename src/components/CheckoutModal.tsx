@@ -58,43 +58,13 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
     setIsProcessing(true);
 
     try {
-      // Handle free plan - create subscription directly
-      if (plan.id === "free") {
-        const springTrainingEnd = new Date("2026-03-26T23:59:59Z");
-        const { error } = await supabase
-          .from("subscriptions")
-          .insert({
-            user_id: user.id,
-            plan_type: "free",
-            status: "active",
-            amount: 0,
-            currency: "USD",
-            start_date: new Date().toISOString(),
-            end_date: springTrainingEnd.toISOString(),
-            payment_method: "free",
-          });
-
-        if (error) throw error;
-
-        try {
-          await supabase.functions.invoke("notify-admin-new-member", {
-            body: {
-              userId: user.id,
-              planType: "free",
-              amount: "$0.00",
-              source: "Free Plan",
-            },
-          });
-        } catch (notifyError) {
-          console.error("Error notifying admins:", notifyError);
-        }
-
+      if (plan.id !== "premium" && plan.id !== "annual") {
         toast({
-          title: "Welcome!",
-          description: "Your free plan has been activated",
+          title: "Paid plan required",
+          description: "Only paid memberships can be activated.",
+          variant: "destructive",
         });
         onOpenChange(false);
-        navigate("/");
         return;
       }
 
@@ -272,8 +242,6 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
           >
             {isProcessing
               ? "Processing..."
-              : plan.priceValue === 0
-              ? "Activate Free Plan"
               : `Pay with PayPal — ${plan.price}`}
           </Button>
 
