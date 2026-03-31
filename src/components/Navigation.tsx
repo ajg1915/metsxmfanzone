@@ -169,46 +169,47 @@ const Navigation = () => {
             >
               Podcast
             </button>
-            {user && (
-              <button
-                onClick={() => navigate("/mets-roster")}
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                Roster
-              </button>
-            )}
-            
-            <button
-              onClick={() => handleProtectedNavigation("/mets-schedule-2026")}
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              Schedule
-            </button>
 
-            {/* Community Dropdown - Hover Based */}
+            {/* Mets Dropdown */}
             <div className="relative group">
               <button className="text-foreground hover:text-primary transition-colors py-2">
-                Community
+                Mets
               </button>
               <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div className="bg-background border border-border rounded-lg shadow-lg min-w-[160px] py-1">
                   <button
-                    onClick={() => handleProtectedNavigation("/community")}
+                    onClick={() => handleProtectedNavigation("/mets-schedule-2026")}
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                   >
-                    <Users className="w-4 h-4" />
-                    Fan Community
+                    <CalendarDays className="w-4 h-4" />
+                    Schedule
                   </button>
+                  {user && (
+                    <button
+                      onClick={() => navigate("/mets-roster")}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                    >
+                      <Users className="w-4 h-4" />
+                      Roster
+                    </button>
+                  )}
                   <button
-                    onClick={() => handleProNavigation("/blog")}
+                    onClick={() => handleProNavigation("/video-gallery")}
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                   >
-                    <img src={logo} alt="" className="w-4 h-4 object-contain" />
-                    Blog
+                    <Tv className="w-4 h-4" />
+                    Highlights
                   </button>
                 </div>
               </div>
             </div>
+
+            <button
+              onClick={() => handleProtectedNavigation("/community")}
+              className="text-foreground hover:text-primary transition-colors"
+            >
+              Community
+            </button>
 
             <button
               onClick={() => navigate("/shop")}
