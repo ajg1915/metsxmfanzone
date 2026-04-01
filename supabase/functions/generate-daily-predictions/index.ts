@@ -310,6 +310,8 @@ Respond with ONLY a valid JSON array (no markdown, no extra text):
 
     const predictionsToInsert = predictions.map((pred: any) => {
       const player = selectedPlayers.find(p => p.name.toLowerCase() === pred.name.toLowerCase());
+      // Auto-generate random payout between $25 and $500
+      const randomPayout = Math.floor(Math.random() * 476) + 25;
       return {
         player_name: pred.name,
         player_id: player?.id,
@@ -330,6 +332,8 @@ Respond with ONLY a valid JSON array (no markdown, no extra text):
         predicted_walks: pred.predicted_walks ?? 0,
         predicted_walks_allowed: pred.predicted_walks_allowed ?? 0,
         predicted_hr_allowed: pred.predicted_hr_allowed ?? 0,
+        bet_amount: "$10",
+        payout: `$${randomPayout}`,
       };
     });
 
