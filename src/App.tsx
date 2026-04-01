@@ -356,8 +356,6 @@ const AppContent = () => {
               <Route path="roles" element={<UserManagement />} />
               <Route path="user-management" element={<UserManagement />} />
               <Route path="subscriptions" element={<UserManagement />} />
-              <Route path="events" element={<EventsManagement />} />
-              <Route path="spring-training" element={<SpringTrainingManagement />} />
               <Route path="backgrounds" element={<BackgroundManagement />} />
               <Route path="activity" element={<ActivityDashboard />} />
               <Route path="writer-applications" element={<WriterApplications />} />
