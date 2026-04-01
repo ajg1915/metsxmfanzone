@@ -570,40 +570,43 @@ export default function PredictionsManagement() {
                       </Button>
                     </div>
                   </div>
-                  {/* Separate Bet Amount & Payout Fields */}
-                  <div className="mt-2 grid grid-cols-2 gap-2 p-2 rounded-md bg-background/50 border border-border/50">
-                    <div>
-                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Bet Amount</Label>
+                  {/* Bet Amount & Payout — Always Visible */}
+                  <div className="mt-3 p-3 rounded-lg bg-primary/5 border-2 border-primary/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-primary">💰 Betting Info</span>
                       {editingId === pred.id ? (
-                        <Input className="h-8 text-sm mt-0.5" placeholder="e.g. $10" value={editBet} onChange={e => setEditBet(e.target.value)} />
+                        <div className="flex gap-1">
+                          <Button size="sm" className="h-6 text-xs px-3 bg-primary hover:bg-primary/90" onClick={() => updateBetPayoutMutation.mutate({ id: pred.id, bet_amount: editBet, payout: editPayout })} disabled={updateBetPayoutMutation.isPending}>Save</Button>
+                          <Button size="sm" variant="ghost" className="h-6 text-xs px-2" onClick={() => setEditingId(null)}>Cancel</Button>
+                        </div>
                       ) : (
-                        <p className="text-sm font-semibold text-foreground mt-0.5">
-                          {pred.bet_amount || <span className="text-muted-foreground/50 font-normal">Not set</span>}
-                        </p>
+                        <Button variant="outline" size="sm" className="h-6 text-xs px-2 border-primary/30 text-primary" onClick={() => { setEditingId(pred.id); setEditBet(pred.bet_amount || ""); setEditPayout(pred.payout || ""); }}>
+                          <PenLine className="h-3 w-3 mr-1" /> Edit
+                        </Button>
                       )}
                     </div>
-                    <div>
-                      <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">Payout</Label>
-                      {editingId === pred.id ? (
-                        <Input className="h-8 text-sm mt-0.5" placeholder="e.g. $150" value={editPayout} onChange={e => setEditPayout(e.target.value)} />
-                      ) : (
-                        <p className="text-sm font-semibold text-green-400 mt-0.5">
-                          {pred.payout || <span className="text-muted-foreground/50 font-normal">Not set</span>}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex justify-end mt-1">
-                    {editingId === pred.id ? (
-                      <div className="flex gap-1">
-                        <Button size="sm" className="h-7 text-xs px-3" onClick={() => updateBetPayoutMutation.mutate({ id: pred.id, bet_amount: editBet, payout: editPayout })} disabled={updateBetPayoutMutation.isPending}>Save</Button>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs px-2" onClick={() => setEditingId(null)}>Cancel</Button>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground uppercase tracking-wider block mb-1">Bet Amount</Label>
+                        {editingId === pred.id ? (
+                          <Input className="h-9 text-sm font-semibold" placeholder="e.g. $10" value={editBet} onChange={e => setEditBet(e.target.value)} />
+                        ) : (
+                          <p className="text-base font-bold text-foreground">
+                            {pred.bet_amount || <span className="text-muted-foreground/40 font-normal text-sm">Tap Edit to set</span>}
+                          </p>
+                        )}
                       </div>
-                    ) : (
-                      <Button variant="ghost" size="sm" className="h-6 text-xs px-2" onClick={() => { setEditingId(pred.id); setEditBet(pred.bet_amount || ""); setEditPayout(pred.payout || ""); }}>
-                        <PenLine className="h-3 w-3 mr-1" /> Edit
-                      </Button>
-                    )}
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground uppercase tracking-wider block mb-1">Payout</Label>
+                        {editingId === pred.id ? (
+                          <Input className="h-9 text-sm font-semibold" placeholder="e.g. $150" value={editPayout} onChange={e => setEditPayout(e.target.value)} />
+                        ) : (
+                          <p className="text-base font-bold text-green-400">
+                            {pred.payout || <span className="text-muted-foreground/40 font-normal text-sm">Tap Edit to set</span>}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}

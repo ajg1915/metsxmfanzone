@@ -99,8 +99,6 @@ const Events = lazy(() => import("./pages/Events"));
 const MetsRoster = lazy(() => import("./pages/MetsRoster"));
 const PlayerStats = lazy(() => import("./pages/PlayerStats"));
 const MetsHistory = lazy(() => import("./pages/MetsHistory"));
-const EventsManagement = lazy(() => import("./pages/admin/EventsManagement"));
-const SpringTrainingManagement = lazy(() => import("./pages/admin/SpringTrainingManagement"));
 const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
 const BackgroundManagement = lazy(() => import("./pages/admin/BackgroundManagement"));
 const ActivityDashboard = lazy(() => import("./pages/admin/ActivityDashboard"));
@@ -358,8 +356,6 @@ const AppContent = () => {
               <Route path="roles" element={<UserManagement />} />
               <Route path="user-management" element={<UserManagement />} />
               <Route path="subscriptions" element={<UserManagement />} />
-              <Route path="events" element={<EventsManagement />} />
-              <Route path="spring-training" element={<SpringTrainingManagement />} />
               <Route path="backgrounds" element={<BackgroundManagement />} />
               <Route path="activity" element={<ActivityDashboard />} />
               <Route path="writer-applications" element={<WriterApplications />} />
