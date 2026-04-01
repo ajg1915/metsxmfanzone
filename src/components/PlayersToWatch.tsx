@@ -295,23 +295,17 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: {
                 </div>
               )}
 
-              {/* Bet Amount & Payout */}
-              {(player.bet_amount || player.payout) && (
-                <div className="flex items-center justify-between mt-2 px-1">
-                  {player.bet_amount && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-[10px] text-muted-foreground">Bet:</span>
-                      <span className="text-xs font-bold text-foreground">{player.bet_amount}</span>
-                    </div>
-                  )}
-                  {player.payout && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-[10px] text-muted-foreground">Payout:</span>
-                      <span className="text-xs font-bold text-green-400">{player.payout}</span>
-                    </div>
-                  )}
+              {/* Bet Amount & Payout — Always Visible */}
+              <div className="flex items-center justify-between mt-2 px-1 py-1.5 rounded-md bg-primary/5 border border-primary/20">
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-muted-foreground">💰 Bet:</span>
+                  <span className="text-xs font-bold text-foreground">{player.bet_amount || "—"}</span>
                 </div>
-              )}
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-muted-foreground">Payout:</span>
+                  <span className="text-xs font-bold text-green-400">{player.payout || "—"}</span>
+                </div>
+              </div>
             </div>
 
             {/* Confidence Bar */}
@@ -391,8 +385,22 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: {
               </div>
             </div>
 
+            {/* Bet & Payout */}
+            <div className="px-4 py-2 border-t border-primary/20 bg-primary/5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-muted-foreground block">💰 BET AMOUNT</span>
+                  <span className="text-sm font-bold text-foreground">{player.bet_amount || "—"}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-muted-foreground block">PAYOUT</span>
+                  <span className="text-sm font-bold text-green-400">{player.payout || "—"}</span>
+                </div>
+              </div>
+            </div>
+
             {/* Footer */}
-            <div className="px-4 py-3 border-t border-primary/20 bg-primary/5 flex items-center justify-between">
+            <div className="px-4 py-2 border-t border-primary/20 bg-primary/5 flex items-center justify-between">
               <div>
                 <span className="text-[10px] text-muted-foreground block">CONFIDENCE</span>
                 <span className="text-sm font-bold text-foreground">{player.confidence ?? 50}%</span>
