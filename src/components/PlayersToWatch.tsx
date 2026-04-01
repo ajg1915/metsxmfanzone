@@ -385,8 +385,22 @@ const ParlayCard = ({ player, isPitcher, isCloser, isStarter, canFlip }: {
               </div>
             </div>
 
+            {/* Bet & Payout */}
+            <div className="px-4 py-2 border-t border-primary/20 bg-primary/5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-muted-foreground block">💰 BET AMOUNT</span>
+                  <span className="text-sm font-bold text-foreground">{player.bet_amount || "—"}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-muted-foreground block">PAYOUT</span>
+                  <span className="text-sm font-bold text-green-400">{player.payout || "—"}</span>
+                </div>
+              </div>
+            </div>
+
             {/* Footer */}
-            <div className="px-4 py-3 border-t border-primary/20 bg-primary/5 flex items-center justify-between">
+            <div className="px-4 py-2 border-t border-primary/20 bg-primary/5 flex items-center justify-between">
               <div>
                 <span className="text-[10px] text-muted-foreground block">CONFIDENCE</span>
                 <span className="text-sm font-bold text-foreground">{player.confidence ?? 50}%</span>
