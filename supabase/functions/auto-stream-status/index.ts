@@ -51,14 +51,20 @@ Deno.serve(async (req) => {
 
       // Send push notification
       try {
-        await supabase.functions.invoke("send-push-notification", {
-          body: {
+        await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${serviceKey}`,
+            'X-System-Call': 'true',
+          },
+          body: JSON.stringify({
             title: "🔴 LIVE NOW on MetsXMFanZone!",
             body: stream.title,
             url: "/metsxmfanzone",
             icon: "/logo-192.png",
             tag: `live-stream-${stream.id}`,
-          },
+          }),
         });
       } catch (pushErr) {
         console.error(`Push notification failed for stream ${stream.id}:`, pushErr);

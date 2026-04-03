@@ -192,6 +192,21 @@ export default function BlogManagement() {
 
       if (error) throw error;
 
+      // Send push notification for the published article
+      try {
+        await supabase.functions.invoke("send-push-notification", {
+          body: {
+            title: "📰 New Article on MetsXMFanZone!",
+            body: post.title,
+            url: `/blog/${post.slug}`,
+            icon: "/logo-192.png",
+            tag: `blog-${post.id}`,
+          },
+        });
+      } catch (pushErr) {
+        console.error("Push notification failed:", pushErr);
+      }
+
       toast({
         title: "Approved & Published",
         description: "Article has been approved and is now live on the blog.",
