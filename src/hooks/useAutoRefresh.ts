@@ -9,7 +9,9 @@ const SUPPRESS_REFRESH_PATHS = [
   '/mlb-network',
   '/metsxmfanzone',
   '/spring-training-live',
-  
+  '/msg-network',
+  '/sny',
+  '/live/',
   '/admin',
 ];
 

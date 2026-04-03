@@ -202,24 +202,24 @@ export function StreamPlayer({
         playerRef.current.on('dispose', () => clearInterval(liveEdgeInterval));
       });
 
-      // Capped retry with exponential backoff
+      // Unlimited retry with exponential backoff for live streams
       let retryCount = 0;
-      const MAX_RETRIES = 3;
       playerRef.current.on('error', (e: any) => {
         console.error('Video.js error:', e);
         const error = playerRef.current?.error();
-        if (error && retryCount < MAX_RETRIES) {
+        if (error) {
           retryCount++;
-          const delay = Math.min(2000 * Math.pow(2, retryCount - 1), 16000);
-          console.log(`Retry ${retryCount}/${MAX_RETRIES} in ${delay}ms`);
+          // Cap delay at 30s, never stop retrying for live content
+          const delay = Math.min(2000 * Math.pow(2, Math.min(retryCount - 1, 4)), 30000);
+          console.log(`[StreamPlayer] Retry ${retryCount} in ${delay}ms`);
           setTimeout(() => {
             if (playerRef.current && stream) {
               playerRef.current.src({ src: stream.stream_url, type: 'application/x-mpegURL' });
               playerRef.current.play();
+              // Reset count after successful recovery window
+              setTimeout(() => { retryCount = Math.max(0, retryCount - 1); }, 60000);
             }
           }, delay);
-        } else if (retryCount >= MAX_RETRIES) {
-          console.error('Max retries reached, stopping.');
         }
       });
     }
