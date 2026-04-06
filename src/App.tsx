@@ -146,6 +146,7 @@ const MediaLibrary = lazy(() => import("./pages/admin/MediaLibrary"));
 const ToastPromptManagement = lazy(() => import("./pages/admin/ToastPromptManagement"));
 const PopupNotificationsManagement = lazy(() => import("./pages/admin/PopupNotificationsManagement"));
 const ShopManagement = lazy(() => import("./pages/admin/ShopManagement"));
+const SweepstakesManagement = lazy(() => import("./pages/admin/SweepstakesManagement"));
 const Shop = lazy(() => import("./pages/Shop"));
 const OrderSuccess = lazy(() => import("./pages/OrderSuccess"));
 const WhatsNew = lazy(() => import("./pages/WhatsNew"));
