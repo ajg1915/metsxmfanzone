@@ -94,15 +94,25 @@ export const SweepstakesWheel = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const size = 300;
+    const size = 380;
     canvas.width = size * 2;
     canvas.height = size * 2;
     ctx.scale(2, 2); // retina
 
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = size / 2 - 10;
+    const radius = size / 2 - 12;
     const sliceAngle = (2 * Math.PI) / prizes.length;
+
+    // Outer ring glow
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius + 6, 0, 2 * Math.PI);
+    ctx.strokeStyle = "#FF5910";
+    ctx.lineWidth = 4;
+    ctx.shadowColor = "#FF5910";
+    ctx.shadowBlur = 15;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
 
     prizes.forEach((prize, i) => {
       const startAngle = i * sliceAngle;
@@ -115,7 +125,7 @@ export const SweepstakesWheel = () => {
       ctx.closePath();
       ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
       ctx.fill();
-      ctx.strokeStyle = "#ffffff22";
+      ctx.strokeStyle = "#ffffff33";
       ctx.lineWidth = 2;
       ctx.stroke();
 
@@ -124,27 +134,30 @@ export const SweepstakesWheel = () => {
       ctx.translate(centerX, centerY);
       ctx.rotate(startAngle + sliceAngle / 2);
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 11px sans-serif";
+      ctx.font = "bold 14px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
       const text = prize.icon + " " + prize.name;
-      const displayText = text.length > 16 ? text.slice(0, 14) + "…" : text;
-      ctx.fillText(displayText, radius * 0.6, 0);
+      const displayText = text.length > 18 ? text.slice(0, 16) + "…" : text;
+      ctx.fillText(displayText, radius * 0.58, 0);
       ctx.restore();
     });
 
     // Center circle
     ctx.beginPath();
-    ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
-    ctx.fillStyle = "#1a1a2e";
+    ctx.arc(centerX, centerY, 28, 0, 2 * Math.PI);
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 28);
+    gradient.addColorStop(0, "#2a2a4e");
+    gradient.addColorStop(1, "#1a1a2e");
+    ctx.fillStyle = gradient;
     ctx.fill();
     ctx.strokeStyle = "#FF5910";
     ctx.lineWidth = 3;
     ctx.stroke();
 
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 10px sans-serif";
+    ctx.font = "bold 12px sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText("SPIN", centerX, centerY);
@@ -232,11 +245,11 @@ export const SweepstakesWheel = () => {
                 <motion.div
                   animate={{ rotate: rotation }}
                   transition={{ duration: 5, ease: [0.2, 0.8, 0.3, 1] }}
-                  className="w-[150px] h-[150px] sm:w-[200px] sm:h-[200px]"
+                  className="w-[280px] h-[280px] sm:w-[320px] sm:h-[320px]"
                 >
                   <canvas
                     ref={canvasRef}
-                    className="w-full h-full rounded-full shadow-[0_0_30px_rgba(255,89,16,0.3)]"
+                    className="w-full h-full rounded-full shadow-[0_0_40px_rgba(255,89,16,0.4)]"
                   />
                 </motion.div>
 
