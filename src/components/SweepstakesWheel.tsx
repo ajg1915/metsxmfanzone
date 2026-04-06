@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import metsLogo from "@/assets/metsxmfanzone-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
