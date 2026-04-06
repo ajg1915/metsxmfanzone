@@ -2672,6 +2672,143 @@ export type Database = {
         }
         Relationships: []
       }
+      sweepstakes_events: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_time: string
+          id: string
+          is_active: boolean
+          max_spins_per_user: number
+          name: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          is_active?: boolean
+          max_spins_per_user?: number
+          name: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          max_spins_per_user?: number
+          name?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sweepstakes_prizes: {
+        Row: {
+          color: string | null
+          content_url: string | null
+          created_at: string
+          description: string | null
+          event_id: string
+          icon: string | null
+          id: string
+          is_grand_prize: boolean
+          name: string
+          odds_weight: number
+          prize_type: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_id: string
+          icon?: string | null
+          id?: string
+          is_grand_prize?: boolean
+          name: string
+          odds_weight?: number
+          prize_type?: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          content_url?: string | null
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          icon?: string | null
+          id?: string
+          is_grand_prize?: boolean
+          name?: string
+          odds_weight?: number
+          prize_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sweepstakes_prizes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "sweepstakes_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sweepstakes_winners: {
+        Row: {
+          claimed: boolean
+          claimed_at: string | null
+          event_id: string
+          id: string
+          prize_id: string
+          user_id: string
+          won_at: string
+        }
+        Insert: {
+          claimed?: boolean
+          claimed_at?: string | null
+          event_id: string
+          id?: string
+          prize_id: string
+          user_id: string
+          won_at?: string
+        }
+        Update: {
+          claimed?: boolean
+          claimed_at?: string | null
+          event_id?: string
+          id?: string
+          prize_id?: string
+          user_id?: string
+          won_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sweepstakes_winners_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "sweepstakes_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sweepstakes_winners_prize_id_fkey"
+            columns: ["prize_id"]
+            isOneToOne: false
+            referencedRelation: "sweepstakes_prizes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_leaders: {
         Row: {
           category: string
