@@ -41,7 +41,7 @@ export const SweepstakesWheel = () => {
   const checkedRef = useRef(false);
 
   useEffect(() => {
-    if (!user || checkedRef.current) return;
+    if (checkedRef.current) return;
     checkedRef.current = true;
 
     const checkSweepstakes = async () => {
@@ -56,13 +56,19 @@ export const SweepstakesWheel = () => {
       if (!events || events.length === 0) return;
       const activeEvent = events[0];
 
-      const { data: existingWins } = await supabase
-        .from("sweepstakes_winners")
-        .select("id")
-        .eq("event_id", activeEvent.id)
-        .eq("user_id", user.id);
+      // If user is logged in, check if they already spun
+      if (user) {
+        const { data: existingWins } = await supabase
+          .from("sweepstakes_winners")
+          .select("id")
+          .eq("event_id", activeEvent.id)
+          .eq("user_id", user.id);
 
-      if (existingWins && existingWins.length >= activeEvent.max_spins_per_user) return;
+        if (existingWins && existingWins.length >= activeEvent.max_spins_per_user) {
+          setHasSpun(true);
+          return;
+        }
+      }
 
       const { data: eventPrizes } = await supabase
         .from("sweepstakes_prizes")
