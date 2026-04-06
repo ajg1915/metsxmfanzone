@@ -232,9 +232,9 @@ export const SweepstakesWheel = () => {
                   {prizes.map((prize, i) => {
                     const angle = (i * sliceAngle + sliceAngle / 2) - 90;
                     const rad = (angle * Math.PI) / 180;
-                    const labelRadius = 105;
-                    const x = 150 + Math.cos(rad) * labelRadius;
-                    const y = 150 + Math.sin(rad) * labelRadius;
+                    const labelRadius = 75;
+                    const x = 110 + Math.cos(rad) * labelRadius;
+                    const y = 110 + Math.sin(rad) * labelRadius;
 
                     return (
                       <div
