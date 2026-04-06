@@ -222,8 +222,6 @@ const Auth = () => {
   const [biometricError, setBiometricError] = useState<string | null>(null);
   const [biometricPendingUserId, setBiometricPendingUserId] = useState<string | null>(null);
   const [biometricAuthToken, setBiometricAuthToken] = useState<{ token: string; verificationUrl: string } | null>(null);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [appleLoading, setAppleLoading] = useState(false);
   
   const navigate = useNavigate();
   const { toast } = useToast();
