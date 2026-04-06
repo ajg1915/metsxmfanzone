@@ -38,12 +38,11 @@ export const SweepstakesWheel = () => {
   const [wonPrize, setWonPrize] = useState<Prize | null>(null);
   const [rotation, setRotation] = useState(0);
   const [hasSpun, setHasSpun] = useState(false);
-  const checkedRef = useState(false);
+  const checkedRef = useRef(false);
 
   useEffect(() => {
-    console.log("SweepstakesWheel useEffect", { user: !!user, checked: checkedRef[0] });
-    if (!user || checkedRef[0]) return;
-    checkedRef[1](true);
+    if (!user || checkedRef.current) return;
+    checkedRef.current = true;
 
     const checkSweepstakes = async () => {
       const { data: events } = await supabase
