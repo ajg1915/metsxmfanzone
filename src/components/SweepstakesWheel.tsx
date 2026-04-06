@@ -244,12 +244,12 @@ export const SweepstakesWheel = () => {
                           left: x,
                           top: y,
                           transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
-                          width: 70,
+                          width: 55,
                         }}
                       >
-                        <span className="text-lg leading-none drop-shadow-md">{prize.icon}</span>
+                        <span className="text-sm leading-none drop-shadow-md">{prize.icon}</span>
                         <span
-                          className="text-[9px] font-bold leading-tight mt-0.5 drop-shadow-md"
+                          className="text-[7px] font-bold leading-tight mt-0.5 drop-shadow-md"
                           style={{
                             color: "#ffffff",
                             textShadow: "0 1px 3px rgba(0,0,0,0.8)",
