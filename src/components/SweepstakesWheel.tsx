@@ -291,7 +291,8 @@ export const SweepstakesWheel = () => {
                 </Button>
               </motion.div>
             ) : (() => {
-              const isLoss = /try again|better luck|no prize|loss|lose|sorry/i.test(wonPrize.name);
+              const lossText = `${wonPrize.name} ${wonPrize.description ?? ""}`;
+              const isLoss = /try again|spin again|better luck|no prize|loss|lose|sorry|come back|next time|tomorrow/i.test(lossText);
               return (
                 <motion.div
                   key="result"
