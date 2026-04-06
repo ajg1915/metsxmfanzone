@@ -265,8 +265,8 @@ export const SweepstakesWheel = () => {
                   <div
                     className="absolute rounded-full flex items-center justify-center z-10"
                     style={{
-                      width: 54,
-                      height: 54,
+                      width: 40,
+                      height: 40,
                       top: "50%",
                       left: "50%",
                       transform: "translate(-50%, -50%)",
