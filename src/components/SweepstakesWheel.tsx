@@ -118,7 +118,21 @@ export const SweepstakesWheel = () => {
   const sliceAngle = 360 / prizes.length;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !spinning && setOpen(v)}>
+    <>
+      {/* Floating Spin Button */}
+      {!open && !hasSpun && (
+        <motion.button
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          onClick={() => setOpen(true)}
+          className="fixed bottom-24 right-4 z-50 flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-orange-500 px-5 py-3 text-white font-bold shadow-[0_0_20px_rgba(255,89,16,0.5)] hover:shadow-[0_0_30px_rgba(255,89,16,0.7)] transition-shadow"
+        >
+          <Gift className="h-5 w-5 animate-bounce" />
+          <span className="text-sm">Spin & Win!</span>
+        </motion.button>
+      )}
+
+      <Dialog open={open} onOpenChange={(v) => !spinning && setOpen(v)}>
       <DialogContent className="sm:max-w-md border-primary/30 p-0 overflow-hidden" style={{ background: "linear-gradient(to bottom, #0a0a1a, #1a1a2e)" }}>
         {/* Header */}
         <div className="relative p-6 pb-2 text-center">
