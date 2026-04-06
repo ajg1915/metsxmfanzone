@@ -176,9 +176,9 @@ export const SweepstakesWheel = () => {
                     style={{
                       width: 0,
                       height: 0,
-                      borderLeft: "14px solid transparent",
-                      borderRight: "14px solid transparent",
-                      borderTop: "24px solid #FF5910",
+                      borderLeft: "10px solid transparent",
+                      borderRight: "10px solid transparent",
+                      borderTop: "18px solid #FF5910",
                       filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))",
                     }}
                   />
@@ -189,7 +189,7 @@ export const SweepstakesWheel = () => {
                   animate={{ rotate: rotation }}
                   transition={{ duration: 5, ease: [0.2, 0.8, 0.3, 1] }}
                   className="relative"
-                  style={{ width: 300, height: 300 }}
+                  style={{ width: 220, height: 220 }}
                 >
                   {/* Outer glow ring */}
                   <div
