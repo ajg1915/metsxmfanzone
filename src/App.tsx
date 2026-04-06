@@ -17,6 +17,7 @@ import { LiveStreamToast } from "@/components/LiveStreamToast";
 import SocialMediaBar from "@/components/SocialMediaBar";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
 import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
+import { SweepstakesWheel } from "@/components/SweepstakesWheel";
 
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 
@@ -146,6 +147,7 @@ const MediaLibrary = lazy(() => import("./pages/admin/MediaLibrary"));
 const ToastPromptManagement = lazy(() => import("./pages/admin/ToastPromptManagement"));
 const PopupNotificationsManagement = lazy(() => import("./pages/admin/PopupNotificationsManagement"));
 const ShopManagement = lazy(() => import("./pages/admin/ShopManagement"));
+const SweepstakesManagement = lazy(() => import("./pages/admin/SweepstakesManagement"));
 const Shop = lazy(() => import("./pages/Shop"));
 const OrderSuccess = lazy(() => import("./pages/OrderSuccess"));
 const WhatsNew = lazy(() => import("./pages/WhatsNew"));
@@ -279,6 +281,7 @@ const AppContent = () => {
         <StreamExitDialog />
         <SocialMediaBar />
         <ForceNotificationPrompt />
+        <SweepstakesWheel />
         
         <Suspense fallback={<PageLoader />}>
           <Routes>
@@ -378,6 +381,7 @@ const AppContent = () => {
               <Route path="popup-notifications" element={<PopupNotificationsManagement />} />
               <Route path="shop" element={<ShopManagement />} />
               <Route path="player-of-the-month" element={<PlayerOfTheMonthManagement />} />
+              <Route path="sweepstakes" element={<SweepstakesManagement />} />
             </Route>
             {/* Writer Portal Routes */}
             <Route path="/writer" element={<WriterDashboard />} />

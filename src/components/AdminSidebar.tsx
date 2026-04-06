@@ -3,7 +3,7 @@ import {
   MessageSquare, ChevronDown, Users, Mail, Palette,
   Megaphone, BookOpen, CalendarDays, Trophy, UserCog, Send, Wallpaper, ShoppingBag, 
   Activity, PenLine, HeartPulse, Globe, Settings, Layers, Sparkles, 
-  ClipboardList, Star, BarChart3, Share2, FolderOpen
+  ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -77,6 +77,7 @@ const communityItems = [
   { title: "Shop", url: "/admin/shop", icon: ShoppingBag },
   { title: "Polls", url: "/admin/polls", icon: BarChart3 },
   { title: "Player of the Month", url: "/admin/player-of-the-month", icon: Trophy },
+  { title: "Sweepstakes", url: "/admin/sweepstakes", icon: Gift },
 ];
 
 // Analytics & SEO

@@ -1,13 +1,26 @@
 
+## Sweepstakes Prize Wheel Feature
 
-## Plan: Remove Version Text from Footer
+### Database (Migration)
+Create 3 tables:
+- **`sweepstakes_events`** — Admin-scheduled giveaway windows with start/end times, active toggle
+- **`sweepstakes_prizes`** — Prize options per event (name, description, odds weight, content unlock details, icon/color)
+- **`sweepstakes_winners`** — Track who won what and when (user_id, prize_id, event_id, won_at)
 
-Remove the `v1.0.0` version display from the Footer component.
+### Admin Portal
+- New **Sweepstakes Management** page under admin sidebar
+- Create/edit giveaway events with date/time windows
+- Add/remove prizes with configurable odds weights
+- View winners list with user info and prize details
 
-### Change
-In `src/components/Footer.tsx`:
-- Remove the `APP_VERSION` constant (line 4)
-- Remove the `<p>` element displaying `v{APP_VERSION}` (lines 46-48)
+### Spin Wheel Component
+- Animated spinning wheel using CSS/framer-motion
+- Shows only during active giveaway windows
+- Triggers on login (checked via auth state change)
+- Each user gets ONE spin per event
+- Displays prize result with celebration animation
 
-Note: The version text currently visible at the bottom of the footer will be completely removed. The copyright line and admin portal secret click will remain unchanged.
-
+### Integration
+- Add check in `useAuth` / login flow to detect active sweepstakes
+- Show wheel modal after successful login during active events
+- Record winner in database after spin
