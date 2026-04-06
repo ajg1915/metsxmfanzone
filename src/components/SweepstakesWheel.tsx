@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -38,11 +38,11 @@ export const SweepstakesWheel = () => {
   const [wonPrize, setWonPrize] = useState<Prize | null>(null);
   const [rotation, setRotation] = useState(0);
   const [hasSpun, setHasSpun] = useState(false);
-  const checkedRef = useState(false);
+  const checkedRef = useRef(false);
 
   useEffect(() => {
-    if (!user || checkedRef[0]) return;
-    checkedRef[1](true);
+    // Only mark as checked once we've actually fetched data
+    if (event) return;
 
     const checkSweepstakes = async () => {
       const { data: events } = await supabase
@@ -56,13 +56,19 @@ export const SweepstakesWheel = () => {
       if (!events || events.length === 0) return;
       const activeEvent = events[0];
 
-      const { data: existingWins } = await supabase
-        .from("sweepstakes_winners")
-        .select("id")
-        .eq("event_id", activeEvent.id)
-        .eq("user_id", user.id);
+      // If user is logged in, check if they already spun
+      if (user) {
+        const { data: existingWins } = await supabase
+          .from("sweepstakes_winners")
+          .select("id")
+          .eq("event_id", activeEvent.id)
+          .eq("user_id", user.id);
 
-      if (existingWins && existingWins.length >= activeEvent.max_spins_per_user) return;
+        if (existingWins && existingWins.length >= activeEvent.max_spins_per_user) {
+          setHasSpun(true);
+          return;
+        }
+      }
 
       const { data: eventPrizes } = await supabase
         .from("sweepstakes_prizes")
