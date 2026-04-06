@@ -41,8 +41,8 @@ export const SweepstakesWheel = () => {
   const checkedRef = useRef(false);
 
   useEffect(() => {
-    if (checkedRef.current) return;
-    checkedRef.current = true;
+    // Only mark as checked once we've actually fetched data
+    if (event) return;
 
     const checkSweepstakes = async () => {
       const { data: events } = await supabase
