@@ -1235,7 +1235,7 @@ const Auth = () => {
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    Google, Apple, and email signups all require a paid plan selection first.
+                    Email signups require a paid plan selection first.
                   </p>
                 </div>
                 <div className="space-y-2">
