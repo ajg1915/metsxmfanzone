@@ -245,11 +245,11 @@ export const SweepstakesWheel = () => {
                 <motion.div
                   animate={{ rotate: rotation }}
                   transition={{ duration: 5, ease: [0.2, 0.8, 0.3, 1] }}
-                  className="w-[150px] h-[150px] sm:w-[200px] sm:h-[200px]"
+                  className="w-[280px] h-[280px] sm:w-[320px] sm:h-[320px]"
                 >
                   <canvas
                     ref={canvasRef}
-                    className="w-full h-full rounded-full shadow-[0_0_30px_rgba(255,89,16,0.3)]"
+                    className="w-full h-full rounded-full shadow-[0_0_40px_rgba(255,89,16,0.4)]"
                   />
                 </motion.div>
 
