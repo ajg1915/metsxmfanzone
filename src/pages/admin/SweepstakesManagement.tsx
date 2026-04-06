@@ -354,8 +354,7 @@ const SweepstakesManagement = () => {
                     </Button>
                   </CardContent>
                 </Card>
-              );
-            })}
+              ))}
             {prizes.length === 0 && (
               <p className="text-center text-muted-foreground py-8">No prizes yet. Add some above!</p>
             )}
