@@ -139,28 +139,28 @@ export const SweepstakesWheel = () => {
       )}
 
       <Dialog open={open} onOpenChange={(v) => !spinning && setOpen(v)}>
-      <DialogContent className="sm:max-w-md border-primary/30 p-0 overflow-hidden" style={{ background: "linear-gradient(to bottom, #0a0a1a, #1a1a2e)" }}>
+      <DialogContent className="sm:max-w-[340px] border-primary/30 p-0 overflow-hidden max-h-[90vh] overflow-y-auto" style={{ background: "linear-gradient(to bottom, #0a0a1a, #1a1a2e)" }}>
         {/* Header */}
-        <div className="relative p-6 pb-2 text-center">
+        <div className="relative px-4 pt-4 pb-1 text-center">
           <button
             onClick={() => !spinning && setOpen(false)}
-            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Gift className="h-6 w-6 text-primary animate-bounce" />
-            <h2 className="text-xl font-bold text-primary">🎰 SWEEPSTAKES</h2>
-            <Gift className="h-6 w-6 text-primary animate-bounce" />
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <Gift className="h-4 w-4 text-primary animate-bounce" />
+            <h2 className="text-base font-bold text-primary">🎰 SWEEPSTAKES</h2>
+            <Gift className="h-4 w-4 text-primary animate-bounce" />
           </div>
-          <p className="text-sm text-muted-foreground">{event.name}</p>
+          <p className="text-xs text-muted-foreground">{event.name}</p>
           {event.description && (
-            <p className="text-xs text-muted-foreground/70 mt-1">{event.description}</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">{event.description}</p>
           )}
         </div>
 
         {/* Wheel */}
-        <div className="flex flex-col items-center px-6 pb-6">
+        <div className="flex flex-col items-center px-4 pb-4">
           <AnimatePresence mode="wait">
             {!wonPrize ? (
               <motion.div
