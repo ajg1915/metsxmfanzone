@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, PartyPopper, Star, X } from "lucide-react";
+import { Gift, PartyPopper, Star, X, Frown } from "lucide-react";
 
 interface Prize {
   id: string;
@@ -290,57 +290,69 @@ export const SweepstakesWheel = () => {
                   {spinning ? "🎰 Spinning..." : "🎯 SPIN!"}
                 </Button>
               </motion.div>
-            ) : (
-              <motion.div
-                key="result"
-                initial={{ opacity: 0, scale: 0.5 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", bounce: 0.5 }}
-                className="text-center py-6"
-              >
+            ) : (() => {
+              const isLoss = /try again|better luck|no prize|loss|lose|sorry/i.test(wonPrize.name);
+              return (
                 <motion.div
-                  animate={{ rotate: [0, -10, 10, -10, 10, 0] }}
-                  transition={{ duration: 0.5 }}
+                  key="result"
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", bounce: 0.5 }}
+                  className="text-center py-6"
                 >
-                  <PartyPopper className="h-16 w-16 mx-auto mb-4" style={{ color: "#facc15" }} />
-                </motion.div>
-
-                <h3 className="text-2xl font-bold text-primary mb-2">🎉 You Won! 🎉</h3>
-
-                <div className="rounded-xl p-4 mb-4 border" style={{ background: "rgba(255,89,16,0.1)", borderColor: "rgba(255,89,16,0.3)" }}>
-                  <p className="text-3xl mb-2">{wonPrize.icon}</p>
-                  <p className="text-lg font-bold text-foreground">{wonPrize.name}</p>
-                  {wonPrize.description && (
-                    <p className="text-sm text-muted-foreground mt-1">{wonPrize.description}</p>
-                  )}
-                  {wonPrize.is_grand_prize && (
-                    <div className="flex items-center justify-center gap-1 mt-2">
-                      <Star className="h-4 w-4 fill-current" style={{ color: "#facc15" }} />
-                      <span className="text-xs font-bold uppercase" style={{ color: "#facc15" }}>Grand Prize!</span>
-                      <Star className="h-4 w-4 fill-current" style={{ color: "#facc15" }} />
-                    </div>
-                  )}
-                </div>
-
-                {wonPrize.content_url && (
-                  <Button
-                    onClick={() => window.location.href = wonPrize.content_url!}
-                    className="w-full mb-2"
-                    style={{ background: "linear-gradient(to right, #FF5910, #FF8C42)" }}
+                  <motion.div
+                    animate={isLoss ? { y: [0, 5, 0] } : { rotate: [0, -10, 10, -10, 10, 0] }}
+                    transition={{ duration: 0.5 }}
                   >
-                    🎁 Claim Your Prize
-                  </Button>
-                )}
+                    {isLoss ? (
+                      <Frown className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                    ) : (
+                      <PartyPopper className="h-16 w-16 mx-auto mb-4" style={{ color: "#facc15" }} />
+                    )}
+                  </motion.div>
 
-                <Button
-                  variant="ghost"
-                  onClick={() => setOpen(false)}
-                  className="w-full text-muted-foreground"
-                >
-                  Close
-                </Button>
-              </motion.div>
-            )}
+                  <h3 className="text-2xl font-bold mb-2" style={{ color: isLoss ? "hsl(var(--muted-foreground))" : "hsl(var(--primary))" }}>
+                    {isLoss ? "😔 Better Luck Next Time!" : "🎉 You Won! 🎉"}
+                  </h3>
+
+                  <div className="rounded-xl p-4 mb-4 border" style={{
+                    background: isLoss ? "rgba(100,100,100,0.1)" : "rgba(255,89,16,0.1)",
+                    borderColor: isLoss ? "rgba(100,100,100,0.3)" : "rgba(255,89,16,0.3)"
+                  }}>
+                    <p className="text-3xl mb-2">{wonPrize.icon}</p>
+                    <p className="text-lg font-bold text-foreground">{wonPrize.name}</p>
+                    {wonPrize.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{wonPrize.description}</p>
+                    )}
+                    {!isLoss && wonPrize.is_grand_prize && (
+                      <div className="flex items-center justify-center gap-1 mt-2">
+                        <Star className="h-4 w-4 fill-current" style={{ color: "#facc15" }} />
+                        <span className="text-xs font-bold uppercase" style={{ color: "#facc15" }}>Grand Prize!</span>
+                        <Star className="h-4 w-4 fill-current" style={{ color: "#facc15" }} />
+                      </div>
+                    )}
+                  </div>
+
+                  {!isLoss && wonPrize.content_url && (
+                    <Button
+                      onClick={() => window.location.href = wonPrize.content_url!}
+                      className="w-full mb-2"
+                      style={{ background: "linear-gradient(to right, #FF5910, #FF8C42)" }}
+                    >
+                      🎁 Claim Your Prize
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="ghost"
+                    onClick={() => setOpen(false)}
+                    className="w-full text-muted-foreground"
+                  >
+                    Close
+                  </Button>
+                </motion.div>
+              );
+            })()}
           </AnimatePresence>
         </div>
       </DialogContent>
