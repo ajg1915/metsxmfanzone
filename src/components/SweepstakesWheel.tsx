@@ -139,28 +139,28 @@ export const SweepstakesWheel = () => {
       )}
 
       <Dialog open={open} onOpenChange={(v) => !spinning && setOpen(v)}>
-      <DialogContent className="sm:max-w-md border-primary/30 p-0 overflow-hidden" style={{ background: "linear-gradient(to bottom, #0a0a1a, #1a1a2e)" }}>
+      <DialogContent className="sm:max-w-[340px] border-primary/30 p-0 overflow-hidden max-h-[90vh] overflow-y-auto" style={{ background: "linear-gradient(to bottom, #0a0a1a, #1a1a2e)" }}>
         {/* Header */}
-        <div className="relative p-6 pb-2 text-center">
+        <div className="relative px-4 pt-4 pb-1 text-center">
           <button
             onClick={() => !spinning && setOpen(false)}
-            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Gift className="h-6 w-6 text-primary animate-bounce" />
-            <h2 className="text-xl font-bold text-primary">🎰 SWEEPSTAKES</h2>
-            <Gift className="h-6 w-6 text-primary animate-bounce" />
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <Gift className="h-4 w-4 text-primary animate-bounce" />
+            <h2 className="text-base font-bold text-primary">🎰 SWEEPSTAKES</h2>
+            <Gift className="h-4 w-4 text-primary animate-bounce" />
           </div>
-          <p className="text-sm text-muted-foreground">{event.name}</p>
+          <p className="text-xs text-muted-foreground">{event.name}</p>
           {event.description && (
-            <p className="text-xs text-muted-foreground/70 mt-1">{event.description}</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">{event.description}</p>
           )}
         </div>
 
         {/* Wheel */}
-        <div className="flex flex-col items-center px-6 pb-6">
+        <div className="flex flex-col items-center px-4 pb-4">
           <AnimatePresence mode="wait">
             {!wonPrize ? (
               <motion.div
@@ -176,9 +176,9 @@ export const SweepstakesWheel = () => {
                     style={{
                       width: 0,
                       height: 0,
-                      borderLeft: "14px solid transparent",
-                      borderRight: "14px solid transparent",
-                      borderTop: "24px solid #FF5910",
+                      borderLeft: "10px solid transparent",
+                      borderRight: "10px solid transparent",
+                      borderTop: "18px solid #FF5910",
                       filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))",
                     }}
                   />
@@ -189,7 +189,7 @@ export const SweepstakesWheel = () => {
                   animate={{ rotate: rotation }}
                   transition={{ duration: 5, ease: [0.2, 0.8, 0.3, 1] }}
                   className="relative"
-                  style={{ width: 300, height: 300 }}
+                  style={{ width: 220, height: 220 }}
                 >
                   {/* Outer glow ring */}
                   <div
@@ -232,9 +232,9 @@ export const SweepstakesWheel = () => {
                   {prizes.map((prize, i) => {
                     const angle = (i * sliceAngle + sliceAngle / 2) - 90;
                     const rad = (angle * Math.PI) / 180;
-                    const labelRadius = 105;
-                    const x = 150 + Math.cos(rad) * labelRadius;
-                    const y = 150 + Math.sin(rad) * labelRadius;
+                    const labelRadius = 75;
+                    const x = 110 + Math.cos(rad) * labelRadius;
+                    const y = 110 + Math.sin(rad) * labelRadius;
 
                     return (
                       <div
@@ -244,12 +244,12 @@ export const SweepstakesWheel = () => {
                           left: x,
                           top: y,
                           transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
-                          width: 70,
+                          width: 55,
                         }}
                       >
-                        <span className="text-lg leading-none drop-shadow-md">{prize.icon}</span>
+                        <span className="text-sm leading-none drop-shadow-md">{prize.icon}</span>
                         <span
-                          className="text-[9px] font-bold leading-tight mt-0.5 drop-shadow-md"
+                          className="text-[7px] font-bold leading-tight mt-0.5 drop-shadow-md"
                           style={{
                             color: "#ffffff",
                             textShadow: "0 1px 3px rgba(0,0,0,0.8)",
@@ -265,8 +265,8 @@ export const SweepstakesWheel = () => {
                   <div
                     className="absolute rounded-full flex items-center justify-center z-10"
                     style={{
-                      width: 54,
-                      height: 54,
+                      width: 40,
+                      height: 40,
                       top: "50%",
                       left: "50%",
                       transform: "translate(-50%, -50%)",
@@ -282,11 +282,11 @@ export const SweepstakesWheel = () => {
                 <Button
                   onClick={handleSpin}
                   disabled={spinning || hasSpun}
-                  className="mt-5 w-full font-bold text-lg py-3 hover:brightness-110 disabled:opacity-50"
+                  className="mt-3 w-full font-bold text-sm py-2 hover:brightness-110 disabled:opacity-50"
                   style={{ background: "linear-gradient(to right, #FF5910, #FF8C42)" }}
-                  size="lg"
+                  size="default"
                 >
-                  {spinning ? "🎰 Spinning..." : "🎯 SPIN THE WHEEL!"}
+                  {spinning ? "🎰 Spinning..." : "🎯 SPIN!"}
                 </Button>
               </motion.div>
             ) : (
