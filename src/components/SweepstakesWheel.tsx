@@ -41,6 +41,7 @@ export const SweepstakesWheel = () => {
   const checkedRef = useState(false);
 
   useEffect(() => {
+    console.log("SweepstakesWheel useEffect", { user: !!user, checked: checkedRef[0] });
     if (!user || checkedRef[0]) return;
     checkedRef[1](true);
 
