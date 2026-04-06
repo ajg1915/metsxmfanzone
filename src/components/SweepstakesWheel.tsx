@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -24,7 +24,7 @@ interface SweepstakesEvent {
   max_spins_per_user: number;
 }
 
-const WHEEL_COLORS = [
+const SLICE_COLORS = [
   "#FF5910", "#002D72", "#FF8C42", "#1B4D8E",
   "#FF6B35", "#003DA5", "#FFB347", "#0056B3",
 ];
@@ -38,16 +38,13 @@ export const SweepstakesWheel = () => {
   const [wonPrize, setWonPrize] = useState<Prize | null>(null);
   const [rotation, setRotation] = useState(0);
   const [hasSpun, setHasSpun] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const checkedRef = useRef(false);
+  const checkedRef = useState(false);
 
-  // Check for active sweepstakes on login
   useEffect(() => {
-    if (!user || checkedRef.current) return;
-    checkedRef.current = true;
+    if (!user || checkedRef[0]) return;
+    checkedRef[1](true);
 
     const checkSweepstakes = async () => {
-      // Check for active events
       const { data: events } = await supabase
         .from("sweepstakes_events")
         .select("id, name, description, max_spins_per_user")
@@ -57,10 +54,8 @@ export const SweepstakesWheel = () => {
         .limit(1);
 
       if (!events || events.length === 0) return;
-
       const activeEvent = events[0];
 
-      // Check if user already spun
       const { data: existingWins } = await supabase
         .from("sweepstakes_winners")
         .select("id")
@@ -69,7 +64,6 @@ export const SweepstakesWheel = () => {
 
       if (existingWins && existingWins.length >= activeEvent.max_spins_per_user) return;
 
-      // Get prizes
       const { data: eventPrizes } = await supabase
         .from("sweepstakes_prizes")
         .select("id, name, description, icon, color, odds_weight, is_grand_prize, content_url")
@@ -79,92 +73,13 @@ export const SweepstakesWheel = () => {
 
       setEvent(activeEvent);
       setPrizes(eventPrizes);
-
-      // Small delay before showing
       setTimeout(() => setOpen(true), 2000);
     };
 
     checkSweepstakes();
   }, [user]);
 
-  // Draw wheel on canvas
-  useEffect(() => {
-    if (!canvasRef.current || prizes.length === 0) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const size = 380;
-    canvas.width = size * 2;
-    canvas.height = size * 2;
-    ctx.scale(2, 2); // retina
-
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const radius = size / 2 - 12;
-    const sliceAngle = (2 * Math.PI) / prizes.length;
-
-    // Outer ring glow
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 6, 0, 2 * Math.PI);
-    ctx.strokeStyle = "#FF5910";
-    ctx.lineWidth = 4;
-    ctx.shadowColor = "#FF5910";
-    ctx.shadowBlur = 15;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-
-    prizes.forEach((prize, i) => {
-      const startAngle = i * sliceAngle;
-      const endAngle = startAngle + sliceAngle;
-
-      // Draw slice
-      ctx.beginPath();
-      ctx.moveTo(centerX, centerY);
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-      ctx.closePath();
-      ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
-      ctx.fill();
-      ctx.strokeStyle = "#ffffff33";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Draw text
-      ctx.save();
-      ctx.translate(centerX, centerY);
-      ctx.rotate(startAngle + sliceAngle / 2);
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 14px sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-
-      const text = prize.icon + " " + prize.name;
-      const displayText = text.length > 18 ? text.slice(0, 16) + "…" : text;
-      ctx.fillText(displayText, radius * 0.58, 0);
-      ctx.restore();
-    });
-
-    // Center circle
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, 28, 0, 2 * Math.PI);
-    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 28);
-    gradient.addColorStop(0, "#2a2a4e");
-    gradient.addColorStop(1, "#1a1a2e");
-    ctx.fillStyle = gradient;
-    ctx.fill();
-    ctx.strokeStyle = "#FF5910";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 12px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("SPIN", centerX, centerY);
-  }, [prizes]);
-
   const selectPrize = useCallback(() => {
-    // Weighted random selection
     const totalWeight = prizes.reduce((sum, p) => sum + p.odds_weight, 0);
     let random = Math.random() * totalWeight;
     for (const prize of prizes) {
@@ -181,20 +96,16 @@ export const SweepstakesWheel = () => {
     const winner = selectPrize();
     const prizeIndex = prizes.findIndex((p) => p.id === winner.id);
     const sliceAngle = 360 / prizes.length;
-
-    // Calculate rotation to land on prize (pointer at top = 270deg offset)
     const targetAngle = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
-    const totalRotation = 360 * 8 + targetAngle; // 8 full spins + target
+    const totalRotation = 360 * 8 + targetAngle;
 
     setRotation(totalRotation);
 
-    // Wait for spin animation
     setTimeout(async () => {
       setSpinning(false);
       setWonPrize(winner);
       setHasSpun(true);
 
-      // Record win
       await supabase.from("sweepstakes_winners").insert({
         event_id: event.id,
         prize_id: winner.id,
@@ -205,9 +116,11 @@ export const SweepstakesWheel = () => {
 
   if (!event || prizes.length === 0) return null;
 
+  const sliceAngle = 360 / prizes.length;
+
   return (
     <Dialog open={open} onOpenChange={(v) => !spinning && setOpen(v)}>
-      <DialogContent className="sm:max-w-md bg-gradient-to-b from-[#0a0a1a] to-[#1a1a2e] border-primary/30 p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-md border-primary/30 p-0 overflow-hidden" style={{ background: "linear-gradient(to bottom, #0a0a1a, #1a1a2e)" }}>
         {/* Header */}
         <div className="relative p-6 pb-2 text-center">
           <button
@@ -235,28 +148,123 @@ export const SweepstakesWheel = () => {
                 key="wheel"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative"
+                className="relative flex flex-col items-center"
               >
                 {/* Pointer */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-10">
-                  <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-t-[20px] border-l-transparent border-r-transparent border-t-primary drop-shadow-lg" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-20">
+                  <div
+                    className="drop-shadow-lg"
+                    style={{
+                      width: 0,
+                      height: 0,
+                      borderLeft: "14px solid transparent",
+                      borderRight: "14px solid transparent",
+                      borderTop: "24px solid #FF5910",
+                      filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))",
+                    }}
+                  />
                 </div>
 
+                {/* Wheel container */}
                 <motion.div
                   animate={{ rotate: rotation }}
                   transition={{ duration: 5, ease: [0.2, 0.8, 0.3, 1] }}
-                  className="w-[280px] h-[280px] sm:w-[320px] sm:h-[320px]"
+                  className="relative"
+                  style={{ width: 300, height: 300 }}
                 >
-                  <canvas
-                    ref={canvasRef}
-                    className="w-full h-full rounded-full shadow-[0_0_40px_rgba(255,89,16,0.4)]"
+                  {/* Outer glow ring */}
+                  <div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                      boxShadow: "0 0 30px 8px rgba(255,89,16,0.5), inset 0 0 15px rgba(255,89,16,0.2)",
+                      border: "4px solid #FF5910",
+                    }}
                   />
+
+                  {/* Conic gradient wheel */}
+                  <div
+                    className="absolute inset-[4px] rounded-full overflow-hidden"
+                    style={{
+                      background: `conic-gradient(${prizes.map((_, i) => {
+                        const color = SLICE_COLORS[i % SLICE_COLORS.length];
+                        const start = (i / prizes.length) * 100;
+                        const end = ((i + 1) / prizes.length) * 100;
+                        return `${color} ${start}% ${end}%`;
+                      }).join(", ")})`,
+                    }}
+                  />
+
+                  {/* Slice divider lines */}
+                  {prizes.map((_, i) => (
+                    <div
+                      key={`line-${i}`}
+                      className="absolute top-1/2 left-1/2 origin-left"
+                      style={{
+                        width: "50%",
+                        height: "2px",
+                        background: "rgba(255,255,255,0.3)",
+                        transform: `rotate(${i * sliceAngle}deg)`,
+                        transformOrigin: "0% 50%",
+                      }}
+                    />
+                  ))}
+
+                  {/* Prize labels */}
+                  {prizes.map((prize, i) => {
+                    const angle = (i * sliceAngle + sliceAngle / 2) - 90;
+                    const rad = (angle * Math.PI) / 180;
+                    const labelRadius = 105;
+                    const x = 150 + Math.cos(rad) * labelRadius;
+                    const y = 150 + Math.sin(rad) * labelRadius;
+
+                    return (
+                      <div
+                        key={prize.id}
+                        className="absolute flex flex-col items-center justify-center text-center pointer-events-none"
+                        style={{
+                          left: x,
+                          top: y,
+                          transform: `translate(-50%, -50%) rotate(${angle + 90}deg)`,
+                          width: 70,
+                        }}
+                      >
+                        <span className="text-lg leading-none drop-shadow-md">{prize.icon}</span>
+                        <span
+                          className="text-[9px] font-bold leading-tight mt-0.5 drop-shadow-md"
+                          style={{
+                            color: "#ffffff",
+                            textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+                          }}
+                        >
+                          {prize.name.length > 14 ? prize.name.slice(0, 12) + "…" : prize.name}
+                        </span>
+                      </div>
+                    );
+                  })}
+
+                  {/* Center hub */}
+                  <div
+                    className="absolute rounded-full flex items-center justify-center z-10"
+                    style={{
+                      width: 54,
+                      height: 54,
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      background: "radial-gradient(circle, #2a2a4e, #1a1a2e)",
+                      border: "3px solid #FF5910",
+                      boxShadow: "0 0 12px rgba(255,89,16,0.6)",
+                    }}
+                  >
+                    <span className="text-white font-bold text-xs tracking-wider">SPIN</span>
+                  </div>
                 </motion.div>
 
                 <Button
                   onClick={handleSpin}
                   disabled={spinning || hasSpun}
-                  className="mt-4 w-full bg-gradient-to-r from-primary to-orange-500 text-white font-bold text-lg py-3 hover:brightness-110 disabled:opacity-50"
+                  className="mt-5 w-full font-bold text-lg py-3 hover:brightness-110 disabled:opacity-50"
+                  style={{ background: "linear-gradient(to right, #FF5910, #FF8C42)" }}
                   size="lg"
                 >
                   {spinning ? "🎰 Spinning..." : "🎯 SPIN THE WHEEL!"}
@@ -274,14 +282,12 @@ export const SweepstakesWheel = () => {
                   animate={{ rotate: [0, -10, 10, -10, 10, 0] }}
                   transition={{ duration: 0.5 }}
                 >
-                  <PartyPopper className="h-16 w-16 text-yellow-400 mx-auto mb-4" />
+                  <PartyPopper className="h-16 w-16 mx-auto mb-4" style={{ color: "#facc15" }} />
                 </motion.div>
 
-                <h3 className="text-2xl font-bold text-primary mb-2">
-                  🎉 You Won! 🎉
-                </h3>
+                <h3 className="text-2xl font-bold text-primary mb-2">🎉 You Won! 🎉</h3>
 
-                <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-4">
+                <div className="rounded-xl p-4 mb-4 border" style={{ background: "rgba(255,89,16,0.1)", borderColor: "rgba(255,89,16,0.3)" }}>
                   <p className="text-3xl mb-2">{wonPrize.icon}</p>
                   <p className="text-lg font-bold text-foreground">{wonPrize.name}</p>
                   {wonPrize.description && (
@@ -289,9 +295,9 @@ export const SweepstakesWheel = () => {
                   )}
                   {wonPrize.is_grand_prize && (
                     <div className="flex items-center justify-center gap-1 mt-2">
-                      <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
-                      <span className="text-xs font-bold text-yellow-400 uppercase">Grand Prize!</span>
-                      <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+                      <Star className="h-4 w-4 fill-current" style={{ color: "#facc15" }} />
+                      <span className="text-xs font-bold uppercase" style={{ color: "#facc15" }}>Grand Prize!</span>
+                      <Star className="h-4 w-4 fill-current" style={{ color: "#facc15" }} />
                     </div>
                   )}
                 </div>
@@ -299,7 +305,8 @@ export const SweepstakesWheel = () => {
                 {wonPrize.content_url && (
                   <Button
                     onClick={() => window.location.href = wonPrize.content_url!}
-                    className="w-full bg-gradient-to-r from-primary to-orange-500 mb-2"
+                    className="w-full mb-2"
+                    style={{ background: "linear-gradient(to right, #FF5910, #FF8C42)" }}
                   >
                     🎁 Claim Your Prize
                   </Button>
