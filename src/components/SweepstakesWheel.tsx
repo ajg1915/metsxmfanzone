@@ -150,10 +150,9 @@ export const SweepstakesWheel = () => {
       <DialogContent className="sm:max-w-[340px] border-primary/30 p-0 overflow-hidden max-h-[90vh] overflow-y-auto" style={{ background: "linear-gradient(to bottom, #0a0a1a, #1a1a2e)" }}>
         {/* Header */}
         <div className="relative px-4 pt-4 pb-1 text-center">
-          <div className="flex items-center justify-center gap-1.5 mb-1">
-            <Gift className="h-4 w-4 text-primary animate-bounce" />
-            <h2 className="text-base font-bold text-primary">🎰 SWEEPSTAKES</h2>
-            <Gift className="h-4 w-4 text-primary animate-bounce" />
+          <div className="flex flex-col items-center gap-1 mb-1">
+            <img src={metsLogo} alt="MetsXMFanZone" className="h-10 w-auto" />
+            <h2 className="text-base font-bold text-primary">SWEEPSTAKES</h2>
           </div>
           <p className="text-xs text-muted-foreground">{event.name}</p>
           {event.description && (
