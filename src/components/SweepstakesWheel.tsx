@@ -338,6 +338,7 @@ export const SweepstakesWheel = () => {
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
 
