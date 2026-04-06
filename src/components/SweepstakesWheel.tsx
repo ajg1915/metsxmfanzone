@@ -282,11 +282,11 @@ export const SweepstakesWheel = () => {
                 <Button
                   onClick={handleSpin}
                   disabled={spinning || hasSpun}
-                  className="mt-5 w-full font-bold text-lg py-3 hover:brightness-110 disabled:opacity-50"
+                  className="mt-3 w-full font-bold text-sm py-2 hover:brightness-110 disabled:opacity-50"
                   style={{ background: "linear-gradient(to right, #FF5910, #FF8C42)" }}
-                  size="lg"
+                  size="default"
                 >
-                  {spinning ? "🎰 Spinning..." : "🎯 SPIN THE WHEEL!"}
+                  {spinning ? "🎰 Spinning..." : "🎯 SPIN!"}
                 </Button>
               </motion.div>
             ) : (
