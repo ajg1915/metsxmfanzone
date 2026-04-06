@@ -318,8 +318,8 @@ const SweepstakesManagement = () => {
                 <Textarea placeholder="Description (optional)" value={newPrizeDesc} onChange={e => setNewPrizeDesc(e.target.value)} rows={2} />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs">Odds Weight (higher = more likely)</Label>
-                    <Input type="number" min={1} max={100} value={newPrizeWeight} onChange={e => setNewPrizeWeight(Number(e.target.value))} />
+                    <Label className="text-xs">Chance (1–100%)</Label>
+                    <Input type="number" min={1} max={100} value={newPrizeWeight} onChange={e => setNewPrizeWeight(Math.min(100, Math.max(1, Number(e.target.value))))} />
                   </div>
                   <div>
                     <Label className="text-xs">Content URL (optional)</Label>
