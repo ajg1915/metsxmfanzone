@@ -73,7 +73,6 @@ export const SweepstakesWheel = () => {
 
       setEvent(activeEvent);
       setPrizes(eventPrizes);
-      setTimeout(() => setOpen(true), 2000);
     };
 
     checkSweepstakes();
