@@ -241,71 +241,8 @@ const Auth = () => {
     return false;
   }, [paymentMethod, selectedPlan]);
 
-  const handleGoogleSignIn = async () => {
-    if (!isLogin && !persistPendingPaidSignup()) {
-      toast({
-        title: "Paid plan required",
-        description: "Select Premium or Annual before continuing with Google.",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    setGoogleLoading(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        toast({
-          title: "Google Sign-In Failed",
-          description: result.error.message || "Could not sign in with Google.",
-          variant: "destructive",
-        });
-      }
-    } catch (err: any) {
-      toast({
-        title: "Google Sign-In Error",
-        description: err.message || "An unexpected error occurred.",
-        variant: "destructive",
-      });
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
 
-  const handleAppleSignIn = async () => {
-    if (!isLogin && !persistPendingPaidSignup()) {
-      toast({
-        title: "Paid plan required",
-        description: "Select Premium or Annual before continuing with Apple.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setAppleLoading(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        toast({
-          title: "Apple Sign-In Failed",
-          description: result.error.message || "Could not sign in with Apple.",
-          variant: "destructive",
-        });
-      }
-    } catch (err: any) {
-      toast({
-        title: "Apple Sign-In Error",
-        description: err.message || "An unexpected error occurred.",
-        variant: "destructive",
-      });
-    } finally {
-      setAppleLoading(false);
-    }
-  };
 
   // Check for remembered user on mount and biometric support
   useEffect(() => {
