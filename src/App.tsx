@@ -17,6 +17,7 @@ import { LiveStreamToast } from "@/components/LiveStreamToast";
 import SocialMediaBar from "@/components/SocialMediaBar";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
 import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
+import { SweepstakesWheel } from "@/components/SweepstakesWheel";
 
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 
