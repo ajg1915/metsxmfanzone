@@ -138,7 +138,14 @@ export const SweepstakesWheel = () => {
         </motion.button>
       )}
 
-      <Dialog open={open} onOpenChange={(v) => !spinning && setOpen(v)}>
+      <Dialog open={open} onOpenChange={(v) => {
+        if (spinning) return;
+        if (!v) {
+          setWonPrize(null);
+          setRotation(0);
+        }
+        setOpen(v);
+      }}>
       <DialogContent className="sm:max-w-[340px] border-primary/30 p-0 overflow-hidden max-h-[90vh] overflow-y-auto" style={{ background: "linear-gradient(to bottom, #0a0a1a, #1a1a2e)" }}>
         {/* Header */}
         <div className="relative px-4 pt-4 pb-1 text-center">
