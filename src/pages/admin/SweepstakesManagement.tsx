@@ -318,8 +318,8 @@ const SweepstakesManagement = () => {
                 <Textarea placeholder="Description (optional)" value={newPrizeDesc} onChange={e => setNewPrizeDesc(e.target.value)} rows={2} />
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs">Odds Weight (higher = more likely)</Label>
-                    <Input type="number" min={1} max={100} value={newPrizeWeight} onChange={e => setNewPrizeWeight(Number(e.target.value))} />
+                    <Label className="text-xs">Chance (1–100%)</Label>
+                    <Input type="number" min={1} max={100} value={newPrizeWeight} onChange={e => setNewPrizeWeight(Math.min(100, Math.max(1, Number(e.target.value))))} />
                   </div>
                   <div>
                     <Label className="text-xs">Content URL (optional)</Label>
@@ -336,10 +336,7 @@ const SweepstakesManagement = () => {
           )}
 
           <div className="grid gap-2">
-            {prizes.map(prize => {
-              const totalWeight = prizes.reduce((s, p) => s + p.odds_weight, 0);
-              const pct = totalWeight > 0 ? ((prize.odds_weight / totalWeight) * 100).toFixed(1) : "0";
-              return (
+            {prizes.map(prize => (
                 <Card key={prize.id}>
                   <CardContent className="p-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -349,7 +346,7 @@ const SweepstakesManagement = () => {
                           <span className="font-medium">{prize.name}</span>
                           {prize.is_grand_prize && <Badge className="bg-yellow-500 text-black text-[10px]">GRAND</Badge>}
                         </div>
-                        <p className="text-xs text-muted-foreground">Weight: {prize.odds_weight} ({pct}% chance)</p>
+                        <p className="text-xs text-muted-foreground">Chance: {prize.odds_weight}%</p>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" onClick={() => deletePrize(prize.id)}>
@@ -357,8 +354,7 @@ const SweepstakesManagement = () => {
                     </Button>
                   </CardContent>
                 </Card>
-              );
-            })}
+              ))}
             {prizes.length === 0 && (
               <p className="text-center text-muted-foreground py-8">No prizes yet. Add some above!</p>
             )}
