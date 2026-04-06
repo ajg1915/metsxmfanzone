@@ -142,12 +142,6 @@ export const SweepstakesWheel = () => {
       <DialogContent className="sm:max-w-[340px] border-primary/30 p-0 overflow-hidden max-h-[90vh] overflow-y-auto" style={{ background: "linear-gradient(to bottom, #0a0a1a, #1a1a2e)" }}>
         {/* Header */}
         <div className="relative px-4 pt-4 pb-1 text-center">
-          <button
-            onClick={() => !spinning && setOpen(false)}
-            className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </button>
           <div className="flex items-center justify-center gap-1.5 mb-1">
             <Gift className="h-4 w-4 text-primary animate-bounce" />
             <h2 className="text-base font-bold text-primary">🎰 SWEEPSTAKES</h2>
