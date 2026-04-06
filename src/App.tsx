@@ -379,6 +379,7 @@ const AppContent = () => {
               <Route path="popup-notifications" element={<PopupNotificationsManagement />} />
               <Route path="shop" element={<ShopManagement />} />
               <Route path="player-of-the-month" element={<PlayerOfTheMonthManagement />} />
+              <Route path="sweepstakes" element={<SweepstakesManagement />} />
             </Route>
             {/* Writer Portal Routes */}
             <Route path="/writer" element={<WriterDashboard />} />
