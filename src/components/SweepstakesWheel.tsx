@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gift, PartyPopper, Star, X } from "lucide-react";
+import { Gift, PartyPopper, Star, X, Frown } from "lucide-react";
 
 interface Prize {
   id: string;
