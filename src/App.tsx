@@ -281,6 +281,7 @@ const AppContent = () => {
         <StreamExitDialog />
         <SocialMediaBar />
         <ForceNotificationPrompt />
+        <SweepstakesWheel />
         
         <Suspense fallback={<PageLoader />}>
           <Routes>
