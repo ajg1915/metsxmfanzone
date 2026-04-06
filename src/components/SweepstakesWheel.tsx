@@ -89,10 +89,8 @@ export const SweepstakesWheel = () => {
   }, [prizes]);
 
   const handleSpin = async () => {
-    console.log("handleSpin called", { spinning, hasSpun, event: !!event, user: !!user });
     if (spinning || hasSpun || !event || !user) return;
     setSpinning(true);
-    console.log("Spin started!");
 
     const winner = selectPrize();
     const prizeIndex = prizes.findIndex((p) => p.id === winner.id);
