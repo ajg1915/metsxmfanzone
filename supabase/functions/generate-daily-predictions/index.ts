@@ -232,7 +232,7 @@ Respond with ONLY a valid JSON array (no markdown, no extra text):
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "google/gemini-2.5-flash",
+            model: "google/gemini-2.5-flash-lite",
             max_tokens: 4000,
             messages: [
               { role: "system", content: "You are Anthony, a Mets baseball analyst. Respond ONLY with a raw JSON array (no markdown, no code fences, no explanation). Be realistic with stat predictions." },

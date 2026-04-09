@@ -8,13 +8,14 @@ const corsHeaders = {
   "X-Frame-Options": "DENY",
 };
 
+const DAILY_MESSAGE_LIMIT = 10;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Verify user authentication
     const authHeader = req.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Authentication required" }), {
@@ -24,26 +25,43 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    
-    // Create Supabase client to verify the token
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: false },
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
 
+    const adminClient = createClient(supabaseUrl, serviceKey);
+
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
     if (authError || !user) {
-      console.error("Auth error:", authError?.message);
       return new Response(JSON.stringify({ error: "Invalid or expired session" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    console.log("Authenticated user:", user.id);
+    // Rate limit: 10 messages per user per day
+    const today = new Date().toISOString().split("T")[0];
+    const { count, error: countError } = await adminClient
+      .from("chat_usage")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .gte("created_at", `${today}T00:00:00Z`);
+
+    if (!countError && (count ?? 0) >= DAILY_MESSAGE_LIMIT) {
+      return new Response(JSON.stringify({ error: `You've reached your daily limit of ${DAILY_MESSAGE_LIMIT} messages. Try again tomorrow!` }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Log this message
+    await adminClient.from("chat_usage").insert({ user_id: user.id });
 
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -59,7 +77,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-flash-lite",
         messages: [
           { 
             role: "system", 

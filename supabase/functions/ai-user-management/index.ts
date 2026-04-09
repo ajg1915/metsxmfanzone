@@ -145,7 +145,7 @@ IMPORTANT: Always return valid JSON. No markdown, no code blocks.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-flash-lite",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: command },
