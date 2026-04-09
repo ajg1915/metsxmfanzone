@@ -106,7 +106,7 @@ export const WelcomeBackToast = () => {
               duration: 8000,
               action: {
                 label: "Watch Live",
-                onClick: () => window.location.href = "/spring-training-live",
+                onClick: () => window.location.href = "/metsxmfanzone",
               },
             }
           );
@@ -146,7 +146,7 @@ export const WelcomeBackToast = () => {
               duration: 6000,
               action: {
                 label: "View Schedule",
-                onClick: () => window.location.href = "/spring-training-live",
+                onClick: () => window.location.href = "/metsxmfanzone",
               },
             }
           );
