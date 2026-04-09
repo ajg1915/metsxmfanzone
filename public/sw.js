@@ -1,28 +1,47 @@
 // MetsXM FanZone Service Worker for Push Notifications
-const CACHE_NAME = 'metsxm-fanzone-v1';
+const CACHE_NAME = 'metsxm-fanzone-v3';
 
-// Install event - cache essential files
+// Install event - skip waiting to activate immediately
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker...');
+  console.log('[SW] Installing service worker v3...');
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate event - clean up ALL old caches to force fresh content
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker...');
+  console.log('[SW] Activating service worker v3...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((cacheName) => cacheName !== CACHE_NAME)
-          .map((cacheName) => caches.delete(cacheName))
+          .map((cacheName) => {
+            console.log('[SW] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          })
       );
     })
   );
   self.clients.claim();
 });
 
-// Push notification event - triggered when push message is received
+// Fetch event - network-first strategy to always get fresh content
+self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') return;
+  
+  // For navigation requests (HTML pages), always go to network
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+});
+
+// Push notification event
 self.addEventListener('push', (event) => {
   console.log('[SW] Push notification received:', event);
   
@@ -51,7 +70,7 @@ self.addEventListener('push', (event) => {
     vibrate: isLiveGame ? [300, 100, 300, 100, 300] : [200, 100, 200],
     tag: data.tag || 'metsxm-notification',
     renotify: true,
-    requireInteraction: isLiveGame, // Force user to interact with live game alerts
+    requireInteraction: isLiveGame,
     silent: false,
     data: {
       url: data.url || '/',
@@ -74,7 +93,7 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Notification click event - handle user clicking on notification
+// Notification click event
 self.addEventListener('notificationclick', (event) => {
   console.log('[SW] Notification clicked:', event);
   
@@ -88,14 +107,12 @@ self.addEventListener('notificationclick', (event) => {
   
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Check if there's already a window/tab open with the app
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           client.navigate(urlToOpen);
           return client.focus();
         }
       }
-      // If no window is open, open a new one
       if (clients.openWindow) {
         return clients.openWindow(urlToOpen);
       }
@@ -117,6 +134,5 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncNotifications() {
-  // Sync any pending notifications when back online
   console.log('[SW] Syncing notifications...');
 }

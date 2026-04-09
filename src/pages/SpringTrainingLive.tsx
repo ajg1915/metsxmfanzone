@@ -44,6 +44,11 @@ const SpringTrainingLive = () => {
   useEffect(() => {
     if (!loading && !user) {
       navigate("/auth");
+      return;
+    }
+    // Spring Training is discontinued - redirect all users to plans page
+    if (!loading && user) {
+      navigate("/plans", { replace: true });
     }
   }, [user, loading, navigate]);
 
