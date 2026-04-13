@@ -150,20 +150,34 @@ export default function AdminSettings() {
   const handleSaveMaintenance = async () => {
     await saveSetting('maintenance_mode', maintenance);
     
-    // If maintenance is being enabled, send notification emails to all members
+    // If maintenance is being enabled, send notification emails AND push notifications
     if (maintenance.enabled) {
       setSendingEmails(true);
       try {
-        const { data, error } = await supabase.functions.invoke('send-maintenance-notification', {
-          body: { message: maintenance.message },
-        });
+        // Send email notifications and push notifications in parallel
+        const [emailResult, pushResult] = await Promise.all([
+          supabase.functions.invoke('send-maintenance-notification', {
+            body: { message: maintenance.message },
+          }),
+          supabase.functions.invoke('send-push-notification', {
+            body: {
+              title: '🔧 MetsXMFanZone Under Maintenance',
+              body: maintenance.message || "We're currently performing scheduled maintenance. We'll be back online Monday morning at 6am ET!",
+              icon: '/logo-192.png',
+              url: '/',
+              tag: 'maintenance-alert',
+            },
+          }),
+        ]);
         
-        if (error) throw error;
+        if (emailResult.error) throw emailResult.error;
         
-        toast.success(`Maintenance emails sent to ${data?.sent || 0} members`);
+        const emailsSent = emailResult.data?.sent || 0;
+        const pushSent = pushResult.data?.successful || 0;
+        toast.success(`Maintenance alerts sent: ${emailsSent} emails, ${pushSent} push notifications`);
       } catch (error: any) {
-        console.error('Error sending maintenance emails:', error);
-        toast.error('Maintenance saved but failed to send notification emails');
+        console.error('Error sending maintenance notifications:', error);
+        toast.error('Maintenance saved but failed to send some notifications');
       } finally {
         setSendingEmails(false);
       }
