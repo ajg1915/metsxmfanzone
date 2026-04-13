@@ -1,50 +1,30 @@
-// MetsXM FanZone Service Worker for Push Notifications
-const CACHE_NAME = 'metsxm-fanzone-v3';
+// MetsXM FanZone Service Worker v4 - Zero Cache Policy
+// Forces fresh content on every visit
 
-// Install event - skip waiting to activate immediately
-self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker v3...');
+// Install - immediately take over
+self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-// Activate event - clean up ALL old caches to force fresh content
+// Activate - destroy ALL caches immediately
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker v3...');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((cacheName) => cacheName !== CACHE_NAME)
-          .map((cacheName) => {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          })
-      );
-    })
+    caches.keys().then((names) =>
+      Promise.all(names.map((name) => caches.delete(name)))
+    )
   );
   self.clients.claim();
 });
 
-// Fetch event - network-first strategy to always get fresh content
+// Fetch - ALWAYS go to network, never cache anything
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-  
-  // For navigation requests (HTML pages), always go to network
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(event.request);
-      })
-    );
-    return;
-  }
+  // Network only - no caching at all
+  event.respondWith(fetch(event.request));
 });
 
 // Push notification event
 self.addEventListener('push', (event) => {
-  console.log('[SW] Push notification received:', event);
-  
   let data = {
     title: 'MetsXM FanZone',
     body: 'You have a new notification!',
@@ -52,7 +32,7 @@ self.addEventListener('push', (event) => {
     badge: '/logo-192.png',
     url: '/'
   };
-  
+
   if (event.data) {
     try {
       data = { ...data, ...event.data.json() };
@@ -60,9 +40,9 @@ self.addEventListener('push', (event) => {
       data.body = event.data.text();
     }
   }
-  
+
   const isLiveGame = data.tag === 'live-game' || data.tag === 'game-alert' || (data.title && data.title.toLowerCase().includes('live'));
-  
+
   const options = {
     body: data.body,
     icon: data.icon || '/logo-192.png',
@@ -72,39 +52,22 @@ self.addEventListener('push', (event) => {
     renotify: true,
     requireInteraction: isLiveGame,
     silent: false,
-    data: {
-      url: data.url || '/',
-      dateOfArrival: Date.now()
-    },
+    data: { url: data.url || '/', dateOfArrival: Date.now() },
     actions: [
-      {
-        action: 'open',
-        title: isLiveGame ? '🏟️ Watch Now' : 'View Now'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dismiss'
-      }
+      { action: 'open', title: isLiveGame ? '🏟️ Watch Now' : 'View Now' },
+      { action: 'dismiss', title: 'Dismiss' }
     ]
   };
-  
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
+
+  event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
 // Notification click event
 self.addEventListener('notificationclick', (event) => {
-  console.log('[SW] Notification clicked:', event);
-  
   event.notification.close();
-  
-  if (event.action === 'dismiss') {
-    return;
-  }
-  
+  if (event.action === 'dismiss') return;
+
   const urlToOpen = event.notification.data?.url || '/';
-  
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
@@ -113,26 +76,15 @@ self.addEventListener('notificationclick', (event) => {
           return client.focus();
         }
       }
-      if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
-      }
+      if (clients.openWindow) return clients.openWindow(urlToOpen);
     })
   );
 });
 
-// Notification close event
-self.addEventListener('notificationclose', (event) => {
-  console.log('[SW] Notification closed:', event);
-});
+self.addEventListener('notificationclose', () => {});
 
-// Background sync for offline notifications
 self.addEventListener('sync', (event) => {
-  console.log('[SW] Background sync:', event.tag);
   if (event.tag === 'sync-notifications') {
-    event.waitUntil(syncNotifications());
+    event.waitUntil(Promise.resolve());
   }
 });
-
-async function syncNotifications() {
-  console.log('[SW] Syncing notifications...');
-}

@@ -8,57 +8,35 @@ import "./index.css";
 // NOTE: the Lovable preview environment can be unstable with a Service Worker enabled
 // (cached JS/CSS can get out of sync during rapid iterations). We disable + fully clean SW
 // on preview hosts to prevent the "Sorry, we ran into an issue starting the live preview" modal.
+// Always purge all browser caches on every page load to guarantee fresh content
+const purgeAllCaches = async () => {
+  try {
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+      if (keys.length > 0) {
+        console.log("[App] Purged", keys.length, "cache(s)");
+      }
+    }
+  } catch (e) {
+    console.warn("[App] Cache purge failed", e);
+  }
+};
+
+void purgeAllCaches();
+
 const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
   window.location.hostname.endsWith(".lovableproject.com") ||
   window.location.hostname === "lovableproject.com";
 
-const PREVIEW_SW_CLEAN_KEY = "__preview_sw_cleaned_v1";
-
-const cleanupPreviewServiceWorker = async () => {
-  try {
-    // Prevent reload loops
-    const alreadyCleaned = sessionStorage.getItem(PREVIEW_SW_CLEAN_KEY) === "1";
-
-    const hadSW = "serviceWorker" in navigator;
-    const hadCaches = "caches" in window;
-
-    let unregisteredCount = 0;
-    if (hadSW) {
-      const regs = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(
-        regs.map(async (r) => {
-          const ok = await r.unregister();
-          if (ok) unregisteredCount += 1;
-        })
-      );
-    }
-
-    let deletedCacheCount = 0;
-    if (hadCaches) {
-      const keys = await caches.keys();
-      deletedCacheCount = keys.length;
-      await Promise.all(keys.map((k) => caches.delete(k)));
-    }
-
-    console.warn("[App] Preview SW cleanup", {
-      unregisteredCount,
-      deletedCacheCount,
-    });
-
-    // If anything was cleaned and we haven't reloaded yet, reload once to fetch fresh assets.
-    if (!alreadyCleaned && (unregisteredCount > 0 || deletedCacheCount > 0)) {
-      sessionStorage.setItem(PREVIEW_SW_CLEAN_KEY, "1");
-      window.location.reload();
-    }
-  } catch (e) {
-    console.warn("[App] Preview SW cleanup failed", e);
-  }
-};
-
 if (isPreviewHost) {
-  // Run immediately (not on window load) so we can escape stale cached assets ASAP.
-  void cleanupPreviewServiceWorker();
+  // Unregister all SWs in preview
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistrations().then((regs) =>
+      regs.forEach((r) => r.unregister())
+    );
+  }
 } else if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
