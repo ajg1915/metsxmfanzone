@@ -4,6 +4,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { StreamPlayer } from "@/components/StreamPlayer";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
+import LiveStreamChat from "@/components/LiveStreamChat";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -161,6 +162,15 @@ const LiveStream = () => {
                   pageTitle={stream.title}
                   pageDescription={stream.description || "Live stream on MetsXMFanZone"}
                 />
+              </motion.div>
+
+              <motion.div
+                className="mt-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4 }}
+              >
+                <LiveStreamChat streamId={stream.id} streamTitle={stream.title} />
               </motion.div>
             </div>
           </div>
