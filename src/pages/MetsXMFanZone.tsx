@@ -4,6 +4,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { ClapprPlayer } from "@/components/ClapprPlayer";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
+import LiveStreamChat from "@/components/LiveStreamChat";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -151,6 +152,14 @@ const MetsXMFanZone = () => {
               pageTitle="MetsXMFanZone Live Stream"
               pageDescription="Ultimate Destination Where the Fans Go"
             />
+
+            {/* Live Community Chat */}
+            <div className="mt-6">
+              <LiveStreamChat
+                streamId="00000000-0000-0000-0000-00000000fa11"
+                streamTitle="MetsXMFanZone Live"
+              />
+            </div>
 
             {/* Upcoming Games & Matchup Breakdowns */}
             <div className="mt-8">
