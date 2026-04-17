@@ -4,6 +4,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { ClapprPlayer } from "@/components/ClapprPlayer";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
+import LiveStreamChat from "@/components/LiveStreamChat";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
