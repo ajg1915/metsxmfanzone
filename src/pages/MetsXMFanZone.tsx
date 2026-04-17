@@ -153,6 +153,14 @@ const MetsXMFanZone = () => {
               pageDescription="Ultimate Destination Where the Fans Go"
             />
 
+            {/* Live Community Chat */}
+            <div className="mt-6">
+              <LiveStreamChat
+                streamId="00000000-0000-0000-0000-00000000fa11"
+                streamTitle="MetsXMFanZone Live"
+              />
+            </div>
+
             {/* Upcoming Games & Matchup Breakdowns */}
             <div className="mt-8">
               <div className="flex items-center gap-3 mb-4">
