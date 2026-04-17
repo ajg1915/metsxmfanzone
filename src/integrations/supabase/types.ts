@@ -1006,6 +1006,30 @@ export type Database = {
           },
         ]
       }
+      live_stream_chat: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          stream_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          stream_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          stream_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       live_streams: {
         Row: {
           actual_end: string | null
