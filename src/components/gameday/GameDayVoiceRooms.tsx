@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, PhoneOff, Users, Volume2 } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Users, Volume2, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Room,
@@ -22,6 +22,7 @@ interface VoiceRoom {
   is_active: boolean;
   max_participants: number;
   image_url?: string | null;
+  created_by_user_id?: string | null;
 }
 
 interface ParticipantInfo {
@@ -40,7 +41,18 @@ export function GameDayVoiceRooms() {
   const [connecting, setConnecting] = useState(false);
   const [participants, setParticipants] = useState<ParticipantInfo[]>([]);
   const [muted, setMuted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const roomRef = useRef<Room | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    supabase
+      .rpc("has_role", { _user_id: user.id, _role: "admin" })
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   useEffect(() => {
     const load = async () => {
