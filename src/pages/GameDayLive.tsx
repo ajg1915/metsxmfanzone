@@ -123,7 +123,7 @@ const GameDayLive = () => {
       />
       <Navigation />
 
-      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4">
+      <div className="container mx-auto px-2 sm:px-4 pt-16 sm:pt-20 pb-4 sm:pb-6 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
