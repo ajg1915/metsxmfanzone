@@ -3186,6 +3186,36 @@ export type Database = {
         }
         Relationships: []
       }
+      tiktok_live_status: {
+        Row: {
+          id: number
+          is_live: boolean
+          stream_title: string | null
+          tiktok_username: string
+          updated_at: string
+          updated_by: string | null
+          went_live_at: string | null
+        }
+        Insert: {
+          id?: number
+          is_live?: boolean
+          stream_title?: string | null
+          tiktok_username?: string
+          updated_at?: string
+          updated_by?: string | null
+          went_live_at?: string | null
+        }
+        Update: {
+          id?: number
+          is_live?: boolean
+          stream_title?: string | null
+          tiktok_username?: string
+          updated_at?: string
+          updated_by?: string | null
+          went_live_at?: string | null
+        }
+        Relationships: []
+      }
       toast_prompts: {
         Row: {
           created_at: string

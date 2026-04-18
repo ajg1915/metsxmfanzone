@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { TikTokLiveToggle } from "@/components/admin/TikTokLiveToggle";
 
 // Team matchup preset images
 import fanartMetsAway from "@/assets/fanart-mets-away.jpg";
@@ -579,7 +580,8 @@ export default function LiveStreamManagement() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-2 py-3">
+    <div className="max-w-7xl mx-auto px-2 py-3 space-y-4">
+      <TikTokLiveToggle />
       <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
         <h1 className="text-lg font-bold">Live Stream Management</h1>
         <div className="flex items-center gap-2">

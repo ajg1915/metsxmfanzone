@@ -13,6 +13,7 @@ import { SocialWallSection } from "@/components/radio/SocialWallSection";
 import { CreateRoomDialog } from "@/components/radio/CreateRoomDialog";
 import StoriesSection from "@/components/StoriesSection";
 import BlogSection from "@/components/BlogSection";
+import { TikTokLiveBanner } from "@/components/radio/TikTokLiveBanner";
 
 const GameDayLive = () => {
   const { user, loading: authLoading } = useAuth();
@@ -106,6 +107,8 @@ const GameDayLive = () => {
             </p>
           </div>
         </div>
+
+        <TikTokLiveBanner />
 
         <ScheduledShowsSection />
 
