@@ -419,6 +419,15 @@ const Navigation = () => {
                   </button>
 
                   <button
+                    onClick={() => { setMobileMenuOpen(false); handleProNavigation("/gameday-live"); }}
+                    className="flex items-center gap-2.5 w-full hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs animate-pulse"
+                    style={{ color: "#ff4500" }}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
+                    <span className="font-bold">Game Day Live</span>
+                  </button>
+
+                  <button
                     onClick={() => { setMobileMenuOpen(false); navigate("/shop"); }}
                     className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
                   >
