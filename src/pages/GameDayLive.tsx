@@ -11,6 +11,8 @@ import { GameDayVoiceRooms } from "@/components/gameday/GameDayVoiceRooms";
 import { ScheduledShowsSection } from "@/components/radio/ScheduledShowsSection";
 import { SocialWallSection } from "@/components/radio/SocialWallSection";
 import { CreateRoomDialog } from "@/components/radio/CreateRoomDialog";
+import StoriesSection from "@/components/StoriesSection";
+import BlogSection from "@/components/BlogSection";
 
 const GameDayLive = () => {
   const { user, loading: authLoading } = useAuth();
@@ -113,6 +115,16 @@ const GameDayLive = () => {
             <CreateRoomDialog />
           </div>
           <GameDayVoiceRooms />
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="font-semibold text-sm">MetsXMFanZone Stories</h2>
+          <StoriesSection />
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="font-semibold text-sm">MetsXMFanZone Blog</h2>
+          <BlogSection />
         </div>
 
         <SocialWallSection />
