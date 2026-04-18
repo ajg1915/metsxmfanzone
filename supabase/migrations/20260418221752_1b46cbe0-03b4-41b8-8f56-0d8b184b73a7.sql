@@ -1,0 +1,1 @@
+ALTER TABLE public.gameday_voice_rooms ADD COLUMN IF NOT EXISTS image_url TEXT;

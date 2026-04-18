@@ -1014,6 +1014,7 @@ export type Database = {
           created_by_user_id: string | null
           description: string | null
           id: string
+          image_url: string | null
           is_active: boolean
           livekit_room_name: string
           max_participants: number
@@ -1028,6 +1029,7 @@ export type Database = {
           created_by_user_id?: string | null
           description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           livekit_room_name: string
           max_participants?: number
@@ -1042,6 +1044,7 @@ export type Database = {
           created_by_user_id?: string | null
           description?: string | null
           id?: string
+          image_url?: string | null
           is_active?: boolean
           livekit_room_name?: string
           max_participants?: number
