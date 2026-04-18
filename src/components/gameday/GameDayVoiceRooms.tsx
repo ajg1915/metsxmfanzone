@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, PhoneOff, Users, Volume2 } from "lucide-react";
+import { Mic, MicOff, PhoneOff, Users, Volume2, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   Room,
@@ -22,6 +22,7 @@ interface VoiceRoom {
   is_active: boolean;
   max_participants: number;
   image_url?: string | null;
+  created_by_user_id?: string | null;
 }
 
 interface ParticipantInfo {
@@ -40,7 +41,18 @@ export function GameDayVoiceRooms() {
   const [connecting, setConnecting] = useState(false);
   const [participants, setParticipants] = useState<ParticipantInfo[]>([]);
   const [muted, setMuted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const roomRef = useRef<Room | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      return;
+    }
+    supabase
+      .rpc("has_role", { _user_id: user.id, _role: "admin" })
+      .then(({ data }) => setIsAdmin(!!data));
+  }, [user]);
 
   useEffect(() => {
     const load = async () => {
@@ -169,7 +181,16 @@ export function GameDayVoiceRooms() {
     refreshParticipants(lk);
   };
 
-  // Cleanup on unmount
+  const deleteRoom = async (r: VoiceRoom) => {
+    if (!confirm(`Delete "${r.name}"? This cannot be undone.`)) return;
+    if (activeRoomId === r.id) await leaveRoom();
+    const { error } = await supabase.from("gameday_voice_rooms").delete().eq("id", r.id);
+    if (error) {
+      toast({ title: "Could not delete", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Room deleted" });
+    }
+  };
   useEffect(() => {
     return () => {
       roomRef.current?.disconnect();
@@ -245,6 +266,17 @@ export function GameDayVoiceRooms() {
                           <Mic className="w-3 h-3 mr-1" /> Mute
                         </>
                       )}
+                    </Button>
+                  )}
+                  {(isAdmin || (user && r.created_by_user_id === user.id)) && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => deleteRoom(r)}
+                      className="h-7 w-7 flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      title="Delete room"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   )}
                 </div>

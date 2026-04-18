@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, X, User } from "lucide-react";
+import { Check, X, User, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface PendingRoom {
@@ -62,6 +62,13 @@ export function PendingRoomsAdmin() {
       .eq("id", id);
     if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
     else toast({ title: "Room rejected" });
+  };
+
+  const remove = async (id: string, name: string) => {
+    if (!confirm(`Permanently delete "${name}"?`)) return;
+    const { error } = await supabase.from("gameday_voice_rooms").delete().eq("id", id);
+    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
+    else toast({ title: "Room deleted" });
   };
 
   if (loading) return <p className="text-sm text-muted-foreground p-4">Loading…</p>;
@@ -123,7 +130,7 @@ export function PendingRoomsAdmin() {
           {others.slice(0, 10).map((r) => (
             <div
               key={r.id}
-              className="flex items-center justify-between text-xs border border-border rounded p-2"
+              className="flex items-center justify-between gap-2 text-xs border border-border rounded p-2"
             >
               <span className="truncate flex-1">{r.name}</span>
               <Badge
@@ -132,6 +139,14 @@ export function PendingRoomsAdmin() {
               >
                 {r.status}
               </Badge>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => remove(r.id, r.name)}
+                className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="w-3 h-3" />
+              </Button>
             </div>
           ))}
         </div>
