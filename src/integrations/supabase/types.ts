@@ -831,6 +831,218 @@ export type Database = {
         }
         Relationships: []
       }
+      gameday_announcements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          message: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          message: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          message?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gameday_chat: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gameday_leaderboard: {
+        Row: {
+          correct_predictions: number
+          id: string
+          total_points: number
+          total_predictions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          correct_predictions?: number
+          id?: string
+          total_points?: number
+          total_predictions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          correct_predictions?: number
+          id?: string
+          total_points?: number
+          total_predictions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gameday_poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gameday_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "gameday_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gameday_polls: {
+        Row: {
+          correct_option_index: number | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          is_resolved: boolean
+          options: Json
+          points: number
+          poll_type: string
+          question: string
+          updated_at: string
+        }
+        Insert: {
+          correct_option_index?: number | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          is_resolved?: boolean
+          options?: Json
+          points?: number
+          poll_type?: string
+          question: string
+          updated_at?: string
+        }
+        Update: {
+          correct_option_index?: number | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          is_resolved?: boolean
+          options?: Json
+          points?: number
+          poll_type?: string
+          question?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      gameday_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gameday_voice_rooms: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          livekit_room_name: string
+          max_participants: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          livekit_room_name: string
+          max_participants?: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          livekit_room_name?: string
+          max_participants?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hero_slides: {
         Row: {
           ai_source_id: string | null
@@ -3365,6 +3577,7 @@ export type Database = {
         }[]
       }
       has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
+      has_gameday_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
