@@ -204,21 +204,31 @@ const Navigation = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => handleProtectedNavigation("/community")}
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              Community
-            </button>
-
-            <button
-              onClick={() => handleProNavigation("/gameday-live")}
-              className="transition-colors flex items-center gap-1 animate-pulse"
-              style={{ color: "#ff4500" }}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ff4500] animate-pulse" />
-              Game Day Live
-            </button>
+            {/* Community Dropdown */}
+            <div className="relative group">
+              <button className="text-foreground hover:text-primary transition-colors py-2">
+                Community
+              </button>
+              <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="bg-background border border-border rounded-lg shadow-lg min-w-[180px] py-1">
+                  <button
+                    onClick={() => handleProtectedNavigation("/community")}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    <Users className="w-4 h-4" />
+                    Community Feed
+                  </button>
+                  <button
+                    onClick={() => handleProNavigation("/gameday-live")}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm font-semibold transition-colors hover:bg-primary/10"
+                    style={{ color: "#ff4500" }}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
+                    Game Day Live
+                  </button>
+                </div>
+              </div>
+            </div>
 
             <button
               onClick={() => navigate("/shop")}
