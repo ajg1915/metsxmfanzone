@@ -212,6 +212,15 @@ const Navigation = () => {
             </button>
 
             <button
+              onClick={() => handleProNavigation("/gameday-live")}
+              className="transition-colors flex items-center gap-1 animate-pulse"
+              style={{ color: "#ff4500" }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ff4500] animate-pulse" />
+              Game Day Live
+            </button>
+
+            <button
               onClick={() => navigate("/shop")}
               className="text-foreground hover:text-primary transition-colors"
             >
