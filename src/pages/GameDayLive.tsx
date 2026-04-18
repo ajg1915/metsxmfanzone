@@ -6,8 +6,11 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Lock, Sparkles, Mic } from "lucide-react";
+import { Lock, Sparkles, Radio } from "lucide-react";
 import { GameDayVoiceRooms } from "@/components/gameday/GameDayVoiceRooms";
+import { ScheduledShowsSection } from "@/components/radio/ScheduledShowsSection";
+import { SocialWallSection } from "@/components/radio/SocialWallSection";
+import { CreateRoomDialog } from "@/components/radio/CreateRoomDialog";
 
 const GameDayLive = () => {
   const { user, loading: authLoading } = useAuth();
@@ -31,15 +34,15 @@ const GameDayLive = () => {
     return (
       <div className="min-h-screen bg-background">
         <SEOHead
-          title="Game Day Live Voice Rooms | Premium Members Only"
-          description="Join Mets fans in live voice rooms. Premium members only."
+          title="MetsXMFanZone Radio Network | Premium Voice Rooms & Live Shows"
+          description="Live voice rooms, scheduled podcast shows, and the social hub for MetsXMFanZone premium members."
         />
         <Navigation />
         <div className="container mx-auto px-4 pt-20 pb-16 max-w-2xl text-center">
           <Lock className="w-12 h-12 mx-auto text-primary mb-4" />
-          <h1 className="text-3xl font-bold mb-3">Game Day Live</h1>
+          <h1 className="text-3xl font-bold mb-3">MetsXMFanZone Radio Network</h1>
           <p className="text-muted-foreground mb-6">
-            Sign in to join the voice rooms with other premium fans.
+            Sign in to join voice rooms, catch scheduled shows, and connect with fans.
           </p>
           <div className="flex gap-2 justify-center">
             <Button asChild>
@@ -59,15 +62,15 @@ const GameDayLive = () => {
     return (
       <div className="min-h-screen bg-background">
         <SEOHead
-          title="Game Day Live Voice Rooms | Premium Members Only"
-          description="Voice rooms for premium members during every Mets game."
+          title="MetsXMFanZone Radio Network | Premium Members Only"
+          description="The Radio Network is for premium members. Voice rooms, live shows, and more."
         />
         <Navigation />
         <div className="container mx-auto px-4 pt-20 pb-16 max-w-2xl text-center">
           <Sparkles className="w-12 h-12 mx-auto text-primary mb-4" />
-          <h1 className="text-3xl font-bold mb-3">Voice Rooms are for Premium Members</h1>
+          <h1 className="text-3xl font-bold mb-3">Radio Network is for Premium Members</h1>
           <p className="text-muted-foreground mb-6">
-            Hop into live voice rooms with fellow Mets fans during every game.
+            Join voice rooms, listen to live podcast shows, and tap into the MetsXMFanZone hub.
           </p>
           <Button asChild size="lg">
             <Link to="/pricing">Upgrade to Premium</Link>
@@ -81,28 +84,38 @@ const GameDayLive = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Game Day Live Voice Rooms | MetsXMFanZone"
-        description="Live voice rooms for Mets premium members. Join the conversation."
+        title="MetsXMFanZone Radio Network | Live Voice Rooms & Podcast Shows"
+        description="Live voice rooms, scheduled podcast shows, and the social hub for the MetsXMFanZone Radio Network."
       />
       <Navigation />
 
-      <div className="container mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-8 max-w-3xl space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center">
-            <Mic className="w-5 h-5 text-primary" />
+      <div className="container mx-auto px-3 sm:px-4 pt-20 sm:pt-24 pb-8 max-w-3xl space-y-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+            <Radio className="w-5 h-5 text-primary" />
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 flex-wrap">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
-              Voice Rooms
+              MetsXMFanZone Radio Network
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Drop into a room and talk Mets baseball with other premium fans.
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              Live voice rooms, scheduled podcast shows, and the social hub for true Mets fans.
             </p>
           </div>
         </div>
 
-        <GameDayVoiceRooms />
+        <ScheduledShowsSection />
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-sm">Voice Rooms</h2>
+            <CreateRoomDialog />
+          </div>
+          <GameDayVoiceRooms />
+        </div>
+
+        <SocialWallSection />
       </div>
 
       <Footer />

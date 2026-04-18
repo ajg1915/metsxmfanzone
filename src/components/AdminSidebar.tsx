@@ -26,7 +26,7 @@ const homeItems = [
   { title: "Hero Slides", url: "/admin/hero", icon: Layers },
   { title: "Media Library", url: "/admin/media-library", icon: FolderOpen },
   { title: "Live Streams", url: "/admin/live-streams", icon: Radio },
-  { title: "Game Day Live", url: "/admin/gameday-live", icon: Sparkles },
+  { title: "Radio Network", url: "/admin/gameday-live", icon: Sparkles },
   { title: "Stream Health", url: "/admin/stream-health", icon: HeartPulse },
   { title: "Stream Tester", url: "/admin/stream-tester", icon: Activity },
   { title: "Members", url: "/admin/user-management", icon: UserCog },

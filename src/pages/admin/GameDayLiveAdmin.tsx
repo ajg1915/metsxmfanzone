@@ -10,8 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus, CheckCircle2, Megaphone, Volume2, BarChart3 } from "lucide-react";
+import { Trash2, Plus, CheckCircle2, Megaphone, Volume2, BarChart3, ShieldCheck, Radio } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { PendingRoomsAdmin } from "@/components/radio/PendingRoomsAdmin";
+import { ScheduledShowsAdmin } from "@/components/radio/ScheduledShowsAdmin";
 
 interface Poll {
   id: string;
@@ -242,13 +244,19 @@ const GameDayLiveAdmin = () => {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-5xl">
-      <h1 className="text-2xl font-bold mb-1">Game Day Live · Admin</h1>
+      <h1 className="text-2xl font-bold mb-1">MetsXMFanZone Radio Network · Admin</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        Manage polls, voice rooms, and announcements for the watch party.
+        Manage scheduled shows, approve member voice rooms, polls, and announcements.
       </p>
 
-      <Tabs defaultValue="polls">
-        <TabsList>
+      <Tabs defaultValue="shows">
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="shows">
+            <Radio className="w-4 h-4 mr-1.5" /> Scheduled Shows
+          </TabsTrigger>
+          <TabsTrigger value="approvals">
+            <ShieldCheck className="w-4 h-4 mr-1.5" /> Room Approvals
+          </TabsTrigger>
           <TabsTrigger value="polls">
             <BarChart3 className="w-4 h-4 mr-1.5" /> Polls
           </TabsTrigger>
@@ -259,6 +267,14 @@ const GameDayLiveAdmin = () => {
             <Megaphone className="w-4 h-4 mr-1.5" /> Announcements
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="shows" className="mt-4">
+          <ScheduledShowsAdmin />
+        </TabsContent>
+
+        <TabsContent value="approvals" className="mt-4">
+          <PendingRoomsAdmin />
+        </TabsContent>
 
         {/* POLLS */}
         <TabsContent value="polls" className="space-y-4 mt-4">

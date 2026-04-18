@@ -224,7 +224,7 @@ const Navigation = () => {
                     style={{ color: "#ff4500" }}
                   >
                     <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
-                    Game Day Live
+                    Radio Network
                   </button>
                 </div>
               </div>
@@ -434,7 +434,7 @@ const Navigation = () => {
                     style={{ color: "#ff4500" }}
                   >
                     <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
-                    <span className="font-bold">Game Day Live</span>
+                    <span className="font-bold">Radio Network</span>
                   </button>
 
                   <button
