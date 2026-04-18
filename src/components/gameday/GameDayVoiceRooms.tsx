@@ -21,6 +21,7 @@ interface VoiceRoom {
   livekit_room_name: string;
   is_active: boolean;
   max_participants: number;
+  image_url?: string | null;
 }
 
 interface ParticipantInfo {
@@ -206,6 +207,13 @@ export function GameDayVoiceRooms() {
                 )}
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
+                  {r.image_url && (
+                    <img
+                      src={r.image_url}
+                      alt={r.name}
+                      className="w-12 h-12 rounded-md object-cover flex-shrink-0 border border-border"
+                    />
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm truncate">{r.name}</p>
                     {r.description && (
