@@ -212,6 +212,15 @@ const Navigation = () => {
             </button>
 
             <button
+              onClick={() => handleProNavigation("/gameday-live")}
+              className="transition-colors flex items-center gap-1 animate-pulse"
+              style={{ color: "#ff4500" }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#ff4500] animate-pulse" />
+              Game Day Live
+            </button>
+
+            <button
               onClick={() => navigate("/shop")}
               className="text-foreground hover:text-primary transition-colors"
             >
@@ -407,6 +416,15 @@ const Navigation = () => {
                   >
                     <Users className="w-3.5 h-3.5 text-primary" />
                     <span className="font-medium">Community</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); handleProNavigation("/gameday-live"); }}
+                    className="flex items-center gap-2.5 w-full hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs animate-pulse"
+                    style={{ color: "#ff4500" }}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
+                    <span className="font-bold">Game Day Live</span>
                   </button>
 
                   <button
