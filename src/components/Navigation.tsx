@@ -46,6 +46,7 @@ const Navigation = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [tvScheduleOpen, setTvScheduleOpen] = useState(false);
   const [communityOpen, setCommunityOpen] = useState(false);
+  const [radioOpen, setRadioOpen] = useState(false);
 
 
   const handleRefresh = () => {
@@ -428,14 +429,49 @@ const Navigation = () => {
                     <span className="font-medium">Community</span>
                   </button>
 
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); handleProNavigation("/gameday-live"); }}
-                    className="flex items-center gap-2.5 w-full hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs animate-pulse"
-                    style={{ color: "#ff4500" }}
-                  >
-                    <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
-                    <span className="font-bold">Radio Network</span>
-                  </button>
+                  {/* Radio Network collapsible */}
+                  <Collapsible open={radioOpen} onOpenChange={setRadioOpen}>
+                    <CollapsibleTrigger
+                      className="flex items-center justify-between w-full px-2.5 py-2 rounded-lg hover:bg-primary/8 transition-all"
+                      style={{ color: "#ff4500" }}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
+                        <span className="font-bold text-xs">Radio Network</span>
+                      </div>
+                      <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${radioOpen ? 'rotate-180' : ''}`} />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-0.5 mt-0.5 ml-6">
+                      <button
+                        onClick={() => { setRadioOpen(false); setMobileMenuOpen(false); handleProNavigation("/gameday-live"); }}
+                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Live Hub
+                      </button>
+                      <button
+                        onClick={() => { setRadioOpen(false); setMobileMenuOpen(false); handleProNavigation("/gameday-live#voice-rooms"); }}
+                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                      >
+                        <Users className="w-3.5 h-3.5" />
+                        Voice Rooms
+                      </button>
+                      <button
+                        onClick={() => { setRadioOpen(false); setMobileMenuOpen(false); handleProNavigation("/gameday-live#scheduled-shows"); }}
+                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                      >
+                        <CalendarDays className="w-3.5 h-3.5" />
+                        Scheduled Shows
+                      </button>
+                      <button
+                        onClick={() => { setRadioOpen(false); setMobileMenuOpen(false); handleProNavigation("/podcast"); }}
+                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                      >
+                        <img src={podcastIcon} alt="" className="w-3.5 h-3.5 object-contain" />
+                        Podcast
+                      </button>
+                    </CollapsibleContent>
+                  </Collapsible>
 
                   <button
                     onClick={() => { setMobileMenuOpen(false); navigate("/shop"); }}
