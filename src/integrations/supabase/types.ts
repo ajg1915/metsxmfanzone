@@ -1011,34 +1011,43 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          created_by_user_id: string | null
           description: string | null
           id: string
           is_active: boolean
           livekit_room_name: string
           max_participants: number
           name: string
+          rejection_reason: string | null
+          status: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           created_by?: string | null
+          created_by_user_id?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
           livekit_room_name: string
           max_participants?: number
           name: string
+          rejection_reason?: string | null
+          status?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           created_by?: string | null
+          created_by_user_id?: string | null
           description?: string | null
           id?: string
           is_active?: boolean
           livekit_room_name?: string
           max_participants?: number
           name?: string
+          rejection_reason?: string | null
+          status?: string
           updated_at?: string
         }
         Relationships: []
@@ -1998,6 +2007,54 @@ export type Database = {
           phone_number?: string | null
           sms_notifications_enabled?: boolean | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      radio_scheduled_shows: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number
+          host_name: string
+          id: string
+          is_live: boolean
+          published: boolean
+          scheduled_start: string
+          stream_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          host_name: string
+          id?: string
+          is_live?: boolean
+          published?: boolean
+          scheduled_start: string
+          stream_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          host_name?: string
+          id?: string
+          is_live?: boolean
+          published?: boolean
+          scheduled_start?: string
+          stream_url?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
