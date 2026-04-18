@@ -160,6 +160,8 @@ const MetsVsRedSox = lazy(() => import("./pages/matchups/MetsVsRedSox"));
 const MetsVsYankees = lazy(() => import("./pages/matchups/MetsVsYankees"));
 const MetsVsBlueJays = lazy(() => import("./pages/matchups/MetsVsBlueJays"));
 const EmailTemplateSettings = lazy(() => import("./pages/admin/EmailTemplateSettings"));
+const GameDayLive = lazy(() => import("./pages/GameDayLive"));
+const GameDayLiveAdmin = lazy(() => import("./pages/admin/GameDayLiveAdmin"));
 
 
 
@@ -382,6 +384,7 @@ const AppContent = () => {
               <Route path="shop" element={<ShopManagement />} />
               <Route path="player-of-the-month" element={<PlayerOfTheMonthManagement />} />
               <Route path="sweepstakes" element={<SweepstakesManagement />} />
+              <Route path="gameday-live" element={<GameDayLiveAdmin />} />
             </Route>
             {/* Writer Portal Routes */}
             <Route path="/writer" element={<WriterDashboard />} />
@@ -407,6 +410,7 @@ const AppContent = () => {
             <Route path="/player/:playerId" element={<PlayerStats />} />
             <Route path="/mets-history" element={<MetsHistory />} />
             <Route path="/metsxmfanzone" element={<MetsXMFanZone />} />
+            <Route path="/gameday-live" element={<GameDayLive />} />
             <Route path="/mlb-network" element={<MLBNetwork />} />
             <Route path="/espn-network" element={<ESPNNetwork />} />
             <Route path="/pix11-network" element={<PIX11Network />} />
