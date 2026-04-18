@@ -117,10 +117,7 @@ const GameDayLive = () => {
           <GameDayVoiceRooms />
         </div>
 
-        <div className="space-y-2">
-          <h2 className="font-semibold text-sm">MetsXMFanZone Stories</h2>
-          <StoriesSection />
-        </div>
+        <StoriesSection />
 
         <div className="space-y-2">
           <h2 className="font-semibold text-sm">MetsXMFanZone Blog</h2>
