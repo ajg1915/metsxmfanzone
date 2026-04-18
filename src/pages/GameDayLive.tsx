@@ -119,10 +119,7 @@ const GameDayLive = () => {
 
         <StoriesSection />
 
-        <div className="space-y-2">
-          <h2 className="font-semibold text-sm">MetsXMFanZone Blog</h2>
-          <BlogSection />
-        </div>
+        <BlogSection />
 
         <SocialWallSection />
       </div>
