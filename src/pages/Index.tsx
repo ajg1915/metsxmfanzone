@@ -192,10 +192,6 @@ const Index = () => {
           <LiveStreamsSection />
         </Suspense>
 
-        <Suspense fallback={null}>
-          <RadioNetworkLiveSection />
-        </Suspense>
-
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
             <RegularSeasonSeriesSection />
@@ -214,6 +210,10 @@ const Index = () => {
             <GameHighlightsSection />
           </Suspense>
         </LazySection>
+
+        <Suspense fallback={null}>
+          <RadioNetworkLiveSection />
+        </Suspense>
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
