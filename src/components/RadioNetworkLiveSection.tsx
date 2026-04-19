@@ -73,8 +73,13 @@ const RadioNetworkLiveSection = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center">
-              <Radio className="w-4.5 h-4.5 text-primary" />
+            <div className="w-9 h-9 rounded-full bg-primary/15 ring-1 ring-primary/30 overflow-hidden flex items-center justify-center">
+              <img
+                src="/logo-192.png"
+                alt="MetsXMFanZone"
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </div>
             <div>
               <h2 className="text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2">
