@@ -225,7 +225,7 @@ const Navigation = () => {
                     style={{ color: "#ff4500" }}
                   >
                     <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
-                    Radio Network
+                    Radio
                   </button>
                 </div>
               </div>
