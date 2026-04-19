@@ -25,7 +25,7 @@ const RegularSeasonSeriesSection = lazy(() => import("@/components/RegularSeason
 const BlogSection = lazy(() => import("@/components/BlogSection"));
 const HomeLineupCard = lazy(() => import("@/components/HomeLineupCard"));
 const FindUsSection = lazy(() => import("@/components/FindUsSection"));
-const HotStoveGuide = lazy(() => import("@/components/HotStoveGuide"));
+
 const StoriesSection = lazy(() => import("@/components/StoriesSection"));
 const GamecastBanner = lazy(() => import("@/components/GamecastBanner"));
 const FAQSection = lazy(() => import("@/components/FAQSection"));
@@ -279,14 +279,6 @@ const Index = () => {
         <LazySection fallback={<SectionSkeleton height="h-48" />}>
           <Suspense fallback={<SectionSkeleton height="h-48" />}>
             <AppInstallSection />
-          </Suspense>
-        </LazySection>
-
-        <div className="section-divider my-1" />
-
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <HotStoveGuide />
           </Suspense>
         </LazySection>
 
