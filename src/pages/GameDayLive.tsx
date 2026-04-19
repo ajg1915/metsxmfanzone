@@ -98,8 +98,7 @@ const GameDayLive = () => {
             <Radio className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2 flex-wrap">
-              <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
               MetsXMFanZone Radio Network
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
