@@ -14,6 +14,7 @@ const ImmersiveBackground = lazy(() => import("@/components/ImmersiveBackground"
 const FreeTrialExpiryBanner = lazy(() => import("@/components/FreeTrialExpiryBanner"));
 const LiveNetworks = lazy(() => import("@/components/LiveNetworks"));
 const LiveStreamsSection = lazy(() => import("@/components/LiveStreamsSection"));
+const RadioNetworkLiveSection = lazy(() => import("@/components/RadioNetworkLiveSection"));
 const SpringTrainingGamesSection = lazy(() => import("@/components/SpringTrainingGamesSection"));
 const GameHighlightsSection = lazy(() => import("@/components/GameHighlightsSection"));
 const ReplayGamesSection = lazy(() => import("@/components/ReplayGamesSection"));
@@ -189,6 +190,10 @@ const Index = () => {
 
         <Suspense fallback={<SectionSkeleton />}>
           <LiveStreamsSection />
+        </Suspense>
+
+        <Suspense fallback={null}>
+          <RadioNetworkLiveSection />
         </Suspense>
 
         <LazySection fallback={<SectionSkeleton />}>
