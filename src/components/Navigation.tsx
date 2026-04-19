@@ -164,12 +164,31 @@ const Navigation = () => {
             >
               Home
             </NavLink>
-            <button
-              onClick={() => handleProNavigation("/podcast")}
-              className="text-foreground hover:text-primary transition-colors flex items-center gap-1"
-            >
-              Podcast
-            </button>
+            {/* Podcast Dropdown (includes Radio) */}
+            <div className="relative group">
+              <button className="text-foreground hover:text-primary transition-colors py-2 flex items-center gap-1">
+                Podcast
+              </button>
+              <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="bg-background border border-border rounded-lg shadow-lg min-w-[160px] py-1">
+                  <button
+                    onClick={() => handleProNavigation("/podcast")}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    <img src={podcastIcon} alt="" className="w-4 h-4 object-contain" />
+                    Podcast Home
+                  </button>
+                  <button
+                    onClick={() => handleProNavigation("/gameday-live")}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm font-semibold transition-colors hover:bg-primary/10"
+                    style={{ color: "#ff4500" }}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
+                    Radio
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {/* Mets Dropdown */}
             <div className="relative group">
@@ -219,14 +238,7 @@ const Navigation = () => {
                     <Users className="w-4 h-4" />
                     Community Feed
                   </button>
-                  <button
-                    onClick={() => handleProNavigation("/gameday-live")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm font-semibold transition-colors hover:bg-primary/10"
-                    style={{ color: "#ff4500" }}
-                  >
-                    <span className="w-2 h-2 rounded-full bg-[#ff4500] animate-pulse" />
-                    Radio
-                  </button>
+                  {/* Radio moved into Podcast dropdown */}
                 </div>
               </div>
             </div>
