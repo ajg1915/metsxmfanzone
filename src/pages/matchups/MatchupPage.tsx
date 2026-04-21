@@ -114,9 +114,30 @@ export default function MatchupPage({
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
-        title={`Mets vs ${opponent.name} - Spring Training Matchup | MetsXMFanZone`}
-        description={`Complete matchup breakdown: Mets vs ${opponent.name}. Stats, betting lines, player comparisons, and Anthony's expert picks.`}
-        canonical={`https://www.metsxmfanzone.com/matchup/${opponent.abbr.toLowerCase()}`}
+        title={`Mets vs ${opponent.name} 2026 — Matchup, Stats & Picks`}
+        description={`Mets vs ${opponent.name} matchup breakdown: head-to-head record (${headToHead.metsWins}-${headToHead.opponentWins}), key players, betting lines, and Anthony's expert picks for 2026.`}
+        keywords={`Mets vs ${opponent.name}, ${opponent.name} vs Mets, Mets ${opponent.abbr} matchup, Mets 2026, Mets betting picks, ${opponent.name} betting odds`}
+        canonical={`https://metsxmfanzone.com/matchup/${opponent.abbr.toLowerCase()}`}
+        ogType="article"
+        section="Sports"
+        tags={["MLB", "Mets", opponent.name, "Matchup", "2026 Season"]}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "SportsEvent",
+          "name": `New York Mets vs ${opponent.name}`,
+          "description": `Matchup analysis: Mets vs ${opponent.name} for the 2026 MLB season.`,
+          "sport": "Baseball",
+          "startDate": matchupDate || "2026",
+          "competitor": [
+            { "@type": "SportsTeam", "name": "New York Mets", "sport": "Baseball" },
+            { "@type": "SportsTeam", "name": opponent.name, "sport": "Baseball" },
+          ],
+          "organizer": {
+            "@type": "SportsOrganization",
+            "name": "Major League Baseball",
+            "url": "https://www.mlb.com",
+          },
+        }}
       />
       <Navigation />
 
