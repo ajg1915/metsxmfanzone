@@ -5,7 +5,15 @@ interface OptimizedImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   alt: string;
   placeholder?: string;
   priority?: boolean;
+  /** Sets fetchpriority="high" + eager loading for LCP images. */
+  fetchPriority?: 'high' | 'low' | 'auto';
 }
+
+/**
+ * SEO note: `alt` is required and should describe the image content
+ * (e.g. "Pete Alonso batting at Citi Field" — not "image" or "photo").
+ * Provide width/height (or aspect via className) to prevent layout shift (CLS).
+ */
 
 /**
  * OptimizedImage component with lazy loading and fade-in effect
@@ -16,9 +24,11 @@ const OptimizedImage = ({
   alt,
   placeholder,
   priority = false,
+  fetchPriority,
   className = '',
   ...props
 }: OptimizedImageProps) => {
+  const computedFetchPriority = fetchPriority ?? (priority ? 'high' : undefined);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -71,6 +81,8 @@ const OptimizedImage = ({
           alt={alt}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
+          // @ts-expect-error - fetchpriority is a valid HTML attribute, not yet typed in React
+          fetchpriority={computedFetchPriority}
           onLoad={() => setIsLoaded(true)}
           className={`w-full h-full object-cover transition-opacity duration-300 ${
             isLoaded ? 'opacity-100' : 'opacity-0'

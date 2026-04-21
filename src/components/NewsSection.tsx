@@ -44,7 +44,9 @@ const NewsSection = () => {
               <div className="aspect-video overflow-hidden relative">
                 <img 
                   src={article.image} 
-                  alt={article.title}
+                  alt={`${article.title} - New York Mets ${article.category.toLowerCase()} on MetsXMFanZone`}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
