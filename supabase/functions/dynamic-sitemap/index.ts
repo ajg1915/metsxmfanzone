@@ -51,14 +51,17 @@ const staticPages = [
   { url: "/help/premium-content", changefreq: "monthly", priority: "0.5" },
   { url: "/help/subscription-plans", changefreq: "monthly", priority: "0.5" },
   { url: "/help/payment-methods", changefreq: "monthly", priority: "0.5" },
-  // Matchup pages
-  { url: "/matchups/mets-vs-yankees", changefreq: "weekly", priority: "0.7" },
-  { url: "/matchups/mets-vs-braves", changefreq: "weekly", priority: "0.7" },
-  { url: "/matchups/mets-vs-astros", changefreq: "weekly", priority: "0.7" },
-  { url: "/matchups/mets-vs-cardinals", changefreq: "weekly", priority: "0.7" },
-  { url: "/matchups/mets-vs-nationals", changefreq: "weekly", priority: "0.7" },
-  { url: "/matchups/mets-vs-red-sox", changefreq: "weekly", priority: "0.7" },
-  { url: "/matchups/mets-vs-blue-jays", changefreq: "weekly", priority: "0.7" },
+  // Matchup pages — programmatic SEO (one per opponent)
+  ...[
+    "yankees", "braves", "phillies", "nationals", "marlins",
+    "astros", "redsox", "bluejays", "cardinals", "cubs",
+    "dodgers", "giants", "padres", "rockies", "diamondbacks",
+    "brewers", "reds", "pirates",
+  ].map((slug) => ({
+    url: `/matchup/${slug}`,
+    changefreq: "weekly",
+    priority: "0.75",
+  })),
 ];
 
 Deno.serve(async (req) => {

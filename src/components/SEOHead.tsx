@@ -68,11 +68,37 @@ export default function SEOHead({
     socialImage = `${BASE_URL}${socialImage.startsWith('/') ? '' : '/'}${socialImage}`;
   }
 
+  // Auto-generate breadcrumbs from URL when none provided (boosts SEO sitelinks)
+  const autoBreadcrumbs = (() => {
+    if (breadcrumbs && breadcrumbs.length > 0) return breadcrumbs;
+    try {
+      const u = new URL(canonicalUrl);
+      const parts = u.pathname.split("/").filter(Boolean);
+      if (parts.length === 0) return undefined;
+      const crumbs: Array<{ name: string; url: string }> = [
+        { name: "Home", url: BASE_URL },
+      ];
+      let acc = "";
+      for (const p of parts) {
+        acc += `/${p}`;
+        crumbs.push({
+          name: decodeURIComponent(p)
+            .replace(/-/g, " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase()),
+          url: `${BASE_URL}${acc}`,
+        });
+      }
+      return crumbs;
+    } catch {
+      return undefined;
+    }
+  })();
+
   // Generate breadcrumb structured data
-  const breadcrumbSchema = breadcrumbs && breadcrumbs.length > 0 ? {
+  const breadcrumbSchema = autoBreadcrumbs && autoBreadcrumbs.length > 0 ? {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": breadcrumbs.map((crumb, index) => ({
+    "itemListElement": autoBreadcrumbs!.map((crumb, index) => ({
       "@type": "ListItem",
       "position": index + 1,
       "name": crumb.name,
