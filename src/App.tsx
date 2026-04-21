@@ -80,7 +80,8 @@ const CommunityPodcast = lazy(() => import("./pages/CommunityPodcast"));
 const BusinessPartner = lazy(() => import("./pages/BusinessPartner"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Feedback = lazy(() => import("./pages/Feedback"));
-const Sitemap = lazy(() => import("./pages/Sitemap"));
+const Sitemap = lazy(() => import("./pages/SitemapRedirect"));
+const DynamicMatchup = lazy(() => import("./pages/matchups/DynamicMatchup"));
 const PayPalSuccess = lazy(() => import("./pages/PayPalSuccess"));
 
 const SpringTrainingLive = lazy(() => import("./pages/SpringTrainingLive"));
@@ -423,6 +424,8 @@ const AppContent = () => {
             <Route path="/matchup/redsox" element={<MetsVsRedSox />} />
             <Route path="/matchup/yankees" element={<MetsVsYankees />} />
             <Route path="/matchup/bluejays" element={<MetsVsBlueJays />} />
+            {/* Programmatic SEO: auto-generated matchup pages for every opponent */}
+            <Route path="/matchup/:opponent" element={<DynamicMatchup />} />
             <Route path="/sitemap.xml" element={<Sitemap />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
