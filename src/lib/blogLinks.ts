@@ -31,7 +31,7 @@ export function getBlogShareUrl(slug: string): string {
   const safeSlug = encodeURIComponent(slug);
 
   if (PROJECT_ID) {
-    return `https://${PROJECT_ID}.supabase.co/functions/v1/blog-og-meta?slug=${safeSlug}`;
+    return `https://${PROJECT_ID}.supabase.co/functions/v1/blog-og-meta/${safeSlug}`;
   }
 
   // Fallback: direct article URL if project id is unavailable at build time.
@@ -53,10 +53,16 @@ export function getBlogInternalPath(slug: string): string {
  */
 export function normalizeToBlogShareUrl(rawUrl: string): string {
   try {
-    const parsed = new URL(rawUrl);
+    const parsed = new URL(rawUrl, SITE_URL);
 
     if (parsed.pathname.includes("/functions/v1/blog-og-meta")) {
-      return rawUrl;
+      const pathSegments = parsed.pathname.split("/").filter(Boolean);
+      const ogIdx = pathSegments.indexOf("blog-og-meta");
+      const functionSlug =
+        parsed.searchParams.get("slug") ||
+        (ogIdx !== -1 ? pathSegments[ogIdx + 1] : undefined);
+
+      return functionSlug ? getBlogShareUrl(decodeURIComponent(functionSlug)) : rawUrl;
     }
 
     const blogMatch = parsed.pathname.match(/^\/blog\/([^/?#]+)/);
