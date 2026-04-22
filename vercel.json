@@ -6,7 +6,7 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(?i).*(facebookexternalhit|Facebot|Twitterbot|LinkedInBot|WhatsApp|Slackbot|TelegramBot|Discordbot|Pinterest|redditbot|Embedly|Applebot|SkypeUriPreview|vkShare|W3C_Validator|Googlebot|bingbot).*"
+          "value": ".*([Ff]acebookexternalhit|[Ff]acebot|[Tt]witterbot|[Ll]inked[Ii]n[Bb]ot|[Ww]hats[Aa]pp|[Ss]lackbot(-LinkExpanding)?|[Tt]elegram[Bb]ot|[Dd]iscordbot|[Pp]interest(bot)?|redditbot|[Ee]mbedly|[Aa]pplebot|[Ss]kypeUriPreview|vkShare|W3C_Validator|[Gg]ooglebot|[Bb]ingbot).*"
         }
       ],
       "destination": "/api/og/blog/:slug"
