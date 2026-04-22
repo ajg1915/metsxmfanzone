@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     // otherwise some platforms canonicalize to /blog/:slug and fall back to your site-wide OG.
     const supabaseUrl = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
     const sharePageUrl = supabaseUrl
-      ? `${supabaseUrl}/functions/v1/blog-og-meta/${encodedSlug}`
+      ? `${supabaseUrl}/functions/v1/blog-og-meta?slug=${encodedSlug}`
       : url.toString();
 
 
