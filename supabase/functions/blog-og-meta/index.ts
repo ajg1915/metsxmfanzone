@@ -51,7 +51,15 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const slug = url.searchParams.get("slug");
+    // Accept slug from ?slug=... OR from path segment (/blog-og-meta/<slug>)
+    let slug = url.searchParams.get("slug");
+    if (!slug) {
+      const segments = url.pathname.split("/").filter(Boolean);
+      const idx = segments.indexOf("blog-og-meta");
+      if (idx !== -1 && segments[idx + 1]) {
+        slug = decodeURIComponent(segments[idx + 1]);
+      }
+    }
 
     if (!slug) {
       return new Response("Missing slug parameter", {
@@ -136,6 +144,26 @@ Deno.serve(async (req) => {
       )
       .join("\n    ");
 
+    // JSON-LD structured data for richer search/social previews
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      headline: post.title,
+      description: socialDescription,
+      image: [socialImage],
+      datePublished: publishedTime,
+      dateModified: publishedTime,
+      author: { "@type": "Organization", name: "MetsXMFanZone", url: SITE_URL },
+      publisher: {
+        "@type": "Organization",
+        name: "MetsXMFanZone",
+        logo: { "@type": "ImageObject", url: `${SITE_URL}/logo-512.png` },
+      },
+      mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+      articleSection: post.category || undefined,
+      keywords: (post.tags || []).join(", ") || undefined,
+    };
+
     // Escape values for HTML/meta attributes (prevents broken tags + improves scraper reliability)
     const safeTitleAttr = escapeHtml(socialTitle);
     const safeDescriptionAttr = escapeHtml(socialDescription);
@@ -187,6 +215,9 @@ Deno.serve(async (req) => {
 
     <!-- Canonical (real article URL) -->
     <link rel="canonical" href="${postUrl}">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">${JSON.stringify(jsonLd)}</script>
 </head>
 <body>
     <div style="font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; text-align: center;">
