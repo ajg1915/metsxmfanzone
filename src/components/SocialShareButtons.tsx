@@ -83,6 +83,7 @@ export default function SocialShareButtons({ title, url }: SocialShareButtonsPro
         });
       } catch (error) {
         console.log('Error sharing:', error);
+        copyToClipboard();
       }
     } else {
       copyToClipboard();
