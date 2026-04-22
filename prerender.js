@@ -3,8 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const distClientDir = path.resolve(__dirname, 'dist/client');
-const templatePath = path.resolve(distClientDir, 'index.html');
+const distDir = path.resolve(__dirname, 'dist');
+const templatePath = path.resolve(distDir, 'index.html');
 
 const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://metsxmfanzone.com';
 const SUPABASE_URL =
@@ -56,14 +56,13 @@ function getDescription(post) {
 }
 
 function getKeywords(post) {
-  const values = [post.category, ...(Array.isArray(post.tags) ? post.tags : [])]
+  return [post.category, ...(Array.isArray(post.tags) ? post.tags : [])]
     .map((value) => String(value || '').trim())
-    .filter(Boolean);
-
-  return values.join(', ');
+    .filter(Boolean)
+    .join(', ');
 }
 
-function removeExistingSocialMeta(html) {
+function stripTemplateSocialTags(html) {
   return html
     .replace(/<title>[\s\S]*?<\/title>\s*/i, '')
     .replace(/<meta\s+name="title"[^>]*>\s*/gi, '')
@@ -76,7 +75,8 @@ function removeExistingSocialMeta(html) {
 }
 
 function buildBlogHead(post) {
-  const postUrl = `${SITE_URL}/blog/${encodeURIComponent(post.slug)}`;
+  const slug = encodeURIComponent(post.slug);
+  const postUrl = `${SITE_URL}/blog/${slug}`;
   const socialImage = resolveImage(post.featured_image_url);
   const description = getDescription(post);
   const keywords = getKeywords(post);
@@ -177,10 +177,10 @@ async function fetchPublishedBlogPosts() {
   return response.json();
 }
 
-function writeBlogPage(template, post) {
-  const cleanedTemplate = removeExistingSocialMeta(template);
-  const html = cleanedTemplate.replace('</head>', `${buildBlogHead(post)}\n</head>`);
-  const filePath = path.resolve(distClientDir, 'blog', post.slug, 'index.html');
+function writeBlogPage(baseTemplate, post) {
+  const template = stripTemplateSocialTags(baseTemplate);
+  const filePath = path.resolve(distDir, 'blog', post.slug, 'index.html');
+  const html = template.replace('</head>', `${buildBlogHead(post)}\n</head>`);
 
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, html);
@@ -200,11 +200,11 @@ async function prerenderBlogPosts() {
     return;
   }
 
-  posts.forEach((post) => {
+  for (const post of posts) {
     if (post?.slug) {
       writeBlogPage(template, post);
     }
-  });
+  }
 
   console.log(`\n✓ Prerendered ${posts.length} blog post page(s)`);
 }
