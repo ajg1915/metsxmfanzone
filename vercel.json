@@ -11,9 +11,9 @@
       ],
       "destination": "/api/og/blog/:slug"
     },
-    { 
-      "source": "/(.*)", 
-      "destination": "/index.html" 
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
