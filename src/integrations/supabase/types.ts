@@ -330,6 +330,39 @@ export type Database = {
           },
         ]
       }
+      blogs: {
+        Row: {
+          author_id: string | null
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_published: boolean | null
+          slug: string
+          title: string
+        }
+        Insert: {
+          author_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          slug: string
+          title: string
+        }
+        Update: {
+          author_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_published?: boolean | null
+          slug?: string
+          title?: string
+        }
+        Relationships: []
+      }
       business_ads: {
         Row: {
           ad_description: string
