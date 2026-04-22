@@ -10,25 +10,29 @@ export default function SocialShareButtons({ title, url }: SocialShareButtonsPro
   const baseUrl = url || window.location.href;
   const shareTitle = title || "Check this out on MetsXMFanZone!";
 
-  // Always share the real, public article URL so anyone clicking the link lands
-  // directly on the readable article. Social crawlers still get OG tags from the page.
+  // Social apps scrape raw HTML and do not wait for client-side React data.
+  // For blog posts, share the dedicated preview endpoint that serves OG tags
+  // immediately, then redirects human visitors to the real article.
   const normalizeShareUrl = (rawUrl: string) => {
     try {
       const parsed = new URL(rawUrl);
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
-      // If it's the backend OG meta endpoint, convert it back to the public article URL.
+      // If it's already the OG endpoint, keep it.
       if (parsed.pathname.includes("/functions/v1/blog-og-meta")) {
-        const slug = parsed.searchParams.get("slug");
-        if (slug) {
-          return `https://metsxmfanzone.com/blog/${encodeURIComponent(slug)}`;
-        }
+        return rawUrl;
       }
 
-      // If it's the /og-blog/:slug helper route, rewrite to /blog/:slug.
+      const blogMatch = parsed.pathname.match(/^\/blog\/([^/?#]+)/);
+      if (blogMatch?.[1] && projectId) {
+        return `https://${projectId}.supabase.co/functions/v1/blog-og-meta?slug=${encodeURIComponent(blogMatch[1])}`;
+      }
+
+      // If it's the /og-blog/:slug helper route, map it to the OG endpoint too.
       const parts = parsed.pathname.split("/").filter(Boolean);
       const ogBlogIndex = parts.indexOf("og-blog");
-      if (ogBlogIndex !== -1 && parts[ogBlogIndex + 1]) {
-        return `${parsed.origin}/blog/${parts[ogBlogIndex + 1]}`;
+      if (ogBlogIndex !== -1 && parts[ogBlogIndex + 1] && projectId) {
+        return `https://${projectId}.supabase.co/functions/v1/blog-og-meta?slug=${encodeURIComponent(parts[ogBlogIndex + 1])}`;
       }
 
       return rawUrl;
