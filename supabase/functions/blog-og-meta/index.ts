@@ -71,7 +71,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const postUrl = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
+    const encodedSlug = encodeURIComponent(slug);
+    const postUrl = `${SITE_URL}/blog/${encodedSlug}`;
     const userAgent = req.headers.get("user-agent") || "";
     const crawler = isCrawler(userAgent);
 
@@ -111,7 +112,7 @@ Deno.serve(async (req) => {
     // otherwise some platforms canonicalize to /blog/:slug and fall back to your site-wide OG.
     const supabaseUrl = (Deno.env.get("SUPABASE_URL") || "").replace(/\/$/, "");
     const sharePageUrl = supabaseUrl
-      ? `${supabaseUrl}/functions/v1/blog-og-meta?slug=${encodeURIComponent(slug)}`
+      ? `${supabaseUrl}/functions/v1/blog-og-meta/${encodedSlug}`
       : url.toString();
 
 
@@ -233,7 +234,10 @@ Deno.serve(async (req) => {
     headers.set("Cache-Control", "public, max-age=3600, s-maxage=7200");
     headers.set("Content-Type", "text/html; charset=utf-8");
 
-    return new Response(html, { headers });
+    return new Response(html, {
+      headers,
+      status: 200,
+    });
 
   } catch (error) {
     console.error("Error generating meta tags:", error);
