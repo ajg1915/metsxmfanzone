@@ -46,12 +46,7 @@ export default function BlogPost() {
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth", { replace: true });
-    }
-  }, [user, authLoading, navigate]);
+  // Blog posts are publicly readable so shared links work on social media.
   
   // Free browser TTS states
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -251,8 +246,8 @@ export default function BlogPost() {
   };
 
 
-  // Show loading while checking auth or fetching post
-  if (authLoading || loading) {
+  // Show loading while fetching post
+  if (loading) {
     return (
       <div className="min-h-screen flex flex-col bg-gradient-to-b from-background to-background/95">
         <Navigation />
@@ -262,11 +257,6 @@ export default function BlogPost() {
         <Footer />
       </div>
     );
-  }
-
-  // Don't render content if not authenticated
-  if (!user) {
-    return null;
   }
 
   if (!post) {
