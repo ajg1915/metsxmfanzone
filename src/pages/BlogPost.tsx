@@ -4,10 +4,10 @@ import SEOHead, { generateArticleSchema } from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Tag, ArrowLeft, Headphones, Volume2, Square, Settings, Share2 } from "lucide-react";
+import { Calendar, Tag, ArrowLeft, Headphones, Volume2, Square, Settings } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import BlogShareDialog from "@/components/BlogShareDialog";
+import SocialShareButtons from "@/components/SocialShareButtons";
 import RelatedPosts from "@/components/RelatedPosts";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,7 +45,6 @@ export default function BlogPost() {
   const { user, loading: authLoading } = useAuth();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
-  const [shareOpen, setShareOpen] = useState(false);
 
   // Blog posts are publicly readable so shared links work on social media.
   
@@ -497,29 +496,12 @@ export default function BlogPost() {
             </Card>
 
             <div className="mt-8">
-              <Card className="bg-gradient-to-br from-primary/5 via-card to-card border-primary/20">
-                <CardContent className="py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-center sm:text-left">
-                    <h3 className="text-lg font-bold mb-1">Enjoyed this article?</h3>
-                    <p className="text-sm text-muted-foreground">Share it with fellow Mets fans.</p>
-                  </div>
-                  <Button size="lg" onClick={() => setShareOpen(true)} className="gap-2 shadow-lg">
-                    <Share2 className="w-5 h-5" />
-                    Share Article
-                  </Button>
+              <Card>
+                <CardContent className="py-6">
+                  <SocialShareButtons title={post.title} url={window.location.href} />
                 </CardContent>
               </Card>
             </div>
-
-            <BlogShareDialog
-              open={shareOpen}
-              onOpenChange={setShareOpen}
-              title={post.title}
-              url={window.location.href}
-              excerpt={post.excerpt}
-              image={post.featured_image_url}
-            />
-
 
             {/* Related Posts for SEO internal linking */}
             <RelatedPosts
