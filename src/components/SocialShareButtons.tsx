@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
+import { normalizeToBlogShareUrl } from "@/lib/blogLinks";
 
 interface SocialShareButtonsProps {
   title?: string;
@@ -10,38 +11,11 @@ export default function SocialShareButtons({ title, url }: SocialShareButtonsPro
   const baseUrl = url || window.location.href;
   const shareTitle = title || "Check this out on MetsXMFanZone!";
 
-  // Social apps scrape raw HTML and do not wait for client-side React data.
-  // For blog posts, share the dedicated preview endpoint that serves OG tags
-  // immediately, then redirects human visitors to the real article.
-  const normalizeShareUrl = (rawUrl: string) => {
-    try {
-      const parsed = new URL(rawUrl);
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-
-      // If it's already the OG endpoint, keep it.
-      if (parsed.pathname.includes("/functions/v1/blog-og-meta")) {
-        return rawUrl;
-      }
-
-      const blogMatch = parsed.pathname.match(/^\/blog\/([^/?#]+)/);
-      if (blogMatch?.[1] && projectId) {
-        return `https://${projectId}.supabase.co/functions/v1/blog-og-meta?slug=${encodeURIComponent(blogMatch[1])}`;
-      }
-
-      // If it's the /og-blog/:slug helper route, map it to the OG endpoint too.
-      const parts = parsed.pathname.split("/").filter(Boolean);
-      const ogBlogIndex = parts.indexOf("og-blog");
-      if (ogBlogIndex !== -1 && parts[ogBlogIndex + 1] && projectId) {
-        return `https://${projectId}.supabase.co/functions/v1/blog-og-meta?slug=${encodeURIComponent(parts[ogBlogIndex + 1])}`;
-      }
-
-      return rawUrl;
-    } catch {
-      return rawUrl;
-    }
-  };
-
-  const shareUrl = normalizeShareUrl(baseUrl);
+  // All blog article links are routed through the `blog-og-meta` Edge Function
+  // first. The function uses the slug from the URL as the key to query
+  // `blog_posts` and serves crawler-friendly OG/Twitter/JSON-LD tags before
+  // redirecting human visitors to the real article.
+  const shareUrl = normalizeToBlogShareUrl(baseUrl);
 
   const socialLinks = [
     {
