@@ -86,7 +86,6 @@ const analyticsItems = [
   { title: "Daily Reports", url: "/admin/daily-reports", icon: ClipboardList },
   { title: "Real-Time Stats", url: "/admin/realtime-analytics", icon: TrendingUp },
   { title: "Activity Logs", url: "/admin/activity", icon: Activity },
-  { title: "SEO Settings", url: "/admin/seo", icon: Globe },
 ];
 
 
