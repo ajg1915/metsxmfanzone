@@ -55,7 +55,7 @@ function stripHtml(input) {
 function resolveImage(url, siteUrl) {
   const fallbackImage = `${siteUrl}/logo-512.png`;
   if (!url) return fallbackImage;
-  if (url.startsWith("data:")) return FALLBACK_IMAGE;
+  if (url.startsWith("data:")) return fallbackImage;
   if (url.startsWith("http://")) return `https://${url.slice(7)}`;
   if (url.startsWith("https://")) return url;
   return `${siteUrl}${url.startsWith("/") ? "" : "/"}${url}`;
