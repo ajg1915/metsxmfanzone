@@ -1,6 +1,15 @@
-// Vercel Serverless Function: serves prerendered OG/Twitter meta HTML for
-// social media crawlers hitting /blog/:slug. Real users are routed to the
-// React SPA via vercel.json (only bots are rewritten here).
+// Vercel Serverless Function: serves the React SPA shell for /blog/:slug with
+// Open Graph / Twitter / canonical / JSON-LD meta tags injected server-side
+// based on live data from Lovable Cloud (Supabase). This makes every published
+// blog post work on metsxmfanzone.com with no redeploy needed when new posts
+// are published — the function fetches the post on every request.
+//
+// Routing: vercel.json rewrites /blog/:slug → this function so both humans and
+// crawlers hit it. Humans get a full SPA boot (React Router renders the post),
+// crawlers get the injected OG tags directly out of the head.
+
+import fs from "node:fs";
+import path from "node:path";
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
@@ -11,20 +20,14 @@ const SUPABASE_ANON_KEY =
   process.env.SUPABASE_ANON_KEY ||
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   process.env.VITE_SUPABASE_ANON_KEY ||
-  "";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsd2doa2J0a29mYWNzamV5cnRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNTI3NDIsImV4cCI6MjA3NzkyODc0Mn0.11mr9r-U-BAwy9Mmr2yrzjLhjljswgOotJeOOXyfllc";
 
 const SITE_URL = process.env.PUBLIC_SITE_URL || "https://metsxmfanzone.com";
 const FALLBACK_IMAGE = `${SITE_URL}/logo-512.png`;
 
 function escapeHtml(input) {
   return String(input ?? "").replace(/[&<>"']/g, (m) =>
-    ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    })[m] || m
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m] || m
   );
 }
 
@@ -38,77 +41,128 @@ function stripHtml(input) {
 function resolveImage(url) {
   if (!url) return FALLBACK_IMAGE;
   if (url.startsWith("data:")) return FALLBACK_IMAGE;
-  if (url.startsWith("http")) return url;
+  if (url.startsWith("http://")) return `https://${url.slice(7)}`;
+  if (url.startsWith("https://")) return url;
   return `${SITE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
-function buildHtml(post, slug) {
-  const postUrl = `${SITE_URL}/blog/${slug}`;
-  const image = resolveImage(post.featured_image_url);
+// Strip any placeholder/site-wide social tags from the SPA shell so the
+// crawler doesn't pick up the homepage OG image instead of the article's.
+function stripSocialTags(html) {
+  return html
+    .replace(/<title>[\s\S]*?<\/title>\s*/i, "")
+    .replace(/<meta\s+name="title"[^>]*>\s*/gi, "")
+    .replace(/<meta\s+name="description"[^>]*>\s*/gi, "")
+    .replace(/<meta\s+name="keywords"[^>]*>\s*/gi, "")
+    .replace(/<link\s+rel="canonical"[^>]*>\s*/gi, "")
+    .replace(/<meta\s+property="fb:app_id"[^>]*>\s*/gi, "")
+    .replace(/<meta\s+property="og:[^"]+"[^>]*>\s*/gi, "")
+    .replace(/<meta\s+name="twitter:[^"]+"[^>]*>\s*/gi, "");
+}
 
+function buildHead(post, slug) {
+  const postUrl = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
+  const image = resolveImage(post.featured_image_url);
   const rawDescription =
     (post.excerpt && String(post.excerpt).trim().length > 0
       ? String(post.excerpt)
       : stripHtml(post.content || "")) || String(post.title || "");
-
   const description =
-    rawDescription.length > 160
-      ? rawDescription.substring(0, 157) + "..."
-      : rawDescription;
-
+    rawDescription.length > 160 ? rawDescription.substring(0, 157) + "..." : rawDescription;
   const title = `${post.title} | MetsXMFanZone`;
+  const publishedTime = post.published_at || new Date().toISOString();
+  const modifiedTime = post.updated_at || publishedTime;
+  const keywords = [post.category, ...(Array.isArray(post.tags) ? post.tags : [])]
+    .map((v) => String(v || "").trim())
+    .filter(Boolean)
+    .join(", ");
+  const tagsMeta = (Array.isArray(post.tags) ? post.tags : [])
+    .map((tag) => `<meta property="article:tag" content="${escapeHtml(tag)}" />`)
+    .join("\n    ");
 
-  const tagsMeta = (post.tags || [])
-    .map(
-      (tag) =>
-        `<meta property="article:tag" content="${escapeHtml(tag)}">`
-    )
-    .join("\n  ");
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: post.title,
+    description,
+    image: [image],
+    datePublished: publishedTime,
+    dateModified: modifiedTime,
+    author: { "@type": "Organization", name: "MetsXMFanZone", url: SITE_URL },
+    publisher: {
+      "@type": "Organization",
+      name: "MetsXMFanZone",
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/logo-512.png` },
+    },
+    mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+    articleSection: post.category || undefined,
+    keywords: keywords || undefined,
+  };
 
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeHtml(title)}</title>
-  <meta name="description" content="${escapeHtml(description)}">
+  return `
+    <title>${escapeHtml(title)}</title>
+    <meta name="title" content="${escapeHtml(title)}" />
+    <meta name="description" content="${escapeHtml(description)}" />
+    ${keywords ? `<meta name="keywords" content="${escapeHtml(keywords)}" />` : ""}
+    <link rel="canonical" href="${postUrl}" />
 
-  <meta property="fb:app_id" content="1151558476948104">
+    <meta property="fb:app_id" content="1151558476948104" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="${postUrl}" />
+    <meta property="og:site_name" content="MetsXMFanZone" />
+    <meta property="og:title" content="${escapeHtml(title)}" />
+    <meta property="og:description" content="${escapeHtml(description)}" />
+    <meta property="og:image" content="${image}" />
+    <meta property="og:image:secure_url" content="${image}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${escapeHtml(post.title || "")}" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="article:published_time" content="${escapeHtml(publishedTime)}" />
+    <meta property="article:modified_time" content="${escapeHtml(modifiedTime)}" />
+    <meta property="article:section" content="${escapeHtml(post.category || "")}" />
+    <meta property="article:author" content="MetsXMFanZone" />
+    ${tagsMeta}
 
-  <meta property="og:type" content="article">
-  <meta property="og:url" content="${postUrl}">
-  <meta property="og:site_name" content="MetsXMFanZone">
-  <meta property="og:title" content="${escapeHtml(title)}">
-  <meta property="og:description" content="${escapeHtml(description)}">
-  <meta property="og:image" content="${image}">
-  <meta property="og:image:secure_url" content="${image}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="${escapeHtml(post.title || "")}">
-  <meta property="og:locale" content="en_US">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@metsxmfanzone" />
+    <meta name="twitter:creator" content="@metsxmfanzone" />
+    <meta name="twitter:domain" content="metsxmfanzone.com" />
+    <meta name="twitter:title" content="${escapeHtml(title)}" />
+    <meta name="twitter:description" content="${escapeHtml(description)}" />
+    <meta name="twitter:image" content="${image}" />
+    <meta name="twitter:image:alt" content="${escapeHtml(post.title || "")}" />
 
-  <meta property="article:published_time" content="${escapeHtml(post.published_at || "")}">
-  <meta property="article:section" content="${escapeHtml(post.category || "")}">
-  <meta property="article:author" content="MetsXMFanZone">
-  ${tagsMeta}
+    <script type="application/ld+json">${JSON.stringify(articleSchema)}</script>
+  `.trim();
+}
 
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:site" content="@metsxmfanzone">
-  <meta name="twitter:url" content="${postUrl}">
-  <meta name="twitter:title" content="${escapeHtml(title)}">
-  <meta name="twitter:description" content="${escapeHtml(description)}">
-  <meta name="twitter:image" content="${image}">
-  <meta name="twitter:image:alt" content="${escapeHtml(post.title || "")}">
+// Locate the built SPA shell (dist/index.html on Vercel deployments).
+let cachedShell = null;
+function loadShell() {
+  if (cachedShell) return cachedShell;
+  const candidates = [
+    path.join(process.cwd(), "dist", "index.html"),
+    path.join(process.cwd(), "public", "index.html"),
+    path.join(process.cwd(), "index.html"),
+  ];
+  for (const p of candidates) {
+    try {
+      cachedShell = fs.readFileSync(p, "utf-8");
+      return cachedShell;
+    } catch {
+      /* try next */
+    }
+  }
+  return null;
+}
 
-  <link rel="canonical" href="${postUrl}" />
-  <meta http-equiv="refresh" content="0;url=${postUrl}">
-</head>
-<body>
-  <h1>${escapeHtml(post.title || "")}</h1>
-  <p>${escapeHtml(description)}</p>
-  <p>Redirecting to <a href="${postUrl}">${postUrl}</a>...</p>
-</body>
-</html>`;
+function buildFallbackShell(post, slug) {
+  // Used only if dist/index.html is unavailable for some reason. Crawlers still
+  // get full meta; humans get a redirect to the live SPA on Lovable hosting.
+  const headHtml = buildHead(post, slug);
+  const postUrl = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${headHtml}<meta http-equiv="refresh" content="0;url=${postUrl}"></head><body><h1>${escapeHtml(post.title || "")}</h1></body></html>`;
 }
 
 export default async function handler(req, res) {
@@ -121,14 +175,9 @@ export default async function handler(req, res) {
       return;
     }
 
-    if (!SUPABASE_ANON_KEY) {
-      res.status(500).send("Supabase key not configured");
-      return;
-    }
-
     const url = `${SUPABASE_URL}/rest/v1/blog_posts?slug=eq.${encodeURIComponent(
       slug
-    )}&published=eq.true&select=title,excerpt,content,featured_image_url,published_at,category,tags&limit=1`;
+    )}&published=eq.true&select=title,excerpt,content,featured_image_url,published_at,updated_at,category,tags&limit=1`;
 
     const response = await fetch(url, {
       headers: {
@@ -150,9 +199,21 @@ export default async function handler(req, res) {
       return;
     }
 
+    const shell = loadShell();
+    let html;
+    if (shell) {
+      const cleaned = stripSocialTags(shell);
+      html = cleaned.replace("</head>", `${buildHead(post, slug)}\n</head>`);
+    } else {
+      html = buildFallbackShell(post, slug);
+    }
+
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600");
-    res.status(200).send(buildHtml(post, slug));
+    res.setHeader(
+      "Cache-Control",
+      "public, max-age=300, s-maxage=300, stale-while-revalidate=3600"
+    );
+    res.status(200).send(html);
   } catch (err) {
     res.status(500).send("Internal error");
   }
