@@ -10,6 +10,10 @@
         }
       ],
       "destination": "/api/og/blog/:slug"
+    },
+    { 
+      "source": "/(.*)", 
+      "destination": "/index.html" 
     }
   ]
 }
