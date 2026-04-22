@@ -10,37 +10,34 @@ export default function SocialShareButtons({ title, url }: SocialShareButtonsPro
   const baseUrl = url || window.location.href;
   const shareTitle = title || "Check this out on MetsXMFanZone!";
 
-  const getOgShareUrl = (rawUrl: string) => {
+  // Always share the real, public article URL so anyone clicking the link lands
+  // directly on the readable article. Social crawlers still get OG tags from the page.
+  const normalizeShareUrl = (rawUrl: string) => {
     try {
       const parsed = new URL(rawUrl);
 
-      // If it's already a backend meta URL, keep it.
-      if (parsed.pathname.includes("/functions/v1/blog-og-meta")) return rawUrl;
-
-      const parts = parsed.pathname.split("/").filter(Boolean);
-      const blogIndex = parts.indexOf("blog");
-      const ogBlogIndex = parts.indexOf("og-blog");
-      const idx = blogIndex !== -1 ? blogIndex : ogBlogIndex;
-      const slug = idx !== -1 ? parts[idx + 1] : undefined;
-
-      if (!slug) return rawUrl;
-
-      const backendUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim();
-      if (!backendUrl) {
-        console.warn(
-          "VITE_SUPABASE_URL is missing; falling back to the page URL for sharing."
-        );
-        return rawUrl;
+      // If it's the backend OG meta endpoint, convert it back to the public article URL.
+      if (parsed.pathname.includes("/functions/v1/blog-og-meta")) {
+        const slug = parsed.searchParams.get("slug");
+        if (slug) {
+          return `https://metsxmfanzone.com/blog/${encodeURIComponent(slug)}`;
+        }
       }
 
-      return `${backendUrl}/functions/v1/blog-og-meta?slug=${encodeURIComponent(slug)}`;
+      // If it's the /og-blog/:slug helper route, rewrite to /blog/:slug.
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      const ogBlogIndex = parts.indexOf("og-blog");
+      if (ogBlogIndex !== -1 && parts[ogBlogIndex + 1]) {
+        return `${parsed.origin}/blog/${parts[ogBlogIndex + 1]}`;
+      }
+
+      return rawUrl;
     } catch {
       return rawUrl;
     }
   };
 
-  // Use the backend-rendered OG meta endpoint for blog posts so social crawlers see the right image/description.
-  const shareUrl = getOgShareUrl(baseUrl);
+  const shareUrl = normalizeShareUrl(baseUrl);
 
   const socialLinks = [
     {
