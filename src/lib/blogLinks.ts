@@ -31,7 +31,7 @@ export function getBlogShareUrl(slug: string): string {
   const safeSlug = encodeURIComponent(slug);
 
   if (PROJECT_ID) {
-    return `https://${PROJECT_ID}.supabase.co/functions/v1/blog-og-meta/${safeSlug}`;
+    return `https://${PROJECT_ID}.supabase.co/functions/v1/blog-og-meta?slug=${safeSlug}`;
   }
 
   // Fallback: direct article URL if project id is unavailable at build time.
