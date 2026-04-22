@@ -22,8 +22,22 @@ const SUPABASE_ANON_KEY =
   process.env.VITE_SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsd2doa2J0a29mYWNzamV5cnRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNTI3NDIsImV4cCI6MjA3NzkyODc0Mn0.11mr9r-U-BAwy9Mmr2yrzjLhjljswgOotJeOOXyfllc";
 
-const SITE_URL = process.env.PUBLIC_SITE_URL || "https://metsxmfanzone.com";
-const FALLBACK_IMAGE = `${SITE_URL}/logo-512.png`;
+const DEFAULT_SITE_URL = process.env.PUBLIC_SITE_URL || "https://metsxmfanzone.com";
+
+function resolveSiteUrl(req) {
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const protocol = Array.isArray(forwardedProto)
+    ? forwardedProto[0]
+    : forwardedProto || "https";
+  const forwardedHost = req.headers["x-forwarded-host"];
+  const host = Array.isArray(forwardedHost)
+    ? forwardedHost[0]
+    : forwardedHost || req.headers.host;
+
+  if (!host) return DEFAULT_SITE_URL;
+
+  return `${protocol}://${host}`.replace("://www.", "://");
+}
 
 function escapeHtml(input) {
   return String(input ?? "").replace(/[&<>"']/g, (m) =>
@@ -38,12 +52,13 @@ function stripHtml(input) {
     .trim();
 }
 
-function resolveImage(url) {
-  if (!url) return FALLBACK_IMAGE;
-  if (url.startsWith("data:")) return FALLBACK_IMAGE;
+function resolveImage(url, siteUrl) {
+  const fallbackImage = `${siteUrl}/logo-512.png`;
+  if (!url) return fallbackImage;
+  if (url.startsWith("data:")) return fallbackImage;
   if (url.startsWith("http://")) return `https://${url.slice(7)}`;
   if (url.startsWith("https://")) return url;
-  return `${SITE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+  return `${siteUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
 // Strip any placeholder/site-wide social tags from the SPA shell so the
@@ -60,9 +75,9 @@ function stripSocialTags(html) {
     .replace(/<meta\s+name="twitter:[^"]+"[^>]*>\s*/gi, "");
 }
 
-function buildHead(post, slug) {
-  const postUrl = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
-  const image = resolveImage(post.featured_image_url);
+function buildHead(post, slug, siteUrl) {
+  const postUrl = `${siteUrl}/blog/${encodeURIComponent(slug)}`;
+  const image = resolveImage(post.featured_image_url, siteUrl);
   const rawDescription =
     (post.excerpt && String(post.excerpt).trim().length > 0
       ? String(post.excerpt)
@@ -88,11 +103,11 @@ function buildHead(post, slug) {
     image: [image],
     datePublished: publishedTime,
     dateModified: modifiedTime,
-    author: { "@type": "Organization", name: "MetsXMFanZone", url: SITE_URL },
+    author: { "@type": "Organization", name: "MetsXMFanZone", url: siteUrl },
     publisher: {
       "@type": "Organization",
       name: "MetsXMFanZone",
-      logo: { "@type": "ImageObject", url: `${SITE_URL}/logo-512.png` },
+      logo: { "@type": "ImageObject", url: `${siteUrl}/logo-512.png` },
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
     articleSection: post.category || undefined,
@@ -157,16 +172,17 @@ function loadShell() {
   return null;
 }
 
-function buildFallbackShell(post, slug) {
+function buildFallbackShell(post, slug, siteUrl) {
   // Used only if dist/index.html is unavailable for some reason. Crawlers still
   // get full meta; humans get a redirect to the live SPA on Lovable hosting.
-  const headHtml = buildHead(post, slug);
-  const postUrl = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
+  const headHtml = buildHead(post, slug, siteUrl);
+  const postUrl = `${siteUrl}/blog/${encodeURIComponent(slug)}`;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${headHtml}<meta http-equiv="refresh" content="0;url=${postUrl}"></head><body><h1>${escapeHtml(post.title || "")}</h1></body></html>`;
 }
 
 export default async function handler(req, res) {
   try {
+    const siteUrl = resolveSiteUrl(req);
     const slugParam = req.query?.slug;
     const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
 
@@ -203,9 +219,9 @@ export default async function handler(req, res) {
     let html;
     if (shell) {
       const cleaned = stripSocialTags(shell);
-      html = cleaned.replace("</head>", `${buildHead(post, slug)}\n</head>`);
+      html = cleaned.replace("</head>", `${buildHead(post, slug, siteUrl)}\n</head>`);
     } else {
-      html = buildFallbackShell(post, slug);
+      html = buildFallbackShell(post, slug, siteUrl);
     }
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
