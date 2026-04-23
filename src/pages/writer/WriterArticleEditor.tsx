@@ -180,18 +180,7 @@ export default function WriterArticleEditor() {
     checkWriterAccess();
   }, [user, authLoading, navigate, toast, id, isEditing]);
 
-  // Auto-generate slug from title
-  useEffect(() => {
-    if (!isEditing && title) {
-      const generatedSlug = title
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .slice(0, 100);
-      setSlug(generatedSlug);
-    }
-  }, [title, isEditing]);
+  // Slug is entered manually by the writer (no auto-generation)
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -267,11 +256,20 @@ export default function WriterArticleEditor() {
       return;
     }
 
+    if (!slug.trim()) {
+      toast({
+        title: "URL slug required",
+        description: "Please enter a URL slug for your article.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
     try {
       const articleData = {
         title: title.trim(),
-        slug: slug.trim() || title.toLowerCase().replace(/\s+/g, "-"),
+        slug: slug.trim(),
         excerpt: excerpt.trim() || null,
         content: content.trim(),
         category,

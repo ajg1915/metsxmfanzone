@@ -393,7 +393,15 @@ export default function BlogManagement() {
         return;
       }
 
-      const slug = formData.slug || generateSlug(formData.title);
+      if (!formData.slug?.trim()) {
+        toast({
+          title: "Slug required",
+          description: "Please enter a URL slug for this post.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const slug = formData.slug.trim();
       
       // Validate individual tags
       const tagsArray = formData.tags.split(",").map(t => t.trim()).filter(t => t);
