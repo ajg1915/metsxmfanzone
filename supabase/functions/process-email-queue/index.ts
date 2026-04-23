@@ -7,24 +7,6 @@ const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
 
-type QueueName = 'auth_emails' | 'transactional_emails'
-
-type EmailQueuePayload = {
-  run_id?: string
-  to?: string
-  from?: string
-  sender_domain?: string
-  subject?: string
-  html?: string
-  text?: string
-  purpose?: string
-  label?: string
-  idempotency_key?: string
-  unsubscribe_token?: string
-  message_id?: string
-  queued_at?: string
-}
-
 // Check if an error is a rate-limit (429) response.
 // Uses EmailAPIError.status when available (email-js >=0.x with structured errors),
 // falls back to parsing the error message for older versions.
@@ -33,6 +15,15 @@ function isRateLimited(error: unknown): boolean {
     return (error as { status: number }).status === 429
   }
   return error instanceof Error && error.message.includes('429')
+}
+
+// Check if an error is a forbidden (403) response, which means emails are
+// disabled for this project. Retrying won't help — move straight to DLQ.
+function isForbidden(error: unknown): boolean {
+  if (error && typeof error === 'object' && 'status' in error) {
+    return (error as { status: number }).status === 403
+  }
+  return error instanceof Error && error.message.includes('403')
 }
 
 // Extract Retry-After seconds from a structured EmailAPIError, or default to 60s.
@@ -61,32 +52,30 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
   }
 }
 
-function buildEmailRequest(payload: EmailQueuePayload, queue: QueueName) {
-  const request = {
-    to: payload.to,
-    from: payload.from,
-    sender_domain: payload.sender_domain,
-    subject: payload.subject,
-    html: payload.html,
-    text: payload.text,
-    purpose: payload.purpose,
-    label: payload.label,
-    idempotency_key: payload.idempotency_key,
-    unsubscribe_token: payload.unsubscribe_token,
+// Move a message to the dead letter queue and log the reason.
+async function moveToDlq(
+  supabase: ReturnType<typeof createClient>,
+  queue: string,
+  msg: { msg_id: number; message: Record<string, unknown> },
+  reason: string
+): Promise<void> {
+  const payload = msg.message
+  await supabase.from('email_send_log').insert({
     message_id: payload.message_id,
+    template_name: (payload.label || queue) as string,
+    recipient_email: payload.to,
+    status: 'dlq',
+    error_message: reason,
+  })
+  const { error } = await supabase.rpc('move_to_dlq', {
+    source_queue: queue,
+    dlq_name: `${queue}_dlq`,
+    message_id: msg.msg_id,
+    payload,
+  })
+  if (error) {
+    console.error('Failed to move message to DLQ', { queue, msg_id: msg.msg_id, reason, error })
   }
-
-  // Only auth emails should forward a real workflow run_id.
-  // Transactional/bulk emails are queued independently and synthetic UUIDs
-  // trigger `run_not_found` errors from the Lovable Email API.
-  if (queue === 'auth_emails' && payload.run_id) {
-    return {
-      ...request,
-      run_id: payload.run_id,
-    }
-  }
-
-  return request
 }
 
 Deno.serve(async (req) => {
@@ -139,7 +128,7 @@ Deno.serve(async (req) => {
 
   const batchSize = state?.batch_size ?? DEFAULT_BATCH_SIZE
   const sendDelayMs = state?.send_delay_ms ?? DEFAULT_SEND_DELAY_MS
-  const ttlMinutes: Record<QueueName, number> = {
+  const ttlMinutes: Record<string, number> = {
     auth_emails: state?.auth_email_ttl_minutes ?? DEFAULT_AUTH_TTL_MINUTES,
     transactional_emails: state?.transactional_email_ttl_minutes ?? DEFAULT_TRANSACTIONAL_TTL_MINUTES,
   }
@@ -147,8 +136,7 @@ Deno.serve(async (req) => {
   let totalProcessed = 0
 
   // 2. Process auth_emails first (priority), then transactional_emails
-  for (const queue of ['auth_emails', 'transactional_emails'] as const) {
-    const dlq = `${queue}_dlq`
+  for (const queue of ['auth_emails', 'transactional_emails']) {
     const { data: messages, error: readError } = await supabase.rpc('read_email_batch', {
       queue_name: queue,
       batch_size: batchSize,
@@ -203,61 +191,34 @@ Deno.serve(async (req) => {
 
     for (let i = 0; i < messages.length; i++) {
       const msg = messages[i]
-      const payload = msg.message as EmailQueuePayload
+      const payload = msg.message
       const failedAttempts =
         payload?.message_id && typeof payload.message_id === 'string'
           ? (failedAttemptsByMessageId.get(payload.message_id) ?? 0)
-          : 0
+          : msg.read_ct ?? 0
 
-      // Drop expired messages (TTL exceeded)
-      if (payload.queued_at) {
-        const ageMs = Date.now() - new Date(payload.queued_at).getTime()
+      // Drop expired messages (TTL exceeded).
+      // Prefer payload.queued_at when present; fall back to PGMQ's enqueued_at
+      // which is always set by the queue.
+      const queuedAt = payload.queued_at ?? msg.enqueued_at
+      if (queuedAt) {
+        const ageMs = Date.now() - new Date(queuedAt).getTime()
         const maxAgeMs = ttlMinutes[queue] * 60 * 1000
         if (ageMs > maxAgeMs) {
           console.warn('Email expired (TTL exceeded)', {
             queue,
             msg_id: msg.msg_id,
-            queued_at: payload.queued_at,
+            queued_at: queuedAt,
             ttl_minutes: ttlMinutes[queue],
           })
-          await supabase.from('email_send_log').insert({
-            message_id: payload.message_id,
-            template_name: payload.label || queue,
-            recipient_email: payload.to,
-            status: 'dlq',
-            error_message: `TTL exceeded (${ttlMinutes[queue]} minutes)`,
-          })
-          const { error: ttlDlqError } = await supabase.rpc('move_to_dlq', {
-            source_queue: queue,
-            dlq_name: dlq,
-            message_id: msg.msg_id,
-            payload,
-          })
-          if (ttlDlqError) {
-            console.error('Failed to move expired message to DLQ', { queue, msg_id: msg.msg_id, error: ttlDlqError })
-          }
+          await moveToDlq(supabase, queue, msg, `TTL exceeded (${ttlMinutes[queue]} minutes)`)
           continue
         }
       }
 
       // Move to DLQ if max failed send attempts reached.
       if (failedAttempts >= MAX_RETRIES) {
-        await supabase.from('email_send_log').insert({
-          message_id: payload.message_id,
-          template_name: payload.label || queue,
-          recipient_email: payload.to,
-          status: 'dlq',
-          error_message: `Max retries (${MAX_RETRIES}) exceeded (attempted ${failedAttempts} times)`,
-        })
-        const { error: retryDlqError } = await supabase.rpc('move_to_dlq', {
-          source_queue: queue,
-          dlq_name: dlq,
-          message_id: msg.msg_id,
-          payload,
-        })
-        if (retryDlqError) {
-          console.error('Failed to move max-retry message to DLQ', { queue, msg_id: msg.msg_id, error: retryDlqError })
-        }
+        await moveToDlq(supabase, queue, msg, `Max retries (${MAX_RETRIES}) exceeded (attempted ${failedAttempts} times)`)
         continue
       }
 
@@ -289,7 +250,20 @@ Deno.serve(async (req) => {
 
       try {
         await sendLovableEmail(
-          buildEmailRequest(payload, queue),
+          {
+            run_id: payload.run_id,
+            to: payload.to,
+            from: payload.from,
+            sender_domain: payload.sender_domain,
+            subject: payload.subject,
+            html: payload.html,
+            text: payload.text,
+            purpose: payload.purpose,
+            label: payload.label,
+            idempotency_key: payload.idempotency_key,
+            unsubscribe_token: payload.unsubscribe_token,
+            message_id: payload.message_id,
+          },
           // sendUrl is optional — when LOVABLE_SEND_URL is not set, the library
           // falls back to the default Lovable API endpoint (https://api.lovable.dev).
           // Set LOVABLE_SEND_URL as a Supabase secret to override (e.g. for local dev).
@@ -346,6 +320,16 @@ Deno.serve(async (req) => {
           // Stop processing — remaining messages stay in queue (VT expires, retried next cycle)
           return new Response(
             JSON.stringify({ processed: totalProcessed, stopped: 'rate_limited' }),
+            { headers: { 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // 403 means emails are disabled for this project — retrying won't help.
+        // Move straight to DLQ and stop processing the rest of the batch.
+        if (isForbidden(error)) {
+          await moveToDlq(supabase, queue, msg, 'Emails disabled for this project')
+          return new Response(
+            JSON.stringify({ processed: totalProcessed, stopped: 'emails_disabled' }),
             { headers: { 'Content-Type': 'application/json' } }
           )
         }
