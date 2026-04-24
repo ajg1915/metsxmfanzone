@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { Suspense, useState } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
@@ -6,37 +6,38 @@ import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
 import LazySection from "@/components/LazySection";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 import { useAuth } from "@/hooks/useAuth";
 
 // Lazy load heavy components that are below the fold
-const ImmersiveBackground = lazy(() => import("@/components/ImmersiveBackground"));
-const FreeTrialExpiryBanner = lazy(() => import("@/components/FreeTrialExpiryBanner"));
-const LiveNetworks = lazy(() => import("@/components/LiveNetworks"));
-const LiveStreamsSection = lazy(() => import("@/components/LiveStreamsSection"));
-const RadioNetworkLiveSection = lazy(() => import("@/components/RadioNetworkLiveSection"));
-const SpringTrainingGamesSection = lazy(() => import("@/components/SpringTrainingGamesSection"));
-const GameHighlightsSection = lazy(() => import("@/components/GameHighlightsSection"));
-const ReplayGamesSection = lazy(() => import("@/components/ReplayGamesSection"));
-const PlayerOfTheMonthSection = lazy(() => import("@/components/PlayerOfTheMonthSection"));
-const PlayersToWatch = lazy(() => import("@/components/PlayersToWatch"));
-const RegularSeasonSeriesSection = lazy(() => import("@/components/RegularSeasonSeriesSection"));
+const ImmersiveBackground = lazyWithRetry(() => import("@/components/ImmersiveBackground"), "home-immersive-background");
+const FreeTrialExpiryBanner = lazyWithRetry(() => import("@/components/FreeTrialExpiryBanner"), "home-free-trial-expiry-banner");
+const LiveNetworks = lazyWithRetry(() => import("@/components/LiveNetworks"), "home-live-networks");
+const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section");
+const RadioNetworkLiveSection = lazyWithRetry(() => import("@/components/RadioNetworkLiveSection"), "home-radio-network-live-section");
+const SpringTrainingGamesSection = lazyWithRetry(() => import("@/components/SpringTrainingGamesSection"), "home-spring-training-games-section");
+const GameHighlightsSection = lazyWithRetry(() => import("@/components/GameHighlightsSection"), "home-game-highlights-section");
+const ReplayGamesSection = lazyWithRetry(() => import("@/components/ReplayGamesSection"), "home-replay-games-section");
+const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerOfTheMonthSection"), "home-player-of-the-month-section");
+const PlayersToWatch = lazyWithRetry(() => import("@/components/PlayersToWatch"), "home-players-to-watch");
+const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/RegularSeasonSeriesSection"), "home-regular-season-series-section");
 
-const BlogSection = lazy(() => import("@/components/BlogSection"));
-const HomeLineupCard = lazy(() => import("@/components/HomeLineupCard"));
-const FindUsSection = lazy(() => import("@/components/FindUsSection"));
+const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
+const HomeLineupCard = lazyWithRetry(() => import("@/components/HomeLineupCard"), "home-lineup-card");
+const FindUsSection = lazyWithRetry(() => import("@/components/FindUsSection"), "home-find-us-section");
 
-const StoriesSection = lazy(() => import("@/components/StoriesSection"));
-const GamecastBanner = lazy(() => import("@/components/GamecastBanner"));
-const FAQSection = lazy(() => import("@/components/FAQSection"));
-const TestimonialsSection = lazy(() => import("@/components/TestimonialsSection"));
-const AppInstallSection = lazy(() => import("@/components/AppInstallSection"));
-const CommunityPreviewSection = lazy(() => import("@/components/CommunityPreviewSection"));
-const InstallPrompt = lazy(() => import("@/components/InstallPrompt"));
-const OnboardingWalkthrough = lazy(() => import("@/components/OnboardingWalkthrough"));
-const NotificationPrompt = lazy(() => import("@/components/NotificationPrompt"));
-const ToastPoll = lazy(() => import("@/components/ToastPoll"));
-const PopupNotification = lazy(() => import("@/components/PopupNotification"));
+const StoriesSection = lazyWithRetry(() => import("@/components/StoriesSection"), "home-stories-section");
+const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
+const FAQSection = lazyWithRetry(() => import("@/components/FAQSection"), "home-faq-section");
+const TestimonialsSection = lazyWithRetry(() => import("@/components/TestimonialsSection"), "home-testimonials-section");
+const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSection"), "home-app-install-section");
+const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
+const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"), "home-install-prompt");
+const OnboardingWalkthrough = lazyWithRetry(() => import("@/components/OnboardingWalkthrough"), "home-onboarding-walkthrough");
+const NotificationPrompt = lazyWithRetry(() => import("@/components/NotificationPrompt"), "home-notification-prompt");
+const ToastPoll = lazyWithRetry(() => import("@/components/ToastPoll"), "home-toast-poll");
+const PopupNotification = lazyWithRetry(() => import("@/components/PopupNotification"), "home-popup-notification");
 
 
 // Section loading skeleton
