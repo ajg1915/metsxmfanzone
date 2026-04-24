@@ -6,7 +6,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
+import { Home, RefreshCw } from "lucide-react";
 import { AdminPinVerification } from "@/components/AdminPinVerification";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 
@@ -17,15 +17,27 @@ function AdminHeader({ navigate }: { navigate: (path: string | number) => void }
         <SidebarTrigger className="h-7 w-7 flex-shrink-0 text-muted-foreground hover:text-foreground" />
         <h1 className="text-xs sm:text-sm font-semibold truncate text-foreground">Admin</h1>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => navigate("/")}
-        className="h-7 text-xs px-2 flex-shrink-0 text-muted-foreground hover:text-foreground border border-muted/30"
-      >
-        <Home className="w-3.5 h-3.5 sm:mr-1" />
-        <span className="hidden sm:inline">Back to Site</span>
-      </Button>
+      <div className="flex items-center gap-1.5">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => window.location.reload()}
+          className="h-7 text-xs px-2 flex-shrink-0 text-muted-foreground hover:text-foreground border border-muted/30"
+          title="Refresh"
+        >
+          <RefreshCw className="w-3.5 h-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Refresh</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="h-7 text-xs px-2 flex-shrink-0 text-muted-foreground hover:text-foreground border border-muted/30"
+        >
+          <Home className="w-3.5 h-3.5 sm:mr-1" />
+          <span className="hidden sm:inline">Back to Site</span>
+        </Button>
+      </div>
     </header>
   );
 }
