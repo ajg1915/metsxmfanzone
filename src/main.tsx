@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
+import { isRecoverableDynamicImportError, reloadForFreshAssets } from "./lib/lazyWithRetry";
 import "./index.css";
 
 // Register service worker for push notifications and offline caching
@@ -28,24 +29,15 @@ void purgeAllCaches();
 // Auto-recover from stale dynamic import chunks after a redeploy.
 // When the deployed index.html references new hashed JS files but the user
 // still has the old SPA loaded, lazy() imports throw "Failed to fetch
-// dynamically imported module". We reload once to pick up the new manifest.
+// dynamically imported module". We hard-navigate once with a cache-busting
+// query param so the browser fetches the fresh asset graph.
 const STALE_RELOAD_KEY = "__stale_chunk_reloaded_at";
-const handleStaleChunk = (msg: string | undefined) => {
-  if (!msg) return;
-  const isChunkError =
-    msg.includes("Failed to fetch dynamically imported module") ||
-    msg.includes("Importing a module script failed") ||
-    (msg.includes("error loading dynamically imported module"));
-  if (!isChunkError) return;
-  const last = Number(sessionStorage.getItem(STALE_RELOAD_KEY) || 0);
-  if (Date.now() - last < 10_000) return; // avoid reload loops
-  sessionStorage.setItem(STALE_RELOAD_KEY, String(Date.now()));
-  window.location.reload();
+const handleStaleChunk = (error: unknown) => {
+  if (!isRecoverableDynamicImportError(error)) return;
+  reloadForFreshAssets(STALE_RELOAD_KEY);
 };
-window.addEventListener("error", (e) => handleStaleChunk(e?.message));
-window.addEventListener("unhandledrejection", (e) =>
-  handleStaleChunk((e?.reason && (e.reason.message || String(e.reason))) || "")
-);
+window.addEventListener("error", (e) => handleStaleChunk(e?.error ?? e?.message));
+window.addEventListener("unhandledrejection", (e) => handleStaleChunk(e?.reason));
 
 const isPreviewHost =
   window.location.hostname.includes("id-preview--") ||
