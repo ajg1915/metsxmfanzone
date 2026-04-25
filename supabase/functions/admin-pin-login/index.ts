@@ -48,7 +48,69 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const body = await req.json();
-    const { action, pin, deviceFingerprint, deviceName, userId: setupUserId, newPin: setupPin } = body;
+    const { action, pin, deviceFingerprint, deviceName, userId: setupUserId, newPin: setupPin, email: resetEmail } = body;
+
+    // Handle PIN reset request - sends a recovery email so admin can set a new PIN
+    if (action === 'request-pin-reset') {
+      if (!resetEmail || typeof resetEmail !== 'string') {
+        return new Response(JSON.stringify({ error: 'Email is required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Always return success to prevent email enumeration
+      const genericResponse = new Response(JSON.stringify({
+        success: true,
+        message: 'If an admin account exists for that email, a reset link has been sent.'
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+      try {
+        // Look up user by email
+        const { data: usersList } = await supabase.auth.admin.listUsers();
+        const matchedUser = usersList?.users?.find(
+          (u: any) => u.email?.toLowerCase() === resetEmail.toLowerCase()
+        );
+
+        if (!matchedUser) {
+          console.log(`PIN reset requested for non-existent email`);
+          return genericResponse;
+        }
+
+        // Verify user is an admin
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', matchedUser.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+
+        if (!roleData) {
+          console.log(`PIN reset requested for non-admin user`);
+          return genericResponse;
+        }
+
+        // Generate a recovery link that lands on /admin-pin-reset
+        const origin = req.headers.get('origin') || 'https://metsxmfanzone.com';
+        const { error: linkError } = await supabase.auth.admin.generateLink({
+          type: 'recovery',
+          email: matchedUser.email!,
+          options: {
+            redirectTo: `${origin}/admin-pin-reset`
+          }
+        });
+
+        if (linkError) {
+          console.error('Failed to generate recovery link:', linkError);
+        } else {
+          console.log(`PIN reset email sent to admin ${matchedUser.id.substring(0, 8)}...`);
+        }
+      } catch (err) {
+        console.error('Error processing PIN reset request:', err);
+      }
+
+      return genericResponse;
+    }
     
     const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
                      req.headers.get('cf-connecting-ip') || 
