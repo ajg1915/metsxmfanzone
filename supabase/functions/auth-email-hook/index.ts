@@ -37,7 +37,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 
 // Configuration
 const SITE_NAME = 'MetsXMFanZone'
-const SENDER_DOMAIN = 'notify.www.metsxmfanzone.com'
+const SENDER_DOMAIN = 'notify.metsxmfanzone.com'
 const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${SENDER_DOMAIN}>`
 const ROOT_DOMAIN = 'metsxmfanzone.com'
 

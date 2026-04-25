@@ -1,5 +1,58 @@
-import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+
+const RESEND_GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend/emails'
+
+class EmailSendError extends Error {
+  status: number
+  retryAfterSeconds: number | null
+  constructor(message: string, status: number, retryAfterSeconds: number | null = null) {
+    super(message)
+    this.status = status
+    this.retryAfterSeconds = retryAfterSeconds
+  }
+}
+
+async function sendViaResend(
+  payload: {
+    to: string
+    from: string
+    subject: string
+    html: string
+    text?: string
+  },
+  auth: { lovableApiKey: string; resendApiKey: string }
+): Promise<void> {
+  const response = await fetch(RESEND_GATEWAY_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${auth.lovableApiKey}`,
+      'X-Connection-Api-Key': auth.resendApiKey,
+    },
+    body: JSON.stringify({
+      from: payload.from,
+      to: [payload.to],
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text || undefined,
+    }),
+  })
+
+  if (!response.ok) {
+    const bodyText = await response.text().catch(() => '')
+    let retryAfterSeconds: number | null = null
+    if (response.status === 429) {
+      const ra = response.headers.get('Retry-After')
+      const parsed = ra ? parseInt(ra, 10) : NaN
+      retryAfterSeconds = Number.isFinite(parsed) ? parsed : 60
+    }
+    throw new EmailSendError(
+      `Resend send failed [${response.status}]: ${bodyText.slice(0, 500)}`,
+      response.status,
+      retryAfterSeconds
+    )
+  }
+}
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
@@ -95,10 +148,11 @@ async function moveToDlq(
 
 Deno.serve(async (req) => {
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
+  const resendApiKey = Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-  if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
+  if (!apiKey || !resendApiKey || !supabaseUrl || !supabaseServiceKey) {
     console.error('Missing required environment variables')
     return new Response(
       JSON.stringify({ error: 'Server configuration error' }),
@@ -265,25 +319,15 @@ Deno.serve(async (req) => {
       }
 
       try {
-        await sendLovableEmail(
+        await sendViaResend(
           {
-            run_id: asString(payload.run_id),
             to: asString(payload.to) ?? '',
             from: asString(payload.from) ?? '',
-            sender_domain: asString(payload.sender_domain) ?? '',
             subject: asString(payload.subject) ?? '',
             html: asString(payload.html) ?? '',
-            text: asString(payload.text) ?? '',
-            purpose: asString(payload.purpose) ?? 'transactional',
-            label: asString(payload.label) ?? queue,
-            idempotency_key: asString(payload.idempotency_key),
-            unsubscribe_token: asString(payload.unsubscribe_token),
-            message_id: asString(payload.message_id),
+            text: asString(payload.text),
           },
-          // sendUrl is optional — when LOVABLE_SEND_URL is not set, the library
-          // falls back to the default Lovable API endpoint (https://api.lovable.dev).
-          // Set LOVABLE_SEND_URL as a Supabase secret to override (e.g. for local dev).
-          { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
+          { lovableApiKey: apiKey, resendApiKey }
         )
 
         // Log success
