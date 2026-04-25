@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Trash2, Users, UserCheck, UserX, Lock, Unlock, ShieldCheck, Eye, EyeOff, Pencil, Check, X } from "lucide-react";
+import { Loader2, Trash2, Users, UserCheck, UserX, Lock, Unlock, ShieldCheck, Eye, EyeOff, Pencil, Check, X, KeyRound } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -228,6 +228,28 @@ export default function MembersTab() {
     }
   };
 
+  const sendPasswordReset = async (m: MemberRow) => {
+    // Prefer decrypted email if available, otherwise the row's stored email
+    const email = (decrypted && decryptedData.get(m.user_id)?.email) || m.email;
+    if (!email) {
+      toast({ title: "No email on file", description: "Cannot send reset — this member has no email address.", variant: "destructive" });
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?mode=reset`,
+      });
+      if (error) throw error;
+      toast({
+        title: "Reset email sent",
+        description: `A password reset link was emailed to ${decrypted ? email : maskEmail(email)}.`,
+      });
+    } catch (err: any) {
+      console.error("Password reset error:", err);
+      toast({ title: "Error", description: err.message || "Failed to send reset email.", variant: "destructive" });
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active": return "bg-affirmative";
@@ -388,7 +410,7 @@ export default function MembersTab() {
                   <TableHead>Status</TableHead>
                   <TableHead>Roles</TableHead>
                   <TableHead>Joined</TableHead>
-                  <TableHead className="w-10"></TableHead>
+                  <TableHead className="w-24 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -441,32 +463,43 @@ export default function MembersTab() {
                       {m.joined_date ? new Date(m.joined_date).toLocaleDateString() : "—"}
                     </TableCell>
                     <TableCell>
-                      {m.user_id !== user?.id && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Account</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Permanently delete this user? This cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteUserAccount(m.user_id, m.email)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-primary hover:text-primary"
+                          title="Send password reset email"
+                          onClick={() => sendPasswordReset(m)}
+                        >
+                          <KeyRound className="h-4 w-4" />
+                        </Button>
+                        {m.user_id !== user?.id && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" title="Delete account">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Permanently delete this user? This cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteUserAccount(m.user_id, m.email)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
