@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-export const VERIFIED_EMAIL_DOMAIN = 'notify.www.metsxmfanzone.com'
+export const VERIFIED_EMAIL_DOMAIN = 'notify.metsxmfanzone.com'
 export const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`
 const EMAIL_QUEUE_NAME = 'transactional_emails'
 

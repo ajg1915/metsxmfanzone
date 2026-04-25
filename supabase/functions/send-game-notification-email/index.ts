@@ -81,7 +81,7 @@ interface GameNotificationRequest {
   imageUrl?: string;
 }
 
-const VERIFIED_EMAIL_DOMAIN = 'notify.www.metsxmfanzone.com';
+const VERIFIED_EMAIL_DOMAIN = 'notify.metsxmfanzone.com';
 const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`;
 const EMAIL_QUEUE_NAME = 'transactional_emails';
 
