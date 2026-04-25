@@ -148,10 +148,11 @@ async function moveToDlq(
 
 Deno.serve(async (req) => {
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
+  const resendApiKey = Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-  if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
+  if (!apiKey || !resendApiKey || !supabaseUrl || !supabaseServiceKey) {
     console.error('Missing required environment variables')
     return new Response(
       JSON.stringify({ error: 'Server configuration error' }),
