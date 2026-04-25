@@ -4,7 +4,8 @@ export const VERIFIED_EMAIL_DOMAIN = 'notify.www.metsxmfanzone.com'
 export const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`
 const EMAIL_QUEUE_NAME = 'transactional_emails'
 
-type ServiceClient = ReturnType<typeof createClient>
+// deno-lint-ignore no-explicit-any
+type ServiceClient = any
 
 type QueueEmailOptions = {
   html: string

@@ -190,7 +190,7 @@ IMPORTANT: Always return valid JSON. No markdown, no code blocks.`;
         const result = await executeAction(adminClient, act, caller.id);
         executed.push(result.message || `Executed ${act.type}`);
       } catch (e) {
-        executed.push(`Failed: ${act.type} - ${e.message}`);
+        executed.push(`Failed: ${act.type} - ${(e as Error).message}`);
       }
     }
 
