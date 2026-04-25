@@ -228,6 +228,28 @@ export default function MembersTab() {
     }
   };
 
+  const sendPasswordReset = async (m: MemberRow) => {
+    // Prefer decrypted email if available, otherwise the row's stored email
+    const email = (decrypted && decryptedData.get(m.user_id)?.email) || m.email;
+    if (!email) {
+      toast({ title: "No email on file", description: "Cannot send reset — this member has no email address.", variant: "destructive" });
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?mode=reset`,
+      });
+      if (error) throw error;
+      toast({
+        title: "Reset email sent",
+        description: `A password reset link was emailed to ${decrypted ? email : maskEmail(email)}.`,
+      });
+    } catch (err: any) {
+      console.error("Password reset error:", err);
+      toast({ title: "Error", description: err.message || "Failed to send reset email.", variant: "destructive" });
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active": return "bg-affirmative";
