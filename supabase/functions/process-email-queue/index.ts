@@ -318,7 +318,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        await sendViaResend(
+        await sendViaLovableEmail(
           {
             to: asString(payload.to) ?? '',
             from: asString(payload.from) ?? '',
@@ -326,7 +326,7 @@ Deno.serve(async (req) => {
             html: asString(payload.html) ?? '',
             text: asString(payload.text),
           },
-          { lovableApiKey: apiKey, resendApiKey }
+          { lovableApiKey: apiKey }
         )
 
         // Log success
