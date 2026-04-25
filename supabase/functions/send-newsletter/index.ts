@@ -37,7 +37,7 @@ const sanitizeHtml = (html: string): string => {
 };
 
 const getOrCreateUnsubscribeToken = async (
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   email: string,
 ): Promise<string> => {
   const normalizedEmail = email.trim().toLowerCase();
@@ -53,7 +53,7 @@ const getOrCreateUnsubscribeToken = async (
 };
 
 const queueEmail = async (
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   to: string,
   subject: string,
   html: string,
