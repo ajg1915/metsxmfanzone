@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-const RESEND_GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend/emails'
+const LOVABLE_EMAIL_URL = 'https://email.lovable.dev/v1/emails'
 
 class EmailSendError extends Error {
   status: number
@@ -12,7 +12,7 @@ class EmailSendError extends Error {
   }
 }
 
-async function sendViaResend(
+async function sendViaLovableEmail(
   payload: {
     to: string
     from: string
@@ -20,14 +20,13 @@ async function sendViaResend(
     html: string
     text?: string
   },
-  auth: { lovableApiKey: string; resendApiKey: string }
+  auth: { lovableApiKey: string }
 ): Promise<void> {
-  const response = await fetch(RESEND_GATEWAY_URL, {
+  const response = await fetch(LOVABLE_EMAIL_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${auth.lovableApiKey}`,
-      'X-Connection-Api-Key': auth.resendApiKey,
     },
     body: JSON.stringify({
       from: payload.from,
@@ -47,7 +46,7 @@ async function sendViaResend(
       retryAfterSeconds = Number.isFinite(parsed) ? parsed : 60
     }
     throw new EmailSendError(
-      `Resend send failed [${response.status}]: ${bodyText.slice(0, 500)}`,
+      `Lovable Email send failed [${response.status}]: ${bodyText.slice(0, 500)}`,
       response.status,
       retryAfterSeconds
     )
@@ -148,11 +147,10 @@ async function moveToDlq(
 
 Deno.serve(async (req) => {
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
-  const resendApiKey = Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-  if (!apiKey || !resendApiKey || !supabaseUrl || !supabaseServiceKey) {
+  if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
     console.error('Missing required environment variables')
     return new Response(
       JSON.stringify({ error: 'Server configuration error' }),
@@ -319,7 +317,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        await sendViaResend(
+        await sendViaLovableEmail(
           {
             to: asString(payload.to) ?? '',
             from: asString(payload.from) ?? '',
@@ -327,7 +325,7 @@ Deno.serve(async (req) => {
             html: asString(payload.html) ?? '',
             text: asString(payload.text),
           },
-          { lovableApiKey: apiKey, resendApiKey }
+          { lovableApiKey: apiKey }
         )
 
         // Log success
