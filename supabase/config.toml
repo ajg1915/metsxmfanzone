@@ -79,6 +79,8 @@ project_id = "clwghkbtkofacsjeyrtk"
     verify_jwt = true
   [functions.security-alerts]
     verify_jwt = false
+  [functions.send-email]
+    verify_jwt = true
   [functions.send-email-confirmation]
     verify_jwt = false
   [functions.send-newsletter]
