@@ -41,6 +41,12 @@ const SENDER_DOMAIN = 'notify.www.metsxmfanzone.com'
 const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${SENDER_DOMAIN}>`
 const ROOT_DOMAIN = 'metsxmfanzone.com'
 
+function maskEmail(email: unknown): string {
+  if (typeof email !== 'string' || !email.includes('@')) return '[REDACTED]'
+  const [local, domain] = email.split('@')
+  return `${local.slice(0, 2)}***@${domain}`
+}
+
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
 // The sample email uses a fixed placeholder (RFC 6761 .test TLD) so the Go backend
@@ -206,7 +212,7 @@ async function handleWebhook(req: Request): Promise<Response> {
   // The email action type is in payload.data.action_type (e.g., "signup", "recovery")
   // payload.type is the hook event type ("auth")
   const emailType = payload.data.action_type
-  console.log('Received auth event', { emailType, email: payload.data.email, run_id })
+  console.log('Received auth event', { emailType, email: maskEmail(payload.data.email), run_id })
 
   const EmailTemplate = EMAIL_TEMPLATES[emailType]
   if (!EmailTemplate) {
@@ -219,10 +225,10 @@ async function handleWebhook(req: Request): Promise<Response> {
 
   // Build template props from payload.data (HookData structure)
   // Fetch dynamic style settings from DB
-  const supabase = createClient(
+  const supabase = createClient<any>(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  )
+  ) as any
 
   let styleProps: Record<string, any> = {}
   try {
@@ -312,7 +318,7 @@ async function handleWebhook(req: Request): Promise<Response> {
     })
   }
 
-  console.log('Auth email enqueued', { emailType, email: payload.data.email, run_id })
+  console.log('Auth email enqueued', { emailType, email: maskEmail(payload.data.email), run_id })
 
   return new Response(
     JSON.stringify({ success: true, queued: true }),
