@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Trash2, Users, UserCheck, UserX, Lock, Unlock, ShieldCheck, Eye, EyeOff, Pencil, Check, X } from "lucide-react";
+import { Loader2, Trash2, Users, UserCheck, UserX, Lock, Unlock, ShieldCheck, Eye, EyeOff, Pencil, Check, X, KeyRound } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
