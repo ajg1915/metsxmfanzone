@@ -139,6 +139,7 @@ const WriterAuth = lazyWithRetry(() => import("./pages/WriterAuth"), "page-write
 const WriterDashboard = lazyWithRetry(() => import("./pages/writer/WriterDashboard"), "page-writer-dashboard");
 const WriterArticleEditor = lazyWithRetry(() => import("./pages/writer/WriterArticleEditor"), "page-writer-article-editor");
 const AdminPortal = lazyWithRetry(() => import("./pages/AdminPortal"), "page-admin-portal");
+const AdminPinReset = lazyWithRetry(() => import("./pages/AdminPinReset"), "page-admin-pin-reset");
 const PodcasterApplication = lazyWithRetry(() => import("./pages/PodcasterApplication"), "page-podcaster-application");
 const PodcasterApplicationsManagement = lazyWithRetry(() => import("./pages/admin/PodcasterApplicationsManagement"), "page-admin-podcaster-applications-management");
 const DailyReports = lazyWithRetry(() => import("./pages/admin/DailyReports"), "page-admin-daily-reports");
