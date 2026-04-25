@@ -21,6 +21,34 @@ export default function AdminPortal() {
   const [attemptsRemaining, setAttemptsRemaining] = useState(5);
   const [deviceFingerprint, setDeviceFingerprint] = useState<string>("");
   const [isNewDevice, setIsNewDevice] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+
+  const handleForgotPin = async () => {
+    if (!forgotEmail.trim()) {
+      toast({ title: "Email required", description: "Enter the admin email address.", variant: "destructive" });
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-pin-login", {
+        body: { action: "request-pin-reset", email: forgotEmail.trim() },
+      });
+      if (error) throw error;
+      setForgotSent(true);
+      toast({
+        title: "Check your email",
+        description: data?.message || "If an admin account exists for that email, a reset link has been sent.",
+      });
+    } catch (err) {
+      console.error("Forgot PIN error:", err);
+      toast({ title: "Error", description: "Could not send reset email. Try again.", variant: "destructive" });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   useEffect(() => {
     const initFingerprint = async () => {
