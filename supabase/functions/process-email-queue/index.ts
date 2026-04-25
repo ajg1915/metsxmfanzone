@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
       // Drop expired messages (TTL exceeded).
       // Prefer payload.queued_at when present; fall back to PGMQ's enqueued_at
       // which is always set by the queue.
-      const queuedAt = payload.queued_at ?? msg.enqueued_at
+      const queuedAt = asString(payload.queued_at) ?? msg.enqueued_at
       if (queuedAt) {
         const ageMs = Date.now() - new Date(queuedAt).getTime()
         const maxAgeMs = ttlMinutes[queue] * 60 * 1000
@@ -273,7 +273,7 @@ Deno.serve(async (req) => {
             sender_domain: asString(payload.sender_domain) ?? '',
             subject: asString(payload.subject) ?? '',
             html: asString(payload.html) ?? '',
-            text: asString(payload.text),
+            text: asString(payload.text) ?? '',
             purpose: asString(payload.purpose) ?? 'transactional',
             label: asString(payload.label) ?? queue,
             idempotency_key: asString(payload.idempotency_key),
