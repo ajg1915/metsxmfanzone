@@ -60,6 +60,7 @@ const NewsletterGenerator = lazyWithRetry(() => import("./pages/admin/Newsletter
 const EmailEditor = lazyWithRetry(() => import("./pages/admin/EmailEditor"), "page-admin-email-editor");
 
 const BusinessAdsManagement = lazyWithRetry(() => import("./pages/admin/BusinessAdsManagement"), "page-admin-business-ads-management");
+const Unsubscribe = lazyWithRetry(() => import("./pages/Unsubscribe"), "page-unsubscribe");
 const MetsXMFanZone = lazyWithRetry(() => import("./pages/MetsXMFanZone"), "page-metsxmfanzone");
 const MLBNetwork = lazyWithRetry(() => import("./pages/MLBNetwork"), "page-mlb-network");
 const ESPNNetwork = lazyWithRetry(() => import("./pages/ESPNNetwork"), "page-espn-network");
@@ -329,6 +330,7 @@ const AppContent = () => {
             <Route path="/help/cancel-subscription" element={<CancelSubscription />} />
             <Route path="/help/return-policy" element={<ReturnPolicy />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/faqs" element={<FAQs />} />
             <Route path="/privacy" element={<Privacy />} />
