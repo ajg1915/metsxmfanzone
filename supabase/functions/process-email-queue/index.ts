@@ -158,9 +158,10 @@ Deno.serve(async (req) => {
     // Retry budget is based on real send failures, not pgmq read_ct.
     // read_ct increments for every message in a claimed batch, including
     // messages not attempted when a 429 stops processing early.
+    const queueMessages = messages as QueueMessage[]
     const messageIds = Array.from(
       new Set(
-        ;(messages as QueueMessage[])
+        queueMessages
           .map((msg: QueueMessage) =>
             msg?.message?.message_id && typeof msg.message.message_id === 'string'
               ? msg.message.message_id
@@ -193,8 +194,6 @@ Deno.serve(async (req) => {
         }
       }
     }
-
-    const queueMessages = messages as QueueMessage[]
 
     for (let i = 0; i < queueMessages.length; i++) {
       const msg = queueMessages[i]
