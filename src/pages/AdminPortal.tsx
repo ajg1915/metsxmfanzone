@@ -21,6 +21,34 @@ export default function AdminPortal() {
   const [attemptsRemaining, setAttemptsRemaining] = useState(5);
   const [deviceFingerprint, setDeviceFingerprint] = useState<string>("");
   const [isNewDevice, setIsNewDevice] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
+
+  const handleForgotPin = async () => {
+    if (!forgotEmail.trim()) {
+      toast({ title: "Email required", description: "Enter the admin email address.", variant: "destructive" });
+      return;
+    }
+    setForgotLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-pin-login", {
+        body: { action: "request-pin-reset", email: forgotEmail.trim() },
+      });
+      if (error) throw error;
+      setForgotSent(true);
+      toast({
+        title: "Check your email",
+        description: data?.message || "If an admin account exists for that email, a reset link has been sent.",
+      });
+    } catch (err) {
+      console.error("Forgot PIN error:", err);
+      toast({ title: "Error", description: "Could not send reset email. Try again.", variant: "destructive" });
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   useEffect(() => {
     const initFingerprint = async () => {
@@ -258,6 +286,65 @@ export default function AdminPortal() {
                     <li>30-min lockout after 5 fails</li>
                     <li>All attempts logged</li>
                   </ul>
+                </div>
+
+                {/* Forgot PIN */}
+                <div className="border-t border-muted/30 pt-3">
+                  {!showForgot ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowForgot(true)}
+                      className="w-full text-center text-[11px] text-secondary hover:text-secondary/80 transition-colors"
+                    >
+                      Forgot your PIN?
+                    </button>
+                  ) : forgotSent ? (
+                    <div className="text-center text-[10px] text-muted-foreground space-y-1">
+                      <CheckCircle className="w-4 h-4 text-green-500 mx-auto" />
+                      <p>Check your email for a reset link.</p>
+                      <button
+                        type="button"
+                        onClick={() => { setShowForgot(false); setForgotSent(false); setForgotEmail(""); }}
+                        className="text-secondary hover:underline"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-[10px] text-muted-foreground text-center">
+                        Enter your admin email to receive a PIN reset link.
+                      </p>
+                      <Input
+                        type="email"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="admin@example.com"
+                        className="h-9 text-xs bg-muted/30 border-muted/50 rounded-lg"
+                        disabled={forgotLoading}
+                        onKeyDown={(e) => { if (e.key === "Enter") handleForgotPin(); }}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => { setShowForgot(false); setForgotEmail(""); }}
+                          disabled={forgotLoading}
+                          className="flex-1 h-8 text-[10px]"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleForgotPin}
+                          disabled={forgotLoading || !forgotEmail.trim()}
+                          className="flex-1 h-8 text-[10px] bg-primary hover:bg-primary/90"
+                        >
+                          {forgotLoading ? "Sending..." : "Send Reset Link"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button
