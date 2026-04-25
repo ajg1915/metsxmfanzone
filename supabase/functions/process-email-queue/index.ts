@@ -1,5 +1,58 @@
-import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+
+const RESEND_GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend/emails'
+
+class EmailSendError extends Error {
+  status: number
+  retryAfterSeconds: number | null
+  constructor(message: string, status: number, retryAfterSeconds: number | null = null) {
+    super(message)
+    this.status = status
+    this.retryAfterSeconds = retryAfterSeconds
+  }
+}
+
+async function sendViaResend(
+  payload: {
+    to: string
+    from: string
+    subject: string
+    html: string
+    text?: string
+  },
+  auth: { lovableApiKey: string; resendApiKey: string }
+): Promise<void> {
+  const response = await fetch(RESEND_GATEWAY_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${auth.lovableApiKey}`,
+      'X-Connection-Api-Key': auth.resendApiKey,
+    },
+    body: JSON.stringify({
+      from: payload.from,
+      to: [payload.to],
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text || undefined,
+    }),
+  })
+
+  if (!response.ok) {
+    const bodyText = await response.text().catch(() => '')
+    let retryAfterSeconds: number | null = null
+    if (response.status === 429) {
+      const ra = response.headers.get('Retry-After')
+      const parsed = ra ? parseInt(ra, 10) : NaN
+      retryAfterSeconds = Number.isFinite(parsed) ? parsed : 60
+    }
+    throw new EmailSendError(
+      `Resend send failed [${response.status}]: ${bodyText.slice(0, 500)}`,
+      response.status,
+      retryAfterSeconds
+    )
+  }
+}
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
