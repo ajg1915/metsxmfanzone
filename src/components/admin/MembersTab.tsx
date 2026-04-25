@@ -410,7 +410,7 @@ export default function MembersTab() {
                   <TableHead>Status</TableHead>
                   <TableHead>Roles</TableHead>
                   <TableHead>Joined</TableHead>
-                  <TableHead className="w-10"></TableHead>
+                  <TableHead className="w-24 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
