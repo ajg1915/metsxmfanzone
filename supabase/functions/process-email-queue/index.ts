@@ -1,11 +1,6 @@
 import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-// deno-lint-ignore no-explicit-any
-type ServiceClient = any
-// deno-lint-ignore no-explicit-any
-type QueueMessage = { msg_id: number; read_ct?: number; enqueued_at?: string; message: Record<string, any> }
-
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
 const DEFAULT_SEND_DELAY_MS = 200
@@ -59,9 +54,9 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
 
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
-  supabase: ServiceClient,
+  supabase: ReturnType<typeof createClient>,
   queue: string,
-  msg: QueueMessage,
+  msg: { msg_id: number; message: Record<string, unknown> },
   reason: string
 ): Promise<void> {
   const payload = msg.message
@@ -116,7 +111,7 @@ Deno.serve(async (req) => {
     )
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey) as ServiceClient
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   // 1. Check rate-limit cooldown and read queue config
   const { data: state } = await supabase
@@ -158,16 +153,15 @@ Deno.serve(async (req) => {
     // Retry budget is based on real send failures, not pgmq read_ct.
     // read_ct increments for every message in a claimed batch, including
     // messages not attempted when a 429 stops processing early.
-    const queueMessages = messages as QueueMessage[]
     const messageIds = Array.from(
       new Set(
-        queueMessages
-          .map((msg: QueueMessage) =>
+        messages
+          .map((msg) =>
             msg?.message?.message_id && typeof msg.message.message_id === 'string'
               ? msg.message.message_id
               : null
           )
-          .filter((id: string | null): id is string => Boolean(id))
+          .filter((id): id is string => Boolean(id))
       )
     )
     const failedAttemptsByMessageId = new Map<string, number>()
@@ -195,8 +189,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    for (let i = 0; i < queueMessages.length; i++) {
-      const msg = queueMessages[i]
+    for (let i = 0; i < messages.length; i++) {
+      const msg = messages[i]
       const payload = msg.message
       const failedAttempts =
         payload?.message_id && typeof payload.message_id === 'string'
@@ -356,7 +350,7 @@ Deno.serve(async (req) => {
       }
 
       // Small delay between sends to smooth bursts
-      if (i < queueMessages.length - 1) {
+      if (i < messages.length - 1) {
         await new Promise((r) => setTimeout(r, sendDelayMs))
       }
     }
