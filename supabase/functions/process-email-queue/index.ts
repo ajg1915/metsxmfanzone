@@ -1,6 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-const RESEND_GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend/emails'
+const LOVABLE_EMAIL_URL = 'https://connector-gateway.lovable.dev/email/send'
 
 class EmailSendError extends Error {
   status: number
@@ -12,32 +12,25 @@ class EmailSendError extends Error {
   }
 }
 
-async function sendViaResend(
+async function sendViaLovable(
   payload: Record<string, any>,
-  opts: { lovableApiKey: string; resendApiKey: string }
+  opts: { lovableApiKey: string }
 ): Promise<void> {
-  const fromAddress: string =
-    payload.from ||
-    (payload.sender_domain ? `MetsXMFanZone <noreply@${payload.sender_domain}>` : 'MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>')
-
   const body: Record<string, unknown> = {
-    from: fromAddress,
     to: Array.isArray(payload.to) ? payload.to : [payload.to],
     subject: payload.subject,
   }
+  if (payload.from) body.from = payload.from
   if (payload.html) body.html = payload.html
   if (payload.text) body.text = payload.text
-  if (payload.idempotency_key) {
-    body.headers = { 'X-Idempotency-Key': String(payload.idempotency_key) }
-  }
+  if (payload.reply_to) body.reply_to = payload.reply_to
+  if (payload.idempotency_key) body.idempotency_key = String(payload.idempotency_key)
 
-  const response = await fetch(RESEND_GATEWAY_URL, {
+  const response = await fetch(LOVABLE_EMAIL_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${opts.lovableApiKey}`,
-      'X-Connection-Api-Key': opts.resendApiKey,
-      ...(payload.idempotency_key ? { 'Idempotency-Key': String(payload.idempotency_key) } : {}),
     },
     body: JSON.stringify(body),
   })
@@ -51,7 +44,7 @@ async function sendViaResend(
       if (!isNaN(parsed)) retryAfterSeconds = parsed
     }
     throw new EmailSendError(
-      `Resend send failed [${response.status}]: ${text.slice(0, 500)}`,
+      `Lovable email send failed [${response.status}]: ${text.slice(0, 500)}`,
       response.status,
       retryAfterSeconds
     )
@@ -137,14 +130,12 @@ async function moveToDlq(
 
 Deno.serve(async (req) => {
   const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
-  const resendApiKey = Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-  if (!lovableApiKey || !resendApiKey || !supabaseUrl || !supabaseServiceKey) {
+  if (!lovableApiKey || !supabaseUrl || !supabaseServiceKey) {
     console.error('Missing required environment variables', {
       hasLovableApiKey: !!lovableApiKey,
-      hasResendApiKey: !!resendApiKey,
       hasSupabaseUrl: !!supabaseUrl,
       hasServiceKey: !!supabaseServiceKey,
     })
@@ -312,7 +303,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        await sendViaResend(payload, { lovableApiKey, resendApiKey })
+        await sendViaLovable(payload, { lovableApiKey })
 
         // Log success
         await supabase.from('email_send_log').insert({
