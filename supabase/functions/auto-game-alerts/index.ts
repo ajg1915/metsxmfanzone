@@ -100,7 +100,7 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    const { triggerType = "morning" } = await req.json().catch(() => ({}));
+    const { triggerType = "morning", force = false } = await req.json().catch(() => ({}));
 
     // Get today's date in ET
     const now = new Date();
