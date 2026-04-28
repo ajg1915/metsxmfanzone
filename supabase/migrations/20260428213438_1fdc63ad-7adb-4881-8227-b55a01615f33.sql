@@ -1,0 +1,1 @@
+DELETE FROM public.game_alerts WHERE id = 'dcf15553-e645-41b3-ba97-418b9d5a1e60';
