@@ -1,5 +1,62 @@
-import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+
+const RESEND_GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend/emails'
+
+class EmailSendError extends Error {
+  status: number
+  retryAfterSeconds: number | null
+  constructor(message: string, status: number, retryAfterSeconds: number | null = null) {
+    super(message)
+    this.status = status
+    this.retryAfterSeconds = retryAfterSeconds
+  }
+}
+
+async function sendViaResend(
+  payload: Record<string, any>,
+  opts: { lovableApiKey: string; resendApiKey: string }
+): Promise<void> {
+  const fromAddress: string =
+    payload.from ||
+    (payload.sender_domain ? `MetsXMFanZone <noreply@${payload.sender_domain}>` : 'MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>')
+
+  const body: Record<string, unknown> = {
+    from: fromAddress,
+    to: Array.isArray(payload.to) ? payload.to : [payload.to],
+    subject: payload.subject,
+  }
+  if (payload.html) body.html = payload.html
+  if (payload.text) body.text = payload.text
+  if (payload.idempotency_key) {
+    body.headers = { 'X-Idempotency-Key': String(payload.idempotency_key) }
+  }
+
+  const response = await fetch(RESEND_GATEWAY_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${opts.lovableApiKey}`,
+      'X-Connection-Api-Key': opts.resendApiKey,
+      ...(payload.idempotency_key ? { 'Idempotency-Key': String(payload.idempotency_key) } : {}),
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    let retryAfterSeconds: number | null = null
+    const ra = response.headers.get('Retry-After')
+    if (ra) {
+      const parsed = parseInt(ra, 10)
+      if (!isNaN(parsed)) retryAfterSeconds = parsed
+    }
+    throw new EmailSendError(
+      `Resend send failed [${response.status}]: ${text.slice(0, 500)}`,
+      response.status,
+      retryAfterSeconds
+    )
+  }
+}
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
