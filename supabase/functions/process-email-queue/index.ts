@@ -16,7 +16,6 @@ async function sendViaResend(
   payload: Record<string, any>,
   opts: { lovableApiKey: string; resendApiKey: string }
 ): Promise<void> {
-  // Build From header. Prefer explicit payload.from; otherwise compose from sender_domain.
   const fromAddress: string =
     payload.from ||
     (payload.sender_domain ? `MetsXMFanZone <noreply@${payload.sender_domain}>` : 'MetsXMFanZone <noreply@notify.www.metsxmfanzone.com>')
@@ -29,7 +28,6 @@ async function sendViaResend(
   if (payload.html) body.html = payload.html
   if (payload.text) body.text = payload.text
   if (payload.idempotency_key) {
-    // Resend supports idempotency via header, but we also tag for traceability
     body.headers = { 'X-Idempotency-Key': String(payload.idempotency_key) }
   }
 
@@ -139,7 +137,6 @@ async function moveToDlq(
 
 Deno.serve(async (req) => {
   const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
-  // Prefer the freshly-linked connection key; fall back to legacy name.
   const resendApiKey = Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
