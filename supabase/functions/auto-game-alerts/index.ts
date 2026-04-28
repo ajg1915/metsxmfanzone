@@ -100,7 +100,7 @@ serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
-    const { triggerType = "morning" } = await req.json().catch(() => ({}));
+    const { triggerType = "morning", force = false } = await req.json().catch(() => ({}));
 
     // Get today's date in ET
     const now = new Date();
@@ -245,15 +245,15 @@ serve(async (req) => {
       const gameMs = gameDate.getTime();
       const minsUntilGame = (gameMs - nowMs) / 60000;
 
-      if (triggerType === "pregame_20min" && (minsUntilGame < 10 || minsUntilGame > 30)) {
+      if (!force && triggerType === "pregame_20min" && (minsUntilGame < 10 || minsUntilGame > 30)) {
         console.log(`Game ${game.gamePk} is ${Math.round(minsUntilGame)} mins away, skipping 20min alert.`);
         continue;
       }
-      if (triggerType === "pregame_5min" && (minsUntilGame < 0 || minsUntilGame > 10)) {
+      if (!force && triggerType === "pregame_5min" && (minsUntilGame < 0 || minsUntilGame > 10)) {
         console.log(`Game ${game.gamePk} is ${Math.round(minsUntilGame)} mins away, skipping 5min alert.`);
         continue;
       }
-      if (triggerType === "pregame" && (minsUntilGame < 90 || minsUntilGame > 150)) {
+      if (!force && triggerType === "pregame" && (minsUntilGame < 90 || minsUntilGame > 150)) {
         continue;
       }
 
