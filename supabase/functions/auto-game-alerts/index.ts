@@ -260,7 +260,8 @@ serve(async (req) => {
             homeTeam: homeTeamName,
             awayTeam: awayTeamName,
             result: resultText,
-          }
+          },
+          'final_score'
         );
         continue;
       }
