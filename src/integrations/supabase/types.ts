@@ -915,6 +915,24 @@ export type Database = {
         }
         Relationships: []
       }
+      gameday_email_settings: {
+        Row: {
+          enabled: boolean
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gameday_leaderboard: {
         Row: {
           correct_predictions: number
