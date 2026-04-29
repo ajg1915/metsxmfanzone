@@ -52,16 +52,18 @@ const sendNotifications = async (
                 'Authorization': `Bearer ${serviceKey}`,
               },
               body: JSON.stringify({
-                to,
-                subject: title,
-                html: `<div style="font-family:Arial,sans-serif;background:#0a0a0a;color:#fff;padding:24px;border-radius:12px;max-width:600px;margin:0 auto;">
-                  <h1 style="color:#ff6600;margin:0 0 12px;">${title}</h1>
-                  <p style="font-size:16px;line-height:1.5;">${message}</p>
-                  <p style="margin-top:16px;"><a href="https://metsxmfanzone.com${linkUrl}" style="background:#0066cc;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;">Watch Now</a></p>
-                  <p style="font-size:11px;color:#888;margin-top:24px;">MetsXMFanZone — Let's Go Mets! 🟠🔵</p>
-                </div>`,
-                idempotency_key: `gameday-${triggerType}-${todayET}-${to}`,
-                purpose: 'transactional',
+                templateName: 'gameday-alert',
+                recipientEmail: to,
+                idempotencyKey: `gameday-${triggerType}-${todayET}-${to}`,
+                templateData: {
+                  title,
+                  message,
+                  opponent,
+                  gameTime: timeStr,
+                  venue,
+                  linkUrl,
+                  triggerType,
+                },
               }),
             });
           } catch (e) {
