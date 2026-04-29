@@ -346,7 +346,7 @@ serve(async (req) => {
       alertsCreated++;
 
       // Send email + push notifications
-      await sendNotifications(supabaseUrl, serviceKey, supabase, title, message, opponent, todayET, timeStr, venue, linkUrl);
+      await sendNotifications(supabaseUrl, serviceKey, supabase, title, message, opponent, todayET, timeStr, venue, linkUrl, 'game_alert', {}, triggerType);
     }
 
     // Deactivate old auto-alerts from previous days
