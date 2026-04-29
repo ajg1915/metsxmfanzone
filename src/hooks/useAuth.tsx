@@ -6,8 +6,6 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  isAdmin: boolean;
-  isWriter: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -17,8 +15,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isWriter, setIsWriter] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -33,35 +29,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (isMounted) {
         setSession(null);
         setUser(null);
-        setIsAdmin(false);
-        setIsWriter(false);
-      }
-    };
-
-    // Fetch user roles ONCE per auth change — cached in context to avoid
-    // dozens of duplicate user_roles queries from individual components.
-    const fetchRoles = async (userId: string | undefined) => {
-      if (!userId) {
-        if (isMounted) {
-          setIsAdmin(false);
-          setIsWriter(false);
-        }
-        return;
-      }
-      try {
-        const { data } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId);
-        if (!isMounted) return;
-        const roles = (data ?? []).map((r) => r.role);
-        setIsAdmin(roles.includes("admin"));
-        setIsWriter(roles.includes("writer"));
-      } catch {
-        if (isMounted) {
-          setIsAdmin(false);
-          setIsWriter(false);
-        }
       }
     };
 
@@ -73,16 +40,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (event === "SIGNED_OUT") {
           setSession(null);
           setUser(null);
-          setIsAdmin(false);
-          setIsWriter(false);
           return;
         }
 
         // Update state synchronously — never await inside this callback
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
-        // Defer role fetch to avoid blocking the listener
-        setTimeout(() => fetchRoles(currentSession?.user?.id), 0);
       }
     );
 
@@ -104,7 +67,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         setSession(existingSession);
         setUser(existingSession?.user ?? null);
-        await fetchRoles(existingSession?.user?.id);
       } catch (err) {
         console.error("Unexpected auth init error:", err);
       } finally {
@@ -127,8 +89,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear local state first for immediate UI feedback
       setSession(null);
       setUser(null);
-      setIsAdmin(false);
-      setIsWriter(false);
 
       const { error } = await supabase.auth.signOut({ scope: "local" });
 
@@ -142,7 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, isWriter, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
