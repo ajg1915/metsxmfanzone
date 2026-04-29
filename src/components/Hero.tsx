@@ -1,4 +1,4 @@
-import heroImage from "@/assets/hero-mets.png";
+import heroImage from "@/assets/hero-mets.jpg";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
