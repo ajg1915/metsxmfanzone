@@ -1,0 +1,1 @@
+UPDATE public.lineup_cards SET published = true WHERE id = 'e5850b31-e035-4ef7-a3e0-e717468078ed';
