@@ -34,12 +34,10 @@ import {
 } from "@/components/ui/collapsible";
 
 const Navigation = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin, isWriter } = useAuth();
   const { tier } = useSubscription();
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isWriter, setIsWriter] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [userProfile, setUserProfile] = useState<{ full_name: string | null; avatar_url: string | null }>({ full_name: null, avatar_url: null });
@@ -65,35 +63,24 @@ const Navigation = () => {
   };
 
   useEffect(() => {
-    const checkAdminAndProfile = async () => {
-      if (user) {
-        // Check roles
-        const { data: rolesData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id);
-
-        setIsAdmin(rolesData?.some(r => r.role === "admin") ?? false);
-        setIsWriter(rolesData?.some(r => r.role === "writer") ?? false);
-
-        // Fetch user profile
-        const { data: profileData } = await supabase
-          .from("profiles")
-          .select("full_name, avatar_url")
-          .eq("id", user.id)
-          .single();
-
-        if (profileData) {
-          setUserProfile(profileData);
-        }
-      } else {
-        setIsAdmin(false);
-        setIsWriter(false);
+    // Roles come from useAuth context (cached). Only fetch profile here.
+    const fetchProfile = async () => {
+      if (!user) {
         setUserProfile({ full_name: null, avatar_url: null });
+        return;
+      }
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name, avatar_url")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileData) {
+        setUserProfile(profileData);
       }
     };
 
-    checkAdminAndProfile();
+    fetchProfile();
   }, [user]);
 
   const isPremium = isAdmin || tier === "premium" || tier === "annual";
