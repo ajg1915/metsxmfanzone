@@ -121,14 +121,7 @@ const GameNotifications = () => {
 
       if (response.error) throw new Error(response.error.message);
 
-      // Also send email notifications alongside push
-      try {
-        await supabase.functions.invoke("send-game-notification-email", {
-          body: { title, message: body, notificationType: "game_alert", url: customUrl },
-        });
-      } catch (emailErr) {
-        console.error("Email send failed (push still sent):", emailErr);
-      }
+      // Email notifications have been disabled — push only.
 
       const result = response.data;
       const newLog: NotificationLog = {
