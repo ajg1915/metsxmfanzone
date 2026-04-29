@@ -134,23 +134,26 @@ export function AdminSidebar() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild tooltip={item.title}>
-                      <NavLink
-                        to={item.url}
-                        className={({ isActive: active }) =>
-                          `flex items-center gap-2 pl-4 ${active || isActive(item.url)
-                            ? "bg-primary text-primary-foreground font-medium"
-                            : "hover:bg-muted/50"}`
-                        }
-                      >
-                        <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
-                        <span className="text-xs truncate">{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                {items.map((item) => {
+                  const active = isActive(item.url);
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild tooltip={item.title} isActive={active}>
+                        <NavLink
+                          to={item.url}
+                          className={`relative flex items-center gap-2 pl-4 rounded-md transition-all duration-200 ${
+                            active
+                              ? "bg-gradient-to-r from-primary/90 via-primary to-orange-500/80 text-primary-foreground font-semibold shadow-[0_0_18px_-4px_hsl(var(--primary)/0.7)] ring-1 ring-primary/40 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1 before:rounded-full before:bg-orange-400 before:shadow-[0_0_10px_hsl(25_95%_55%/0.9)]"
+                              : "hover:bg-muted/50 hover:translate-x-0.5"
+                          }`}
+                        >
+                          <item.icon className={`h-3.5 w-3.5 flex-shrink-0 ${active ? "drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" : ""}`} />
+                          <span className="text-xs truncate">{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </CollapsibleContent>
