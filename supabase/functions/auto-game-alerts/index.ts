@@ -22,7 +22,42 @@ const sendNotifications = async (
   notificationType: string = 'game_alert',
   extraGameInfo: Record<string, any> = {},
 ) => {
-  // Email notifications removed — push notifications only.
+  // Send email notification
+  try {
+    const emailPayload = {
+      title,
+      message,
+      notificationType,
+      gameInfo: { opponent, date: todayET, time: timeStr, location: venue, ...extraGameInfo },
+      url: linkUrl,
+    };
+
+    const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-game-notification-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceKey}` },
+      body: JSON.stringify(emailPayload),
+    });
+    const emailText = await emailRes.text();
+    const emailResult = emailText ? JSON.parse(emailText) : null;
+
+    if (!emailRes.ok) {
+      throw new Error(`HTTP ${emailRes.status}: ${emailText}`);
+    }
+
+    if (!emailResult?.successful) {
+      throw new Error(emailResult?.message || 'No gameday emails were sent');
+    }
+
+    console.log(`Email sent for "${title}":`, { successful: emailResult.successful, total: emailResult.total });
+
+    await supabase
+      .from("game_alerts")
+      .update({ email_sent: true })
+      .eq("title", title)
+      .gte("created_at", `${todayET}T00:00:00Z`);
+  } catch (err) {
+    console.error(`Email failed for "${title}":`, err instanceof Error ? err.message : err);
+  }
 
   // Send push notification
   try {

@@ -63,21 +63,26 @@ const sendPushNotification = async (
   }
 };
 
-// Email notifications have been disabled. This is a no-op kept for call-site
-// compatibility; push notifications continue to work via sendPushNotification.
+// Helper to send email notifications
 const sendEmailNotification = async (
-  _title: string,
-  _message: string,
-  _notificationType: 'game_alert' | 'score_update' | 'lineup' | 'news' | 'live_stream' | 'event' | 'general',
-  _url?: string,
-  _gameInfo?: {
+  title: string,
+  message: string,
+  notificationType: 'game_alert' | 'score_update' | 'lineup' | 'news' | 'live_stream' | 'event' | 'general',
+  url?: string,
+  gameInfo?: {
     opponent?: string;
     date?: string;
     time?: string;
     location?: string;
   }
 ) => {
-  // intentionally no-op
+  try {
+    await supabase.functions.invoke('send-game-notification-email', {
+      body: { title, message, notificationType, url, gameInfo }
+    });
+  } catch (error) {
+    console.error('Failed to send email notification:', error);
+  }
 };
 
 // Show browser notification if permission granted

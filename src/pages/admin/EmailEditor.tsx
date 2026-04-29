@@ -611,8 +611,16 @@ export default function EmailEditor() {
         const { error } = await supabase.functions.invoke("send-confirmation-email", { body: { type: "subscription", email: testEmail, name: subscriptionName, planType: subscriptionPlan.toLowerCase().includes("annual") ? "annual" : "premium", amount: subscriptionAmount } });
         if (error) throw error;
       } else if (activeTab === "game_day") {
-        toast({ title: "Disabled", description: "Game day email notifications have been removed.", variant: "destructive" });
-        return;
+        const { error } = await supabase.functions.invoke("send-game-notification-email", {
+          body: {
+            title: `Game Day: Mets vs ${gameOpponent}`,
+            message: `The Mets take on the ${gameOpponent} today!`,
+            notificationType: "game_alert",
+            gameInfo: { opponent: gameOpponent, date: gameDate, time: gameTime },
+            targetUsers: [],
+          }
+        });
+        if (error) throw error;
       } else {
         const { error } = await supabase.functions.invoke("send-user-email", {
           body: { subject: getCurrentSubject(), content: getCurrentEmailHtml(), recipientType: "specific", specificEmails: [testEmail] },

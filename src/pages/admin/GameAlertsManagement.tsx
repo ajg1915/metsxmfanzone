@@ -187,9 +187,20 @@ const GameAlertsManagement = () => {
         await supabase.from("game_alerts").update({ push_sent: true }).eq("id", data.id);
       }
 
-      // Email notifications have been disabled — only push notifications are sent.
+      if (sendEmail) {
+        await supabase.functions.invoke("send-game-notification-email", {
+          body: {
+            title,
+            message,
+            notificationType: alertType === "game_day" ? "game_alert" : "general",
+            url: linkUrl,
+            imageUrl: data.image_url || undefined,
+          },
+        });
+        await supabase.from("game_alerts").update({ email_sent: true }).eq("id", data.id);
+      }
 
-      toast({ title: "Alert Created!", description: sendPush ? "Push notification sent." : "Alert saved." });
+      toast({ title: "Alert Created!", description: `${sendPush ? "Push sent. " : ""}${sendEmail ? "Emails sent." : ""}` });
       setTitle("");
       setMessage("");
       setImageFile(null);
