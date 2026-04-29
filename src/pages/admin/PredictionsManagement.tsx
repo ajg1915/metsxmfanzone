@@ -241,17 +241,23 @@ export default function PredictionsManagement() {
         bet_amount: manual.bet_amount || null,
         payout: manual.payout || null,
       } as any);
-      if (error) throw error;
+      if (error) {
+        console.error("[Manual Prediction Insert Error]", error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-predictions"] });
       queryClient.invalidateQueries({ queryKey: ["daily-predictions"] });
+      queryClient.invalidateQueries({ queryKey: ["daily-player-predictions"] });
       toast.success("Prediction added manually!");
       setManual(DEFAULT_MANUAL);
       setShowManualForm(false);
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to add prediction");
+      console.error("[Manual Prediction Mutation Error]", error);
+      const msg = error?.message || error?.details || error?.hint || "Failed to add prediction";
+      toast.error(msg, { duration: 8000 });
     },
   });
 
