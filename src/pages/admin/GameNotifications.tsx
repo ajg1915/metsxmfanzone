@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell, Send, Radio, Users, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Bell, Send, Radio, Users, Clock, AlertCircle, CheckCircle2, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface NotificationLog {
