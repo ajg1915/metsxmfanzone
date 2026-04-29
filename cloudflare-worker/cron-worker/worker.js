@@ -15,7 +15,7 @@
  * "Encrypted" (Secrets) in Cloudflare — NEVER as plain text Variables.
  *
  * CRON SCHEDULES (defined in wrangler.toml — all UTC):
- *   "*/10 19-23,0-3 * * *"  → game-window polling (alerts + final scores)
+ *   Every 10 minutes, 19-23 and 0-3 UTC → game-window polling (alerts + final scores)
  *   "0 * * * *"              → hourly pregame check
  *   "0 14 * * *"             → morning game alerts (10am ET)
  *   "0 18-23,0-3 * * *"      → lineup fetch (game window)
