@@ -26,22 +26,10 @@ interface Post {
 
 const CommunityPreviewSection = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ postsCount: 0, membersCount: 0 });
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (!user) {setIsAdmin(false);return;}
-    supabase.
-    from("user_roles").
-    select("role").
-    eq("user_id", user.id).
-    then(({ data }) => {
-      setIsAdmin(data?.some((r) => r.role === "admin") ?? false);
-    });
-  }, [user]);
 
   const handlePostClick = () => {
     navigate(isAdmin ? "/admin/stories" : "/community");

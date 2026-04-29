@@ -27,20 +27,8 @@ const navItems: NavItem[] = [
 const SocialMediaBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { isPremium } = useSubscription();
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (!user) { setIsAdmin(false); return; }
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .then(({ data }) => {
-        setIsAdmin(data?.some(r => r.role === "admin") ?? false);
-      });
-  }, [user]);
 
   const handleClick = (item: typeof navItems[0]) => {
     // Items requiring premium: redirect to pricing if not premium
