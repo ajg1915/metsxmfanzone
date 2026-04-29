@@ -40,12 +40,41 @@ const GameNotifications = () => {
   const [body, setBody] = useState("The Mets game is about to start! Tune in now to watch live.");
   const [selectedStream, setSelectedStream] = useState<string>("");
   const [customUrl, setCustomUrl] = useState("/metsxmfanzone");
+  const [emailToggles, setEmailToggles] = useState<Record<string, boolean>>({
+    pregame_20min: false,
+    pregame_5min: false,
+  });
 
   useEffect(() => {
     fetchSubscriberCount();
     fetchLiveStreams();
     fetchNotificationLogs();
+    fetchEmailToggles();
   }, []);
+
+  const fetchEmailToggles = async () => {
+    const { data } = await supabase
+      .from("gameday_email_settings")
+      .select("trigger_type, enabled");
+    if (data) {
+      const map: Record<string, boolean> = { pregame_20min: false, pregame_5min: false };
+      data.forEach((r: any) => { map[r.trigger_type] = r.enabled; });
+      setEmailToggles(map);
+    }
+  };
+
+  const updateToggle = async (triggerType: string, enabled: boolean) => {
+    setEmailToggles((prev) => ({ ...prev, [triggerType]: enabled }));
+    const { error } = await supabase
+      .from("gameday_email_settings")
+      .upsert({ trigger_type: triggerType, enabled, updated_at: new Date().toISOString() });
+    if (error) {
+      toast({ title: "Failed to update", description: error.message, variant: "destructive" });
+      fetchEmailToggles();
+    } else {
+      toast({ title: enabled ? "Email enabled" : "Email disabled", description: triggerType === 'pregame_20min' ? '20 min to first pitch' : '5 min to first pitch' });
+    }
+  };
 
   const fetchSubscriberCount = async () => {
     try {
