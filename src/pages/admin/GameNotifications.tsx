@@ -8,7 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell, Send, Radio, Users, Clock, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Bell, Send, Radio, Users, Clock, AlertCircle, CheckCircle2, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface NotificationLog {
@@ -39,12 +40,41 @@ const GameNotifications = () => {
   const [body, setBody] = useState("The Mets game is about to start! Tune in now to watch live.");
   const [selectedStream, setSelectedStream] = useState<string>("");
   const [customUrl, setCustomUrl] = useState("/metsxmfanzone");
+  const [emailToggles, setEmailToggles] = useState<Record<string, boolean>>({
+    pregame_20min: false,
+    pregame_5min: false,
+  });
 
   useEffect(() => {
     fetchSubscriberCount();
     fetchLiveStreams();
     fetchNotificationLogs();
+    fetchEmailToggles();
   }, []);
+
+  const fetchEmailToggles = async () => {
+    const { data } = await supabase
+      .from("gameday_email_settings")
+      .select("trigger_type, enabled");
+    if (data) {
+      const map: Record<string, boolean> = { pregame_20min: false, pregame_5min: false };
+      data.forEach((r: any) => { map[r.trigger_type] = r.enabled; });
+      setEmailToggles(map);
+    }
+  };
+
+  const updateToggle = async (triggerType: string, enabled: boolean) => {
+    setEmailToggles((prev) => ({ ...prev, [triggerType]: enabled }));
+    const { error } = await supabase
+      .from("gameday_email_settings")
+      .upsert({ trigger_type: triggerType, enabled, updated_at: new Date().toISOString() });
+    if (error) {
+      toast({ title: "Failed to update", description: error.message, variant: "destructive" });
+      fetchEmailToggles();
+    } else {
+      toast({ title: enabled ? "Email enabled" : "Email disabled", description: triggerType === 'pregame_20min' ? '20 min to first pitch' : '5 min to first pitch' });
+    }
+  };
 
   const fetchSubscriberCount = async () => {
     try {
@@ -121,14 +151,7 @@ const GameNotifications = () => {
 
       if (response.error) throw new Error(response.error.message);
 
-      // Also send email notifications alongside push
-      try {
-        await supabase.functions.invoke("send-game-notification-email", {
-          body: { title, message: body, notificationType: "game_alert", url: customUrl },
-        });
-      } catch (emailErr) {
-        console.error("Email send failed (push still sent):", emailErr);
-      }
+      // Email notifications have been disabled — push only.
 
       const result = response.data;
       const newLog: NotificationLog = {
@@ -190,6 +213,41 @@ const GameNotifications = () => {
           {subscriberCount} subs
         </Badge>
       </div>
+
+      {/* Gameday Email Triggers */}
+      <Card className="border-border/30">
+        <CardHeader className="p-3 pb-2">
+          <CardTitle className="text-sm flex items-center gap-1.5">
+            <Mail className="w-4 h-4" />
+            Gameday Email Triggers
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Pick which automatic gameday emails go out. Push notifications always run.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-3 pt-0 space-y-2">
+          <div className="flex items-center justify-between rounded-md border border-border/50 p-2">
+            <div className="min-w-0">
+              <p className="text-xs font-medium">🔥 20 Minutes to First Pitch</p>
+              <p className="text-[10px] text-muted-foreground">Email sent ~20 min before each Mets game</p>
+            </div>
+            <Switch
+              checked={emailToggles.pregame_20min}
+              onCheckedChange={(v) => updateToggle('pregame_20min', v)}
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-md border border-border/50 p-2">
+            <div className="min-w-0">
+              <p className="text-xs font-medium">🚨 5 Minutes to First Pitch</p>
+              <p className="text-[10px] text-muted-foreground">Email sent ~5 min before each Mets game</p>
+            </div>
+            <Switch
+              checked={emailToggles.pregame_5min}
+              onCheckedChange={(v) => updateToggle('pregame_5min', v)}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-3 lg:grid-cols-2">
         {/* Composer */}

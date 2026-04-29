@@ -21,42 +21,67 @@ const sendNotifications = async (
   linkUrl: string,
   notificationType: string = 'game_alert',
   extraGameInfo: Record<string, any> = {},
+  triggerType: string = '',
 ) => {
-  // Send email notification
+  // Gameday email — only fires for triggers that are toggled ON in admin
   try {
-    const emailPayload = {
-      title,
-      message,
-      notificationType,
-      gameInfo: { opponent, date: todayET, time: timeStr, location: venue, ...extraGameInfo },
-      url: linkUrl,
-    };
+    if (triggerType === 'pregame_20min' || triggerType === 'pregame_5min') {
+      const { data: setting } = await supabase
+        .from('gameday_email_settings')
+        .select('enabled')
+        .eq('trigger_type', triggerType)
+        .maybeSingle();
 
-    const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-game-notification-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${serviceKey}` },
-      body: JSON.stringify(emailPayload),
-    });
-    const emailText = await emailRes.text();
-    const emailResult = emailText ? JSON.parse(emailText) : null;
+      if (setting?.enabled) {
+        // Fetch all opted-in recipients (subscribed users)
+        const { data: recipients } = await supabase
+          .from('profiles')
+          .select('email')
+          .not('email', 'is', null);
 
-    if (!emailRes.ok) {
-      throw new Error(`HTTP ${emailRes.status}: ${emailText}`);
+        const emails = (recipients || [])
+          .map((r: any) => r.email)
+          .filter((e: string) => !!e);
+
+        for (const to of emails) {
+          try {
+            await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${serviceKey}`,
+              },
+              body: JSON.stringify({
+                to,
+                subject: title,
+                html: `<div style="font-family:Arial,sans-serif;background:#0a0a0a;color:#fff;padding:24px;border-radius:12px;max-width:600px;margin:0 auto;">
+                  <h1 style="color:#ff6600;margin:0 0 12px;">${title}</h1>
+                  <p style="font-size:16px;line-height:1.5;">${message}</p>
+                  <p style="margin-top:16px;"><a href="https://metsxmfanzone.com${linkUrl}" style="background:#0066cc;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;">Watch Now</a></p>
+                  <p style="font-size:11px;color:#888;margin-top:24px;">MetsXMFanZone — Let's Go Mets! 🟠🔵</p>
+                </div>`,
+                idempotency_key: `gameday-${triggerType}-${todayET}-${to}`,
+                purpose: 'transactional',
+              }),
+            });
+          } catch (e) {
+            console.error(`Email send failed for ${to}:`, e);
+          }
+        }
+
+        await supabase
+          .from('game_alerts')
+          .update({ email_sent: true })
+          .eq('title', title)
+          .gte('created_at', `${todayET}T00:00:00Z`);
+
+        console.log(`Gameday emails queued for ${triggerType}: ${emails.length} recipients`);
+      } else {
+        console.log(`Gameday email skipped — ${triggerType} toggle is OFF`);
+      }
     }
-
-    if (!emailResult?.successful) {
-      throw new Error(emailResult?.message || 'No gameday emails were sent');
-    }
-
-    console.log(`Email sent for "${title}":`, { successful: emailResult.successful, total: emailResult.total });
-
-    await supabase
-      .from("game_alerts")
-      .update({ email_sent: true })
-      .eq("title", title)
-      .gte("created_at", `${todayET}T00:00:00Z`);
-  } catch (err) {
-    console.error(`Email failed for "${title}":`, err instanceof Error ? err.message : err);
+  } catch (emailErr) {
+    console.error('Gameday email error:', emailErr);
   }
 
   // Send push notification
@@ -235,7 +260,8 @@ serve(async (req) => {
             homeTeam: homeTeamName,
             awayTeam: awayTeamName,
             result: resultText,
-          }
+          },
+          'final_score'
         );
         continue;
       }
@@ -320,7 +346,7 @@ serve(async (req) => {
       alertsCreated++;
 
       // Send email + push notifications
-      await sendNotifications(supabaseUrl, serviceKey, supabase, title, message, opponent, todayET, timeStr, venue, linkUrl);
+      await sendNotifications(supabaseUrl, serviceKey, supabase, title, message, opponent, todayET, timeStr, venue, linkUrl, 'game_alert', {}, triggerType);
     }
 
     // Deactivate old auto-alerts from previous days
