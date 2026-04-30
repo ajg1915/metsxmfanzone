@@ -466,16 +466,7 @@ export default function BlogManagement() {
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-[11px]">Article Content · {wordCount} words</Label>
-                      <Button type="button" variant="outline" size="sm"
-                        onClick={handleGenerateContent} disabled={generatingContent || !formData.title}
-                        className="h-6 text-[10px] px-2">
-                        {generatingContent
-                          ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Generating…</>
-                          : <><Sparkles className="w-3 h-3 mr-1" />AI Draft</>}
-                      </Button>
-                    </div>
+                    <Label className="text-[11px] mb-1 block">Article Content · {wordCount} words</Label>
                     <RichTextEditor
                       value={formData.content}
                       onChange={(html) => setFormData(f => ({ ...f, content: html }))}
