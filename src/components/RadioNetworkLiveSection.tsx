@@ -84,7 +84,7 @@ const RadioNetworkLiveSection = () => {
             <div>
               <h2 className="text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                MetsXMFanZone Radio — Live Now
+                MetsXMFanZone Radio
               </h2>
               <p className="text-[11px] sm:text-xs text-muted-foreground">
                 Members-only voice rooms airing right now
