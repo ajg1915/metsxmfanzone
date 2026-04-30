@@ -500,7 +500,12 @@ export default function BlogPost() {
 
             <Card>
               <CardContent className="prose prose-lg max-w-none dark:prose-invert py-8">
-                <div className="whitespace-pre-wrap">{post.content}</div>
+                {/* Detect HTML (Tiptap output) vs legacy plain-text content */}
+                {/<\/?[a-z][\s\S]*>/i.test(post.content) ? (
+                  <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                ) : (
+                  <div className="whitespace-pre-wrap">{post.content}</div>
+                )}
               </CardContent>
             </Card>
 
