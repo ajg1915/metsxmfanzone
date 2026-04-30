@@ -175,37 +175,119 @@ const historical2025Lineups = [
 }];
 
 
-function LineupCardDisplay({ lineup, isUpcoming = false }: {lineup: LineupCard | typeof historical2025Lineups[0];isUpcoming?: boolean;}) {
+// Mets brand colors
+const METS_BLUE = "#002D72";
+const METS_ORANGE = "#FF5910";
+const METS_LOGO = "https://www.mlbstatic.com/team-logos/121.svg";
+
+function StatPod({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center rounded-md px-2 py-1.5 min-w-[52px] border"
+      style={{
+        background: `linear-gradient(135deg, ${METS_BLUE} 0%, #001a4a 100%)`,
+        borderColor: `${METS_ORANGE}66`,
+        boxShadow: `0 0 12px ${METS_ORANGE}33`,
+      }}
+    >
+      <span className="text-[9px] font-black uppercase tracking-widest text-white/70">{label}</span>
+      <span className="text-base font-black text-white leading-none mt-0.5" style={{ textShadow: `0 0 6px ${METS_ORANGE}88` }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function AnthonyApprovedHeader() {
+  return (
+    <div
+      className="flex items-center gap-2 rounded-t-md px-3 py-1.5"
+      style={{ background: `linear-gradient(90deg, ${METS_BLUE} 0%, ${METS_ORANGE} 100%)` }}
+    >
+      <img src={METS_LOGO} alt="Mets" className="h-5 w-5 drop-shadow" />
+      <span className="text-xs sm:text-sm font-black uppercase tracking-[0.2em] text-white">
+        Anthony Approved
+      </span>
+    </div>
+  );
+}
+
+function PredictionPods({ prediction }: { prediction: PlayerPrediction }) {
+  const isPitcher = !!prediction.is_pitcher;
+  const pods = isPitcher
+    ? [
+        { label: "IP", value: prediction.predicted_innings_pitched ?? 0 },
+        { label: "ER", value: prediction.predicted_hr ?? 0 },
+        { label: "K", value: prediction.predicted_strikeouts ?? 0 },
+        { label: "W", value: prediction.predicted_win_loss ?? "—" },
+      ]
+    : [
+        { label: "HR", value: prediction.predicted_hr ?? 0 },
+        { label: "RBI", value: prediction.predicted_rbis ?? 0 },
+        { label: "Runs", value: prediction.predicted_runs ?? 0 },
+        { label: "SB", value: prediction.predicted_sb ?? 0 },
+      ];
+
+  return (
+    <div className="rounded-md overflow-hidden border" style={{ borderColor: `${METS_ORANGE}55` }}>
+      <AnthonyApprovedHeader />
+      <div className="p-2.5 space-y-2" style={{ background: "rgba(0,45,114,0.08)" }}>
+        <div className="flex flex-wrap gap-1.5 justify-center">
+          {pods.map((p) => (
+            <StatPod key={p.label} label={p.label} value={p.value} />
+          ))}
+        </div>
+        {prediction.description && (
+          <p className="text-xs text-foreground/80 italic text-center px-1">"{prediction.description}"</p>
+        )}
+        <p className="text-[10px] font-bold uppercase tracking-wider text-center" style={{ color: METS_ORANGE }}>
+          4 Leg in game predictions | Today's Parley
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function LineupCardDisplay({
+  lineup,
+  isUpcoming = false,
+  predictions = [],
+}: {
+  lineup: LineupCard | typeof historical2025Lineups[0];
+  isUpcoming?: boolean;
+  predictions?: PlayerPrediction[];
+}) {
   const [expanded, setExpanded] = useState(true);
   const gameDate = new Date(lineup.game_date.includes("T") ? lineup.game_date : lineup.game_date + "T12:00:00");
   const dateStr = gameDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
   const players = lineup.lineup_data as LineupPlayer[] | null;
   const pitcher = lineup.starting_pitcher as StartingPitcher | null;
 
-  return (
-    <Card className="overflow-hidden">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full text-left">
+  const predByName = new Map<string, PlayerPrediction>();
+  predictions.forEach((p) => predByName.set(normalizeName(p.player_name), p));
+  const findPrediction = (name: string) => predByName.get(normalizeName(name));
 
-        <CardHeader className="pb-3">
+  return (
+    <Card className="overflow-hidden border-2" style={{ borderColor: `${METS_BLUE}33` }}>
+      <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
+        <CardHeader className="pb-3" style={{ background: `linear-gradient(90deg, ${METS_BLUE}1a 0%, ${METS_ORANGE}1a 100%)` }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
+              <img src={METS_LOGO} alt="Mets" className="h-8 w-8" />
               <div className="flex flex-col">
-                <CardTitle className="text-lg flex items-center gap-2">
+                <CardTitle className="text-lg flex items-center gap-2" style={{ color: METS_BLUE }}>
                   Mets vs {lineup.opponent}
-                  {isUpcoming &&
-                  <Badge variant="default" className="text-xs">Upcoming</Badge>
-                  }
-                  {lineup.notes &&
-                  <Badge variant="secondary" className="text-xs">{lineup.notes}</Badge>
-                  }
+                  {isUpcoming && <Badge className="text-xs" style={{ background: METS_ORANGE, color: "white" }}>Upcoming</Badge>}
+                  {lineup.notes && <Badge variant="secondary" className="text-xs">{lineup.notes}</Badge>}
                 </CardTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                   <Calendar className="h-3.5 w-3.5" />
                   <span>{dateStr} • {lineup.game_time}</span>
                   {lineup.location && <span>• {lineup.location}</span>}
                 </div>
+                <p className="text-xs font-semibold mt-1" style={{ color: METS_BLUE }}>
+                  Manager: Carlos Mendoza
+                </p>
               </div>
             </div>
             {expanded ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
@@ -213,55 +295,90 @@ function LineupCardDisplay({ lineup, isUpcoming = false }: {lineup: LineupCard |
         </CardHeader>
       </button>
 
-      {expanded &&
-      <CardContent className="pt-0 space-y-4">
-          {players && players.length > 0 ?
-        <div className="bg-muted/30 rounded-lg p-4">
-              <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground mb-3 flex items-center gap-2">
-                <Users className="h-4 w-4" /> Batting Order
-              </h3>
-              <div className="space-y-1">
-                {players.map((player) =>
-            <div key={player.position} className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 transition-colors">
-                    <span className="text-lg font-bold text-primary w-7 text-center">{player.position}</span>
-                    {player.imageUrl &&
-              <img
-                src={player.imageUrl}
-                alt={player.name}
-                className="w-8 h-8 rounded-full object-cover bg-muted"
-                onError={(e) => {(e.target as HTMLImageElement).style.display = "none";}} />
-
-              }
-                    <div className="flex-1 flex items-center justify-between">
-                      <p className="font-medium">{player.name}</p>
-                      <Badge variant="outline" className="text-xs">{player.fieldPosition}</Badge>
-                    </div>
-                  </div>
-            )}
+      {expanded && (
+        <CardContent className="pt-4 space-y-4">
+          {players && players.length > 0 ? (
+            <div className="rounded-lg overflow-hidden border" style={{ borderColor: `${METS_BLUE}33` }}>
+              <div
+                className="grid grid-cols-[40px_50px_1fr_70px_60px] gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white"
+                style={{ background: METS_BLUE }}
+              >
+                <span className="text-center">Order</span>
+                <span className="text-center">Num</span>
+                <span>Player</span>
+                <span className="text-center">Pos</span>
+                <span className="text-center">B/T</span>
               </div>
-            </div> :
-
-        <div className="bg-muted/30 rounded-lg p-6 text-center">
+              <div className="divide-y" style={{ borderColor: `${METS_BLUE}22` }}>
+                {players.map((player) => {
+                  const pred = findPrediction(player.name);
+                  return (
+                    <div key={player.position} className="bg-card">
+                      <div className="grid grid-cols-[40px_50px_1fr_70px_60px] gap-2 px-3 py-2.5 items-center">
+                        <span className="text-base font-black text-center" style={{ color: METS_ORANGE }}>{player.position}</span>
+                        <span className="text-sm font-bold text-center text-muted-foreground">
+                          {player.jerseyNumber ?? "—"}
+                        </span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          {player.imageUrl && (
+                            <img
+                              src={player.imageUrl}
+                              alt={player.name}
+                              className="w-7 h-7 rounded-full object-cover bg-muted flex-shrink-0"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                            />
+                          )}
+                          <p className="font-semibold truncate text-sm">{player.name}</p>
+                        </div>
+                        <Badge variant="outline" className="text-[10px] justify-self-center" style={{ borderColor: METS_BLUE, color: METS_BLUE }}>
+                          {player.fieldPosition}
+                        </Badge>
+                        <span className="text-xs font-mono font-bold text-center text-muted-foreground">
+                          {player.bt ?? (player.bats && player.throws ? `${player.bats}/${player.throws}` : "—")}
+                        </span>
+                      </div>
+                      {pred && (
+                        <div className="px-3 pb-3 pt-1">
+                          <PredictionPods prediction={pred} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="bg-muted/30 rounded-lg p-6 text-center">
               <p className="text-muted-foreground">Lineup TBA — typically released 1-2 hours before first pitch</p>
             </div>
-        }
+          )}
 
-          {pitcher &&
-        <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-              <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground mb-2">Starting Pitcher</h3>
-              <div className="flex items-center justify-between">
-                <p className="font-bold text-lg">{pitcher.name}</p>
-                <div className="flex items-center gap-2">
-                  <Badge>{pitcher.hand}</Badge>
-                  <span className="text-sm text-muted-foreground">{pitcher.era} ERA • {pitcher.strikeouts} K</span>
+          {pitcher && (() => {
+            const pitcherPred = findPrediction(pitcher.name);
+            return (
+              <div className="rounded-lg p-4 border-2" style={{ borderColor: `${METS_ORANGE}55`, background: `${METS_BLUE}0d` }}>
+                <h3 className="font-black text-xs uppercase tracking-[0.2em] mb-2" style={{ color: METS_BLUE }}>
+                  Starting Pitcher
+                </h3>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <p className="font-bold text-lg" style={{ color: METS_BLUE }}>{pitcher.name}</p>
+                  <div className="flex items-center gap-2">
+                    <Badge style={{ background: METS_ORANGE, color: "white" }}>{pitcher.hand}</Badge>
+                    <span className="text-sm text-muted-foreground font-mono">{pitcher.era} ERA • {pitcher.strikeouts} K</span>
+                  </div>
                 </div>
+                {pitcherPred && (
+                  <div className="mt-3">
+                    <PredictionPods prediction={pitcherPred} />
+                  </div>
+                )}
               </div>
-            </div>
-        }
+            );
+          })()}
         </CardContent>
-      }
-    </Card>);
-
+      )}
+    </Card>
+  );
 }
 
 export default function MetsLineupCard() {
