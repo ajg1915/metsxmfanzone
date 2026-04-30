@@ -239,8 +239,11 @@ export type Database = {
           excerpt: string | null
           featured_image_url: string | null
           id: string
+          is_draft: boolean
+          meta_description: string | null
           published: boolean
           published_at: string | null
+          scheduled_publish_at: string | null
           slug: string
           tags: string[] | null
           title: string
@@ -256,8 +259,11 @@ export type Database = {
           excerpt?: string | null
           featured_image_url?: string | null
           id?: string
+          is_draft?: boolean
+          meta_description?: string | null
           published?: boolean
           published_at?: string | null
+          scheduled_publish_at?: string | null
           slug: string
           tags?: string[] | null
           title: string
@@ -273,8 +279,11 @@ export type Database = {
           excerpt?: string | null
           featured_image_url?: string | null
           id?: string
+          is_draft?: boolean
+          meta_description?: string | null
           published?: boolean
           published_at?: string | null
+          scheduled_publish_at?: string | null
           slug?: string
           tags?: string[] | null
           title?: string
