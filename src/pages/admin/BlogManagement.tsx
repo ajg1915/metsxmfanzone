@@ -693,11 +693,6 @@ export default function BlogManagement() {
                         onClick={() => handleCopyLink(post)}>
                         <Copy className="w-3 h-3" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 px-1.5 text-yellow-500"
-                        title="AI / plagiarism check"
-                        onClick={() => handleCheckAI(post)} disabled={checkingAI === post.id}>
-                        {checkingAI === post.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldAlert className="w-3 h-3" />}
-                      </Button>
                       {post.approval_status === "pending" && (
                         <>
                           <Button variant="ghost" size="sm" className="h-7 px-1.5 text-green-500"
