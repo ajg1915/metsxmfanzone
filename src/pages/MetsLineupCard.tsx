@@ -486,7 +486,7 @@ export default function MetsLineupCard() {
             <h2 className="text-xl font-bold mb-3 flex items-center gap-2">
               🔴 Today's Lineup
             </h2>
-            <LineupCardDisplay lineup={todayLineup} isUpcoming />
+            <LineupCardDisplay lineup={todayLineup} isUpcoming predictions={predictions} />
           </div>
         }
 
