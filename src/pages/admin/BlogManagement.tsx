@@ -522,17 +522,7 @@ export default function BlogManagement() {
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-[11px]">Excerpt (used in cards & social previews)</Label>
-                      <Button type="button" variant="ghost" size="sm"
-                        onClick={handleGenerateExcerpt}
-                        disabled={generatingExcerpt || (!formData.title && !formData.content)}
-                        className="h-6 text-[10px] px-2">
-                        {generatingExcerpt
-                          ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Gen…</>
-                          : <><Sparkles className="w-3 h-3 mr-1" />Auto</>}
-                      </Button>
-                    </div>
+                    <Label className="text-[11px] mb-1 block">Excerpt (used in cards & social previews)</Label>
                     <Textarea value={formData.excerpt}
                       onChange={(e) => setFormData(f => ({ ...f, excerpt: e.target.value }))}
                       rows={2} className="text-xs min-h-[50px]"
