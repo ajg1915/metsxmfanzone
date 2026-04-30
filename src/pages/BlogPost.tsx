@@ -112,15 +112,24 @@ export default function BlogPost() {
 
   const fetchPost = async () => {
     try {
+      // Use maybeSingle for resilience — slug may not exist or may be unpublished.
+      // Decode the slug in case the URL was percent-encoded by a share link.
+      const decodedSlug = (() => {
+        try { return decodeURIComponent(slug || ""); } catch { return slug || ""; }
+      })();
+
       const { data, error } = await supabase
         .from("blog_posts")
         .select("*")
-        .eq("slug", slug)
+        .eq("slug", decodedSlug)
         .eq("published", true)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      
+      if (error) {
+        console.error("Slug fetch error:", error);
+        throw error;
+      }
+
       if (data && data.featured_image_url) {
         if (!data.featured_image_url.startsWith('http') && !data.featured_image_url.startsWith('data:')) {
           data.featured_image_url = `${window.location.origin}${data.featured_image_url}`;
