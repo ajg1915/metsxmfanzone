@@ -206,59 +206,6 @@ export default function BlogManagement() {
     }
   };
 
-  const handleCheckAI = async (post: BlogPost) => {
-    if (!post.content || post.content.length < 50) {
-      toast({ title: "Error", description: "Article too short to analyze", variant: "destructive" });
-      return;
-    }
-    setCheckingAI(post.id);
-    try {
-      const { data, error } = await supabase.functions.invoke('check-ai-content', {
-        body: { content: post.content, title: post.title }
-      });
-      if (error) throw error;
-
-      if (data.isPlagiarized || data.originalityScore < 50) {
-        setAiCheckResult({ ...data, postId: post.id });
-        setRevokeTarget(post);
-        setShowRevokeDialog(true);
-      } else {
-        toast({
-          title: "Content Verified ✓",
-          description: `Originality: ${data.originalityScore}% · Brand: ${data.brandVoiceScore}% · Overall: ${data.overallScore}%`,
-        });
-      }
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Check failed", variant: "destructive" });
-    } finally { setCheckingAI(null); }
-  };
-
-  const handleRevokeWriter = async () => {
-    if (!revokeTarget || !aiCheckResult) return;
-    try {
-      await supabase.from("blog_posts").delete().eq("id", revokeTarget.id);
-      if (revokeTarget.user_id) {
-        await supabase.from("user_roles").delete().eq("user_id", revokeTarget.user_id).eq("role", "writer");
-      }
-      const writerEmail = revokeTarget.profiles?.email;
-      const writerName = revokeTarget.profiles?.full_name || writerEmail || "Writer";
-      if (writerEmail) {
-        const reasons: string[] = [];
-        if (aiCheckResult.isPlagiarized) reasons.push("Plagiarized content");
-        if (aiCheckResult.originalityScore < 50) reasons.push(`Low originality: ${aiCheckResult.originalityScore}%`);
-        if (aiCheckResult.plagiarismFlags?.length) reasons.push(...aiCheckResult.plagiarismFlags);
-        await supabase.functions.invoke('send-writer-revoked-email', {
-          body: { email: writerEmail, name: writerName, articleTitle: revokeTarget.title, reasons }
-        });
-      }
-      toast({ title: "Writer Access Revoked" });
-      setShowRevokeDialog(false); setRevokeTarget(null); setAiCheckResult(null);
-      fetchPosts();
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed", variant: "destructive" });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
