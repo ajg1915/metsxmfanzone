@@ -14,13 +14,9 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
-  Plus, Edit, Trash2, FileText, Sparkles, Upload, Music, Copy, CheckCircle,
-  XCircle, Clock, ShieldAlert, Loader2, Eye, Search, CalendarClock, ExternalLink,
+  Plus, Edit, Trash2, FileText, Music, Copy, CheckCircle,
+  XCircle, Clock, Loader2, Eye, Search, CalendarClock,
 } from "lucide-react";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { z } from "zod";
 import { validateFile, generateSafeFilename } from "@/utils/fileValidation";
 import RichTextEditor from "@/components/admin/RichTextEditor";
