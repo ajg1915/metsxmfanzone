@@ -727,45 +727,6 @@ export default function BlogManagement() {
         )}
       </div>
 
-      {/* AI Revoke Dialog */}
-      <AlertDialog open={showRevokeDialog} onOpenChange={setShowRevokeDialog}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-md p-4">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-red-500 flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5" /> AI / Plagiarism Detected
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3 text-xs">
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 space-y-1">
-                  {aiCheckResult?.isPlagiarized && <p className="text-red-400 font-medium">• Plagiarized Content Detected</p>}
-                  {aiCheckResult?.originalityScore < 50 && (
-                    <p className="text-red-400 font-medium">• Low Originality: {aiCheckResult?.originalityScore}%</p>
-                  )}
-                  <p className="text-muted-foreground">
-                    Originality {aiCheckResult?.originalityScore}% · Brand {aiCheckResult?.brandVoiceScore}% · Overall {aiCheckResult?.overallScore}%
-                  </p>
-                </div>
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
-                  <p className="font-medium text-yellow-400">Revoking will:</p>
-                  <ul className="list-disc pl-4 mt-1 text-muted-foreground">
-                    <li>Delete "{revokeTarget?.title}"</li>
-                    <li>Remove writer role</li>
-                    <li>Email the writer with reasons</li>
-                  </ul>
-                </div>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => { setShowRevokeDialog(false); setRevokeTarget(null); setAiCheckResult(null); }}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleRevokeWriter} className="bg-red-500 hover:bg-red-600">
-              Revoke & Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
