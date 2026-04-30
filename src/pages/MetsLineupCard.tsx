@@ -15,7 +15,37 @@ interface LineupPlayer {
   name: string;
   fieldPosition: string;
   imageUrl?: string;
+  jerseyNumber?: string | number;
+  bats?: string;
+  throws?: string;
+  bt?: string;
 }
+
+interface PlayerPrediction {
+  id: string;
+  player_name: string;
+  player_id: number | null;
+  status: "hot" | "cold" | string;
+  description: string;
+  is_pitcher: boolean | null;
+  predicted_hr: number | null;
+  predicted_rbis: number | null;
+  predicted_runs: number | null;
+  predicted_sb: number | null;
+  predicted_strikeouts: number | null;
+  predicted_innings_pitched: number | null;
+  predicted_win_loss: string | null;
+  confidence: number | null;
+}
+
+const normalizeName = (n: string) =>
+  (n || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[.\-']/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 
 interface StartingPitcher {
   name: string;
