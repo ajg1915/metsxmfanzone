@@ -383,6 +383,7 @@ function LineupCardDisplay({
 
 export default function MetsLineupCard() {
   const [upcomingLineups, setUpcomingLineups] = useState<LineupCard[]>([]);
+  const [predictions, setPredictions] = useState<PlayerPrediction[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -409,8 +410,26 @@ export default function MetsLineupCard() {
     }
   };
 
+  const fetchPredictions = async () => {
+    try {
+      const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+      const { data, error } = await supabase
+        .from("daily_player_predictions")
+        .select("*")
+        .eq("prediction_date", today);
+      if (error) {
+        console.error("Error fetching predictions:", error);
+        return;
+      }
+      setPredictions((data || []) as unknown as PlayerPrediction[]);
+    } catch (err) {
+      console.error("Failed to fetch predictions:", err);
+    }
+  };
+
   useEffect(() => {
     fetchUpcomingLineups();
+    fetchPredictions();
   }, []);
 
   const handleRefresh = async () => {
