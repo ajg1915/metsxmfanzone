@@ -87,15 +87,9 @@ export default function BlogManagement() {
   };
   const [formData, setFormData] = useState(defaultFormData);
 
-  const [generatingContent, setGeneratingContent] = useState(false);
-  const [generatingExcerpt, setGeneratingExcerpt] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingFeatured, setUploadingFeatured] = useState(false);
   const [uploadingAudio, setUploadingAudio] = useState(false);
-  const [checkingAI, setCheckingAI] = useState<string | null>(null);
-  const [aiCheckResult, setAiCheckResult] = useState<any>(null);
-  const [showRevokeDialog, setShowRevokeDialog] = useState(false);
-  const [revokeTarget, setRevokeTarget] = useState<BlogPost | null>(null);
 
   // Auto-slug from title
   useEffect(() => {
