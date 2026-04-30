@@ -14,13 +14,9 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
-  Plus, Edit, Trash2, FileText, Sparkles, Upload, Music, Copy, CheckCircle,
-  XCircle, Clock, ShieldAlert, Loader2, Eye, Search, CalendarClock, ExternalLink,
+  Plus, Edit, Trash2, FileText, Music, Copy, CheckCircle,
+  XCircle, Clock, Loader2, Eye, Search, CalendarClock,
 } from "lucide-react";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { z } from "zod";
 import { validateFile, generateSafeFilename } from "@/utils/fileValidation";
 import RichTextEditor from "@/components/admin/RichTextEditor";
@@ -91,15 +87,9 @@ export default function BlogManagement() {
   };
   const [formData, setFormData] = useState(defaultFormData);
 
-  const [generatingContent, setGeneratingContent] = useState(false);
-  const [generatingExcerpt, setGeneratingExcerpt] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingFeatured, setUploadingFeatured] = useState(false);
   const [uploadingAudio, setUploadingAudio] = useState(false);
-  const [checkingAI, setCheckingAI] = useState<string | null>(null);
-  const [aiCheckResult, setAiCheckResult] = useState<any>(null);
-  const [showRevokeDialog, setShowRevokeDialog] = useState(false);
-  const [revokeTarget, setRevokeTarget] = useState<BlogPost | null>(null);
 
   // Auto-slug from title
   useEffect(() => {
@@ -216,59 +206,6 @@ export default function BlogManagement() {
     }
   };
 
-  const handleCheckAI = async (post: BlogPost) => {
-    if (!post.content || post.content.length < 50) {
-      toast({ title: "Error", description: "Article too short to analyze", variant: "destructive" });
-      return;
-    }
-    setCheckingAI(post.id);
-    try {
-      const { data, error } = await supabase.functions.invoke('check-ai-content', {
-        body: { content: post.content, title: post.title }
-      });
-      if (error) throw error;
-
-      if (data.isPlagiarized || data.originalityScore < 50) {
-        setAiCheckResult({ ...data, postId: post.id });
-        setRevokeTarget(post);
-        setShowRevokeDialog(true);
-      } else {
-        toast({
-          title: "Content Verified ✓",
-          description: `Originality: ${data.originalityScore}% · Brand: ${data.brandVoiceScore}% · Overall: ${data.overallScore}%`,
-        });
-      }
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Check failed", variant: "destructive" });
-    } finally { setCheckingAI(null); }
-  };
-
-  const handleRevokeWriter = async () => {
-    if (!revokeTarget || !aiCheckResult) return;
-    try {
-      await supabase.from("blog_posts").delete().eq("id", revokeTarget.id);
-      if (revokeTarget.user_id) {
-        await supabase.from("user_roles").delete().eq("user_id", revokeTarget.user_id).eq("role", "writer");
-      }
-      const writerEmail = revokeTarget.profiles?.email;
-      const writerName = revokeTarget.profiles?.full_name || writerEmail || "Writer";
-      if (writerEmail) {
-        const reasons: string[] = [];
-        if (aiCheckResult.isPlagiarized) reasons.push("Plagiarized content");
-        if (aiCheckResult.originalityScore < 50) reasons.push(`Low originality: ${aiCheckResult.originalityScore}%`);
-        if (aiCheckResult.plagiarismFlags?.length) reasons.push(...aiCheckResult.plagiarismFlags);
-        await supabase.functions.invoke('send-writer-revoked-email', {
-          body: { email: writerEmail, name: writerName, articleTitle: revokeTarget.title, reasons }
-        });
-      }
-      toast({ title: "Writer Access Revoked" });
-      setShowRevokeDialog(false); setRevokeTarget(null); setAiCheckResult(null);
-      fetchPosts();
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed", variant: "destructive" });
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -360,49 +297,7 @@ export default function BlogManagement() {
     }
   };
 
-  const handleGenerateContent = async () => {
-    if (!formData.title) {
-      toast({ title: "Error", description: "Enter a title first", variant: "destructive" });
-      return;
-    }
-    setGeneratingContent(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-blog-content', {
-        body: { title: formData.title, category: formData.category, excerpt: formData.excerpt }
-      });
-      if (error) throw error;
-      if (data?.content) {
-        // Wrap raw text in paragraphs so Tiptap displays it nicely
-        const html = /<\/?[a-z][\s\S]*>/i.test(data.content)
-          ? data.content
-          : data.content.split(/\n\n+/).map((p: string) => `<p>${p.replace(/\n/g, "<br/>")}</p>`).join("");
-        setFormData(f => ({ ...f, content: html }));
-        toast({ title: "Generated", description: "AI content inserted." });
-      }
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed", variant: "destructive" });
-    } finally { setGeneratingContent(false); }
-  };
 
-  const handleGenerateExcerpt = async () => {
-    if (!formData.title && !formData.content) {
-      toast({ title: "Error", description: "Add a title or content first", variant: "destructive" });
-      return;
-    }
-    setGeneratingExcerpt(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-excerpt', {
-        body: { title: formData.title, content: formData.content.replace(/<[^>]*>/g, " "), category: formData.category }
-      });
-      if (error) throw error;
-      if (data?.excerpt) {
-        setFormData(f => ({ ...f, excerpt: data.excerpt, meta_description: f.meta_description || data.excerpt.slice(0, 160) }));
-        toast({ title: "Excerpt generated" });
-      }
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed", variant: "destructive" });
-    } finally { setGeneratingExcerpt(false); }
-  };
 
   const uploadToBucket = async (file: File, bucket: string, folder: string) => {
     const fileName = generateSafeFilename(file.name);
@@ -571,16 +466,7 @@ export default function BlogManagement() {
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-[11px]">Article Content · {wordCount} words</Label>
-                      <Button type="button" variant="outline" size="sm"
-                        onClick={handleGenerateContent} disabled={generatingContent || !formData.title}
-                        className="h-6 text-[10px] px-2">
-                        {generatingContent
-                          ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Generating…</>
-                          : <><Sparkles className="w-3 h-3 mr-1" />AI Draft</>}
-                      </Button>
-                    </div>
+                    <Label className="text-[11px] mb-1 block">Article Content · {wordCount} words</Label>
                     <RichTextEditor
                       value={formData.content}
                       onChange={(html) => setFormData(f => ({ ...f, content: html }))}
@@ -636,17 +522,7 @@ export default function BlogManagement() {
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-[11px]">Excerpt (used in cards & social previews)</Label>
-                      <Button type="button" variant="ghost" size="sm"
-                        onClick={handleGenerateExcerpt}
-                        disabled={generatingExcerpt || (!formData.title && !formData.content)}
-                        className="h-6 text-[10px] px-2">
-                        {generatingExcerpt
-                          ? <><Loader2 className="w-3 h-3 mr-1 animate-spin" />Gen…</>
-                          : <><Sparkles className="w-3 h-3 mr-1" />Auto</>}
-                      </Button>
-                    </div>
+                    <Label className="text-[11px] mb-1 block">Excerpt (used in cards & social previews)</Label>
                     <Textarea value={formData.excerpt}
                       onChange={(e) => setFormData(f => ({ ...f, excerpt: e.target.value }))}
                       rows={2} className="text-xs min-h-[50px]"
@@ -817,11 +693,6 @@ export default function BlogManagement() {
                         onClick={() => handleCopyLink(post)}>
                         <Copy className="w-3 h-3" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 px-1.5 text-yellow-500"
-                        title="AI / plagiarism check"
-                        onClick={() => handleCheckAI(post)} disabled={checkingAI === post.id}>
-                        {checkingAI === post.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldAlert className="w-3 h-3" />}
-                      </Button>
                       {post.approval_status === "pending" && (
                         <>
                           <Button variant="ghost" size="sm" className="h-7 px-1.5 text-green-500"
@@ -856,45 +727,6 @@ export default function BlogManagement() {
         )}
       </div>
 
-      {/* AI Revoke Dialog */}
-      <AlertDialog open={showRevokeDialog} onOpenChange={setShowRevokeDialog}>
-        <AlertDialogContent className="max-w-[95vw] sm:max-w-md p-4">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-red-500 flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5" /> AI / Plagiarism Detected
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="space-y-3 text-xs">
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 space-y-1">
-                  {aiCheckResult?.isPlagiarized && <p className="text-red-400 font-medium">• Plagiarized Content Detected</p>}
-                  {aiCheckResult?.originalityScore < 50 && (
-                    <p className="text-red-400 font-medium">• Low Originality: {aiCheckResult?.originalityScore}%</p>
-                  )}
-                  <p className="text-muted-foreground">
-                    Originality {aiCheckResult?.originalityScore}% · Brand {aiCheckResult?.brandVoiceScore}% · Overall {aiCheckResult?.overallScore}%
-                  </p>
-                </div>
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
-                  <p className="font-medium text-yellow-400">Revoking will:</p>
-                  <ul className="list-disc pl-4 mt-1 text-muted-foreground">
-                    <li>Delete "{revokeTarget?.title}"</li>
-                    <li>Remove writer role</li>
-                    <li>Email the writer with reasons</li>
-                  </ul>
-                </div>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => { setShowRevokeDialog(false); setRevokeTarget(null); setAiCheckResult(null); }}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleRevokeWriter} className="bg-red-500 hover:bg-red-600">
-              Revoke & Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
