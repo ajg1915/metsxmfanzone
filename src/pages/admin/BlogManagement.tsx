@@ -297,49 +297,7 @@ export default function BlogManagement() {
     }
   };
 
-  const handleGenerateContent = async () => {
-    if (!formData.title) {
-      toast({ title: "Error", description: "Enter a title first", variant: "destructive" });
-      return;
-    }
-    setGeneratingContent(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-blog-content', {
-        body: { title: formData.title, category: formData.category, excerpt: formData.excerpt }
-      });
-      if (error) throw error;
-      if (data?.content) {
-        // Wrap raw text in paragraphs so Tiptap displays it nicely
-        const html = /<\/?[a-z][\s\S]*>/i.test(data.content)
-          ? data.content
-          : data.content.split(/\n\n+/).map((p: string) => `<p>${p.replace(/\n/g, "<br/>")}</p>`).join("");
-        setFormData(f => ({ ...f, content: html }));
-        toast({ title: "Generated", description: "AI content inserted." });
-      }
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed", variant: "destructive" });
-    } finally { setGeneratingContent(false); }
-  };
 
-  const handleGenerateExcerpt = async () => {
-    if (!formData.title && !formData.content) {
-      toast({ title: "Error", description: "Add a title or content first", variant: "destructive" });
-      return;
-    }
-    setGeneratingExcerpt(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-excerpt', {
-        body: { title: formData.title, content: formData.content.replace(/<[^>]*>/g, " "), category: formData.category }
-      });
-      if (error) throw error;
-      if (data?.excerpt) {
-        setFormData(f => ({ ...f, excerpt: data.excerpt, meta_description: f.meta_description || data.excerpt.slice(0, 160) }));
-        toast({ title: "Excerpt generated" });
-      }
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message || "Failed", variant: "destructive" });
-    } finally { setGeneratingExcerpt(false); }
-  };
 
   const uploadToBucket = async (file: File, bucket: string, folder: string) => {
     const fileName = generateSafeFilename(file.name);
