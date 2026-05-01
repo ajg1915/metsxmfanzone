@@ -893,7 +893,7 @@ const Auth = () => {
       setLoading(true);
 
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?mode=reset`,
+        redirectTo: "https://metsxmfanzone.com/auth?mode=reset",
       });
 
       if (error) {
