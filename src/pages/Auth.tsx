@@ -529,7 +529,10 @@ const Auth = () => {
         email: validated.email,
         password: validated.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          // Always send users back to the production domain after email confirmation,
+          // regardless of which host they signed up from. Prevents "site can't be reached"
+          // when signups happen on preview/lovable.app but DNS only resolves on the custom domain.
+          emailRedirectTo: "https://metsxmfanzone.com/",
           data: {
             full_name: validated.fullName,
             phone_number: validated.phoneNumber || null,
