@@ -330,7 +330,21 @@ Respond with ONLY a valid JSON array (no markdown, no extra text):
     weekAgo.setDate(weekAgo.getDate() - 7);
     await supabase.from("daily_player_predictions").delete().lt("prediction_date", weekAgo.toISOString().split('T')[0]);
 
-    const predictionsToInsert = predictions.map((pred: any) => {
+    // Hallucination guard: drop any AI prediction whose name isn't in our selected pool
+    const selectedNames = new Set(selectedPlayers.map(p => p.name.toLowerCase()));
+    const validPredictions = predictions.filter((pred: any) => {
+      const ok = pred?.name && selectedNames.has(String(pred.name).toLowerCase());
+      if (!ok) console.warn(`Dropping hallucinated/non-roster player: ${pred?.name}`);
+      return ok;
+    });
+    if (validPredictions.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "AI returned no valid roster players", suggestion: "Retry or use manual entry." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const predictionsToInsert = validPredictions.map((pred: any) => {
       const player = selectedPlayers.find(p => p.name.toLowerCase() === pred.name.toLowerCase());
       // Auto-generate random payout between $25 and $500
       const randomPayout = Math.floor(Math.random() * 476) + 25;
