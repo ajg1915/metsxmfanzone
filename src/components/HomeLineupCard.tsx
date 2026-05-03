@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import logoImage from "@/assets/metsxmfanzone-logo.png";
+import { getTodayET } from "@/utils/dateUtils";
 
 const getSpringFallback = (opponent: string): string => {
   return "";
@@ -75,12 +76,11 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
   const { data: lineupCard, isFetched: lineupFetched } = useQuery({
     queryKey: ["today-lineup-card"],
     queryFn: async () => {
-      const now = new Date();
-      const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+      const todayET = getTodayET();
       const { data, error } = await supabase
         .from("lineup_cards")
         .select("*")
-        .gte("game_date", todayUTC.toISOString())
+        .gte("game_date", `${todayET}T00:00:00+00:00`)
         .order("game_date", { ascending: true })
         .limit(1)
         .maybeSingle();
@@ -93,8 +93,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
   const { data: predictions } = useQuery({
     queryKey: ["todays-predictions"],
     queryFn: async () => {
-      const now = new Date();
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const todayStr = getTodayET();
       const { data, error } = await supabase
         .from("daily_player_predictions")
         .select("*")
