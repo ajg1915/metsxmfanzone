@@ -59,6 +59,27 @@ const METS_2026_ROSTER: Array<{ name: string; id: number; position: string }> = 
   { name: "Austin Warren", id: 681810, position: "RP" },
 ];
 
+// Verified everyday Mets — used as the prediction pool when no lineup is posted yet.
+// Keeps Anthony's Predictions focused on real headline players instead of depth/call-ups.
+const CORE_METS_NAMES = new Set<string>([
+  "Francisco Lindor",
+  "Juan Soto",
+  "Mark Vientos",
+  "Francisco Alvarez",
+  "Brett Baty",
+  "Jorge Polanco",
+  "Tyrone Taylor",
+  "Luis Robert Jr.",
+  "Kodai Senga",
+  "Sean Manaea",
+  "David Peterson",
+  "Clay Holmes",
+  "Devin Williams",
+  "Edwin Diaz",
+  "A.J. Minter",
+  "Luke Weaver",
+]);
+
 async function fetchMetsRoster(): Promise<Array<{ name: string; id: number; position: string }>> {
   // Use the hardcoded active roster to guarantee correct 2026 players
   return METS_2026_ROSTER;
@@ -162,8 +183,9 @@ serve(async (req) => {
         selectedPlayers = [...selectedPlayers, ...shuffled.slice(0, remainingSlots)];
         console.log(`Filled ${Math.min(shuffled.length, remainingSlots)} remaining slots from lineup players only`);
       } else {
-        // Manual/scheduled trigger — fill with roster mix
-        const available = metsPlayers.filter(p => !selectedPlayers.some(sp => sp.id === p.id));
+        // Manual/scheduled trigger with no lineup — restrict to CORE verified Mets
+        const coreRoster = metsPlayers.filter(p => CORE_METS_NAMES.has(p.name));
+        const available = coreRoster.filter(p => !selectedPlayers.some(sp => sp.id === p.id));
         const hitters = available.filter(p => !["SP","CL","RP"].includes(p.position));
         const pitchers = available.filter(p => ["SP","CL","RP"].includes(p.position));
         const shuffledHitters = [...hitters].sort(() => 0.5 - Math.random());
@@ -308,7 +330,21 @@ Respond with ONLY a valid JSON array (no markdown, no extra text):
     weekAgo.setDate(weekAgo.getDate() - 7);
     await supabase.from("daily_player_predictions").delete().lt("prediction_date", weekAgo.toISOString().split('T')[0]);
 
-    const predictionsToInsert = predictions.map((pred: any) => {
+    // Hallucination guard: drop any AI prediction whose name isn't in our selected pool
+    const selectedNames = new Set(selectedPlayers.map(p => p.name.toLowerCase()));
+    const validPredictions = predictions.filter((pred: any) => {
+      const ok = pred?.name && selectedNames.has(String(pred.name).toLowerCase());
+      if (!ok) console.warn(`Dropping hallucinated/non-roster player: ${pred?.name}`);
+      return ok;
+    });
+    if (validPredictions.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "AI returned no valid roster players", suggestion: "Retry or use manual entry." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const predictionsToInsert = validPredictions.map((pred: any) => {
       const player = selectedPlayers.find(p => p.name.toLowerCase() === pred.name.toLowerCase());
       // Auto-generate random payout between $25 and $500
       const randomPayout = Math.floor(Math.random() * 476) + 25;
