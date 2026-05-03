@@ -80,7 +80,6 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
       const { data, error } = await supabase
         .from("lineup_cards")
         .select("*")
-        .eq("published", true)
         .gte("game_date", todayUTC.toISOString())
         .order("game_date", { ascending: true })
         .limit(1)
