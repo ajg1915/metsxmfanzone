@@ -7,6 +7,9 @@ const corsHeaders = {
 
 const METS_TEAM_ID = 121;
 
+const getTodayET = () =>
+  new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+
 interface MLBPlayer {
   id: number;
   fullName: string;
@@ -39,9 +42,13 @@ Deno.serve(async (req) => {
 
     console.log("Fetching Mets schedule for today...");
 
-    // Get today's date in YYYY-MM-DD format
-    const today = new Date();
-    const dateStr = today.toISOString().split("T")[0];
+    // Get today's date in Eastern Time. MLB schedules are ET-based, so UTC dates
+    // would skip late-night games like a 9:40 PM ET first pitch.
+    const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+    const requestedDate = typeof body?.date === "string" ? body.date : null;
+    const dateStr = requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate)
+      ? requestedDate
+      : getTodayET();
 
     // Fetch today's Mets game from MLB API
     const scheduleUrl = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${METS_TEAM_ID}&date=${dateStr}&hydrate=lineups,probablePitcher,team,linescore`;
@@ -171,7 +178,7 @@ Deno.serve(async (req) => {
       .from("lineup_cards")
       .select("id")
       .eq("game_date", dateStr)
-      .single();
+      .maybeSingle();
 
     const lineupCardData = {
       game_date: dateStr,
