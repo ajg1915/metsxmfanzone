@@ -78,20 +78,37 @@ export function ClapprPlayer({
       height: "100%",
       autoPlay: true,
       mute: true,
+      muted: true,
       playInline: true,
+      playback: {
+        playInline: true,
+        controls: true,
+        crossOrigin: "anonymous",
+        hlsjsConfig: {
+          liveSyncDurationCount: 3,
+          maxLiveSyncPlaybackRate: 1.5,
+          lowLatencyMode: true,
+        },
+      },
       hlsjsConfig: {
         liveSyncDurationCount: 3,
         maxLiveSyncPlaybackRate: 1.5,
         lowLatencyMode: true,
       },
       events: {
+        onReady: () => {
+          try {
+            playerRef.current?.mute?.();
+            playerRef.current?.play?.();
+          } catch {}
+        },
         onError: (err: any) => {
           console.error("[Clappr] Error:", err);
-          // Auto-retry by reloading source after delay
           setTimeout(() => {
             if (playerRef.current) {
               try {
                 playerRef.current.load(source);
+                playerRef.current.mute?.();
                 playerRef.current.play();
               } catch {}
             }
