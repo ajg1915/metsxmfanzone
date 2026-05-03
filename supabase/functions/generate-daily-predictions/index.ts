@@ -183,8 +183,9 @@ serve(async (req) => {
         selectedPlayers = [...selectedPlayers, ...shuffled.slice(0, remainingSlots)];
         console.log(`Filled ${Math.min(shuffled.length, remainingSlots)} remaining slots from lineup players only`);
       } else {
-        // Manual/scheduled trigger — fill with roster mix
-        const available = metsPlayers.filter(p => !selectedPlayers.some(sp => sp.id === p.id));
+        // Manual/scheduled trigger with no lineup — restrict to CORE verified Mets
+        const coreRoster = metsPlayers.filter(p => CORE_METS_NAMES.has(p.name));
+        const available = coreRoster.filter(p => !selectedPlayers.some(sp => sp.id === p.id));
         const hitters = available.filter(p => !["SP","CL","RP"].includes(p.position));
         const pitchers = available.filter(p => ["SP","CL","RP"].includes(p.position));
         const shuffledHitters = [...hitters].sort(() => 0.5 - Math.random());
