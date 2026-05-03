@@ -59,6 +59,27 @@ const METS_2026_ROSTER: Array<{ name: string; id: number; position: string }> = 
   { name: "Austin Warren", id: 681810, position: "RP" },
 ];
 
+// Verified everyday Mets — used as the prediction pool when no lineup is posted yet.
+// Keeps Anthony's Predictions focused on real headline players instead of depth/call-ups.
+const CORE_METS_NAMES = new Set<string>([
+  "Francisco Lindor",
+  "Juan Soto",
+  "Mark Vientos",
+  "Francisco Alvarez",
+  "Brett Baty",
+  "Jorge Polanco",
+  "Tyrone Taylor",
+  "Luis Robert Jr.",
+  "Kodai Senga",
+  "Sean Manaea",
+  "David Peterson",
+  "Clay Holmes",
+  "Devin Williams",
+  "Edwin Diaz",
+  "A.J. Minter",
+  "Luke Weaver",
+]);
+
 async function fetchMetsRoster(): Promise<Array<{ name: string; id: number; position: string }>> {
   // Use the hardcoded active roster to guarantee correct 2026 players
   return METS_2026_ROSTER;
