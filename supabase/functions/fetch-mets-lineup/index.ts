@@ -299,6 +299,7 @@ Deno.serve(async (req) => {
               },
               body: JSON.stringify({
                 triggeredBy: "lineup-card",
+                date: dateStr,
                 lineupPlayerIds,
                 lineupPlayers,
                 opponent: lineupCardData.opponent,
