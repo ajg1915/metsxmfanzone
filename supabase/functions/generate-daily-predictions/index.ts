@@ -8,6 +8,9 @@ const corsHeaders = {
 
 const METS_TEAM_ID = 121;
 
+const getTodayET = () =>
+  new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+
 function getPlayerImageUrl(playerId: number): string {
   return `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${playerId}/headshot/67/current`;
 }
@@ -102,6 +105,7 @@ serve(async (req) => {
     let lineupPlayerIds: number[] = [];
     let lineupPlayers: Array<{ name: string; id: number; position: string }> = [];
     let gameContext = "";
+    let requestedDate: string | null = null;
     
     try {
       const body = await req.json();
@@ -111,12 +115,13 @@ serve(async (req) => {
       if (body.triggeredBy) triggerType = body.triggeredBy;
       if (body.lineupPlayerIds && Array.isArray(body.lineupPlayerIds)) lineupPlayerIds = body.lineupPlayerIds;
       if (body.lineupPlayers && Array.isArray(body.lineupPlayers)) lineupPlayers = body.lineupPlayers;
+      if (typeof body.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.date)) requestedDate = body.date;
       if (body.opponent) gameContext += `Today's game: Mets vs ${body.opponent}. `;
       if (body.gameTime) gameContext += `Game time: ${body.gameTime}. `;
       if (body.location) gameContext += `Location: ${body.location}. `;
     } catch { /* defaults */ }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = requestedDate ?? getTodayET();
     
     const { data: existingPredictions } = await supabase
       .from("daily_player_predictions")
