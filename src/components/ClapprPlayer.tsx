@@ -78,7 +78,18 @@ export function ClapprPlayer({
       height: "100%",
       autoPlay: true,
       mute: true,
+      muted: true,
       playInline: true,
+      playback: {
+        playInline: true,
+        controls: true,
+        crossOrigin: "anonymous",
+        hlsjsConfig: {
+          liveSyncDurationCount: 3,
+          maxLiveSyncPlaybackRate: 1.5,
+          lowLatencyMode: true,
+        },
+      },
       hlsjsConfig: {
         liveSyncDurationCount: 3,
         maxLiveSyncPlaybackRate: 1.5,
