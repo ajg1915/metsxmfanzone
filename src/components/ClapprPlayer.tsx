@@ -20,11 +20,14 @@ export function ClapprPlayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const retryTimerRef = useRef<number | null>(null);
+  const controlsObserverRef = useRef<MutationObserver | null>(null);
   const [isCasting, setIsCasting] = useState(false);
 
   const removeNativeControls = () => {
     containerRef.current?.querySelectorAll("video").forEach((video) => {
       video.removeAttribute("controls");
+      video.setAttribute("controlsList", "nodownload noplaybackrate noremoteplayback");
+      video.setAttribute("disablepictureinpicture", "true");
       (video as HTMLVideoElement).controls = false;
       (video as HTMLVideoElement).playsInline = true;
       video.setAttribute("playsinline", "true");
@@ -80,6 +83,8 @@ export function ClapprPlayer({
       window.clearTimeout(retryTimerRef.current);
       retryTimerRef.current = null;
     }
+    controlsObserverRef.current?.disconnect();
+    controlsObserverRef.current = null;
 
     // Dispose previous instance and clear any leftover Clappr DOM so players never stack.
     if (playerRef.current) {
@@ -136,12 +141,23 @@ export function ClapprPlayer({
     });
 
     playerRef.current = player;
+    controlsObserverRef.current = new MutationObserver(removeNativeControls);
+    controlsObserverRef.current.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["controls"],
+    });
+    window.setTimeout(removeNativeControls, 250);
+    window.setTimeout(removeNativeControls, 1000);
 
     return () => {
       if (retryTimerRef.current) {
         window.clearTimeout(retryTimerRef.current);
         retryTimerRef.current = null;
       }
+      controlsObserverRef.current?.disconnect();
+      controlsObserverRef.current = null;
       try { player.destroy(); } catch {}
       playerRef.current = null;
       container.replaceChildren();
