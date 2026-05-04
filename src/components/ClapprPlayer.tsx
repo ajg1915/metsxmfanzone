@@ -19,6 +19,7 @@ export function ClapprPlayer({
 }: ClapprPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
+  const retryTimerRef = useRef<number | null>(null);
   const [isCasting, setIsCasting] = useState(false);
 
   // Initialize Chromecast
@@ -64,16 +65,23 @@ export function ClapprPlayer({
   // Initialize Clappr player
   useEffect(() => {
     if (!containerRef.current || !source) return;
+    const container = containerRef.current;
 
-    // Dispose previous instance
+    if (retryTimerRef.current) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+
+    // Dispose previous instance and clear any leftover Clappr DOM so players never stack.
     if (playerRef.current) {
       try { playerRef.current.destroy(); } catch {}
       playerRef.current = null;
     }
+    container.replaceChildren();
 
     const player = new (Clappr as any).Player({
       source,
-      parent: containerRef.current,
+      parent: container,
       width: "100%",
       height: "100%",
       autoPlay: true,
@@ -104,7 +112,7 @@ export function ClapprPlayer({
         },
         onError: (err: any) => {
           console.error("[Clappr] Error:", err);
-          setTimeout(() => {
+          retryTimerRef.current = window.setTimeout(() => {
             if (playerRef.current) {
               try {
                 playerRef.current.load(source);
@@ -120,8 +128,13 @@ export function ClapprPlayer({
     playerRef.current = player;
 
     return () => {
+      if (retryTimerRef.current) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
       try { player.destroy(); } catch {}
       playerRef.current = null;
+      container.replaceChildren();
     };
   }, [source]);
 
@@ -130,7 +143,7 @@ export function ClapprPlayer({
       className="clappr-wrapper relative w-full rounded-lg overflow-hidden bg-black aspect-video landscape:fixed landscape:inset-0 landscape:z-50 landscape:rounded-none landscape:aspect-auto landscape:max-h-none landscape:w-full landscape:h-full sm:landscape:relative sm:landscape:inset-auto sm:landscape:z-auto sm:landscape:rounded-lg sm:landscape:aspect-video sm:landscape:h-auto"
       style={{ minHeight: 320 }}
     >
-      <div ref={containerRef} className="absolute inset-0 w-full h-full [&>div]:absolute [&>div]:inset-0 [&>div]:w-full [&>div]:h-full" />
+      <div ref={containerRef} className="absolute inset-0 w-full h-full [&>.clappr]:absolute [&>.clappr]:inset-0 [&>.clappr]:w-full [&>.clappr]:h-full" />
     </div>
   );
 
