@@ -31,7 +31,7 @@ export function TVHeroPlayer({ streams }: TVHeroPlayerProps) {
     <div className="rounded-lg overflow-hidden border border-border/40 bg-card/60">
       <div className="relative aspect-video max-h-[180px] w-full overflow-hidden landscape:max-h-[80vh] landscape:fixed landscape:inset-0 landscape:z-50 landscape:aspect-auto sm:landscape:relative sm:landscape:inset-auto sm:landscape:z-auto sm:landscape:max-h-[180px] sm:landscape:aspect-video">
         {isPlaying ? (
-          <ClapprPlayer source={displayStream.stream_url} />
+          <ClapprPlayer source={displayStream.stream_url} showChrome={false} />
         ) : (
           <>
             <img

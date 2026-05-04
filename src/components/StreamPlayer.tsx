@@ -90,6 +90,7 @@ export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPla
             <StreamAlertBanner streamId={stream.id} />
             <ClapprPlayer
               source={stream.stream_url}
+              showChrome={false}
               pageTitle={stream.title}
               pageDescription={stream.description || pageDescription}
             />
