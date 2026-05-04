@@ -126,8 +126,11 @@ export function ClapprPlayer({
   }, [source]);
 
   const playerEl = (
-    <div className="relative w-full rounded-lg overflow-hidden bg-black aspect-video landscape:fixed landscape:inset-0 landscape:z-50 landscape:rounded-none landscape:aspect-auto landscape:max-h-none landscape:w-full landscape:h-full sm:landscape:relative sm:landscape:inset-auto sm:landscape:z-auto sm:landscape:rounded-lg sm:landscape:aspect-video sm:landscape:h-auto">
-      <div ref={containerRef} className="w-full h-full" />
+    <div
+      className="clappr-wrapper relative w-full rounded-lg overflow-hidden bg-black aspect-video landscape:fixed landscape:inset-0 landscape:z-50 landscape:rounded-none landscape:aspect-auto landscape:max-h-none landscape:w-full landscape:h-full sm:landscape:relative sm:landscape:inset-auto sm:landscape:z-auto sm:landscape:rounded-lg sm:landscape:aspect-video sm:landscape:h-auto"
+      style={{ minHeight: 320 }}
+    >
+      <div ref={containerRef} className="absolute inset-0 w-full h-full [&>div]:absolute [&>div]:inset-0 [&>div]:w-full [&>div]:h-full" />
     </div>
   );
 
