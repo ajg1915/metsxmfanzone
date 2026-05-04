@@ -20,7 +20,19 @@ export function ClapprPlayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const retryTimerRef = useRef<number | null>(null);
+  const controlsObserverRef = useRef<MutationObserver | null>(null);
   const [isCasting, setIsCasting] = useState(false);
+
+  const removeNativeControls = () => {
+    containerRef.current?.querySelectorAll("video").forEach((video) => {
+      video.removeAttribute("controls");
+      video.setAttribute("controlsList", "nodownload noplaybackrate noremoteplayback");
+      video.setAttribute("disablepictureinpicture", "true");
+      (video as HTMLVideoElement).controls = false;
+      (video as HTMLVideoElement).playsInline = true;
+      video.setAttribute("playsinline", "true");
+    });
+  };
 
   // Initialize Chromecast
   useEffect(() => {
@@ -71,6 +83,8 @@ export function ClapprPlayer({
       window.clearTimeout(retryTimerRef.current);
       retryTimerRef.current = null;
     }
+    controlsObserverRef.current?.disconnect();
+    controlsObserverRef.current = null;
 
     // Dispose previous instance and clear any leftover Clappr DOM so players never stack.
     if (playerRef.current) {
@@ -90,7 +104,6 @@ export function ClapprPlayer({
       playInline: true,
       playback: {
         playInline: true,
-        controls: true,
         crossOrigin: "anonymous",
         hlsjsConfig: {
           liveSyncDurationCount: 3,
@@ -106,6 +119,7 @@ export function ClapprPlayer({
       events: {
         onReady: () => {
           try {
+            removeNativeControls();
             playerRef.current?.mute?.();
             playerRef.current?.play?.();
           } catch {}
@@ -116,6 +130,7 @@ export function ClapprPlayer({
             if (playerRef.current) {
               try {
                 playerRef.current.load(source);
+                window.setTimeout(removeNativeControls, 250);
                 playerRef.current.mute?.();
                 playerRef.current.play();
               } catch {}
@@ -126,12 +141,23 @@ export function ClapprPlayer({
     });
 
     playerRef.current = player;
+    controlsObserverRef.current = new MutationObserver(removeNativeControls);
+    controlsObserverRef.current.observe(container, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["controls"],
+    });
+    window.setTimeout(removeNativeControls, 250);
+    window.setTimeout(removeNativeControls, 1000);
 
     return () => {
       if (retryTimerRef.current) {
         window.clearTimeout(retryTimerRef.current);
         retryTimerRef.current = null;
       }
+      controlsObserverRef.current?.disconnect();
+      controlsObserverRef.current = null;
       try { player.destroy(); } catch {}
       playerRef.current = null;
       container.replaceChildren();
@@ -143,7 +169,7 @@ export function ClapprPlayer({
       className="clappr-wrapper relative w-full rounded-lg overflow-hidden bg-black aspect-video landscape:fixed landscape:inset-0 landscape:z-50 landscape:rounded-none landscape:aspect-auto landscape:max-h-none landscape:w-full landscape:h-full sm:landscape:relative sm:landscape:inset-auto sm:landscape:z-auto sm:landscape:rounded-lg sm:landscape:aspect-video sm:landscape:h-auto"
       style={{ minHeight: 320 }}
     >
-      <div ref={containerRef} className="absolute inset-0 w-full h-full [&>.clappr]:absolute [&>.clappr]:inset-0 [&>.clappr]:w-full [&>.clappr]:h-full" />
+      <div ref={containerRef} className="absolute inset-0 w-full h-full [&>.clappr]:absolute [&>.clappr]:inset-0 [&>.clappr]:w-full [&>.clappr]:h-full [&_video::-webkit-media-controls]:hidden" />
     </div>
   );
 
