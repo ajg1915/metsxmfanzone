@@ -1,4 +1,4 @@
- import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -151,7 +151,6 @@ const MetsXMFanZone = () => {
             <ClapprPlayer
               pageTitle="MetsXMFanZone Live Stream"
               pageDescription="Ultimate Destination Where the Fans Go"
-              <p>turn on volume to listen to player</p>
             />
 
             {/* Live Community Chat */}
