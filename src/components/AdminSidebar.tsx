@@ -35,9 +35,11 @@ const homeItems = [
 // Content & Media items - Blog, Stories, Videos, Podcasts, Newsletter
 const mediaItems = [
   { title: "Blog", url: "/admin/blog", icon: FileText },
+  { title: "Game Recaps", url: "/admin/game-recaps", icon: Trophy },
   { title: "Stories", url: "/admin/stories", icon: Sparkles },
   { title: "Highlights", url: "/admin/video-gallery-management", icon: Video },
   { title: "Podcasts", url: "/admin/podcasts", icon: Mic },
+  { title: "Podcast Outlines", url: "/admin/podcast-outlines", icon: ClipboardList },
   { title: "Clubhouse Studio", url: "/admin/studio", icon: Radio },
   { title: "Newsletter", url: "/admin/newsletter", icon: Mail },
   { title: "Email Editor", url: "/admin/email-editor", icon: Send },
