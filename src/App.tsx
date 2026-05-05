@@ -62,6 +62,9 @@ const EmailEditor = lazyWithRetry(() => import("./pages/admin/EmailEditor"), "pa
 const BusinessAdsManagement = lazyWithRetry(() => import("./pages/admin/BusinessAdsManagement"), "page-admin-business-ads-management");
 const Unsubscribe = lazyWithRetry(() => import("./pages/Unsubscribe"), "page-unsubscribe");
 const MetsXMFanZone = lazyWithRetry(() => import("./pages/MetsXMFanZone"), "page-metsxmfanzone");
+const MetsGameRecaps = lazyWithRetry(() => import("./pages/MetsGameRecaps"), "page-mets-game-recaps");
+const GameRecapsManagement = lazyWithRetry(() => import("./pages/admin/GameRecapsManagement"), "page-admin-game-recaps");
+const PodcastOutlineTemplates = lazyWithRetry(() => import("./pages/admin/PodcastOutlineTemplates"), "page-admin-podcast-outline-templates");
 const MLBNetwork = lazyWithRetry(() => import("./pages/MLBNetwork"), "page-mlb-network");
 const ESPNNetwork = lazyWithRetry(() => import("./pages/ESPNNetwork"), "page-espn-network");
 const PIX11Network = lazyWithRetry(() => import("./pages/PIX11Network"), "page-pix11-network");
