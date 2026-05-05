@@ -12,11 +12,19 @@ import { ArrowLeft, Calendar, Trophy } from "lucide-react";
 import { format } from "date-fns";
 
 type Recap = {
-  id: string; title: string; slug: string; opponent: string | null;
-  game_date: string | null; home_away: string | null;
-  mets_score: number | null; opponent_score: number | null;
-  result: string | null; summary: string | null; body: string | null;
-  hero_image_url: string | null; published_at: string | null;
+  id: string;
+  title: string;
+  slug: string;
+  opponent: string | null;
+  game_date: string | null;
+  home_away: string | null;
+  mets_score: number | null;
+  opponent_score: number | null;
+  result: string | null;
+  summary: string | null;
+  body: string | null;
+  hero_image_url: string | null;
+  published_at: string | null;
 };
 
 export default function MetsGameRecaps() {
@@ -63,15 +71,19 @@ export default function MetsGameRecaps() {
         />
         <Navigation />
         <main className="flex-1 container mx-auto px-4 py-6 max-w-3xl">
-          <Link to="/mets-game-recaps" className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-4">
-            <ArrowLeft className="w-4 h-4" />Back to all recaps
+          <Link
+            to="/mets-game-recaps"
+            className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to all recaps
           </Link>
           {single.isLoading ? (
             <p className="text-muted-foreground">Loading...</p>
           ) : !r ? (
             <p className="text-muted-foreground">Recap not found.</p>
           ) : (
-            <article className="space-y-4">
+            <article className="space-y-8">
               {r.hero_image_url && (
                 <img src={r.hero_image_url} alt={r.title} className="w-full rounded-lg aspect-video object-cover" />
               )}
@@ -81,21 +93,21 @@ export default function MetsGameRecaps() {
                     {r.result === "W" ? "Win" : r.result === "L" ? "Loss" : "Tie"} · {r.mets_score}-{r.opponent_score}
                   </Badge>
                 )}
-                {r.opponent && <Badge variant="outline">{r.home_away === "away" ? "@" : "vs"} {r.opponent}</Badge>}
+                {r.opponent && (
+                  <Badge variant="outline">
+                    {r.home_away === "away" ? "@" : "vs"} {r.opponent}
+                  </Badge>
+                )}
                 {r.game_date && (
                   <Badge variant="outline" className="gap-1">
-                    <Calendar className="w-3 h-3" />{format(new Date(r.game_date), "MMM d, yyyy")}
+                    <Calendar className="w-3 h-3" />
+                    {format(new Date(r.game_date), "MMM d, yyyy")}
                   </Badge>
                 )}
               </div>
               <h1 className="text-3xl font-bold">{r.title}</h1>
               {r.summary && <p className="text-lg text-muted-foreground">{r.summary}</p>}
-              {r.body && (
-                <div
-                  className="prose prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: r.body }}
-                />
-              )}
+              {r.body && <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: r.body }} />}
             </article>
           )}
         </main>
@@ -124,14 +136,22 @@ export default function MetsGameRecaps() {
         {list.isLoading ? (
           <p className="text-muted-foreground">Loading recaps...</p>
         ) : recaps.length === 0 ? (
-          <Card><CardContent className="p-8 text-center text-muted-foreground">No recaps published yet. Check back after the next game!</CardContent></Card>
+          <Card>
+            <CardContent className="p-8 text-center text-muted-foreground">
+              No recaps published yet. Check back after the next game!
+            </CardContent>
+          </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {recaps.map((r) => (
               <Link key={r.id} to={`/mets-game-recaps/${r.slug}`} className="group">
                 <Card className="overflow-hidden bg-card/90 backdrop-blur hover:shadow-[0_0_24px_-6px_hsl(var(--primary)/0.5)] transition-all h-full">
                   {r.hero_image_url ? (
-                    <img src={r.hero_image_url} alt={r.title} className="w-full aspect-video object-cover group-hover:scale-[1.02] transition-transform" />
+                    <img
+                      src={r.hero_image_url}
+                      alt={r.title}
+                      className="w-full aspect-video object-cover group-hover:scale-[1.02] transition-transform"
+                    />
                   ) : (
                     <div className="w-full aspect-video bg-gradient-to-br from-primary/30 to-orange-500/30 flex items-center justify-center">
                       <Trophy className="w-10 h-10 text-primary-foreground/70" />
@@ -139,11 +159,25 @@ export default function MetsGameRecaps() {
                   )}
                   <CardContent className="p-4 space-y-2">
                     <div className="flex flex-wrap gap-1">
-                      {r.result && <Badge variant={r.result === "W" ? "default" : "secondary"} className="text-[10px]">{r.result} {r.mets_score}-{r.opponent_score}</Badge>}
-                      {r.opponent && <Badge variant="outline" className="text-[10px]">{r.home_away === "away" ? "@" : "vs"} {r.opponent}</Badge>}
-                      {r.game_date && <Badge variant="outline" className="text-[10px]">{format(new Date(r.game_date), "MMM d")}</Badge>}
+                      {r.result && (
+                        <Badge variant={r.result === "W" ? "default" : "secondary"} className="text-[10px]">
+                          {r.result} {r.mets_score}-{r.opponent_score}
+                        </Badge>
+                      )}
+                      {r.opponent && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {r.home_away === "away" ? "@" : "vs"} {r.opponent}
+                        </Badge>
+                      )}
+                      {r.game_date && (
+                        <Badge variant="outline" className="text-[10px]">
+                          {format(new Date(r.game_date), "MMM d")}
+                        </Badge>
+                      )}
                     </div>
-                    <h2 className="font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">{r.title}</h2>
+                    <h2 className="font-semibold leading-tight line-clamp-2 group-hover:text-primary transition-colors">
+                      {r.title}
+                    </h2>
                     {r.summary && <p className="text-xs text-muted-foreground line-clamp-2">{r.summary}</p>}
                   </CardContent>
                 </Card>
