@@ -140,38 +140,10 @@ Opponent: ${form.opponent}
 Date: ${form.game_date || "recent"}
 Location: ${form.home_away === "home" ? "Citi Field (home)" : "Away"}
 Final score: Mets ${form.mets_score} - ${form.opponent} ${form.opponent_score}
-Output JSON with fields: title (catchy headline), summary (1-2 sentences), body (4-6 paragraphs HTML with <p> tags, mention key plays).`;
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ messages: [{ role: "user", content: prompt }] }),
-      });
-      if (!res.ok || !res.body) throw new Error("AI request failed");
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let textBuffer = "", full = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-        let nl;
-        while ((nl = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, nl);
-          textBuffer = textBuffer.slice(nl + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ")) continue;
-          const j = line.slice(6).trim();
-          if (j === "[DONE]") break;
-          try {
-            const p = JSON.parse(j);
-            const c = p.choices?.[0]?.delta?.content;
-            if (c) full += c;
-          } catch {}
-        }
-      }
+Output ONLY valid JSON with fields: title (catchy headline), summary (1-2 sentences), body (4-6 paragraphs HTML with <p> tags, mention key plays). No markdown, no code fences.`;
+      const { data, error } = await supabase.functions.invoke("ai-generate-text", { body: { prompt } });
+      if (error) throw error;
+      const full: string = data?.text || "";
       const m = full.match(/\{[\s\S]*\}/);
       if (m) {
         const parsed = JSON.parse(m[0]);
