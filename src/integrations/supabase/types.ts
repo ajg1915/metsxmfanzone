@@ -873,6 +873,69 @@ export type Database = {
         }
         Relationships: []
       }
+      game_recaps: {
+        Row: {
+          author_id: string | null
+          body: string | null
+          created_at: string
+          game_date: string | null
+          hero_image_url: string | null
+          highlights: Json | null
+          home_away: string | null
+          id: string
+          mets_score: number | null
+          opponent: string | null
+          opponent_score: number | null
+          published_at: string | null
+          result: string | null
+          slug: string
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body?: string | null
+          created_at?: string
+          game_date?: string | null
+          hero_image_url?: string | null
+          highlights?: Json | null
+          home_away?: string | null
+          id?: string
+          mets_score?: number | null
+          opponent?: string | null
+          opponent_score?: number | null
+          published_at?: string | null
+          result?: string | null
+          slug: string
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string | null
+          created_at?: string
+          game_date?: string | null
+          hero_image_url?: string | null
+          highlights?: Json | null
+          home_away?: string | null
+          id?: string
+          mets_score?: number | null
+          opponent?: string | null
+          opponent_score?: number | null
+          published_at?: string | null
+          result?: string | null
+          slug?: string
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gameday_announcements: {
         Row: {
           created_at: string
@@ -1685,6 +1748,45 @@ export type Database = {
           title?: string
           updated_at?: string
           vdo_ninja_url?: string | null
+        }
+        Relationships: []
+      }
+      podcast_outline_templates: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          name: string
+          notes: string | null
+          segments: Json
+          show_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          name: string
+          notes?: string | null
+          segments?: Json
+          show_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          name?: string
+          notes?: string | null
+          segments?: Json
+          show_type?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
