@@ -471,6 +471,13 @@ const Navigation = () => {
                         <Tv className="w-3.5 h-3.5" />
                         Highlights
                       </button>
+                      <button
+                        onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); navigate("/mets-game-recaps"); }}
+                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                      >
+                        <CalendarDays className="w-3.5 h-3.5" />
+                        Game Recaps
+                      </button>
                     </CollapsibleContent>
                   </Collapsible>
 
