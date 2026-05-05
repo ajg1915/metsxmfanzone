@@ -394,6 +394,8 @@ const AppContent = () => {
               <Route path="player-of-the-month" element={<PlayerOfTheMonthManagement />} />
               <Route path="sweepstakes" element={<SweepstakesManagement />} />
               <Route path="gameday-live" element={<GameDayLiveAdmin />} />
+              <Route path="game-recaps" element={<GameRecapsManagement />} />
+              <Route path="podcast-outlines" element={<PodcastOutlineTemplates />} />
             </Route>
             {/* Writer Portal Routes */}
             <Route path="/writer" element={<WriterDashboard />} />
