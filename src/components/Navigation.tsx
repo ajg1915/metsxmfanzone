@@ -220,6 +220,13 @@ const Navigation = () => {
                     <Tv className="w-4 h-4" />
                     Highlights
                   </button>
+                  <button
+                    onClick={() => navigate("/mets-game-recaps")}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                  >
+                    <CalendarDays className="w-4 h-4" />
+                    Game Recaps
+                  </button>
                 </div>
               </div>
             </div>
@@ -463,6 +470,13 @@ const Navigation = () => {
                       >
                         <Tv className="w-3.5 h-3.5" />
                         Highlights
+                      </button>
+                      <button
+                        onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); navigate("/mets-game-recaps"); }}
+                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                      >
+                        <CalendarDays className="w-3.5 h-3.5" />
+                        Game Recaps
                       </button>
                     </CollapsibleContent>
                   </Collapsible>
