@@ -70,7 +70,7 @@ export default function MetsGameRecaps() {
           description={r?.summary || "Mets game recap"}
         />
         <Navigation />
-        <main className="flex-1 container mx-auto px-4 py-6 max-w-3xl">
+        <main className="flex-1 container mx-auto px-4 pt-10 pb-6 max-w-3xl">
           <Link
             to="/mets-game-recaps"
             className="inline-flex items-center gap-1 text-sm text-primary hover:underline mb-4"
@@ -124,7 +124,7 @@ export default function MetsGameRecaps() {
         description="Read the latest New York Mets game recaps with scores, highlights, and analysis."
       />
       <Navigation />
-      <main className="flex-1 container mx-auto px-4 py-6">
+      <main className="flex-1 container mx-auto px-4 pt-10 pb-6">
         <div className="flex items-center gap-3 mb-6">
           <Trophy className="w-7 h-7 text-primary" />
           <div>
