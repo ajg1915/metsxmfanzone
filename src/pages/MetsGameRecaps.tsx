@@ -126,7 +126,7 @@ export default function MetsGameRecaps() {
       <Navigation />
       <main className="flex-1 container mx-auto px-4 pt-20 pb-6">
         <div className="flex items-center gap-3 mb-6">
-          <img src="/metsxmfanzone-logo.png" alt="MetsXMFanZone" className="w-12 h-12 object-contain rounded-md" />
+          <img src="/logo-192.png" alt="MetsXMFanZone" className="w-12 h-12 object-contain rounded-md" />
           <div>
             <h1 className="text-3xl font-bold">Mets Game Recaps</h1>
             <p className="text-sm text-muted-foreground">The latest recaps, scores, and analysis after every game.</p>
