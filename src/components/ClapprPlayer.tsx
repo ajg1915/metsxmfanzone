@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Clappr from "@clappr/player";
 import { Cast, Tv, Volume2 } from "lucide-react";
 
 interface ClapprPlayerProps {
@@ -8,37 +9,41 @@ interface ClapprPlayerProps {
   showChrome?: boolean;
 }
 
-const DEFAULT_IFRAME_SRC =
-  "https://video1.getstreamhosting.com:2000/VideoPlayer/resyweugpd?autoplay=1&mute=0&muted=0&volume=1";
-
-// Convert an HLS .m3u8 URL into the hosted VideoPlayer iframe URL when possible.
-// Example: https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8
-//       -> https://video1.getstreamhosting.com:2000/VideoPlayer/resyweugpd?autoplay=1
-function toIframeSrc(source?: string): string {
-  if (!source) return DEFAULT_IFRAME_SRC;
-  try {
-    // If it's already an iframe/player URL, just use it.
-    if (/\/VideoPlayer\//i.test(source)) return source;
-    const u = new URL(source);
-    const parts = u.pathname.split("/").filter(Boolean);
-    const streamKey = parts[0];
-    if (u.hostname.includes("getstreamhosting") && streamKey) {
-      return `https://${u.hostname}:2000/VideoPlayer/${streamKey}?autoplay=1&mute=0&muted=0&volume=1`;
-    }
-  } catch {
-    /* ignore */
-  }
-  return DEFAULT_IFRAME_SRC;
-}
+const DEFAULT_SOURCE =
+  "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
 
 export function ClapprPlayer({
   pageTitle = "Live Stream",
   pageDescription = "Watch live content",
-  source,
+  source = DEFAULT_SOURCE,
   showChrome = true,
 }: ClapprPlayerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const playerRef = useRef<any>(null);
+  const retryTimerRef = useRef<number | null>(null);
   const [isCasting, setIsCasting] = useState(false);
-  const iframeSrc = toIframeSrc(source);
+  const [audioOn, setAudioOn] = useState(false);
+
+  // Chromecast init
+  useEffect(() => {
+    const initChromecast = () => {
+      const chrome = (window as any).chrome;
+      if (!chrome?.cast) return;
+      const sessionRequest = new chrome.cast.SessionRequest(
+        chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
+      );
+      const apiConfig = new chrome.cast.ApiConfig(
+        sessionRequest,
+        () => setIsCasting(true),
+        () => {}
+      );
+      chrome.cast.initialize(apiConfig, () => {}, () => {});
+    };
+    (window as any).__onGCastApiAvailable = (isAvailable: boolean) => {
+      if (isAvailable) initChromecast();
+    };
+    if ((window as any).chrome?.cast) initChromecast();
+  }, []);
 
   const startCasting = () => {
     const chrome = (window as any).chrome;
@@ -52,7 +57,7 @@ export function ClapprPlayer({
       (session: any) => {
         setIsCasting(true);
         const mediaInfo = new chrome.cast.media.MediaInfo(
-          source || "",
+          source,
           "application/x-mpegURL"
         );
         const request = new chrome.cast.media.LoadRequest(mediaInfo);
@@ -64,33 +69,116 @@ export function ClapprPlayer({
     );
   };
 
-  const [audioOn, setAudioOn] = useState(false);
-  // Append a cache-buster on audio enable so the iframe reloads under a user gesture,
-  // which lets the embedded player autoplay WITH sound (browsers block silent autoplay-with-audio).
-  const finalSrc = audioOn
-    ? `${iframeSrc}${iframeSrc.includes("?") ? "&" : "?"}_a=${audioOn ? 1 : 0}`
-    : iframeSrc;
+  // Initialize Clappr player with low-latency HLS tuning
+  useEffect(() => {
+    if (!containerRef.current || !source) return;
+    const container = containerRef.current;
+
+    if (retryTimerRef.current) {
+      window.clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    if (playerRef.current) {
+      try {
+        playerRef.current.destroy();
+      } catch {}
+      playerRef.current = null;
+    }
+    container.replaceChildren();
+
+    // Aggressive low-latency hls.js config to reduce lag/buffering on live HLS.
+    const hlsLowLatencyConfig = {
+      lowLatencyMode: true,
+      backBufferLength: 8,
+      maxBufferLength: 12,
+      maxMaxBufferLength: 20,
+      maxBufferSize: 30 * 1000 * 1000,
+      liveSyncDurationCount: 2,
+      liveMaxLatencyDurationCount: 5,
+      maxLiveSyncPlaybackRate: 1.3,
+      enableWorker: true,
+      startLevel: -1,
+      abrEwmaDefaultEstimate: 1_000_000,
+      manifestLoadingMaxRetry: 6,
+      levelLoadingMaxRetry: 6,
+      fragLoadingMaxRetry: 6,
+    };
+
+    const player = new (Clappr as any).Player({
+      source,
+      parent: container,
+      width: "100%",
+      height: "100%",
+      autoPlay: true,
+      mute: true,
+      muted: true,
+      playInline: true,
+      disableVideoTagContextMenu: true,
+      playback: {
+        playInline: true,
+        crossOrigin: "anonymous",
+        hlsjsConfig: hlsLowLatencyConfig,
+      },
+      hlsjsConfig: hlsLowLatencyConfig,
+      events: {
+        onReady: () => {
+          try {
+            playerRef.current?.mute?.();
+            playerRef.current?.play?.();
+          } catch {}
+        },
+        onError: (err: any) => {
+          console.error("[Clappr] Error:", err);
+          retryTimerRef.current = window.setTimeout(() => {
+            try {
+              playerRef.current?.load(source);
+              playerRef.current?.play();
+            } catch {}
+          }, 4000);
+        },
+      },
+    });
+
+    playerRef.current = player;
+
+    return () => {
+      if (retryTimerRef.current) {
+        window.clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+      try {
+        player.destroy();
+      } catch {}
+      playerRef.current = null;
+      container.replaceChildren();
+    };
+  }, [source]);
+
+  // Toggle audio on user gesture (browsers block unmuted autoplay)
+  const enableAudio = () => {
+    try {
+      playerRef.current?.unmute?.();
+      playerRef.current?.setVolume?.(100);
+      playerRef.current?.play?.();
+      setAudioOn(true);
+    } catch (e) {
+      console.error("[Clappr] enableAudio error:", e);
+    }
+  };
 
   const playerEl = (
     <div
-      className="relative w-full overflow-hidden rounded-lg bg-black"
-      style={{ paddingTop: "56.25%" }}
+      className="clappr-wrapper relative w-full rounded-lg overflow-hidden bg-black aspect-video"
+      style={{ minHeight: 320 }}
     >
-      <iframe
-        key={finalSrc}
-        src={finalSrc}
-        title={pageTitle}
-        referrerPolicy="origin"
-        scrolling="no"
-        frameBorder={0}
-        allow="autoplay; fullscreen"
-        allowFullScreen
-        className="absolute inset-0 w-full h-full"
+      <div
+        ref={containerRef}
+        className="absolute inset-0 w-full h-full [&>.clappr]:absolute [&>.clappr]:inset-0 [&>.clappr]:w-full [&>.clappr]:h-full"
       />
       {!audioOn && (
         <button
-          onClick={() => setAudioOn(true)}
-          className="absolute bottom-3 left-3 z-10 flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-sm border border-white/20 shadow-lg transition-all"
+          onClick={enableAudio}
+          className="absolute bottom-3 left-3 z-20 flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-sm border border-white/20 shadow-lg transition-all"
           title="Turn on audio"
         >
           <Volume2 className="w-4 h-4" />
