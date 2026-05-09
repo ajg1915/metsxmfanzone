@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState } from "react";
-import Clappr from "@clappr/player";
+import { useState } from "react";
 import { Cast, Tv } from "lucide-react";
 
 interface ClapprPlayerProps {
@@ -9,62 +8,53 @@ interface ClapprPlayerProps {
   showChrome?: boolean;
 }
 
-const DEFAULT_SOURCE = "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
+const DEFAULT_IFRAME_SRC =
+  "https://video1.getstreamhosting.com:2000/VideoPlayer/resyweugpd?autoplay=1";
+
+// Convert an HLS .m3u8 URL into the hosted VideoPlayer iframe URL when possible.
+// Example: https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8
+//       -> https://video1.getstreamhosting.com:2000/VideoPlayer/resyweugpd?autoplay=1
+function toIframeSrc(source?: string): string {
+  if (!source) return DEFAULT_IFRAME_SRC;
+  try {
+    // If it's already an iframe/player URL, just use it.
+    if (/\/VideoPlayer\//i.test(source)) return source;
+    const u = new URL(source);
+    const parts = u.pathname.split("/").filter(Boolean);
+    const streamKey = parts[0];
+    if (u.hostname.includes("getstreamhosting") && streamKey) {
+      return `https://${u.hostname}:2000/VideoPlayer/${streamKey}?autoplay=1`;
+    }
+  } catch {
+    /* ignore */
+  }
+  return DEFAULT_IFRAME_SRC;
+}
 
 export function ClapprPlayer({
   pageTitle = "Live Stream",
   pageDescription = "Watch live content",
-  source = DEFAULT_SOURCE,
+  source,
   showChrome = true,
 }: ClapprPlayerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<any>(null);
-  const retryTimerRef = useRef<number | null>(null);
-  const controlsObserverRef = useRef<MutationObserver | null>(null);
   const [isCasting, setIsCasting] = useState(false);
-
-  const removeNativeControls = () => {
-    containerRef.current?.querySelectorAll("video").forEach((video) => {
-      video.removeAttribute("controls");
-      video.setAttribute("controlsList", "nodownload noplaybackrate noremoteplayback");
-      video.setAttribute("disablepictureinpicture", "true");
-      (video as HTMLVideoElement).controls = false;
-      (video as HTMLVideoElement).playsInline = true;
-      video.setAttribute("playsinline", "true");
-    });
-  };
-
-  // Initialize Chromecast
-  useEffect(() => {
-    const initChromecast = () => {
-      const chrome = (window as any).chrome;
-      if (!chrome?.cast) return;
-      const sessionRequest = new chrome.cast.SessionRequest(
-        chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
-      );
-      const apiConfig = new chrome.cast.ApiConfig(
-        sessionRequest,
-        () => setIsCasting(true),
-        () => {}
-      );
-      chrome.cast.initialize(apiConfig, () => {}, () => {});
-    };
-    (window as any).__onGCastApiAvailable = (isAvailable: boolean) => {
-      if (isAvailable) initChromecast();
-    };
-    if ((window as any).chrome?.cast) initChromecast();
-  }, []);
+  const iframeSrc = toIframeSrc(source);
 
   const startCasting = () => {
     const chrome = (window as any).chrome;
     if (!chrome?.cast) {
-      alert("Chromecast is not available. Make sure you have a Chromecast device on your network.");
+      alert(
+        "Chromecast is not available. Make sure you have a Chromecast device on your network."
+      );
       return;
     }
     chrome.cast.requestSession(
       (session: any) => {
         setIsCasting(true);
-        const mediaInfo = new chrome.cast.media.MediaInfo(source, "application/x-mpegURL");
+        const mediaInfo = new chrome.cast.media.MediaInfo(
+          source || "",
+          "application/x-mpegURL"
+        );
         const request = new chrome.cast.media.LoadRequest(mediaInfo);
         session.loadMedia(request, () => {}, () => {});
       },
@@ -74,102 +64,22 @@ export function ClapprPlayer({
     );
   };
 
-  // Initialize Clappr player
-  useEffect(() => {
-    if (!containerRef.current || !source) return;
-    const container = containerRef.current;
-
-    if (retryTimerRef.current) {
-      window.clearTimeout(retryTimerRef.current);
-      retryTimerRef.current = null;
-    }
-    controlsObserverRef.current?.disconnect();
-    controlsObserverRef.current = null;
-
-    // Dispose previous instance and clear any leftover Clappr DOM so players never stack.
-    if (playerRef.current) {
-      try { playerRef.current.destroy(); } catch {}
-      playerRef.current = null;
-    }
-    container.replaceChildren();
-
-    const player = new (Clappr as any).Player({
-      source,
-      parent: container,
-      width: "100%",
-      height: "100%",
-      autoPlay: true,
-      mute: true,
-      muted: true,
-      playInline: true,
-      playback: {
-        playInline: true,
-        crossOrigin: "anonymous",
-        hlsjsConfig: {
-          liveSyncDurationCount: 3,
-          maxLiveSyncPlaybackRate: 1.5,
-          lowLatencyMode: true,
-        },
-      },
-      hlsjsConfig: {
-        liveSyncDurationCount: 3,
-        maxLiveSyncPlaybackRate: 1.5,
-        lowLatencyMode: true,
-      },
-      events: {
-        onReady: () => {
-          try {
-            removeNativeControls();
-            playerRef.current?.mute?.();
-            playerRef.current?.play?.();
-          } catch {}
-        },
-        onError: (err: any) => {
-          console.error("[Clappr] Error:", err);
-          retryTimerRef.current = window.setTimeout(() => {
-            if (playerRef.current) {
-              try {
-                playerRef.current.load(source);
-                window.setTimeout(removeNativeControls, 250);
-                playerRef.current.mute?.();
-                playerRef.current.play();
-              } catch {}
-            }
-          }, 5000);
-        },
-      },
-    });
-
-    playerRef.current = player;
-    controlsObserverRef.current = new MutationObserver(removeNativeControls);
-    controlsObserverRef.current.observe(container, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["controls"],
-    });
-    window.setTimeout(removeNativeControls, 250);
-    window.setTimeout(removeNativeControls, 1000);
-
-    return () => {
-      if (retryTimerRef.current) {
-        window.clearTimeout(retryTimerRef.current);
-        retryTimerRef.current = null;
-      }
-      controlsObserverRef.current?.disconnect();
-      controlsObserverRef.current = null;
-      try { player.destroy(); } catch {}
-      playerRef.current = null;
-      container.replaceChildren();
-    };
-  }, [source]);
-
   const playerEl = (
     <div
-      className="clappr-wrapper relative w-full rounded-lg overflow-hidden bg-black aspect-video landscape:fixed landscape:inset-0 landscape:z-50 landscape:rounded-none landscape:aspect-auto landscape:max-h-none landscape:w-full landscape:h-full sm:landscape:relative sm:landscape:inset-auto sm:landscape:z-auto sm:landscape:rounded-lg sm:landscape:aspect-video sm:landscape:h-auto"
-      style={{ minHeight: 320 }}
+      className="relative w-full overflow-hidden rounded-lg bg-black"
+      style={{ paddingTop: "56.25%" }}
     >
-      <div ref={containerRef} className="absolute inset-0 w-full h-full [&>.clappr]:absolute [&>.clappr]:inset-0 [&>.clappr]:w-full [&>.clappr]:h-full [&_video::-webkit-media-controls]:hidden" />
+      <iframe
+        key={iframeSrc}
+        src={iframeSrc}
+        title={pageTitle}
+        referrerPolicy="origin"
+        scrolling="no"
+        frameBorder={0}
+        allow="autoplay; fullscreen"
+        allowFullScreen
+        className="absolute inset-0 w-full h-full"
+      />
     </div>
   );
 
@@ -196,7 +106,7 @@ export function ClapprPlayer({
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Cast className="w-3.5 h-3.5" />
           <span>
-            Cast to TV via the Cast button above, AirPlay icon in controls (Apple), or your browser's cast menu (Chrome).
+            Cast to TV via the Cast button above or your browser's cast menu.
           </span>
         </div>
       </div>
