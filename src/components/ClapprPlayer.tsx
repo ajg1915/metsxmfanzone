@@ -64,14 +64,21 @@ export function ClapprPlayer({
     );
   };
 
+  const [audioOn, setAudioOn] = useState(false);
+  // Append a cache-buster on audio enable so the iframe reloads under a user gesture,
+  // which lets the embedded player autoplay WITH sound (browsers block silent autoplay-with-audio).
+  const finalSrc = audioOn
+    ? `${iframeSrc}${iframeSrc.includes("?") ? "&" : "?"}_a=${audioOn ? 1 : 0}`
+    : iframeSrc;
+
   const playerEl = (
     <div
       className="relative w-full overflow-hidden rounded-lg bg-black"
       style={{ paddingTop: "56.25%" }}
     >
       <iframe
-        key={iframeSrc}
-        src={iframeSrc}
+        key={finalSrc}
+        src={finalSrc}
         title={pageTitle}
         referrerPolicy="origin"
         scrolling="no"
@@ -80,6 +87,16 @@ export function ClapprPlayer({
         allowFullScreen
         className="absolute inset-0 w-full h-full"
       />
+      {!audioOn && (
+        <button
+          onClick={() => setAudioOn(true)}
+          className="absolute bottom-3 left-3 z-10 flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-sm border border-white/20 shadow-lg transition-all"
+          title="Turn on audio"
+        >
+          <Volume2 className="w-4 h-4" />
+          Turn on audio
+        </button>
+      )}
     </div>
   );
 
