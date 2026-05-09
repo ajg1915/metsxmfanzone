@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Cast, Tv } from "lucide-react";
+import { Cast, Tv, Volume2 } from "lucide-react";
 
 interface ClapprPlayerProps {
   pageTitle?: string;
