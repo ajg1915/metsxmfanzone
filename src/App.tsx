@@ -284,7 +284,7 @@ const AppContent = () => {
   return (
     <TooltipProvider>
       <TVModeWrapper>
-      <MobileSplashScreen />
+      
       <PullToRefresh>
         <Toaster />
         <Sonner />
