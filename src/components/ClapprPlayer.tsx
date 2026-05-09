@@ -178,11 +178,16 @@ export function ClapprPlayer({
       {!audioOn && (
         <button
           onClick={enableAudio}
-          className="absolute bottom-3 left-3 z-20 flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-sm border border-white/20 shadow-lg transition-all"
+          aria-label="Turn on audio"
           title="Turn on audio"
+          className="group absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-black/30 hover:bg-black/40 transition-colors"
         >
-          <Volume2 className="w-4 h-4" />
-          Turn on audio
+          <span className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/90 group-hover:bg-primary text-primary-foreground shadow-2xl ring-4 ring-white/20 transition-transform group-hover:scale-105">
+            <Volume2 className="w-8 h-8 sm:w-9 sm:h-9" />
+          </span>
+          <span className="px-3 py-1 rounded-full bg-black/70 text-white text-xs font-semibold backdrop-blur-sm">
+            Tap to turn on audio
+          </span>
         </button>
       )}
     </div>
