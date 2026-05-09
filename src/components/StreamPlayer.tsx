@@ -70,43 +70,28 @@ export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPla
 
   if (loading) {
     return (
-      <Card className="mb-8">
-        <CardContent className="py-12 text-center">Loading stream...</CardContent>
-      </Card>
+      <div className="mb-8 py-12 text-center text-muted-foreground">Loading stream...</div>
+    );
+  }
+
+  if (!stream) {
+    return (
+      <div className="mb-8 text-center py-12 rounded-lg border border-border bg-card">
+        <p className="text-muted-foreground">No live stream available at the moment.</p>
+        <p className="text-sm text-muted-foreground mt-2">Check back later for live content.</p>
+      </div>
     );
   }
 
   return (
-    <Card className="mb-8">
-      <CardHeader>
-        <CardTitle className="text-lg">{pageTitle}</CardTitle>
-        <CardDescription>{pageDescription}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {stream ? (
-          <div className="space-y-4">
-            <StreamAlertBanner streamId={stream.id} />
-            <ClapprPlayer
-              source={stream.stream_url}
-              showChrome={false}
-              pageTitle={stream.title}
-              pageDescription={stream.description || pageDescription}
-            />
-            <div className="flex items-center justify-between">
-              {stream.description && <p className="text-muted-foreground">{stream.description}</p>}
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Cast className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Cast via the button above, AirPlay, or Chrome cast menu</span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No live stream available at the moment.</p>
-            <p className="text-sm text-muted-foreground mt-2">Check back later for live content.</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+    <div className="mb-8 space-y-4">
+      <StreamAlertBanner streamId={stream.id} />
+      <ClapprPlayer
+        source={stream.stream_url}
+        showChrome
+        pageTitle={stream.title || pageTitle}
+        pageDescription={stream.description || pageDescription}
+      />
+    </div>
   );
 }
