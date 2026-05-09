@@ -9,7 +9,7 @@ interface ClapprPlayerProps {
 }
 
 const DEFAULT_IFRAME_SRC =
-  "https://video1.getstreamhosting.com:2000/VideoPlayer/resyweugpd?autoplay=1";
+  "https://video1.getstreamhosting.com:2000/VideoPlayer/resyweugpd?autoplay=1&mute=0&muted=0&volume=1";
 
 // Convert an HLS .m3u8 URL into the hosted VideoPlayer iframe URL when possible.
 // Example: https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8
