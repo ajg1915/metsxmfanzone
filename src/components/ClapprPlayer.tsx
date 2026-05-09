@@ -9,7 +9,7 @@ interface ClapprPlayerProps {
 }
 
 const DEFAULT_IFRAME_SRC =
-  "https://video1.getstreamhosting.com:2000/VideoPlayer/resyweugpd?autoplay=1";
+  "https://video1.getstreamhosting.com:2000/VideoPlayer/resyweugpd?autoplay=1&mute=0&muted=0&volume=1";
 
 // Convert an HLS .m3u8 URL into the hosted VideoPlayer iframe URL when possible.
 // Example: https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8
@@ -23,7 +23,7 @@ function toIframeSrc(source?: string): string {
     const parts = u.pathname.split("/").filter(Boolean);
     const streamKey = parts[0];
     if (u.hostname.includes("getstreamhosting") && streamKey) {
-      return `https://${u.hostname}:2000/VideoPlayer/${streamKey}?autoplay=1`;
+      return `https://${u.hostname}:2000/VideoPlayer/${streamKey}?autoplay=1&mute=0&muted=0&volume=1`;
     }
   } catch {
     /* ignore */
