@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StreamAlertBanner } from "./StreamAlertBanner";
-import { Cast } from "lucide-react";
 import ClapprPlayer from "./ClapprPlayer";
 
 interface LiveStream {
