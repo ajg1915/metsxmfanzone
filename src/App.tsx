@@ -18,7 +18,7 @@ import SocialMediaBar from "@/components/SocialMediaBar";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
 import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
-import MobileSplashScreen from "@/components/MobileSplashScreen";
+
 
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 
