@@ -23,7 +23,7 @@ function toIframeSrc(source?: string): string {
     const parts = u.pathname.split("/").filter(Boolean);
     const streamKey = parts[0];
     if (u.hostname.includes("getstreamhosting") && streamKey) {
-      return `https://${u.hostname}:2000/VideoPlayer/${streamKey}?autoplay=1`;
+      return `https://${u.hostname}:2000/VideoPlayer/${streamKey}?autoplay=1&mute=0&muted=0&volume=1`;
     }
   } catch {
     /* ignore */
