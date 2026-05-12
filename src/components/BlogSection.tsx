@@ -135,12 +135,12 @@ const BlogSection = () => {
           >
             <article className="flex flex-col sm:flex-row">
               {/* Large Featured Image */}
-              <div className="relative w-full sm:w-2/5 aspect-[16/10] sm:aspect-auto overflow-hidden bg-card">
+              <div className="relative w-full sm:w-2/5 overflow-hidden bg-black flex items-center justify-center">
                 {highlightPost.featured_image_url ? (
                   <img
                     src={highlightPost.featured_image_url}
                     alt={highlightPost.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="w-full h-auto max-h-[480px] object-contain group-hover:scale-105 transition-transform duration-500"
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center min-h-[160px]">
