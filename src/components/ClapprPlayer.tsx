@@ -171,6 +171,15 @@ export function ClapprPlayer({
       className="clappr-wrapper relative w-full rounded-lg overflow-hidden bg-black aspect-video"
       style={{ minHeight: 320 }}
     >
+      <style>{`
+        .clappr-wrapper .player-play-button,
+        .clappr-wrapper .play-wrapper,
+        .clappr-wrapper [data-play-button],
+        .clappr-wrapper .clappr-play-button,
+        .clappr-wrapper .media-control-center {
+          display: none !important;
+        }
+      `}</style>
       <div
         ref={containerRef}
         className="absolute inset-0 w-full h-full [&>.clappr]:absolute [&>.clappr]:inset-0 [&>.clappr]:w-full [&>.clappr]:h-full"
