@@ -137,7 +137,7 @@ export default function MetsSchedule2026() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
-        title="2026 NY Mets Schedule - Spring Training & Regular Season"
+        title="2026 NY Mets Schedule - Spring & Regular Season"
         description="View the complete 2026 New York Mets schedule including Spring Training and Regular Season games. Game times, opponents, and venues."
         keywords="Mets schedule 2026, New York Mets games, Mets Spring Training schedule, MLB schedule"
         canonical="https://www.metsxmfanzone.com/mets-schedule-2026"
