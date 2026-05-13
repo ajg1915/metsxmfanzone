@@ -158,7 +158,7 @@ const Index = () => {
       </Suspense>
 
       <SEOHead
-        title="MetsXMFanZone - The Ultimate Destination Where The Fans Go | Live Games, News & Podcasts"
+        title="MetsXMFanZone — NY Mets Live Games, News & Podcasts"
         description="The ultimate Mets fan community. Watch live game streams, highlights, podcasts, and exclusive Mets coverage. Join thousands of passionate New York Mets fans."
         keywords="Mets live streams, New York Mets, Mets highlights, Mets podcast, Mets fan community, MLB streams, Mets games, baseball live stream, Spring Training, Francisco Lindor, Pete Alonso, Citi Field"
         canonical="https://www.metsxmfanzone.com/"
