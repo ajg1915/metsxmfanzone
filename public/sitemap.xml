@@ -14,7 +14,6 @@
   </url>
   
   <!-- Core Content -->
-  <url><loc>https://metsxmfanzone.com/spring-training-live</loc><changefreq>daily</changefreq><priority>0.95</priority></url>
   <url><loc>https://metsxmfanzone.com/blog</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://metsxmfanzone.com/podcast</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://metsxmfanzone.com/community</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
@@ -23,29 +22,27 @@
   <url><loc>https://metsxmfanzone.com/mets-roster</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
   <url><loc>https://metsxmfanzone.com/mets-schedule-2026</loc><changefreq>monthly</changefreq><priority>0.85</priority></url>
   <url><loc>https://metsxmfanzone.com/mets-scores</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://metsxmfanzone.com/mets-lineup-card</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://metsxmfanzone.com/mets-history</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://metsxmfanzone.com/player-stats</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://metsxmfanzone.com/mets-gamecast</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://metsxmfanzone.com/mets-history</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://metsxmfanzone.com/mets-game-recaps</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
   
   <!-- TV Networks -->
   <url><loc>https://metsxmfanzone.com/metsxmfanzone</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
   <url><loc>https://metsxmfanzone.com/mlb-network</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://metsxmfanzone.com/espn-network</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://metsxmfanzone.com/pix11-network</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
-  <url><loc>https://metsxmfanzone.com/tv-broadcast-schedule</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://metsxmfanzone.com/msg-network</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
   
   <!-- Media -->
   <url><loc>https://metsxmfanzone.com/gallery</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
   <url><loc>https://metsxmfanzone.com/video-gallery</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://metsxmfanzone.com/events</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
   <url><loc>https://metsxmfanzone.com/replay-games</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   
   <!-- Scores -->
   <url><loc>https://metsxmfanzone.com/nl-scores</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   
   <!-- Commerce -->
-  <url><loc>https://metsxmfanzone.com/plans</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://metsxmfanzone.com/pricing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://metsxmfanzone.com/shop</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
   <url><loc>https://metsxmfanzone.com/merch</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   
@@ -62,13 +59,13 @@
   <url><loc>https://metsxmfanzone.com/podcaster-application</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   
   <!-- Matchups -->
-  <url><loc>https://metsxmfanzone.com/matchups/mets-vs-yankees</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchups/mets-vs-braves</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchups/mets-vs-astros</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchups/mets-vs-cardinals</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchups/mets-vs-nationals</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchups/mets-vs-red-sox</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchups/mets-vs-blue-jays</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://metsxmfanzone.com/matchup/yankees</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://metsxmfanzone.com/matchup/braves</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://metsxmfanzone.com/matchup/astros</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://metsxmfanzone.com/matchup/cardinals</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://metsxmfanzone.com/matchup/nationals</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://metsxmfanzone.com/matchup/redsox</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://metsxmfanzone.com/matchup/bluejays</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   
   <!-- Legal -->
   <url><loc>https://metsxmfanzone.com/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
