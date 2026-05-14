@@ -123,7 +123,7 @@ export default function MetsGameRecaps() {
       />
       <Navigation />
       <main className="flex-1 container mx-auto px-4 pt-20 pb-6">
-        <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
           <div className="flex items-center gap-3">
             <img src="/logo-192.png" alt="MetsXMFanZone" className="w-12 h-12 object-contain rounded-md" />
             <div>
@@ -131,12 +131,6 @@ export default function MetsGameRecaps() {
               <p className="text-sm text-muted-foreground">The latest recaps, scores, and analysis after every game.</p>
             </div>
           </div>
-          {isAdmin && (
-            <Button onClick={handleGenerate} disabled={generating} className="gap-2">
-              {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              Generate Yesterday's Recap
-            </Button>
-          )}
         </div>
 
         {list.isLoading ? (
