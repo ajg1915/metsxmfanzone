@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Trophy, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
 interface Leader {
   rank: number;
@@ -62,7 +62,7 @@ const MetsStatsSection = () => {
       <div className="max-w-6xl mx-auto glass-card glow-blue rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
         <div className="text-center mb-5 sm:mb-6 md:mb-8">
           <div className="inline-flex items-center gap-2 mb-2">
-            <Trophy className="w-5 h-5 text-primary" />
+            <img src="/metsxmfanzone-logo.png" alt="MetsXMFanZone" className="w-7 h-7 object-contain" loading="lazy" />
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-tight">
               Mets Team Leaders
             </h2>
