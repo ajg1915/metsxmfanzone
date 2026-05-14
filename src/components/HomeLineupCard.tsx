@@ -315,19 +315,19 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                       <div className="w-1 h-4 rounded-full bg-primary" />
                       <p className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">Batting Order</p>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 lg:space-y-2">
                       {lineup.slice(0, 9).map((player) => (
-                        <div key={player.position} className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 py-1 sm:py-1.5 lg:py-2 px-2 sm:px-2.5 lg:px-3 rounded-xl bg-muted/20 hover:bg-muted/40 transition-all group border border-transparent hover:border-primary/10">
-                          <span className="text-[9px] sm:text-[10px] lg:text-xs font-black text-primary/70 w-3 sm:w-4 lg:w-5 text-center">
+                        <div key={player.position} className="flex items-center gap-1.5 sm:gap-2 lg:gap-4 py-1 sm:py-1.5 lg:py-3 px-2 sm:px-2.5 lg:px-4 rounded-xl bg-muted/20 hover:bg-muted/40 transition-all group border border-transparent hover:border-primary/10">
+                          <span className="text-[9px] sm:text-[10px] lg:text-base font-black text-primary/70 w-3 sm:w-4 lg:w-6 text-center">
                             {player.position}
                           </span>
                           {player.imageUrl && (
-                            <img src={player.imageUrl} alt={player.name} className="hidden lg:block w-8 h-8 rounded-lg object-cover border border-primary/20" />
+                            <img src={player.imageUrl} alt={player.name} className="hidden lg:block w-12 h-12 rounded-lg object-cover border border-primary/20 shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-[11px] sm:text-xs lg:text-sm truncate group-hover:text-primary transition-colors">{player.name}</p>
+                            <p className="font-semibold text-[11px] sm:text-xs lg:text-base truncate group-hover:text-primary transition-colors">{player.name}</p>
                           </div>
-                          <span className="text-[8px] sm:text-[9px] lg:text-[10px] text-muted-foreground/60 font-mono font-bold bg-muted/30 px-1 sm:px-1.5 py-0.5 rounded">
+                          <span className="text-[8px] sm:text-[9px] lg:text-xs text-muted-foreground/70 font-mono font-bold bg-muted/30 px-1 sm:px-1.5 lg:px-2.5 py-0.5 lg:py-1 rounded">
                             {player.fieldPosition}
                           </span>
                         </div>
