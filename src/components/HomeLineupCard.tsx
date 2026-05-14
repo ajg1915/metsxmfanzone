@@ -641,19 +641,23 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
               <div className="p-3">
                 {standings && standings.length > 0 ? (
                   <div className="space-y-1">
-                    {standings.map((team: any) => (
-                      <div key={team.team_name} className={`flex items-center gap-2 p-2 rounded-xl text-xs transition-all ${
-                        team.team_name === "Mets"
-                          ? "bg-primary/10 border border-primary/20 shadow-sm"
-                          : "bg-muted/10 hover:bg-muted/20 border border-transparent"
-                      }`}>
-                        <span className="font-black w-4 text-center text-muted-foreground/50 text-[10px]">{team.position}</span>
-                        <span className={`flex-1 font-semibold ${team.team_name === "Mets" ? "text-primary" : ""}`}>{team.team_name}</span>
-                        <span className="w-7 text-center font-mono font-bold text-[10px]">{team.wins}</span>
-                        <span className="w-7 text-center font-mono font-bold text-[10px]">{team.losses}</span>
-                        <span className="w-7 text-center font-mono text-[10px] text-muted-foreground">{team.games_back}</span>
-                      </div>
-                    ))}
+                    {standings.map((team: any) => {
+                      const isMets = team.team_name === "Mets";
+                      return (
+                        <div key={team.team_name} className={`relative flex items-center gap-2 p-2 pl-3 rounded-xl text-xs transition-all overflow-hidden ${
+                          isMets
+                            ? "bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-md shadow-primary/10"
+                            : "bg-muted/10 hover:bg-muted/20 border border-transparent"
+                        }`}>
+                          {isMets && <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" aria-hidden />}
+                          <span className={`font-black w-4 text-center text-[10px] ${isMets ? "text-primary" : "text-muted-foreground/50"}`}>{team.position}</span>
+                          <span className={`flex-1 font-bold uppercase tracking-tight ${isMets ? "text-primary" : ""}`}>{team.team_name}</span>
+                          <span className="w-7 text-center font-mono font-black text-[10px]" style={{ fontVariantNumeric: "tabular-nums" }}>{team.wins}</span>
+                          <span className="w-7 text-center font-mono font-bold text-[10px] text-muted-foreground" style={{ fontVariantNumeric: "tabular-nums" }}>{team.losses}</span>
+                          <span className={`w-7 text-center font-mono text-[10px] ${isMets ? "text-primary font-black" : "text-muted-foreground"}`} style={{ fontVariantNumeric: "tabular-nums" }}>{team.games_back}</span>
+                        </div>
+                      );
+                    })}
                     <div className="flex items-center gap-2 pt-1.5 text-[9px] text-muted-foreground/50 border-t border-border/20 mt-1.5 font-semibold uppercase tracking-wider">
                       <span className="w-4" />
                       <span className="flex-1">Team</span>
