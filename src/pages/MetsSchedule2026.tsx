@@ -72,7 +72,7 @@ export default function MetsSchedule2026() {
     
     try {
       const { data, error: fnError } = await supabase.functions.invoke('fetch-mets-schedule', {
-        body: { year: 2026, gameTypes: ['S', 'R'] }
+        body: { year: 2026, gameTypes: ['R'] }
       });
 
       if (fnError) throw fnError;
@@ -149,9 +149,9 @@ export default function MetsSchedule2026() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
-        title="2026 NY Mets Schedule - Spring & Regular Season"
-        description="View the complete 2026 New York Mets schedule including Spring Training and Regular Season games. Game times, opponents, and venues."
-        keywords="Mets schedule 2026, New York Mets games, Mets Spring Training schedule, MLB schedule"
+        title="2026 NY Mets Regular Season Schedule"
+        description="View the complete 2026 New York Mets Regular Season schedule. Game times, opponents, and venues."
+        keywords="Mets schedule 2026, New York Mets games, Mets Regular Season, MLB schedule"
         canonical="https://www.metsxmfanzone.com/mets-schedule-2026"
       />
       
@@ -167,7 +167,7 @@ export default function MetsSchedule2026() {
             2026 New York Mets Schedule
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base mb-4">
-            Full Season Schedule - Spring Training & Regular Season
+            Regular Season Schedule
           </p>
           
           <Button
@@ -195,10 +195,8 @@ export default function MetsSchedule2026() {
         ) : (
           <>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-              <TabsList className="grid w-full grid-cols-5 max-w-2xl mx-auto">
+              <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
                 <TabsTrigger value="all">All Games</TabsTrigger>
-                <TabsTrigger value="spring">Spring</TabsTrigger>
-                <TabsTrigger value="regular">Regular</TabsTrigger>
                 <TabsTrigger value="home">Home</TabsTrigger>
                 <TabsTrigger value="away">Away</TabsTrigger>
               </TabsList>
