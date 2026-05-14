@@ -339,21 +339,30 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                     </div>
                     <div className="space-y-1 lg:space-y-2">
                       {lineup.slice(0, 9).map((player) => (
-                        <div key={player.position} className="flex items-center gap-1.5 sm:gap-2 lg:gap-4 py-1 sm:py-1.5 lg:py-2.5 px-2 sm:px-2.5 lg:px-3 rounded-xl bg-muted/20 hover:bg-primary/10 transition-all group border border-border/10 hover:border-primary/30">
+                        <button
+                          key={player.position}
+                          type="button"
+                          onClick={() => setSelectedPlayer(player)}
+                          className="w-full flex items-center gap-2 sm:gap-2.5 lg:gap-4 py-1.5 sm:py-2 lg:py-2.5 px-2 sm:px-2.5 lg:px-3 rounded-xl bg-muted/20 hover:bg-primary/10 active:bg-primary/15 transition-all group border border-border/10 hover:border-primary/30 text-left cursor-pointer"
+                        >
                           <span className="text-[10px] sm:text-xs lg:text-lg font-black text-primary w-3 sm:w-4 lg:w-7 text-center shrink-0" style={{ fontVariantNumeric: "tabular-nums" }}>
                             {player.position}
                           </span>
-                          {player.imageUrl && (
-                            <img src={player.imageUrl} alt={player.name} className="hidden lg:block w-11 h-11 rounded-full object-cover border-2 border-border/30 group-hover:border-primary/60 transition-colors shrink-0" />
+                          {player.imageUrl ? (
+                            <img src={player.imageUrl} alt={player.name} className="w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full object-cover border-2 border-border/30 group-hover:border-primary/60 transition-colors shrink-0 bg-muted/40" />
+                          ) : (
+                            <div className="w-9 h-9 sm:w-10 sm:h-10 lg:w-11 lg:h-11 rounded-full bg-muted/40 border-2 border-border/30 shrink-0 flex items-center justify-center text-[10px] font-black text-muted-foreground">
+                              {player.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                            </div>
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-[11px] sm:text-xs lg:text-sm truncate lg:whitespace-normal lg:truncate-none group-hover:text-foreground transition-colors leading-tight">{player.name}</p>
-                            <p className="hidden lg:block text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider mt-0.5">{player.fieldPosition}</p>
+                            <p className="text-[9px] lg:text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider mt-0.5">{player.fieldPosition}</p>
                           </div>
                           <span className="text-[8px] sm:text-[9px] lg:text-[10px] text-muted-foreground font-mono font-black bg-muted/40 group-hover:bg-primary group-hover:text-primary-foreground transition-all px-1 sm:px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-md border border-border/20 shrink-0">
                             {player.fieldPosition}
                           </span>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </div>
