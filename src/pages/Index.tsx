@@ -31,6 +31,7 @@ const StoriesSection = lazyWithRetry(() => import("@/components/StoriesSection")
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
 const FAQSection = lazyWithRetry(() => import("@/components/FAQSection"), "home-faq-section");
 const TestimonialsSection = lazyWithRetry(() => import("@/components/TestimonialsSection"), "home-testimonials-section");
+const MetsStatsSection = lazyWithRetry(() => import("@/components/MetsStatsSection"), "home-mets-stats-section");
 const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSection"), "home-app-install-section");
 const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
 const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"), "home-install-prompt");
@@ -271,7 +272,7 @@ const Index = () => {
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
-            <TestimonialsSection />
+            {user ? <MetsStatsSection /> : <TestimonialsSection />}
           </Suspense>
         </LazySection>
 
