@@ -15,6 +15,20 @@ const getSpringFallback = (opponent: string): string => {
   return "";
 };
 
+// Format a YYYY-MM-DD game date safely in Eastern Time (avoids UTC off-by-one).
+const formatGameDateET = (ymd: string): string => {
+  const [y, m, d] = ymd.split("-").map(Number);
+  if (!y || !m || !d) return ymd;
+  // noon UTC keeps the same calendar day in ET regardless of DST
+  const dt = new Date(Date.UTC(y, m - 1, d, 12));
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(dt);
+};
+
 interface LineupPlayer {
   position: number;
   name: string;
@@ -430,16 +444,16 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                                   {game.isHome ? "vs" : "@"} {game.opponent}
                                 </p>
                                 <p className="text-[9px] text-muted-foreground font-medium">
-                                  {format(new Date(game.date), "EEE, MMM d")} • {game.time}
+                                  {formatGameDateET(game.date)} • {game.time}
                                 </p>
                               </div>
                               <div className="text-right shrink-0">
                                 {game.probablePitcher ? (
-                                  <div className="bg-primary/10 rounded-lg px-2 py-1 border border-primary/15">
-                                    <p className="text-[10px] font-bold text-primary truncate max-w-[80px]">
-                                      {game.probablePitcher.name.split(" ").pop()}
+                                  <div className="bg-primary/10 rounded-lg px-2 py-1 border border-primary/15 max-w-[140px]">
+                                    <p className="text-[10px] font-bold text-primary truncate">
+                                      {game.probablePitcher.name}
                                     </p>
-                                    <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand}</p>
+                                    <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
                                   </div>
                                 ) : (
                                   <span className="text-[10px] text-muted-foreground/50 italic">TBA</span>
@@ -532,16 +546,16 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                                   {game.isHome ? "vs" : "@"} {game.opponent}
                                 </p>
                                 <p className="text-[9px] text-muted-foreground font-medium">
-                                  {format(new Date(game.date), "EEE, MMM d")} • {game.time}
+                                  {formatGameDateET(game.date)} • {game.time}
                                 </p>
                               </div>
                               <div className="text-right shrink-0">
                                 {game.probablePitcher ? (
-                                  <div className="bg-primary/10 rounded-lg px-2 py-1 border border-primary/15">
-                                    <p className="text-[10px] font-bold text-primary truncate max-w-[80px]">
-                                      {game.probablePitcher.name.split(" ").pop()}
+                                  <div className="bg-primary/10 rounded-lg px-2 py-1 border border-primary/15 max-w-[140px]">
+                                    <p className="text-[10px] font-bold text-primary truncate">
+                                      {game.probablePitcher.name}
                                     </p>
-                                    <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand}</p>
+                                    <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
                                   </div>
                                 ) : (
                                   <span className="text-[10px] text-muted-foreground/50 italic">TBA</span>
