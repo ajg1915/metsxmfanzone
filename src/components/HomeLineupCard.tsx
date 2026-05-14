@@ -332,17 +332,18 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                     </div>
                     <div className="space-y-1 lg:space-y-2">
                       {lineup.slice(0, 9).map((player) => (
-                        <div key={player.position} className="flex items-center gap-1.5 sm:gap-2 lg:gap-4 py-1 sm:py-1.5 lg:py-3 px-2 sm:px-2.5 lg:px-4 rounded-xl bg-muted/20 hover:bg-muted/40 transition-all group border border-transparent hover:border-primary/10">
-                          <span className="text-[9px] sm:text-[10px] lg:text-base font-black text-primary/70 w-3 sm:w-4 lg:w-6 text-center">
+                        <div key={player.position} className="flex items-center gap-1.5 sm:gap-2 lg:gap-4 py-1 sm:py-1.5 lg:py-2.5 px-2 sm:px-2.5 lg:px-3 rounded-xl bg-muted/20 hover:bg-primary/10 transition-all group border border-border/10 hover:border-primary/30">
+                          <span className="text-[10px] sm:text-xs lg:text-lg font-black text-primary w-3 sm:w-4 lg:w-7 text-center shrink-0" style={{ fontVariantNumeric: "tabular-nums" }}>
                             {player.position}
                           </span>
                           {player.imageUrl && (
-                            <img src={player.imageUrl} alt={player.name} className="hidden lg:block w-12 h-12 rounded-lg object-cover border border-primary/20 shrink-0" />
+                            <img src={player.imageUrl} alt={player.name} className="hidden lg:block w-11 h-11 rounded-full object-cover border-2 border-border/30 group-hover:border-primary/60 transition-colors shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-[11px] sm:text-xs lg:text-base truncate group-hover:text-primary transition-colors">{player.name}</p>
+                            <p className="font-bold text-[11px] sm:text-xs lg:text-sm truncate lg:whitespace-normal lg:truncate-none group-hover:text-foreground transition-colors leading-tight">{player.name}</p>
+                            <p className="hidden lg:block text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider mt-0.5">{player.fieldPosition}</p>
                           </div>
-                          <span className="text-[8px] sm:text-[9px] lg:text-xs text-muted-foreground/70 font-mono font-bold bg-muted/30 px-1 sm:px-1.5 lg:px-2.5 py-0.5 lg:py-1 rounded">
+                          <span className="text-[8px] sm:text-[9px] lg:text-[10px] text-muted-foreground font-mono font-black bg-muted/40 group-hover:bg-primary group-hover:text-primary-foreground transition-all px-1 sm:px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-md border border-border/20 shrink-0">
                             {player.fieldPosition}
                           </span>
                         </div>
