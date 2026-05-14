@@ -19,6 +19,7 @@ const CATEGORIES: { key: string; label: string }[] = [
   { key: "battingAverage", label: "Batting Avg" },
   { key: "runsBattedIn", label: "RBI" },
   { key: "hits", label: "Hits" },
+  { key: "runs", label: "Runs" },
   { key: "earnedRunAverage", label: "ERA" },
 ];
 
