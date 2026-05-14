@@ -27,6 +27,8 @@ project_id = "clwghkbtkofacsjeyrtk"
     verify_jwt = true
   [functions.fetch-live-game]
     verify_jwt = false
+  [functions.generate-game-recap]
+    verify_jwt = false
   [functions.fetch-mets-highlights]
     verify_jwt = false
   [functions.fetch-mets-lineup]

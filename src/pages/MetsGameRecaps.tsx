@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Trophy } from "lucide-react";
+import { ArrowLeft, Calendar, Trophy, Sparkles, Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useToast } from "@/hooks/use-toast";
 
 type Recap = {
   id: string;
@@ -29,6 +31,32 @@ type Recap = {
 
 export default function MetsGameRecaps() {
   const { slug } = useParams();
+  const { isAdmin } = useSubscription();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerate = async () => {
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-game-recap", {
+        body: {},
+      });
+      if (error) throw error;
+      const created = (data?.created || []).filter((c: any) => c.id);
+      toast({
+        title: created.length ? "Recap generated" : "Nothing new",
+        description: created.length
+          ? `Published ${created.length} recap${created.length === 1 ? "" : "s"}.`
+          : data?.message || "No new finished games to recap.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["public-game-recaps"] });
+    } catch (e: any) {
+      toast({ title: "Failed", description: e.message, variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const list = useQuery({
     queryKey: ["public-game-recaps"],
@@ -125,12 +153,20 @@ export default function MetsGameRecaps() {
       />
       <Navigation />
       <main className="flex-1 container mx-auto px-4 pt-20 pb-6">
-        <div className="flex items-center gap-3 mb-6">
-          <img src="/logo-192.png" alt="MetsXMFanZone" className="w-12 h-12 object-contain rounded-md" />
-          <div>
-            <h1 className="text-3xl font-bold">Mets Game Recaps</h1>
-            <p className="text-sm text-muted-foreground">The latest recaps, scores, and analysis after every game.</p>
+        <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
+          <div className="flex items-center gap-3">
+            <img src="/logo-192.png" alt="MetsXMFanZone" className="w-12 h-12 object-contain rounded-md" />
+            <div>
+              <h1 className="text-3xl font-bold">Mets Game Recaps</h1>
+              <p className="text-sm text-muted-foreground">The latest recaps, scores, and analysis after every game.</p>
+            </div>
           </div>
+          {isAdmin && (
+            <Button onClick={handleGenerate} disabled={generating} className="gap-2">
+              {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              Generate Yesterday's Recap
+            </Button>
+          )}
         </div>
 
         {list.isLoading ? (
