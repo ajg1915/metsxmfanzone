@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { TrendingUp } from "lucide-react";
+import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
 interface Leader {
   rank: number;
