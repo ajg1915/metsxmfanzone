@@ -280,6 +280,7 @@ Output ONLY valid JSON with fields: title (catchy headline), summary (1-2 senten
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card>
