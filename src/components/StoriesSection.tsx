@@ -351,7 +351,7 @@ const StoriesSection = () => {
           >
             <div className="flex items-center gap-2">
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">
-                MetsXMFanZone Stories
+                MetsXMFanZone Feed
               </h2>
               <RefreshCw className="h-4 w-4 sm:h-5 sm:w-5 text-primary cursor-pointer hover:text-primary/80 transition-colors" onClick={async () => {
                 // Clear all caches and service workers
