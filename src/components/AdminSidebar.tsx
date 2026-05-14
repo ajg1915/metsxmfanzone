@@ -107,7 +107,7 @@ export function AdminSidebar() {
     { title: "Streaming", icon: Radio, items: streamingItems },
     { title: "Content", icon: FolderOpen, items: contentItems },
     { title: "Podcasts", icon: Mic, items: podcastItems },
-    { title: "Community", icon: MessageSquare, items: communityItems },
+    { title: "Feed", icon: MessageSquare, items: communityItems },
     { title: "Commerce", icon: ShoppingBag, items: commerceItems },
     { title: "Members", icon: Users, items: membersItems },
     { title: "Notifications", icon: Bell, items: notificationsItems },
