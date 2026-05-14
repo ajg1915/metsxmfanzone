@@ -25,14 +25,16 @@
  *
  *  Then add secrets (NOT committed):
  *    wrangler secret put SUPABASE_SERVICE_ROLE_KEY
- *    wrangler secret put OPENAI_API_KEY
+ *    wrangler secret put GEMINI_API_KEY
+ *
+ *  Get a Gemini API key at: https://aistudio.google.com/apikey
  *
  *  You can also POST to the worker URL with { "date": "2026-04-15" } to
  *  backfill a specific day.
  * ──────────────────────────────────────────────────────────────────────────
  */
 
-const MODEL = "gpt-4o-mini"; // cheap + fast; switch to gpt-4o for higher quality
+const MODEL = "gemini-2.5-flash"; // fast + cheap; use "gemini-2.5-pro" for higher quality
 
 const yesterdayET = () => {
   const ny = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
