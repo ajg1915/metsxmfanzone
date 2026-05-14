@@ -758,5 +758,17 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
         </div>
       </div>
     </section>
+    {selectedPlayer && (
+      <PlayerStatsDialog
+        open={!!selectedPlayer}
+        onOpenChange={(o) => !o && setSelectedPlayer(null)}
+        playerId={extractPlayerId(selectedPlayer.imageUrl)}
+        playerName={selectedPlayer.name}
+        fieldPosition={selectedPlayer.fieldPosition}
+        imageUrl={selectedPlayer.imageUrl}
+        battingPosition={selectedPlayer.position}
+      />
+    )}
+    </>
   );
 }
