@@ -38,16 +38,7 @@ export default function PlayerStatsDialog({
       const bioJson = await bioRes.json();
       const statsJson = await statsRes.json();
       const bio = bioJson.people?.[0];
-      let stat = statsJson.stats?.[0]?.splits?.[0]?.stat;
-
-      // Fallback to 2025 if no 2026 stats yet
-      if (!stat) {
-        const fbRes = await fetch(
-          `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&season=2025&group=${group}`
-        );
-        const fbJson = await fbRes.json();
-        stat = fbJson.stats?.[0]?.splits?.[0]?.stat;
-      }
+      const stat = statsJson.stats?.[0]?.splits?.[0]?.stat;
       return { bio, stat, group };
     },
   });
