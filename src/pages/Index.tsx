@@ -272,7 +272,7 @@ const Index = () => {
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
-            <TestimonialsSection />
+            {user ? <MetsStatsSection /> : <TestimonialsSection />}
           </Suspense>
         </LazySection>
 
