@@ -224,46 +224,59 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
   }, [lineupCard, onLineupLoaded, lineupFetched]);
 
   return (
-    <section className="py-4 sm:py-10 lg:py-14 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 80% 50% at 50% 50%, hsl(var(--primary) / 0.06), transparent 70%)",
-      }} />
+    <section className="py-6 sm:py-12 lg:py-16 relative overflow-hidden">
+      {/* Layered ambient background */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 70% 50% at 20% 0%, hsl(var(--primary) / 0.10), transparent 60%), radial-gradient(ellipse 60% 50% at 100% 100%, hsl(var(--secondary) / 0.08), transparent 60%)",
+        }} />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      </div>
 
       <div className="container mx-auto px-2 sm:px-6 lg:px-8 max-w-7xl relative z-10">
-        {/* Modern Header */}
+        {/* Premium Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="flex items-center justify-between mb-3 sm:mb-6"
+          className="flex items-center justify-between mb-4 sm:mb-8 pb-3 sm:pb-5 border-b border-border/40"
         >
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-primary/20 shadow-lg shrink-0">
-              <img src={logoImage} alt="MetsXMFanZone" className="w-full h-full object-cover" />
+          <div className="flex items-center gap-2.5 sm:gap-4">
+            <div className="relative shrink-0">
+              <div className="absolute inset-0 bg-primary/40 blur-xl opacity-60" aria-hidden />
+              <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border border-primary/30 shadow-2xl ring-1 ring-white/5">
+                <img src={logoImage} alt="MetsXMFanZone" className="w-full h-full object-cover" />
+              </div>
             </div>
             <div>
-              <h2 className="text-sm sm:text-lg font-black tracking-tight text-foreground">
-                Mets Game Center
+              <h2 className="text-base sm:text-2xl lg:text-3xl font-black tracking-tight text-foreground leading-none uppercase">
+                Mets <span className="text-primary">Game Center</span>
               </h2>
-              <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-muted-foreground font-semibold">Live Stats & Lineup</p>
+              <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
+                <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping" />
+                  <span className="relative inline-flex rounded-full h-full w-full bg-primary" />
+                </span>
+                <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">Live Stats &middot; Lineup &middot; 2026 Season</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleRefreshLineup}
               disabled={isRefreshing}
-              className="text-primary hover:text-primary/80 hover:bg-primary/10 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs rounded-xl"
+              className="text-foreground/80 hover:text-primary hover:bg-primary/10 h-8 sm:h-9 px-2 sm:px-3 text-[10px] sm:text-xs rounded-xl border border-border/40 backdrop-blur-md bg-card/40"
             >
-              <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1 text-primary ${isRefreshing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
-            <Link to="/video-gallery" className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors text-[10px] sm:text-xs font-semibold bg-primary/5 hover:bg-primary/10 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl">
+            <Link to="/video-gallery" className="flex items-center gap-1.5 text-primary-foreground transition-all text-[10px] sm:text-xs font-bold bg-gradient-to-r from-primary to-primary/80 hover:brightness-110 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl shadow-lg shadow-primary/20 h-8 sm:h-9">
               <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              <span className="hidden sm:inline">Videos</span>
+              <span className="hidden sm:inline">Watch Highlights</span>
+              <span className="sm:hidden">Videos</span>
             </Link>
           </div>
         </motion.div>
