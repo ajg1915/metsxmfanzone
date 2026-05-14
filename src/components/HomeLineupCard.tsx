@@ -52,6 +52,7 @@ interface UpcomingGame {
   isHome: boolean;
   time: string;
   probablePitcher?: {
+    id?: number;
     name: string;
     hand: string;
   };
@@ -149,7 +150,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
             isHome,
             time: timeStr,
             probablePitcher: metsPitcher
-              ? { name: metsPitcher.fullName, hand: metsPitcher.pitchHand?.code === "R" ? "RHP" : metsPitcher.pitchHand?.code === "L" ? "LHP" : "" }
+              ? { id: metsPitcher.id, name: metsPitcher.fullName, hand: metsPitcher.pitchHand?.code === "R" ? "RHP" : metsPitcher.pitchHand?.code === "L" ? "LHP" : "" }
               : undefined,
           });
         }
