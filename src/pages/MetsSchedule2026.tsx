@@ -9,7 +9,19 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
+
+// Format a UTC ISO date string in Eastern Time so all Mets games display in
+// stadium time regardless of the visitor's local timezone.
+const ET_TZ = "America/New_York";
+const formatET = (iso: string, opts: Intl.DateTimeFormatOptions) =>
+  new Intl.DateTimeFormat("en-US", { timeZone: ET_TZ, ...opts }).format(parseISO(iso));
+const monthLabelET = (iso: string) =>
+  formatET(iso, { month: "long", year: "numeric" });
+const dayLabelET = (iso: string) =>
+  formatET(iso, { weekday: "short", month: "short", day: "numeric" });
+const timeLabelET = (iso: string) =>
+  formatET(iso, { hour: "numeric", minute: "2-digit", hour12: true }) + " ET";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
