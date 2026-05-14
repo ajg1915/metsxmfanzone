@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Trophy, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
 interface Leader {
   rank: number;
