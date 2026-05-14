@@ -231,6 +231,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
   }, [lineupCard, onLineupLoaded, lineupFetched]);
 
   return (
+    <>
     <section className="py-6 sm:py-12 lg:py-16 relative overflow-hidden">
       {/* Layered ambient background */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
