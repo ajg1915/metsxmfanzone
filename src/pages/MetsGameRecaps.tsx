@@ -27,32 +27,6 @@ type Recap = {
 
 export default function MetsGameRecaps() {
   const { slug } = useParams();
-  const { isAdmin } = useSubscription();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [generating, setGenerating] = useState(false);
-
-  const handleGenerate = async () => {
-    setGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-game-recap", {
-        body: {},
-      });
-      if (error) throw error;
-      const created = (data?.created || []).filter((c: any) => c.id);
-      toast({
-        title: created.length ? "Recap generated" : "Nothing new",
-        description: created.length
-          ? `Published ${created.length} recap${created.length === 1 ? "" : "s"}.`
-          : data?.message || "No new finished games to recap.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["public-game-recaps"] });
-    } catch (e: any) {
-      toast({ title: "Failed", description: e.message, variant: "destructive" });
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   const list = useQuery({
     queryKey: ["public-game-recaps"],
