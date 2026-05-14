@@ -224,46 +224,59 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
   }, [lineupCard, onLineupLoaded, lineupFetched]);
 
   return (
-    <section className="py-4 sm:py-10 lg:py-14 relative overflow-hidden">
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 80% 50% at 50% 50%, hsl(var(--primary) / 0.06), transparent 70%)",
-      }} />
+    <section className="py-6 sm:py-12 lg:py-16 relative overflow-hidden">
+      {/* Layered ambient background */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute inset-0" style={{
+          background: "radial-gradient(ellipse 70% 50% at 20% 0%, hsl(var(--primary) / 0.10), transparent 60%), radial-gradient(ellipse 60% 50% at 100% 100%, hsl(var(--secondary) / 0.08), transparent 60%)",
+        }} />
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+      </div>
 
       <div className="container mx-auto px-2 sm:px-6 lg:px-8 max-w-7xl relative z-10">
-        {/* Modern Header */}
+        {/* Premium Header */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="flex items-center justify-between mb-3 sm:mb-6"
+          className="flex items-center justify-between mb-4 sm:mb-8 pb-3 sm:pb-5 border-b border-border/40"
         >
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden border border-primary/20 shadow-lg shrink-0">
-              <img src={logoImage} alt="MetsXMFanZone" className="w-full h-full object-cover" />
+          <div className="flex items-center gap-2.5 sm:gap-4">
+            <div className="relative shrink-0">
+              <div className="absolute inset-0 bg-primary/40 blur-xl opacity-60" aria-hidden />
+              <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border border-primary/30 shadow-2xl ring-1 ring-white/5">
+                <img src={logoImage} alt="MetsXMFanZone" className="w-full h-full object-cover" />
+              </div>
             </div>
             <div>
-              <h2 className="text-sm sm:text-lg font-black tracking-tight text-foreground">
-                Mets Game Center
+              <h2 className="text-base sm:text-2xl lg:text-3xl font-black tracking-tight text-foreground leading-none uppercase">
+                Mets <span className="text-primary">Game Center</span>
               </h2>
-              <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-muted-foreground font-semibold">Live Stats & Lineup</p>
+              <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
+                <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping" />
+                  <span className="relative inline-flex rounded-full h-full w-full bg-primary" />
+                </span>
+                <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">Live Stats &middot; Lineup &middot; 2026 Season</p>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleRefreshLineup}
               disabled={isRefreshing}
-              className="text-primary hover:text-primary/80 hover:bg-primary/10 h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs rounded-xl"
+              className="text-foreground/80 hover:text-primary hover:bg-primary/10 h-8 sm:h-9 px-2 sm:px-3 text-[10px] sm:text-xs rounded-xl border border-border/40 backdrop-blur-md bg-card/40"
             >
-              <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1 text-primary ${isRefreshing ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
-            <Link to="/video-gallery" className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors text-[10px] sm:text-xs font-semibold bg-primary/5 hover:bg-primary/10 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl">
+            <Link to="/video-gallery" className="flex items-center gap-1.5 text-primary-foreground transition-all text-[10px] sm:text-xs font-bold bg-gradient-to-r from-primary to-primary/80 hover:brightness-110 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl shadow-lg shadow-primary/20 h-8 sm:h-9">
               <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              <span className="hidden sm:inline">Videos</span>
+              <span className="hidden sm:inline">Watch Highlights</span>
+              <span className="sm:hidden">Videos</span>
             </Link>
           </div>
         </motion.div>
@@ -277,30 +290,32 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-2 rounded-2xl overflow-hidden border border-border/30 backdrop-blur-xl bg-card/60 shadow-xl"
           >
-            {/* Top Bar */}
+            {/* Top Bar — Matchup */}
             <div className="relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/70" />
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIvPjwvc3ZnPg==')] opacity-50" />
-              <div className="relative p-3 sm:p-4 text-primary-foreground">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 shrink-0">
-                      <span className="text-xs sm:text-sm font-black">NY</span>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-primary/70" />
+              <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/15 rounded-full blur-3xl" aria-hidden />
+              <div className="absolute right-1/3 inset-y-0 w-32 bg-white/10 -skew-x-12 translate-x-1/2" aria-hidden />
+              <div className="relative p-4 sm:p-5 text-primary-foreground">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="w-11 h-11 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-xl shrink-0">
+                      <span className="text-sm sm:text-lg font-black tracking-tight">NY</span>
                     </div>
-                    <div>
-                      <p className="font-black text-xs sm:text-sm tracking-tight">
-                        {lineupCard ? `vs ${lineupCard.opponent}` : "Today's Lineup"}
+                    <div className="min-w-0">
+                      <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Today's Matchup</p>
+                      <p className="font-black text-base sm:text-xl tracking-tight uppercase truncate">
+                        {lineupCard ? `vs ${lineupCard.opponent}` : "Lineup Pending"}
                       </p>
                       {lineupCard && (
-                        <p className="text-[10px] sm:text-xs opacity-80 flex items-center gap-1 sm:gap-1.5 mt-0.5">
-                          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                          {format(new Date(lineupCard.game_date), "MMM d")} • {lineupCard.game_time}
+                        <p className="text-[10px] sm:text-xs opacity-90 flex items-center gap-1.5 mt-0.5 font-semibold">
+                          <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                          {format(new Date(lineupCard.game_date), "EEE, MMM d")} • {lineupCard.game_time}
                         </p>
                       )}
                     </div>
                   </div>
-                  <Link to="/mets-roster" className="flex items-center gap-1 text-[10px] sm:text-xs bg-white/10 hover:bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg transition-all border border-white/10">
-                    Roster <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  <Link to="/mets-roster" className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold bg-black/25 hover:bg-black/40 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all border border-white/20 uppercase tracking-wider shrink-0">
+                    Roster <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   </Link>
                 </div>
               </div>
@@ -317,17 +332,18 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                     </div>
                     <div className="space-y-1 lg:space-y-2">
                       {lineup.slice(0, 9).map((player) => (
-                        <div key={player.position} className="flex items-center gap-1.5 sm:gap-2 lg:gap-4 py-1 sm:py-1.5 lg:py-3 px-2 sm:px-2.5 lg:px-4 rounded-xl bg-muted/20 hover:bg-muted/40 transition-all group border border-transparent hover:border-primary/10">
-                          <span className="text-[9px] sm:text-[10px] lg:text-base font-black text-primary/70 w-3 sm:w-4 lg:w-6 text-center">
+                        <div key={player.position} className="flex items-center gap-1.5 sm:gap-2 lg:gap-4 py-1 sm:py-1.5 lg:py-2.5 px-2 sm:px-2.5 lg:px-3 rounded-xl bg-muted/20 hover:bg-primary/10 transition-all group border border-border/10 hover:border-primary/30">
+                          <span className="text-[10px] sm:text-xs lg:text-lg font-black text-primary w-3 sm:w-4 lg:w-7 text-center shrink-0" style={{ fontVariantNumeric: "tabular-nums" }}>
                             {player.position}
                           </span>
                           {player.imageUrl && (
-                            <img src={player.imageUrl} alt={player.name} className="hidden lg:block w-12 h-12 rounded-lg object-cover border border-primary/20 shrink-0" />
+                            <img src={player.imageUrl} alt={player.name} className="hidden lg:block w-11 h-11 rounded-full object-cover border-2 border-border/30 group-hover:border-primary/60 transition-colors shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-[11px] sm:text-xs lg:text-base truncate group-hover:text-primary transition-colors">{player.name}</p>
+                            <p className="font-bold text-[11px] sm:text-xs lg:text-sm truncate lg:whitespace-normal lg:truncate-none group-hover:text-foreground transition-colors leading-tight">{player.name}</p>
+                            <p className="hidden lg:block text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider mt-0.5">{player.fieldPosition}</p>
                           </div>
-                          <span className="text-[8px] sm:text-[9px] lg:text-xs text-muted-foreground/70 font-mono font-bold bg-muted/30 px-1 sm:px-1.5 lg:px-2.5 py-0.5 lg:py-1 rounded">
+                          <span className="text-[8px] sm:text-[9px] lg:text-[10px] text-muted-foreground font-mono font-black bg-muted/40 group-hover:bg-primary group-hover:text-primary-foreground transition-all px-1 sm:px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-md border border-border/20 shrink-0">
                             {player.fieldPosition}
                           </span>
                         </div>
@@ -418,13 +434,14 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                       </div>
                       <div className="grid grid-cols-3 gap-2">
                         {[
-                          { value: metsStanding?.wins || "-", label: "Wins" },
-                          { value: metsStanding?.losses || "-", label: "Losses" },
-                          { value: metsStanding?.position ? `${metsStanding.position}${metsStanding.position === 1 ? "st" : metsStanding.position === 2 ? "nd" : metsStanding.position === 3 ? "rd" : "th"}` : "-", label: "NL East" },
+                          { value: metsStanding?.wins || "-", label: "Wins", accent: "text-primary" },
+                          { value: metsStanding?.losses || "-", label: "Losses", accent: "text-foreground" },
+                          { value: metsStanding?.position ? `${metsStanding.position}${metsStanding.position === 1 ? "st" : metsStanding.position === 2 ? "nd" : metsStanding.position === 3 ? "rd" : "th"}` : "-", label: "NL East", accent: "text-secondary" },
                         ].map((stat) => (
-                          <div key={stat.label} className="rounded-xl bg-muted/20 border border-border/20 p-2.5 lg:p-3 text-center">
-                            <p className="text-lg lg:text-2xl font-black text-primary leading-none">{stat.value}</p>
-                            <p className="text-[9px] lg:text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1">{stat.label}</p>
+                          <div key={stat.label} className="relative rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/30 p-2.5 lg:p-4 text-center overflow-hidden group hover:border-primary/30 transition-all">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-60" />
+                            <p className={`text-xl lg:text-3xl font-black leading-none tracking-tight ${stat.accent}`} style={{ fontVariantNumeric: "tabular-nums" }}>{stat.value}</p>
+                            <p className="text-[9px] lg:text-[10px] text-muted-foreground font-bold uppercase tracking-[0.1em] mt-1.5 whitespace-nowrap">{stat.label}</p>
                           </div>
                         ))}
                       </div>
@@ -624,19 +641,23 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
               <div className="p-3">
                 {standings && standings.length > 0 ? (
                   <div className="space-y-1">
-                    {standings.map((team: any) => (
-                      <div key={team.team_name} className={`flex items-center gap-2 p-2 rounded-xl text-xs transition-all ${
-                        team.team_name === "Mets"
-                          ? "bg-primary/10 border border-primary/20 shadow-sm"
-                          : "bg-muted/10 hover:bg-muted/20 border border-transparent"
-                      }`}>
-                        <span className="font-black w-4 text-center text-muted-foreground/50 text-[10px]">{team.position}</span>
-                        <span className={`flex-1 font-semibold ${team.team_name === "Mets" ? "text-primary" : ""}`}>{team.team_name}</span>
-                        <span className="w-7 text-center font-mono font-bold text-[10px]">{team.wins}</span>
-                        <span className="w-7 text-center font-mono font-bold text-[10px]">{team.losses}</span>
-                        <span className="w-7 text-center font-mono text-[10px] text-muted-foreground">{team.games_back}</span>
-                      </div>
-                    ))}
+                    {standings.map((team: any) => {
+                      const isMets = team.team_name === "Mets";
+                      return (
+                        <div key={team.team_name} className={`relative flex items-center gap-2 p-2 pl-3 rounded-xl text-xs transition-all overflow-hidden ${
+                          isMets
+                            ? "bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-md shadow-primary/10"
+                            : "bg-muted/10 hover:bg-muted/20 border border-transparent"
+                        }`}>
+                          {isMets && <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" aria-hidden />}
+                          <span className={`font-black w-4 text-center text-[10px] ${isMets ? "text-primary" : "text-muted-foreground/50"}`}>{team.position}</span>
+                          <span className={`flex-1 font-bold uppercase tracking-tight ${isMets ? "text-primary" : ""}`}>{team.team_name}</span>
+                          <span className="w-7 text-center font-mono font-black text-[10px]" style={{ fontVariantNumeric: "tabular-nums" }}>{team.wins}</span>
+                          <span className="w-7 text-center font-mono font-bold text-[10px] text-muted-foreground" style={{ fontVariantNumeric: "tabular-nums" }}>{team.losses}</span>
+                          <span className={`w-7 text-center font-mono text-[10px] ${isMets ? "text-primary font-black" : "text-muted-foreground"}`} style={{ fontVariantNumeric: "tabular-nums" }}>{team.games_back}</span>
+                        </div>
+                      );
+                    })}
                     <div className="flex items-center gap-2 pt-1.5 text-[9px] text-muted-foreground/50 border-t border-border/20 mt-1.5 font-semibold uppercase tracking-wider">
                       <span className="w-4" />
                       <span className="flex-1">Team</span>
