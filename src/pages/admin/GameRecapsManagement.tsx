@@ -46,6 +46,25 @@ export default function GameRecapsManagement() {
   const [editing, setEditing] = useState<Recap | null>(null);
   const [form, setForm] = useState({ ...blank });
   const [generating, setGenerating] = useState(false);
+  const [autoGenerating, setAutoGenerating] = useState(false);
+
+  const generateFromMLB = async () => {
+    setAutoGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-game-recap");
+      if (error) throw error;
+      if (data?.skipped) {
+        toast.info(data.reason || "No completed Mets game to recap");
+      } else {
+        toast.success("Recap generated from MLB data");
+        qc.invalidateQueries({ queryKey: ["admin-game-recaps"] });
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Generation failed");
+    } finally {
+      setAutoGenerating(false);
+    }
+  };
 
   const { data: recaps = [], isLoading } = useQuery({
     queryKey: ["admin-game-recaps"],
@@ -173,10 +192,15 @@ Output ONLY valid JSON with fields: title (catchy headline), summary (1-2 senten
           <h1 className="text-2xl font-bold">Game Recaps</h1>
           <p className="text-sm text-muted-foreground">Write & publish Mets game recaps</p>
         </div>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
-          <DialogTrigger asChild>
-            <Button onClick={openNew}><Plus className="w-4 h-4 mr-2" />New Recap</Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={generateFromMLB} disabled={autoGenerating}>
+            {autoGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+            Generate from MLB
+          </Button>
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+            <DialogTrigger asChild>
+              <Button onClick={openNew}><Plus className="w-4 h-4 mr-2" />New Recap</Button>
+            </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editing ? "Edit Recap" : "Create Recap"}</DialogTitle>
@@ -256,6 +280,7 @@ Output ONLY valid JSON with fields: title (catchy headline), summary (1-2 senten
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       <Card>
