@@ -19,7 +19,6 @@ const CATEGORIES: { key: string; label: string }[] = [
   { key: "runsBattedIn", label: "RBI" },
   { key: "hits", label: "Hits" },
   { key: "earnedRunAverage", label: "ERA" },
-  { key: "strikeOuts", label: "Strikeouts (P)" },
 ];
 
 const MetsStatsSection = () => {
