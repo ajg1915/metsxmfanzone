@@ -222,7 +222,7 @@ async function runForDate(env, date) {
   for (const arc of pending) {
     try {
       const ctx = buildContext(arc);
-      const ai = await generateRecapWithOpenAI(env, ctx);
+      const ai = await generateRecapWithGemini(env, ctx);
       const recap = await insertRecap(env, arc, ai);
       out.recaps.push({ game_pk: arc.game_pk, slug: recap.slug, ok: true });
     } catch (e) {
