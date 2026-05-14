@@ -46,6 +46,25 @@ export default function GameRecapsManagement() {
   const [editing, setEditing] = useState<Recap | null>(null);
   const [form, setForm] = useState({ ...blank });
   const [generating, setGenerating] = useState(false);
+  const [autoGenerating, setAutoGenerating] = useState(false);
+
+  const generateFromMLB = async () => {
+    setAutoGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-game-recap");
+      if (error) throw error;
+      if (data?.skipped) {
+        toast.info(data.reason || "No completed Mets game to recap");
+      } else {
+        toast.success("Recap generated from MLB data");
+        qc.invalidateQueries({ queryKey: ["admin-game-recaps"] });
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Generation failed");
+    } finally {
+      setAutoGenerating(false);
+    }
+  };
 
   const { data: recaps = [], isLoading } = useQuery({
     queryKey: ["admin-game-recaps"],
