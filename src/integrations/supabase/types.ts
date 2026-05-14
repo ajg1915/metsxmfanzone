@@ -936,6 +936,78 @@ export type Database = {
         }
         Relationships: []
       }
+      gamecast_archives: {
+        Row: {
+          boxscore: Json | null
+          created_at: string
+          decisions: Json | null
+          game_date: string
+          game_pk: number
+          home_away: string
+          id: string
+          linescore: Json | null
+          losing_pitcher: string | null
+          mets_score: number | null
+          opponent: string
+          opponent_score: number | null
+          plays: Json
+          recap_generated: boolean
+          recap_id: string | null
+          result: string | null
+          save_pitcher: string | null
+          status: string | null
+          updated_at: string
+          venue: string | null
+          winning_pitcher: string | null
+        }
+        Insert: {
+          boxscore?: Json | null
+          created_at?: string
+          decisions?: Json | null
+          game_date: string
+          game_pk: number
+          home_away: string
+          id?: string
+          linescore?: Json | null
+          losing_pitcher?: string | null
+          mets_score?: number | null
+          opponent: string
+          opponent_score?: number | null
+          plays?: Json
+          recap_generated?: boolean
+          recap_id?: string | null
+          result?: string | null
+          save_pitcher?: string | null
+          status?: string | null
+          updated_at?: string
+          venue?: string | null
+          winning_pitcher?: string | null
+        }
+        Update: {
+          boxscore?: Json | null
+          created_at?: string
+          decisions?: Json | null
+          game_date?: string
+          game_pk?: number
+          home_away?: string
+          id?: string
+          linescore?: Json | null
+          losing_pitcher?: string | null
+          mets_score?: number | null
+          opponent?: string
+          opponent_score?: number | null
+          plays?: Json
+          recap_generated?: boolean
+          recap_id?: string | null
+          result?: string | null
+          save_pitcher?: string | null
+          status?: string | null
+          updated_at?: string
+          venue?: string | null
+          winning_pitcher?: string | null
+        }
+        Relationships: []
+      }
       gameday_announcements: {
         Row: {
           created_at: string
