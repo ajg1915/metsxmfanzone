@@ -15,6 +15,20 @@ const getSpringFallback = (opponent: string): string => {
   return "";
 };
 
+// Format a YYYY-MM-DD game date safely in Eastern Time (avoids UTC off-by-one).
+const formatGameDateET = (ymd: string): string => {
+  const [y, m, d] = ymd.split("-").map(Number);
+  if (!y || !m || !d) return ymd;
+  // noon UTC keeps the same calendar day in ET regardless of DST
+  const dt = new Date(Date.UTC(y, m - 1, d, 12));
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(dt);
+};
+
 interface LineupPlayer {
   position: number;
   name: string;
