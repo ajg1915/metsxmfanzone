@@ -101,7 +101,7 @@ export default function MetsSchedule2026() {
 
   const groupGamesByMonth = (gamesList: Game[]): GroupedGames => {
     return gamesList.reduce((acc, game) => {
-      const month = format(parseISO(game.date), 'MMMM yyyy');
+      const month = monthLabelET(game.date);
       if (!acc[month]) acc[month] = [];
       acc[month].push(game);
       return acc;
@@ -273,7 +273,7 @@ export default function MetsSchedule2026() {
                                       {game.isHome ? 'vs' : '@'} {game.opponent}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      {format(parseISO(game.date), 'EEE, MMM d')} • {format(parseISO(game.date), 'h:mm a')}
+                                      {dayLabelET(game.date)} • {timeLabelET(game.date)}
                                     </p>
                                   </div>
                                 </div>
