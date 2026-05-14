@@ -67,6 +67,7 @@ interface UpcomingGame {
 export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineupCardProps) {
   const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<LineupPlayer | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
