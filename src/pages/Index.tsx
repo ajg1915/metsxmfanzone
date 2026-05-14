@@ -251,6 +251,17 @@ const Index = () => {
           </>
         )}
 
+        {user && (
+          <>
+            <div className="section-divider my-1" />
+            <LazySection fallback={<SectionSkeleton />}>
+              <Suspense fallback={<SectionSkeleton />}>
+                <MetsStatsSection />
+              </Suspense>
+            </LazySection>
+          </>
+        )}
+
         <div className="section-divider my-1" />
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
@@ -270,11 +281,13 @@ const Index = () => {
 
         <div className="section-divider my-1" />
 
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            {user ? <MetsStatsSection /> : <TestimonialsSection />}
-          </Suspense>
-        </LazySection>
+        {!user && (
+          <LazySection fallback={<SectionSkeleton />}>
+            <Suspense fallback={<SectionSkeleton />}>
+              <TestimonialsSection />
+            </Suspense>
+          </LazySection>
+        )}
 
         <div className="section-divider my-1" />
 
