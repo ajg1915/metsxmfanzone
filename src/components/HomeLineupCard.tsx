@@ -450,11 +450,22 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                               </div>
                               <div className="text-right shrink-0">
                                 {game.probablePitcher ? (
-                                  <div className="bg-primary/10 rounded-lg px-2 py-1 border border-primary/15 max-w-[140px]">
-                                    <p className="text-[10px] font-bold text-primary truncate">
-                                      {game.probablePitcher.name}
-                                    </p>
-                                    <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
+                                  <div className="flex items-center gap-1.5 bg-primary/10 rounded-lg px-1.5 py-1 border border-primary/15 max-w-[170px]">
+                                    {game.probablePitcher.id && (
+                                      <img
+                                        src={`https://midfield.mlbstatic.com/v1/people/${game.probablePitcher.id}/spots/60`}
+                                        alt={game.probablePitcher.name}
+                                        loading="lazy"
+                                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                                        className="w-7 h-7 rounded-full object-cover border border-primary/30 bg-muted shrink-0"
+                                      />
+                                    )}
+                                    <div className="min-w-0 text-left">
+                                      <p className="text-[10px] font-bold text-primary truncate">
+                                        {game.probablePitcher.name}
+                                      </p>
+                                      <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
+                                    </div>
                                   </div>
                                 ) : (
                                   <span className="text-[10px] text-muted-foreground/50 italic">TBA</span>
@@ -552,11 +563,22 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                               </div>
                               <div className="text-right shrink-0">
                                 {game.probablePitcher ? (
-                                  <div className="bg-primary/10 rounded-lg px-2 py-1 border border-primary/15 max-w-[140px]">
-                                    <p className="text-[10px] font-bold text-primary truncate">
-                                      {game.probablePitcher.name}
-                                    </p>
-                                    <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
+                                  <div className="flex items-center gap-1.5 bg-primary/10 rounded-lg px-1.5 py-1 border border-primary/15 max-w-[170px]">
+                                    {game.probablePitcher.id && (
+                                      <img
+                                        src={`https://midfield.mlbstatic.com/v1/people/${game.probablePitcher.id}/spots/60`}
+                                        alt={game.probablePitcher.name}
+                                        loading="lazy"
+                                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                                        className="w-7 h-7 rounded-full object-cover border border-primary/30 bg-muted shrink-0"
+                                      />
+                                    )}
+                                    <div className="min-w-0 text-left">
+                                      <p className="text-[10px] font-bold text-primary truncate">
+                                        {game.probablePitcher.name}
+                                      </p>
+                                      <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
+                                    </div>
                                   </div>
                                 ) : (
                                   <span className="text-[10px] text-muted-foreground/50 italic">TBA</span>
