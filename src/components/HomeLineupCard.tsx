@@ -290,30 +290,32 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-2 rounded-2xl overflow-hidden border border-border/30 backdrop-blur-xl bg-card/60 shadow-xl"
           >
-            {/* Top Bar */}
+            {/* Top Bar — Matchup */}
             <div className="relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/70" />
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjA1KSIvPjwvc3ZnPg==')] opacity-50" />
-              <div className="relative p-3 sm:p-4 text-primary-foreground">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/20 shrink-0">
-                      <span className="text-xs sm:text-sm font-black">NY</span>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-primary/70" />
+              <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/15 rounded-full blur-3xl" aria-hidden />
+              <div className="absolute right-1/3 inset-y-0 w-32 bg-white/10 -skew-x-12 translate-x-1/2" aria-hidden />
+              <div className="relative p-4 sm:p-5 text-primary-foreground">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="w-11 h-11 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-xl shrink-0">
+                      <span className="text-sm sm:text-lg font-black tracking-tight">NY</span>
                     </div>
-                    <div>
-                      <p className="font-black text-xs sm:text-sm tracking-tight">
-                        {lineupCard ? `vs ${lineupCard.opponent}` : "Today's Lineup"}
+                    <div className="min-w-0">
+                      <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Today's Matchup</p>
+                      <p className="font-black text-base sm:text-xl tracking-tight uppercase truncate">
+                        {lineupCard ? `vs ${lineupCard.opponent}` : "Lineup Pending"}
                       </p>
                       {lineupCard && (
-                        <p className="text-[10px] sm:text-xs opacity-80 flex items-center gap-1 sm:gap-1.5 mt-0.5">
-                          <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                          {format(new Date(lineupCard.game_date), "MMM d")} • {lineupCard.game_time}
+                        <p className="text-[10px] sm:text-xs opacity-90 flex items-center gap-1.5 mt-0.5 font-semibold">
+                          <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                          {format(new Date(lineupCard.game_date), "EEE, MMM d")} • {lineupCard.game_time}
                         </p>
                       )}
                     </div>
                   </div>
-                  <Link to="/mets-roster" className="flex items-center gap-1 text-[10px] sm:text-xs bg-white/10 hover:bg-white/20 backdrop-blur-sm px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg transition-all border border-white/10">
-                    Roster <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  <Link to="/mets-roster" className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold bg-black/25 hover:bg-black/40 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all border border-white/20 uppercase tracking-wider shrink-0">
+                    Roster <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   </Link>
                 </div>
               </div>
