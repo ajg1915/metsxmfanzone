@@ -25,14 +25,16 @@
  *
  *  Then add secrets (NOT committed):
  *    wrangler secret put SUPABASE_SERVICE_ROLE_KEY
- *    wrangler secret put OPENAI_API_KEY
+ *    wrangler secret put GEMINI_API_KEY
+ *
+ *  Get a Gemini API key at: https://aistudio.google.com/apikey
  *
  *  You can also POST to the worker URL with { "date": "2026-04-15" } to
  *  backfill a specific day.
  * ──────────────────────────────────────────────────────────────────────────
  */
 
-const MODEL = "gpt-4o-mini"; // cheap + fast; switch to gpt-4o for higher quality
+const MODEL = "gemini-2.5-flash"; // fast + cheap; use "gemini-2.5-pro" for higher quality
 
 const yesterdayET = () => {
   const ny = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
@@ -122,37 +124,38 @@ function buildContext(arc) {
   };
 }
 
-async function generateRecapWithOpenAI(env, context) {
+async function generateRecapWithGemini(env, context) {
   const prompt = `You are a Mets beat writer for MetsXMFanZone. Write a sharp, fan-focused recap of this game.
 
 GAME CONTEXT (JSON):
 ${JSON.stringify(context, null, 2)}
 
-Return STRICT JSON (no markdown fences):
+Return STRICT JSON matching this schema:
 {
   "title": "Catchy headline under 80 chars including final score",
   "summary": "1-2 sentence TL;DR (max 200 chars)",
   "body": "<p>...</p> ...HTML body 350-500 words. Use <p>, <strong>, <h3> only. Cover key moments, standout players, pitching, and what's next."
 }`;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${env.GEMINI_API_KEY}`;
+  const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${env.OPENAI_API_KEY}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: MODEL,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: "You write concise, accurate MLB recaps. Always return valid JSON." },
-        { role: "user", content: prompt },
-      ],
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      systemInstruction: {
+        parts: [{ text: "You write concise, accurate MLB recaps. Always return valid JSON only, no markdown fences." }],
+      },
+      generationConfig: {
+        responseMimeType: "application/json",
+        temperature: 0.7,
+      },
     }),
   });
-  if (!res.ok) throw new Error(`OpenAI ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Gemini ${res.status}: ${await res.text()}`);
   const ai = await res.json();
-  return JSON.parse(ai.choices[0].message.content);
+  const text = ai?.candidates?.[0]?.content?.parts?.[0]?.text ?? "{}";
+  return JSON.parse(text.replace(/^```json\s*|\s*```$/g, "").trim());
 }
 
 async function insertRecap(env, arc, ai) {
@@ -219,7 +222,7 @@ async function runForDate(env, date) {
   for (const arc of pending) {
     try {
       const ctx = buildContext(arc);
-      const ai = await generateRecapWithOpenAI(env, ctx);
+      const ai = await generateRecapWithGemini(env, ctx);
       const recap = await insertRecap(env, arc, ai);
       out.recaps.push({ game_pk: arc.game_pk, slug: recap.slug, ok: true });
     } catch (e) {
