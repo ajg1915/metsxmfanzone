@@ -434,13 +434,14 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                       </div>
                       <div className="grid grid-cols-3 gap-2">
                         {[
-                          { value: metsStanding?.wins || "-", label: "Wins" },
-                          { value: metsStanding?.losses || "-", label: "Losses" },
-                          { value: metsStanding?.position ? `${metsStanding.position}${metsStanding.position === 1 ? "st" : metsStanding.position === 2 ? "nd" : metsStanding.position === 3 ? "rd" : "th"}` : "-", label: "NL East" },
+                          { value: metsStanding?.wins || "-", label: "Wins", accent: "text-primary" },
+                          { value: metsStanding?.losses || "-", label: "Losses", accent: "text-foreground" },
+                          { value: metsStanding?.position ? `${metsStanding.position}${metsStanding.position === 1 ? "st" : metsStanding.position === 2 ? "nd" : metsStanding.position === 3 ? "rd" : "th"}` : "-", label: "NL East", accent: "text-secondary" },
                         ].map((stat) => (
-                          <div key={stat.label} className="rounded-xl bg-muted/20 border border-border/20 p-2.5 lg:p-3 text-center">
-                            <p className="text-lg lg:text-2xl font-black text-primary leading-none">{stat.value}</p>
-                            <p className="text-[9px] lg:text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1">{stat.label}</p>
+                          <div key={stat.label} className="relative rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/30 p-2.5 lg:p-4 text-center overflow-hidden group hover:border-primary/30 transition-all">
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-60" />
+                            <p className={`text-xl lg:text-3xl font-black leading-none tracking-tight ${stat.accent}`} style={{ fontVariantNumeric: "tabular-nums" }}>{stat.value}</p>
+                            <p className="text-[9px] lg:text-[10px] text-muted-foreground font-bold uppercase tracking-[0.15em] mt-1.5">{stat.label}</p>
                           </div>
                         ))}
                       </div>
