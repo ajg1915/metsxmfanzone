@@ -10,6 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import logoImage from "@/assets/metsxmfanzone-logo.png";
 import { getTodayET } from "@/utils/dateUtils";
+import PlayerStatsDialog from "@/components/PlayerStatsDialog";
+
+const extractPlayerId = (imageUrl?: string): number | undefined => {
+  const match = imageUrl?.match(/\/people\/(\d+)\//);
+  return match ? parseInt(match[1]) : undefined;
+};
 
 const getSpringFallback = (opponent: string): string => {
   return "";
