@@ -48,7 +48,12 @@
   
   <!-- Info -->
   <url><loc>https://metsxmfanzone.com/whats-new</loc><changefreq>weekly</changefreq><priority>0.65</priority></url>
-  <url><loc>https://metsxmfanzone.com/social-media-hub</loc><changefreq>weekly</changefreq><priority>0.65</priority></url>
+  <url><loc>https://metsxmfanzone.com/social</loc><changefreq>weekly</changefreq><priority>0.65</priority></url>
+  <url><loc>https://metsxmfanzone.com/auth</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://metsxmfanzone.com/writer-auth</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://metsxmfanzone.com/paypal-success</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://metsxmfanzone.com/payment-success</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://metsxmfanzone.com/payment-error</loc><changefreq>monthly</changefreq><priority>0.3</priority></url>
   <url><loc>https://metsxmfanzone.com/help-center</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://metsxmfanzone.com/contact</loc><changefreq>monthly</changefreq><priority>0.65</priority></url>
   <url><loc>https://metsxmfanzone.com/feedback</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
