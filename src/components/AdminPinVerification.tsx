@@ -70,18 +70,25 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
   const handleBiometricAuth = async () => {
     setBiometricLoading(true);
     try {
+      // Resolve the current user's email (edge functions key off email, not userId)
+      const { data: { session } } = await supabase.auth.getSession();
+      const email = session?.user?.email;
+      if (!email) throw new Error("You must be signed in to use biometrics.");
+
       // Get login options from edge function
-      const { data: options, error: optError } = await supabase.functions.invoke('webauthn-login-options', {
-        body: { userId }
+      const { data: optionsData, error: optError } = await supabase.functions.invoke('webauthn-login-options', {
+        body: { email }
       });
-      if (optError || options?.error) throw new Error(options?.error || "Failed to get options");
+      if (optError || optionsData?.error) throw new Error(optionsData?.error || "Failed to get options");
+
+      const options = optionsData?.options ?? optionsData;
 
       // Prompt biometric
       const authResult = await startAuthentication({ optionsJSON: options });
 
       // Verify with edge function
       const { data: verifyData, error: verifyError } = await supabase.functions.invoke('webauthn-login-verify', {
-        body: { userId, credential: authResult }
+        body: { email, credential: authResult }
       });
       if (verifyError || verifyData?.error) throw new Error(verifyData?.error || "Verification failed");
 
