@@ -6,7 +6,7 @@ const Sitemap = () => {
 
   useEffect(() => {
     const generateSitemap = async () => {
-      const baseUrl = 'https://www.metsxmfanzone.com';
+      const baseUrl = 'https://metsxmfanzone.com';
       
       // Fetch all published blog posts
       const { data: posts } = await supabase

@@ -19,7 +19,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('VITE_SUPABASE_PUBLISHABLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const baseUrl = 'https://www.metsxmfanzone.com';
+    const baseUrl = 'https://metsxmfanzone.com';
     const today = new Date().toISOString().split('T')[0];
 
     // Fetch published blog posts
@@ -66,7 +66,6 @@ Deno.serve(async (req) => {
       { url: '/shop', changefreq: 'weekly', priority: '0.75' },
       { url: '/merch', changefreq: 'weekly', priority: '0.7' },
       { url: '/whats-new', changefreq: 'weekly', priority: '0.65' },
-      { url: '/social-media-hub', changefreq: 'weekly', priority: '0.65' },
       { url: '/help-center', changefreq: 'monthly', priority: '0.6' },
       { url: '/contact', changefreq: 'monthly', priority: '0.65' },
       { url: '/feedback', changefreq: 'monthly', priority: '0.6' },
@@ -75,6 +74,7 @@ Deno.serve(async (req) => {
       { url: '/podcaster-application', changefreq: 'monthly', priority: '0.5' },
       // Auth & payment pages
       { url: '/auth', changefreq: 'monthly', priority: '0.4' },
+      { url: '/writer-auth', changefreq: 'monthly', priority: '0.3' },
       { url: '/paypal-success', changefreq: 'monthly', priority: '0.4' },
       { url: '/payment-success', changefreq: 'monthly', priority: '0.4' },
       { url: '/payment-error', changefreq: 'monthly', priority: '0.4' },
