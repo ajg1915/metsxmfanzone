@@ -30,7 +30,6 @@ const staticPages = [
   { url: "/pix11-network", changefreq: "daily", priority: "0.75" },
   { url: "/msg-network", changefreq: "daily", priority: "0.75" },
   { url: "/nl-scores", changefreq: "daily", priority: "0.7" },
-  { url: "/social-media-hub", changefreq: "weekly", priority: "0.65" },
   { url: "/help-center", changefreq: "monthly", priority: "0.6" },
   { url: "/contact", changefreq: "monthly", priority: "0.65" },
   { url: "/feedback", changefreq: "monthly", priority: "0.6" },
@@ -42,6 +41,7 @@ const staticPages = [
   { url: "/terms", changefreq: "yearly", priority: "0.3" },
   // Auth & payment pages
   { url: "/auth", changefreq: "monthly", priority: "0.4" },
+  { url: "/writer-auth", changefreq: "monthly", priority: "0.3" },
   { url: "/paypal-success", changefreq: "monthly", priority: "0.4" },
   { url: "/payment-success", changefreq: "monthly", priority: "0.4" },
   { url: "/payment-error", changefreq: "monthly", priority: "0.4" },
