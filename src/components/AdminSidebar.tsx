@@ -84,6 +84,7 @@ const emailItems = [
 
 const settingsItems = [
   { title: "Admin Settings", url: "/admin/settings", icon: Settings },
+  { title: "Welcome Screen", url: "/admin/welcome-screen", icon: Monitor },
   { title: "Backgrounds", url: "/admin/backgrounds", icon: Wallpaper },
   { title: "Social Media", url: "/admin/social-media", icon: Share2 },
   { title: "Tutorials", url: "/admin/tutorials", icon: BookOpen },
