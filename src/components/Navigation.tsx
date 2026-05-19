@@ -486,7 +486,7 @@ const Navigation = () => {
                     className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
                   >
                     <Users className="w-3.5 h-3.5 text-primary" />
-                    <span className="font-medium">Feed</span>
+                    <span className="font-medium">Community</span>
                   </button>
 
                   {/* Radio moved into Podcast dropdown above */}
