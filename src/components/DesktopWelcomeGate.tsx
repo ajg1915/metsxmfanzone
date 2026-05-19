@@ -67,11 +67,12 @@ export const DesktopWelcomeGate = () => {
   useEffect(() => {
     if (location.pathname !== "/") return;
     if (typeof window === "undefined") return;
+    if (!isAdmin) return; // admin-only preview/edit screen
     if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
     if (window.innerWidth < 1024) return;
     if (window.location.search.includes("tv=true")) return;
     setShow(true);
-  }, [location.pathname]);
+  }, [location.pathname, isAdmin]);
 
   const dismiss = () => {
     if (editing) return;
