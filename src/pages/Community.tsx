@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import SocialShareButtons from "@/components/SocialShareButtons";
 import StoriesSection from "@/components/StoriesSection";
 import PostComments from "@/components/community/PostComments";
+import MemberSearch from "@/components/community/MemberSearch";
 import GifPicker from "@/components/community/GifPicker";
 import BusinessAdsSection from "@/components/BusinessAdsSection";
 import Events from "./Events";
@@ -507,6 +508,9 @@ const Community = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-6 sm:mb-8">
             Community Feed
           </h1>
+
+          {user && <MemberSearch />}
+
 
           <Card className="mb-6">
             <CardHeader>
