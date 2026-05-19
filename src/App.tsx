@@ -294,6 +294,7 @@ const AppContent = () => {
         <SocialMediaBar />
         <ForceNotificationPrompt />
         <SweepstakesWheel />
+        <DesktopWelcomeGate />
         
         <Suspense fallback={<PageLoader />}>
           <Routes>
