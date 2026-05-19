@@ -3927,6 +3927,15 @@ export type Database = {
           read_ct: number
         }[]
       }
+      search_members: {
+        Args: { q: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+          is_admin: boolean
+        }[]
+      }
       trigger_daily_predictions: { Args: never; Returns: undefined }
     }
     Enums: {
