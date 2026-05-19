@@ -2,7 +2,7 @@ import {
   Home, FileText, Video, Radio, Bell, Mic, TrendingUp, 
   MessageSquare, ChevronDown, Users, Mail, Palette,
   Megaphone, BookOpen, Trophy, UserCog, Send, Wallpaper, ShoppingBag, 
-  Activity, PenLine, HeartPulse, Settings, Layers, Sparkles, 
+  Activity, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor, 
   ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -84,6 +84,7 @@ const emailItems = [
 
 const settingsItems = [
   { title: "Admin Settings", url: "/admin/settings", icon: Settings },
+  { title: "Welcome Screen", url: "/admin/welcome-screen", icon: Monitor },
   { title: "Backgrounds", url: "/admin/backgrounds", icon: Wallpaper },
   { title: "Social Media", url: "/admin/social-media", icon: Share2 },
   { title: "Tutorials", url: "/admin/tutorials", icon: BookOpen },

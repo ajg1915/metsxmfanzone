@@ -44,6 +44,7 @@ const AdminDashboard = lazyWithRetry(() => import("./pages/admin/Dashboard"), "p
 const PostsManagement = lazyWithRetry(() => import("./pages/admin/PostsManagement"), "page-admin-posts-management");
 const UserRoles = lazyWithRetry(() => import("./pages/admin/UserRoles"), "page-admin-user-roles");
 const AdminSettings = lazyWithRetry(() => import("./pages/admin/AdminSettings"), "page-admin-settings");
+const WelcomeScreenManagement = lazyWithRetry(() => import("./pages/admin/WelcomeScreenManagement"), "page-admin-welcome-screen");
 const BlogManagement = lazyWithRetry(() => import("./pages/admin/BlogManagement"), "page-admin-blog-management");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
 const PodcastManagement = lazyWithRetry(() => import("./pages/admin/PodcastManagement"), "page-admin-podcast-management");
@@ -389,6 +390,7 @@ const AppContent = () => {
               <Route path="predictions" element={<PredictionsManagement />} />
               <Route path="polls" element={<PollManagement />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="welcome-screen" element={<WelcomeScreenManagement />} />
               <Route path="social-media" element={<SocialMediaSettings />} />
               <Route path="tutorials" element={<TutorialManagement />} />
               <Route path="media-library" element={<MediaLibrary />} />
