@@ -19,6 +19,7 @@ export default function WelcomeScreenManagement() {
   const [cfg, setCfg] = useState<GateConfig>(GATE_DEFAULTS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [forcePreview, setForcePreview] = useState(true);
 
   useEffect(() => {
     (async () => {
