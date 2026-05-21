@@ -59,6 +59,12 @@ export const DesktopWelcomeGate = () => {
     if (typeof window === "undefined") return;
     if (!cfg.enabled) return;
     if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
+    const host = window.location.hostname;
+    const isLovablePreview =
+      host.includes("id-preview--") ||
+      host.endsWith(".lovableproject.com") ||
+      window.location.search.includes("__lovable_token=");
+    if (isLovablePreview) return;
     if (window.innerWidth < 1024) return;
     if (window.location.search.includes("tv=true")) return;
     setShow(true);
