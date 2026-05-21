@@ -7,17 +7,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Monitor, Save, RotateCcw, Eye } from "lucide-react";
+import { Monitor, Save, RotateCcw, Eye, Smartphone, Home, LogIn, X } from "lucide-react";
 import {
   GATE_DEFAULTS,
   WELCOME_GATE_SETTING_KEY,
   type GateConfig,
 } from "@/components/DesktopWelcomeGate";
+import logo from "@/assets/metsxmfanzone-logo.png";
 
 export default function WelcomeScreenManagement() {
   const [cfg, setCfg] = useState<GateConfig>(GATE_DEFAULTS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [forcePreview, setForcePreview] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -160,6 +162,82 @@ export default function WelcomeScreenManagement() {
               Reset to defaults
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card/90 backdrop-blur border-border">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Eye className="w-4 h-4 text-primary" />
+              Live Preview
+            </span>
+            <label className="flex items-center gap-2 text-xs font-normal text-muted-foreground cursor-pointer">
+              <Switch checked={forcePreview} onCheckedChange={setForcePreview} />
+              Always show
+            </label>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {forcePreview ? (
+            <div className="relative w-full rounded-xl border border-border bg-background/60 backdrop-blur p-4 overflow-hidden">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-3">
+                Desktop view preview (updates as you type)
+              </div>
+              <div className="flex items-center justify-center bg-background/80 rounded-lg p-6 min-h-[480px]">
+                <div className="relative w-full max-w-lg rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/20 p-8">
+                  <button
+                    className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Close"
+                    type="button"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                  <div className="flex justify-center mb-4">
+                    <img
+                      src={logo}
+                      alt="MetsXMFanZone"
+                      className="h-16 w-auto drop-shadow-[0_0_24px_hsl(var(--primary)/0.5)]"
+                    />
+                  </div>
+                  <div className="flex items-center justify-center gap-3 mb-6">
+                    <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20">
+                      <Smartphone className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="text-xl text-muted-foreground">+</div>
+                    <div className="p-2.5 rounded-xl bg-muted/40 border border-border">
+                      <Monitor className="w-5 h-5 text-muted-foreground" />
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-center text-foreground mb-2">
+                    {cfg.title}
+                  </h2>
+                  <p className="text-center text-muted-foreground mb-6 text-sm">
+                    {cfg.subtitle}
+                  </p>
+                  {cfg.note && (
+                    <div className="rounded-lg bg-muted/30 border border-border p-3 mb-6 text-center">
+                      <p className="text-xs text-muted-foreground">{cfg.note}</p>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Button variant="outline" className="w-full" type="button">
+                      <Home className="w-4 h-4 mr-2" />
+                      {cfg.primaryLabel}
+                    </Button>
+                    <Button className="w-full bg-primary hover:bg-primary/90" type="button">
+                      <LogIn className="w-4 h-4 mr-2" />
+                      {cfg.secondaryLabel}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Toggle "Always show" to keep the live preview visible while editing.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
