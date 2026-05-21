@@ -7,12 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Monitor, Save, RotateCcw, Eye } from "lucide-react";
+import { Monitor, Save, RotateCcw, Eye, Smartphone, Home, LogIn, X } from "lucide-react";
 import {
   GATE_DEFAULTS,
   WELCOME_GATE_SETTING_KEY,
   type GateConfig,
 } from "@/components/DesktopWelcomeGate";
+import logo from "@/assets/metsxmfanzone-logo.png";
 
 export default function WelcomeScreenManagement() {
   const [cfg, setCfg] = useState<GateConfig>(GATE_DEFAULTS);
