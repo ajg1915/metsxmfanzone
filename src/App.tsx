@@ -94,8 +94,6 @@ const PayPalSuccess = lazyWithRetry(() => import("./pages/PayPalSuccess"), "page
 
 const SpringTrainingLive = lazyWithRetry(() => import("./pages/SpringTrainingLive"), "page-spring-training-live");
 const ReplayGames = lazyWithRetry(() => import("./pages/ReplayGames"), "page-replay-games");
-const Merch = lazyWithRetry(() => import("./pages/Merch"), "page-merch");
-const Product = lazyWithRetry(() => import("./pages/Product"), "page-product");
 const MetsSchedule2026 = lazyWithRetry(() => import("./pages/MetsSchedule2026"), "page-mets-schedule-2026");
 const TVBroadcastSchedule = lazyWithRetry(() => import("./pages/TVBroadcastSchedule"), "page-tv-broadcast-schedule");
 const TVDashboard = lazyWithRetry(() => import("./pages/TVDashboard"), "page-tv-dashboard");
