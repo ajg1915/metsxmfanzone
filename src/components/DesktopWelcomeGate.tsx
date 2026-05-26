@@ -58,16 +58,18 @@ export const DesktopWelcomeGate = () => {
     if (location.pathname !== "/") return;
     if (typeof window === "undefined") return;
     if (!cfg.enabled) return;
-    if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
+    const forcePreview = window.location.search.includes("preview_gate=1");
+    if (!forcePreview && sessionStorage.getItem(STORAGE_KEY) === "1") return;
     const host = window.location.hostname;
     const isLovablePreview =
       host.includes("id-preview--") ||
       host.endsWith(".lovableproject.com") ||
       window.location.search.includes("__lovable_token=");
-    if (isLovablePreview) return;
-    if (window.innerWidth < 1024) return;
+    if (!forcePreview && isLovablePreview) return;
+    if (!forcePreview && window.innerWidth < 1024) return;
     if (window.location.search.includes("tv=true")) return;
     setShow(true);
+
   }, [location.pathname, cfg.enabled]);
 
   const dismiss = () => {
