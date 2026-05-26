@@ -154,10 +154,7 @@ const SocialMediaSettings = lazyWithRetry(() => import("./pages/admin/SocialMedi
 const MediaLibrary = lazyWithRetry(() => import("./pages/admin/MediaLibrary"), "page-admin-media-library");
 const ToastPromptManagement = lazyWithRetry(() => import("./pages/admin/ToastPromptManagement"), "page-admin-toast-prompt-management");
 const PopupNotificationsManagement = lazyWithRetry(() => import("./pages/admin/PopupNotificationsManagement"), "page-admin-popup-notifications-management");
-const ShopManagement = lazyWithRetry(() => import("./pages/admin/ShopManagement"), "page-admin-shop-management");
 const SweepstakesManagement = lazyWithRetry(() => import("./pages/admin/SweepstakesManagement"), "page-admin-sweepstakes-management");
-const Shop = lazyWithRetry(() => import("./pages/Shop"), "page-shop");
-const OrderSuccess = lazyWithRetry(() => import("./pages/OrderSuccess"), "page-order-success");
 const WhatsNew = lazyWithRetry(() => import("./pages/WhatsNew"), "page-whats-new");
 const Install = lazyWithRetry(() => import("./pages/Install"), "page-install");
 const MetsVsAstros = lazyWithRetry(() => import("./pages/matchups/MetsVsAstros"), "page-matchup-astros");
