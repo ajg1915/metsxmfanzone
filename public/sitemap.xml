@@ -43,8 +43,6 @@
   
   <!-- Commerce -->
   <url><loc>https://metsxmfanzone.com/pricing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://metsxmfanzone.com/shop</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://metsxmfanzone.com/merch</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   
   <!-- Info -->
   <url><loc>https://metsxmfanzone.com/whats-new</loc><changefreq>weekly</changefreq><priority>0.65</priority></url>

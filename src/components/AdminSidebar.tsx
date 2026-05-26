@@ -60,7 +60,6 @@ const communityItems = [
 ];
 
 const commerceItems = [
-  { title: "Shop", url: "/admin/shop", icon: ShoppingBag },
   { title: "Business Ads", url: "/admin/business-ads", icon: Megaphone },
 ];
 

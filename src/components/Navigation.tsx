@@ -250,12 +250,6 @@ const Navigation = () => {
               </div>
             </div>
 
-            <button
-              onClick={() => navigate("/shop")}
-              className="text-foreground hover:text-primary transition-colors"
-            >
-              Shop
-            </button>
 
             {!user && (
               <NavLink 
@@ -491,13 +485,6 @@ const Navigation = () => {
 
                   {/* Radio moved into Podcast dropdown above */}
 
-                  <button
-                    onClick={() => { setMobileMenuOpen(false); navigate("/shop"); }}
-                    className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
-                  >
-                    <ShoppingBag className="w-3.5 h-3.5 text-secondary" />
-                    <span className="font-medium">Shop</span>
-                  </button>
                   
                   {/* Divider */}
                   <div className="h-px bg-muted/20 my-1.5 mx-1" />

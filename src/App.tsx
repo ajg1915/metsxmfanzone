@@ -94,8 +94,6 @@ const PayPalSuccess = lazyWithRetry(() => import("./pages/PayPalSuccess"), "page
 
 const SpringTrainingLive = lazyWithRetry(() => import("./pages/SpringTrainingLive"), "page-spring-training-live");
 const ReplayGames = lazyWithRetry(() => import("./pages/ReplayGames"), "page-replay-games");
-const Merch = lazyWithRetry(() => import("./pages/Merch"), "page-merch");
-const Product = lazyWithRetry(() => import("./pages/Product"), "page-product");
 const MetsSchedule2026 = lazyWithRetry(() => import("./pages/MetsSchedule2026"), "page-mets-schedule-2026");
 const TVBroadcastSchedule = lazyWithRetry(() => import("./pages/TVBroadcastSchedule"), "page-tv-broadcast-schedule");
 const TVDashboard = lazyWithRetry(() => import("./pages/TVDashboard"), "page-tv-dashboard");
@@ -156,10 +154,7 @@ const SocialMediaSettings = lazyWithRetry(() => import("./pages/admin/SocialMedi
 const MediaLibrary = lazyWithRetry(() => import("./pages/admin/MediaLibrary"), "page-admin-media-library");
 const ToastPromptManagement = lazyWithRetry(() => import("./pages/admin/ToastPromptManagement"), "page-admin-toast-prompt-management");
 const PopupNotificationsManagement = lazyWithRetry(() => import("./pages/admin/PopupNotificationsManagement"), "page-admin-popup-notifications-management");
-const ShopManagement = lazyWithRetry(() => import("./pages/admin/ShopManagement"), "page-admin-shop-management");
 const SweepstakesManagement = lazyWithRetry(() => import("./pages/admin/SweepstakesManagement"), "page-admin-sweepstakes-management");
-const Shop = lazyWithRetry(() => import("./pages/Shop"), "page-shop");
-const OrderSuccess = lazyWithRetry(() => import("./pages/OrderSuccess"), "page-order-success");
 const WhatsNew = lazyWithRetry(() => import("./pages/WhatsNew"), "page-whats-new");
 const Install = lazyWithRetry(() => import("./pages/Install"), "page-install");
 const MetsVsAstros = lazyWithRetry(() => import("./pages/matchups/MetsVsAstros"), "page-matchup-astros");
@@ -396,7 +391,7 @@ const AppContent = () => {
               <Route path="media-library" element={<MediaLibrary />} />
               <Route path="toast-prompts" element={<ToastPromptManagement />} />
               <Route path="popup-notifications" element={<PopupNotificationsManagement />} />
-              <Route path="shop" element={<ShopManagement />} />
+              
               <Route path="player-of-the-month" element={<PlayerOfTheMonthManagement />} />
               <Route path="sweepstakes" element={<SweepstakesManagement />} />
               <Route path="gameday-live" element={<GameDayLiveAdmin />} />
@@ -409,10 +404,6 @@ const AppContent = () => {
             <Route path="/writer/edit/:id" element={<WriterArticleEditor />} />
             {/* Spring Training page removed */}
             <Route path="/replay-games" element={<ReplayGames />} />
-            <Route path="/merch" element={<Merch />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/shop/order-success" element={<OrderSuccess />} />
-            <Route path="/product/:handle" element={<Product />} />
             <Route path="/mets-schedule-2026" element={<MetsSchedule2026 />} />
             <Route path="/broadcast-schedule" element={<TVBroadcastSchedule />} />
             <Route path="/tv" element={<TVDashboard />} />
