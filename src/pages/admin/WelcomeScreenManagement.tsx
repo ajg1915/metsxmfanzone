@@ -60,8 +60,9 @@ export default function WelcomeScreenManagement() {
 
   const preview = () => {
     sessionStorage.removeItem("desktop_welcome_gate_dismissed");
-    window.open("/", "_blank");
+    window.open("/?preview_gate=1", "_blank");
   };
+
 
   const set = <K extends keyof GateConfig>(k: K, v: GateConfig[K]) =>
     setCfg((c) => ({ ...c, [k]: v }));
