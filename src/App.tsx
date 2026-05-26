@@ -391,7 +391,7 @@ const AppContent = () => {
               <Route path="media-library" element={<MediaLibrary />} />
               <Route path="toast-prompts" element={<ToastPromptManagement />} />
               <Route path="popup-notifications" element={<PopupNotificationsManagement />} />
-              <Route path="shop" element={<ShopManagement />} />
+              
               <Route path="player-of-the-month" element={<PlayerOfTheMonthManagement />} />
               <Route path="sweepstakes" element={<SweepstakesManagement />} />
               <Route path="gameday-live" element={<GameDayLiveAdmin />} />
@@ -404,10 +404,6 @@ const AppContent = () => {
             <Route path="/writer/edit/:id" element={<WriterArticleEditor />} />
             {/* Spring Training page removed */}
             <Route path="/replay-games" element={<ReplayGames />} />
-            <Route path="/merch" element={<Merch />} />
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/shop/order-success" element={<OrderSuccess />} />
-            <Route path="/product/:handle" element={<Product />} />
             <Route path="/mets-schedule-2026" element={<MetsSchedule2026 />} />
             <Route path="/broadcast-schedule" element={<TVBroadcastSchedule />} />
             <Route path="/tv" element={<TVDashboard />} />

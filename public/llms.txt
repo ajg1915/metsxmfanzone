@@ -26,8 +26,6 @@ MetsXMFanZone is an independent fan platform covering the New York Mets. Members
 - [Video Gallery](/video-gallery): Video highlights and clips.
 - [Replay Games](/replay-games): On-demand replays of past games.
 - [NL Scores](/nl-scores): National League scoreboard.
-- [Shop](/shop): MetsXMFanZone merch and gear.
-- [Merch](/merch): Branded apparel and collectibles.
 - [Matchup: Yankees](/matchup/yankees): Mets vs. Yankees breakdown.
 - [Matchup: Braves](/matchup/braves): Mets vs. Braves breakdown.
 - [Matchup: Astros](/matchup/astros): Mets vs. Astros breakdown.
