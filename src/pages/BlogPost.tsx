@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import DOMPurify from "dompurify";
 import { useParams, useNavigate } from "react-router-dom";
 import SEOHead, { generateArticleSchema } from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
