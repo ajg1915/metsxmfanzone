@@ -94,181 +94,176 @@ const MetsXMFanZone = () => {
       <Navigation />
       
       <main className="flex-1 pt-12">
-        {/* Hero Banner - lightweight for TV browsers */}
-        <div className="relative overflow-hidden bg-primary/10">
-          
-          <div className="container mx-auto px-4 py-8 sm:py-12 relative z-10">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="relative">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-xl shadow-primary/20 p-2">
+        {/* Ambient backdrop */}
+        <div className="relative">
+          <div className="absolute inset-0 h-[460px] pointer-events-none overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-primary/5 to-transparent" />
+            <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
+          </div>
+
+          {/* Compact Hero */}
+          <div className="container mx-auto px-4 pt-6 pb-4 relative z-10">
+            <div className="flex items-center gap-4">
+              <div className="relative shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-xl shadow-primary/30 p-1.5 ring-1 ring-primary/40">
                   <img src={logo} alt="MetsXMFanZone" className="w-full h-full object-contain" />
                 </div>
-                <div className="absolute -top-2 -right-2 flex items-center gap-1 bg-destructive text-destructive-foreground px-2 py-1 rounded-full text-xs font-bold shadow-lg">
-                  <Radio className="w-3 h-3" />
+                <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full text-[9px] font-bold shadow-lg animate-pulse">
+                  <span className="w-1 h-1 rounded-full bg-white" />
                   LIVE
-                </div>
+                </span>
               </div>
-              
-              <div className="flex-1">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
-                      <Signal className="w-3 h-3 mr-1" />
-                      Exclusive
-                    </Badge>
-                    <Badge variant="outline" className="border-muted-foreground/30">
-                      <Tv className="w-3 h-3 mr-1" />
-                      HD Quality
-                    </Badge>
-                  </div>
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground mb-2">
-                    MetsXMFanZone <span className="text-primary">TV</span>
-                  </h1>
-                  <p className="text-muted-foreground text-sm sm:text-base max-w-xl">
-                    Your ultimate destination for exclusive Mets content, live fan discussions, 
-                    and 24/7 coverage from the heart of the fanbase.
-                  </p>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                  <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30 text-[10px] h-5">
+                    <Signal className="w-2.5 h-2.5 mr-1" /> Exclusive
+                  </Badge>
+                  <Badge variant="outline" className="border-muted-foreground/30 text-[10px] h-5">
+                    <Tv className="w-2.5 h-2.5 mr-1" /> HD
+                  </Badge>
+                  <Badge variant="outline" className="border-muted-foreground/30 text-[10px] h-5">
+                    <Clock className="w-2.5 h-2.5 mr-1" /> 24/7
+                  </Badge>
                 </div>
-                
-                <div className="flex flex-wrap gap-3 mt-4">
-                  <div className="flex items-center gap-2 bg-background/50 px-3 py-2 rounded-lg border border-border/50">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    <span className="text-xs text-foreground">New York, NY</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-background/50 px-3 py-2 rounded-lg border border-border/50">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="text-xs text-foreground">24/7 Fan Coverage</span>
-                  </div>
-                </div>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground leading-tight tracking-tight">
+                  MetsXMFanZone <span className="text-primary">TV</span>
+                </h1>
+                <p className="text-muted-foreground text-xs sm:text-sm line-clamp-1">
+                  The ultimate destination where the fans go.
+                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Stream Player Section */}
-        <div className="container mx-auto px-4 py-6 sm:py-8">
-          <div className="max-w-6xl mx-auto">
-            <ClapprPlayer
-              pageTitle="MetsXMFanZone Live Stream"
-              pageDescription="Ultimate Destination Where the Fans Go"
-            />
+          {/* Player + Chat grid */}
+          <div className="container mx-auto px-4 pb-8 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
+              {/* Player + meta */}
+              <div className="space-y-4 min-w-0">
+                <div className="rounded-2xl overflow-hidden ring-1 ring-border/60 shadow-2xl shadow-primary/10 bg-card/80 backdrop-blur-xl">
+                  <ClapprPlayer
+                    pageTitle="MetsXMFanZone Live Stream"
+                    pageDescription="Ultimate Destination Where the Fans Go"
+                    showChrome={false}
+                  />
+                </div>
 
-            {/* Live Community Chat */}
-            <div className="mt-6">
-              <LiveStreamChat
-                streamId="00000000-0000-0000-0000-00000000fa11"
-                streamTitle="MetsXMFanZone Live"
-              />
-            </div>
+                {/* Channel info pills */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-3 hover:border-primary/40 transition-colors">
+                    <Mic className="w-4 h-4 text-primary mb-1.5" />
+                    <p className="text-[11px] font-bold text-foreground">Live Shows</p>
+                    <p className="text-[10px] text-muted-foreground hidden sm:block">Fan discussions & reactions</p>
+                  </div>
+                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-3 hover:border-primary/40 transition-colors">
+                    <Users className="w-4 h-4 text-secondary mb-1.5" />
+                    <p className="text-[11px] font-bold text-foreground">Community</p>
+                    <p className="text-[10px] text-muted-foreground hidden sm:block">Connect with fellow fans</p>
+                  </div>
+                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-3 hover:border-primary/40 transition-colors">
+                    <Trophy className="w-4 h-4 text-primary mb-1.5" />
+                    <p className="text-[11px] font-bold text-foreground">Exclusive</p>
+                    <p className="text-[10px] text-muted-foreground hidden sm:block">Interviews & analysis</p>
+                  </div>
+                </div>
 
-            {/* Upcoming Games & Matchup Breakdowns */}
-            <div className="mt-8">
-              <div className="flex items-center gap-3 mb-4">
-                <Swords className="w-5 h-5 text-primary" />
-                <h2 className="text-xl sm:text-2xl font-bold text-foreground">Upcoming Games & Matchups</h2>
+                {/* Upcoming Games */}
+                <div className="rounded-2xl bg-card/80 backdrop-blur-xl border border-border/60 p-4 sm:p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-7 h-7 rounded-lg bg-primary/15 flex items-center justify-center">
+                      <Swords className="w-4 h-4 text-primary" />
+                    </div>
+                    <h2 className="text-base sm:text-lg font-bold text-foreground">Upcoming Games & Matchups</h2>
+                  </div>
+
+                  {gamesLoading ? (
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                      <span className="ml-2 text-xs text-muted-foreground">Loading schedule...</span>
+                    </div>
+                  ) : games.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {games.map((game) => (
+                        <div
+                          key={game.gameId}
+                          className="group rounded-xl border border-border/50 bg-background/40 p-3 hover:border-primary/40 hover:bg-background/60 transition-all"
+                        >
+                          <div className="flex items-center gap-2.5 mb-2">
+                            <img
+                              src={`https://www.mlbstatic.com/team-logos/${getTeamId(game.opponent)}.svg`}
+                              alt={game.opponent}
+                              className="w-8 h-8 object-contain shrink-0"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = 'https://www.mlbstatic.com/team-logos/league-on-dark.svg';
+                              }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-xs text-foreground truncate">
+                                {game.isHome ? 'vs' : '@'} {game.opponent}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground">
+                                {format(parseISO(game.date), 'EEE, MMM d • h:mm a')}
+                              </p>
+                            </div>
+                            <Badge
+                              variant={game.gameType === 'S' ? 'secondary' : 'default'}
+                              className="text-[9px] h-4 px-1.5 shrink-0"
+                            >
+                              {game.gameType === 'S' ? 'ST' : 'REG'}
+                            </Badge>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-2">
+                            {game.isHome ? (
+                              <Home className="w-3 h-3 text-primary" />
+                            ) : (
+                              <Plane className="w-3 h-3" />
+                            )}
+                            <span className="truncate">{game.venue}</span>
+                          </div>
+
+                          {MATCHUP_ROUTES[game.opponent] && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full h-6 text-[10px] gap-1 border-primary/30"
+                              onClick={() => navigate(MATCHUP_ROUTES[game.opponent])}
+                            >
+                              <Swords className="w-3 h-3" />
+                              Matchup Breakdown
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground text-center py-4">No upcoming games found.</p>
+                  )}
+                </div>
               </div>
 
-              {gamesLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 text-primary" />
-                  <span className="ml-2 text-sm text-muted-foreground">Loading schedule...</span>
+              {/* Chat sidebar */}
+              <aside className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden lg:sticky lg:top-16 lg:h-[calc(100vh-5rem)] flex flex-col">
+                <div className="px-4 py-2.5 border-b border-border/50 flex items-center justify-between bg-gradient-to-r from-primary/15 to-transparent shrink-0">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex items-center justify-center">
+                      <span className="absolute inline-flex h-2 w-2 rounded-full bg-destructive opacity-75 animate-ping" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-destructive" />
+                    </span>
+                    <h2 className="text-xs font-bold text-foreground tracking-wide">FAN ZONE CHAT</h2>
+                  </div>
+                  <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Live</span>
                 </div>
-              ) : games.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {games.map((game) => (
-                    <Card key={game.gameId} className="border-border/50 overflow-hidden">
-                      <CardContent className="p-4">
-                        <div className="flex items-center gap-3 mb-2">
-                          <img 
-                            src={`https://www.mlbstatic.com/team-logos/${getTeamId(game.opponent)}.svg`}
-                            alt={game.opponent}
-                            className="w-8 h-8 object-contain"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = 'https://www.mlbstatic.com/team-logos/league-on-dark.svg';
-                            }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm text-foreground line-clamp-1">
-                              {game.isHome ? 'vs' : '@'} {game.opponent}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {format(parseISO(game.date), 'EEE, MMM d • h:mm a')}
-                            </p>
-                          </div>
-                          <Badge 
-                            variant={game.gameType === 'S' ? 'secondary' : 'default'}
-                            className="text-[10px] shrink-0"
-                          >
-                            {game.gameType === 'S' ? 'ST' : 'REG'}
-                          </Badge>
-                        </div>
-
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                          {game.isHome ? (
-                            <Home className="w-3 h-3 text-primary" />
-                          ) : (
-                            <Plane className="w-3 h-3 text-muted-foreground" />
-                          )}
-                          <span className="line-clamp-1">{game.venue}</span>
-                        </div>
-
-                        {MATCHUP_ROUTES[game.opponent] && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full h-7 text-xs gap-1 border-primary/30"
-                            onClick={() => navigate(MATCHUP_ROUTES[game.opponent])}
-                          >
-                            <Swords className="w-3 h-3" />
-                            View Matchup Breakdown
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
+                <div className="flex-1 min-h-[400px] overflow-hidden">
+                  <LiveStreamChat
+                    streamId="00000000-0000-0000-0000-00000000fa11"
+                    streamTitle="MetsXMFanZone Live"
+                  />
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-4">No upcoming games found.</p>
-              )}
-            </div>
-            
-            {/* Channel Info Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-              <Card className="bg-gradient-to-br from-card to-card/50 border-border/50">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                    <Mic className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-bold text-lg text-foreground mb-2">Live Shows</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Exclusive live shows featuring fan discussions, game reactions, and special guest appearances.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-card to-card/50 border-border/50">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-4">
-                    <Users className="w-6 h-6 text-secondary" />
-                  </div>
-                  <h3 className="font-bold text-lg text-foreground mb-2">Fan Community</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Connect with fellow Mets fans in real-time during live streams and interactive events.
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-gradient-to-br from-card to-card/50 border-border/50">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
-                    <Trophy className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-bold text-lg text-foreground mb-2">Exclusive Content</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Premium Mets content you won't find anywhere else - interviews, analysis, and behind-the-scenes.
-                  </p>
-                </CardContent>
-              </Card>
+              </aside>
             </div>
           </div>
         </div>
