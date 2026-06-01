@@ -1,5 +1,4 @@
 import { useEffect, useState, useRef } from "react";
-import DOMPurify from "dompurify";
 import { useParams, useNavigate } from "react-router-dom";
 import SEOHead, { generateArticleSchema } from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
@@ -503,7 +502,7 @@ export default function BlogPost() {
               <CardContent className="prose prose-lg max-w-none dark:prose-invert py-8">
                 {/* Detect HTML (Tiptap output) vs legacy plain-text content */}
                 {/<\/?[a-z][\s\S]*>/i.test(post.content) ? (
-                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content, { USE_PROFILES: { html: true } }) }} />
+                  <div dangerouslySetInnerHTML={{ __html: post.content }} />
                 ) : (
                   <div className="whitespace-pre-wrap">{post.content}</div>
                 )}

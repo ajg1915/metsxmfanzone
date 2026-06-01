@@ -1,5 +1,4 @@
 import { useParams, Link } from "react-router-dom";
-import DOMPurify from "dompurify";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
@@ -106,7 +105,7 @@ export default function MetsGameRecaps() {
               </div>
               <h1 className="text-3xl font-bold">{r.title}</h1>
               {r.summary && <p className="text-lg text-muted-foreground">{r.summary}</p>}
-              {r.body && <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(r.body, { USE_PROFILES: { html: true } }) }} />}
+              {r.body && <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: r.body }} />}
             </article>
           )}
         </main>

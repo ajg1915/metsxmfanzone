@@ -99,26 +99,6 @@ serve(async (req) => {
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Identify caller. Cron jobs use the service-role/anon key directly without a user JWT.
-    // Any human-initiated request that wants to forceRegenerate or supply lineup data
-    // must be an authenticated admin.
-    let callerIsAdmin = false;
-    const authHeader = req.headers.get("Authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      const token = authHeader.replace("Bearer ", "");
-      const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!);
-      const { data: userData } = await anonClient.auth.getUser(token);
-      if (userData?.user) {
-        const { data: roleRow } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userData.user.id)
-          .eq("role", "admin")
-          .maybeSingle();
-        callerIsAdmin = !!roleRow;
-      }
-    }
-
     let forceStarPlayers: number[] = [];
     let forceRegenerate = false;
     let triggerType = "manual";
@@ -129,17 +109,16 @@ serve(async (req) => {
     
     try {
       const body = await req.json();
-      // Privileged inputs require admin
-      if (body.forceStarPlayers && Array.isArray(body.forceStarPlayers) && callerIsAdmin) forceStarPlayers = body.forceStarPlayers;
-      if (body.forceRegenerate === true && callerIsAdmin) forceRegenerate = true;
-      if (body.lineupPlayerIds && Array.isArray(body.lineupPlayerIds) && callerIsAdmin) lineupPlayerIds = body.lineupPlayerIds;
-      if (body.lineupPlayers && Array.isArray(body.lineupPlayers) && callerIsAdmin) lineupPlayers = body.lineupPlayers;
-      if (typeof body.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.date)) requestedDate = body.date;
+      if (body.forceStarPlayers && Array.isArray(body.forceStarPlayers)) forceStarPlayers = body.forceStarPlayers;
+      if (body.forceRegenerate === true) forceRegenerate = true;
       if (body.triggerType) triggerType = body.triggerType;
       if (body.triggeredBy) triggerType = body.triggeredBy;
-      if (body.opponent) gameContext += `Today's game: Mets vs ${String(body.opponent).slice(0, 80)}. `;
-      if (body.gameTime) gameContext += `Game time: ${String(body.gameTime).slice(0, 40)}. `;
-      if (body.location) gameContext += `Location: ${String(body.location).slice(0, 80)}. `;
+      if (body.lineupPlayerIds && Array.isArray(body.lineupPlayerIds)) lineupPlayerIds = body.lineupPlayerIds;
+      if (body.lineupPlayers && Array.isArray(body.lineupPlayers)) lineupPlayers = body.lineupPlayers;
+      if (typeof body.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.date)) requestedDate = body.date;
+      if (body.opponent) gameContext += `Today's game: Mets vs ${body.opponent}. `;
+      if (body.gameTime) gameContext += `Game time: ${body.gameTime}. `;
+      if (body.location) gameContext += `Location: ${body.location}. `;
     } catch { /* defaults */ }
 
     const today = requestedDate ?? getTodayET();

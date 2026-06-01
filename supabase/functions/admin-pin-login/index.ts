@@ -327,24 +327,6 @@ Deno.serve(async (req) => {
     }
 
     if (action === 'setup-pin') {
-      // CRITICAL: require an authenticated caller. Caller must be the admin
-      // whose PIN is being set (e.g. fresh recovery-email session) OR another admin.
-      const authHeader = req.headers.get('Authorization');
-      if (!authHeader?.startsWith('Bearer ')) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      const callerClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!);
-      const { data: callerData, error: callerErr } = await callerClient.auth.getUser(
-        authHeader.replace('Bearer ', '')
-      );
-      if (callerErr || !callerData?.user) {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
       if (!setupUserId || !setupPin || setupPin.length < 6) {
         return new Response(JSON.stringify({ error: 'PIN must be at least 6 characters' }), {
           status: 400,
@@ -352,27 +334,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Caller must be admin themselves
-      const { data: callerRole } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', callerData.user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
-      if (!callerRole) {
-        return new Response(JSON.stringify({ error: 'Forbidden' }), {
-          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      // Caller can only set their own PIN (admin-on-admin reset must go through recovery flow)
-      if (callerData.user.id !== setupUserId) {
-        return new Response(JSON.stringify({ error: 'You can only set your own PIN' }), {
-          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      // Verify target user is an admin
+      // Verify user is an admin
       const { data: roleData } = await supabase
         .from('user_roles')
         .select('role')
