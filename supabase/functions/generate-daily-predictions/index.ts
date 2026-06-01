@@ -83,9 +83,42 @@ const CORE_METS_NAMES = new Set<string>([
   "Luke Weaver",
 ]);
 
+// Map MLB API position abbreviations to our internal categories
+function mapMlbPosition(abbr: string): string {
+  if (!abbr) return "IF";
+  if (abbr === "P" || abbr === "SP") return "SP";
+  if (abbr === "RP") return "RP";
+  if (abbr === "CL") return "CL";
+  return abbr; // C, 1B, 2B, 3B, SS, LF, CF, RF, OF, DH, IF
+}
+
 async function fetchMetsRoster(): Promise<Array<{ name: string; id: number; position: string }>> {
-  // Use the hardcoded active roster to guarantee correct 2026 players
-  return METS_2026_ROSTER;
+  // Fetch live 40-man roster from MLB Stats API so predictions stay in sync
+  // with the main roster page. Fall back to the hardcoded list if the API fails.
+  try {
+    const res = await fetch(
+      `https://statsapi.mlb.com/api/v1/teams/${METS_TEAM_ID}/roster?rosterType=40Man`,
+      { headers: { "Accept": "application/json" } }
+    );
+    if (!res.ok) throw new Error(`MLB API ${res.status}`);
+    const json = await res.json();
+    const roster = Array.isArray(json?.roster) ? json.roster : [];
+    const mapped = roster
+      .map((entry: any) => ({
+        name: entry?.person?.fullName as string,
+        id: entry?.person?.id as number,
+        position: mapMlbPosition(entry?.position?.abbreviation ?? ""),
+      }))
+      .filter((p: any) => p.name && typeof p.id === "number");
+    if (mapped.length > 0) {
+      console.log(`Loaded ${mapped.length} players from live MLB 40-man roster`);
+      return mapped;
+    }
+    throw new Error("Empty roster from MLB API");
+  } catch (err) {
+    console.warn("Live roster fetch failed, falling back to hardcoded 2026 roster:", err);
+    return METS_2026_ROSTER;
+  }
 }
 
 serve(async (req) => {
