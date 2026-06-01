@@ -24,49 +24,20 @@ import {
 } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 
-const STAR_PLAYERS = [
-  // Hitters
+const PITCHER_POSITIONS = new Set(["P", "SP", "RP", "CL"]);
+
+// Fallback list used only if the MLB API is unreachable. The live 40-man
+// roster from MLB Stats API is the source of truth so newly added players
+// appear here automatically.
+const FALLBACK_STAR_PLAYERS: { id: number; name: string; isPitcher?: boolean }[] = [
   { id: 596019, name: "Francisco Lindor" },
   { id: 665742, name: "Juan Soto" },
   { id: 668901, name: "Mark Vientos" },
   { id: 682626, name: "Francisco Alvarez" },
-  { id: 543760, name: "Marcus Semien" },
-  { id: 666182, name: "Bo Bichette" },
-  { id: 673357, name: "Luis Robert Jr." },
-  { id: 669004, name: "MJ Melendez" },
-  { id: 683146, name: "Brett Baty" },
-  { id: 593871, name: "Jorge Polanco" },
-  { id: 677595, name: "Ronny Mauricio" },
-  { id: 621438, name: "Tyrone Taylor" },
-  { id: 660644, name: "Vidal Brujan" },
-  { id: 663584, name: "Hayden Senger" },
-  { id: 620443, name: "Luis Torrens" },
-  { id: 703492, name: "Nick Morabito" },
-  { id: 676724, name: "Jared Young" },
-  // Pitchers
-  { id: 673540, name: "Kodai Senga" },
-  { id: 640455, name: "Sean Manaea" },
-  { id: 656849, name: "David Peterson" },
-  { id: 605280, name: "Clay Holmes" },
-  { id: 642547, name: "Freddy Peralta" },
-  { id: 681035, name: "Christian Scott" },
-  { id: 668964, name: "Tobias Myers" },
-  { id: 804636, name: "Jonah Tong" },
-  { id: 642207, name: "Devin Williams" },
-  { id: 596133, name: "Luke Weaver" },
-  { id: 621345, name: "A.J. Minter" },
-  { id: 673380, name: "Dedniel Núñez" },
-  { id: 548384, name: "Brooks Raley" },
-  { id: 623211, name: "Huascar Brazobán" },
-  { id: 690997, name: "Nolan McLean" },
-  { id: 692024, name: "Alex Carrillo" },
-  { id: 472610, name: "Luis Garcia" },
-  { id: 680702, name: "Joey Gerber" },
-  { id: 663795, name: "Justin Hagenman" },
-  { id: 663542, name: "Bryan Hudson" },
-  { id: 702752, name: "Jonathan Pintaro" },
-  { id: 697811, name: "Dylan Ross" },
-  { id: 681810, name: "Austin Warren" },
+  { id: 673540, name: "Kodai Senga", isPitcher: true },
+  { id: 640455, name: "Sean Manaea", isPitcher: true },
+  { id: 656849, name: "David Peterson", isPitcher: true },
+  { id: 605280, name: "Clay Holmes", isPitcher: true },
 ];
 
 interface Prediction {
@@ -112,6 +83,33 @@ export default function PredictionsManagement() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editBet, setEditBet] = useState("");
   const [editPayout, setEditPayout] = useState("");
+
+  // Live 40-man roster from MLB Stats API — keeps the star players list in
+  // sync with the main roster page so newly added players show up here.
+  const { data: STAR_PLAYERS = FALLBACK_STAR_PLAYERS } = useQuery({
+    queryKey: ["mets-40man-roster-star-players"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(
+          "https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=40Man"
+        );
+        if (!res.ok) throw new Error("MLB API error");
+        const json = await res.json();
+        const players = (json.roster ?? [])
+          .map((r: any) => ({
+            id: r.person?.id as number,
+            name: r.person?.fullName as string,
+            isPitcher: PITCHER_POSITIONS.has(r.position?.abbreviation ?? ""),
+          }))
+          .filter((p: any) => p.id && p.name);
+        return players.length > 0 ? players : FALLBACK_STAR_PLAYERS;
+      } catch (e) {
+        console.warn("Falling back to static star players list:", e);
+        return FALLBACK_STAR_PLAYERS;
+      }
+    },
+    staleTime: 1000 * 60 * 30,
+  });
 
   const updateBetPayoutMutation = useMutation({
     mutationFn: async ({ id, bet_amount, payout }: { id: string; bet_amount: string; payout: string }) => {
