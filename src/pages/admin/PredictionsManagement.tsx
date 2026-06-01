@@ -84,6 +84,33 @@ export default function PredictionsManagement() {
   const [editBet, setEditBet] = useState("");
   const [editPayout, setEditPayout] = useState("");
 
+  // Live 40-man roster from MLB Stats API — keeps the star players list in
+  // sync with the main roster page so newly added players show up here.
+  const { data: STAR_PLAYERS = FALLBACK_STAR_PLAYERS } = useQuery({
+    queryKey: ["mets-40man-roster-star-players"],
+    queryFn: async () => {
+      try {
+        const res = await fetch(
+          "https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=40Man"
+        );
+        if (!res.ok) throw new Error("MLB API error");
+        const json = await res.json();
+        const players = (json.roster ?? [])
+          .map((r: any) => ({
+            id: r.person?.id as number,
+            name: r.person?.fullName as string,
+            isPitcher: PITCHER_POSITIONS.has(r.position?.abbreviation ?? ""),
+          }))
+          .filter((p: any) => p.id && p.name);
+        return players.length > 0 ? players : FALLBACK_STAR_PLAYERS;
+      } catch (e) {
+        console.warn("Falling back to static star players list:", e);
+        return FALLBACK_STAR_PLAYERS;
+      }
+    },
+    staleTime: 1000 * 60 * 30,
+  });
+
   const updateBetPayoutMutation = useMutation({
     mutationFn: async ({ id, bet_amount, payout }: { id: string; bet_amount: string; payout: string }) => {
       const { error } = await supabase
