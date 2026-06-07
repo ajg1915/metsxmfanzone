@@ -199,6 +199,36 @@ export function ClapprPlayer({
           </span>
         </button>
       )}
+      {/* Cast/AirPlay overlay — visible on all devices */}
+      <div className="absolute top-2 right-2 z-30 flex items-center gap-1.5">
+        <button
+          onClick={startCasting}
+          aria-label="Cast to TV"
+          title="Cast to TV (Chromecast)"
+          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-black/70 hover:bg-primary text-white text-xs font-semibold backdrop-blur-sm transition-colors"
+        >
+          {isCasting ? <Tv className="w-3.5 h-3.5" /> : <Cast className="w-3.5 h-3.5" />}
+          <span>{isCasting ? "Casting" : "Cast"}</span>
+        </button>
+        {typeof window !== "undefined" && (window as any).WebKitPlaybackTargetAvailabilityEvent !== undefined && (
+          <button
+            onClick={() => {
+              const video = containerRef.current?.querySelector("video") as any;
+              if (video?.webkitShowPlaybackTargetPicker) {
+                video.webkitShowPlaybackTargetPicker();
+              } else {
+                alert("AirPlay is not available on this device.");
+              }
+            }}
+            aria-label="AirPlay"
+            title="AirPlay to Apple TV"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-black/70 hover:bg-primary text-white text-xs font-semibold backdrop-blur-sm transition-colors"
+          >
+            <Airplay className="w-3.5 h-3.5" />
+            <span>AirPlay</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 
