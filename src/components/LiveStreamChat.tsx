@@ -30,6 +30,33 @@ interface LiveStreamChatProps {
 
 const MAX_LENGTH = 500;
 
+const BOT_NAMES = [
+  "MetsFan86", "AmazinAndy", "QueensKid", "FlushingFaithful", "PoloGrounder",
+  "PiazzaForever", "LGM_Tony", "CitiFieldCarl", "OrangeBlueJay", "DegromDanny",
+  "BuckShowtime", "AlonsoBomb", "LindorMagic", "NimmoNation", "StrawberryFields",
+  "MetsMomma", "BleacherBrendan", "SubwaySeriesSal", "ShortPorchSam", "JoseReyesFan",
+  "DavidWright5", "K_Corner", "RedSeatRyan", "ApplePopUp", "MrMet1962",
+];
+const BOT_MESSAGES = [
+  "LET'S GO METS!!! 🧡💙", "What a play!", "Alonso about to go yard 💣",
+  "Lindor is locked in tonight", "LFGM!!!", "This bullpen tho 😅",
+  "Nimmo running through walls again lol", "Best fanbase in baseball 🙌",
+  "Citi Field looking electric", "We need a hit here", "Strike him out!",
+  "Vamos Mets!", "I love this team man", "Big spot right here",
+  "Anyone else watching from Queens?", "From Long Island, what's up everyone",
+  "Joining from Brooklyn 🍕", "Watching with my dad, lifelong fans ❤️",
+  "Chat moving fast tonight 🔥", "That ump is brutal", "RALLY TIME",
+  "Series win incoming", "Pete is a beast", "Francisco for MVP",
+  "Defense wins games", "This is why I love baseball",
+  "MetsXMFanZone in the house 🎙️", "Stream looks crisp 🔥",
+  "Audio is perfect tonight", "Hot dog and a beer rn 🌭🍺",
+  "Wearing my '86 jersey for luck", "MAGIC IS BACK", "Comeback brewing 👀",
+  "One pitch at a time", "Trust the process", "LGM LGM LGM",
+  "Citi vibes immaculate", "Let's get this W", "BOOOOOO that call",
+  "He's been raking all week", "Defensive gem!!", "TEXTBOOK double play",
+];
+const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+
 const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
