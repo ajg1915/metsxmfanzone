@@ -44,6 +44,7 @@ const MetsScores = () => {
   const [previousGames, setPreviousGames] = useState<GameData[]>([]);
   const [currentGames, setCurrentGames] = useState<GameData[]>([]);
   const [upcomingGames, setUpcomingGames] = useState<GameData[]>([]);
+  const [highlightsMap, setHighlightsMap] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [isOffSeason, setIsOffSeason] = useState(false);
 
