@@ -189,7 +189,12 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       const t = setTimeout(() => {
         if (cancelled) return;
         const name = pick(BOT_NAMES);
-        const content = pick(BOT_MESSAGES);
+        const pool: string[] = [
+          ...STATIC_MESSAGES,
+          ...buildPlayerMessages(roster),
+          ...timeContextMessages(),
+        ];
+        const content: string = pick(pool) ?? "LFGM!!!";
         const fake: ChatMessage = {
           id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           stream_id: streamId,
