@@ -205,75 +205,98 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
     };
   }, [streamId]);
 
-  // Simulated fan chat — keeps the room feeling alive in real time
+  // Simulated fan chat — variable pacing + occasional bursts to feel real
   useEffect(() => {
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const postOne = () => {
+      const availNames = BOT_NAMES.filter((n) => !usedNameRef.current.has(n));
+      if (availNames.length === 0) usedNameRef.current.clear();
+      const name = pick(availNames.length ? availNames : BOT_NAMES);
+      usedNameRef.current.add(name);
+
+      const opponent = gameCtx.opponent;
+      const pitcher = gameCtx.pitcher;
+      const gameLines: string[] = [];
+      if (opponent) {
+        gameLines.push(
+          `Let's take this one from the ${opponent} 💪`,
+          `Beat the ${opponent}!`,
+          `${opponent} fans quiet tonight 🤫`,
+          `Sweep the ${opponent} please`,
+        );
+      }
+      if (pitcher) {
+        gameLines.push(
+          `${pitcher} on the bump, we got this`,
+          `Need ${pitcher} to settle in here`,
+          `${pitcher} dealing 🔥`,
+          `Get to ${pitcher} early`,
+        );
+      }
+
+      const pool: string[] = [
+        ...STATIC_MESSAGES,
+        ...buildPlayerMessages(roster),
+        ...timeContextMessages(),
+        ...gameLines,
+      ];
+
+      const recent = recentRef.current;
+      const fresh = pool.filter((m) => !recent.includes(m));
+      const content: string = pick(fresh.length ? fresh : pool) ?? "LFGM!!!";
+      recent.push(content);
+      if (recent.length > 60) recent.shift();
+
+      const fake: ChatMessage = {
+        id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        stream_id: streamId,
+        user_id: `bot-${name}`,
+        content,
+        created_at: new Date().toISOString(),
+        profile: { full_name: name, avatar_url: null },
+      };
+      setMessages((prev) => {
+        const next = [...prev, fake];
+        return next.length > 150 ? next.slice(next.length - 150) : next;
+      });
+    };
+
     const schedule = () => {
-      const delay = 3000 + Math.random() * 6000; // 3s – 9s, more natural cadence
-      const t = setTimeout(() => {
+      // 12% chance of a burst (big-play reaction): 3–5 quick msgs, then quiet
+      const isBurst = Math.random() < 0.12;
+      if (isBurst) {
+        const burstCount = 3 + Math.floor(Math.random() * 3);
+        for (let i = 0; i < burstCount; i++) {
+          setTimeout(() => { if (!cancelled) postOne(); }, i * (250 + Math.random() * 450));
+        }
+        const cooldown = 6000 + Math.random() * 5000;
+        timer = setTimeout(() => { if (!cancelled) schedule(); }, burstCount * 500 + cooldown);
+        return;
+      }
+
+      // Normal: mostly 1.8–7s; sometimes a longer lull (8–16s)
+      const longLull = Math.random() < 0.18;
+      const delay = longLull
+        ? 8000 + Math.random() * 8000
+        : 1800 + Math.random() * 5200;
+
+      timer = setTimeout(() => {
         if (cancelled) return;
-
-        // Pick a unique fan name (don't reuse a name twice in the same session
-        // until we've cycled through everyone) so it doesn't look like 2 bots
-        const availNames = BOT_NAMES.filter((n) => !usedNameRef.current.has(n));
-        if (availNames.length === 0) usedNameRef.current.clear();
-        const name = pick(availNames.length ? availNames : BOT_NAMES);
-        usedNameRef.current.add(name);
-
-        // Game-specific lines using today's opponent and starting pitcher
-        const opponent = gameCtx.opponent;
-        const pitcher = gameCtx.pitcher;
-        const gameLines: string[] = [];
-        if (opponent) {
-          gameLines.push(
-            `Let's take this one from the ${opponent} 💪`,
-            `Beat the ${opponent}!`,
-            `${opponent} fans quiet tonight 🤫`,
-            `Sweep the ${opponent} please`,
-          );
+        postOne();
+        // 20% chance of a quick back-to-back reply
+        if (Math.random() < 0.2) {
+          setTimeout(() => { if (!cancelled) postOne(); }, 600 + Math.random() * 900);
         }
-        if (pitcher) {
-          gameLines.push(
-            `${pitcher} on the bump, we got this`,
-            `Need ${pitcher} to settle in here`,
-            `${pitcher} dealing 🔥`,
-            `Get to ${pitcher} early`,
-          );
-        }
-
-        const pool: string[] = [
-          ...STATIC_MESSAGES,
-          ...buildPlayerMessages(roster),
-          ...timeContextMessages(),
-          ...gameLines,
-        ];
-
-        // No-repeat: skip any line used in the last 40 messages
-        const recent = recentRef.current;
-        const fresh = pool.filter((m) => !recent.includes(m));
-        const content: string = pick(fresh.length ? fresh : pool) ?? "LFGM!!!";
-        recent.push(content);
-        if (recent.length > 40) recent.shift();
-
-        const fake: ChatMessage = {
-          id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          stream_id: streamId,
-          user_id: `bot-${name}`,
-          content,
-          created_at: new Date().toISOString(),
-          profile: { full_name: name, avatar_url: null },
-        };
-        setMessages((prev) => {
-          const next = [...prev, fake];
-          return next.length > 150 ? next.slice(next.length - 150) : next;
-        });
         schedule();
       }, delay);
-      return t;
     };
-    const initial = setTimeout(schedule, 1500);
+
+    const initial = setTimeout(schedule, 1200 + Math.random() * 1200);
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
       clearTimeout(initial);
     };
   }, [streamId, roster, gameCtx.opponent, gameCtx.pitcher]);
