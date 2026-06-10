@@ -368,6 +368,33 @@ const MetsScores = () => {
       setLoading(false);
     }
   };
+
+  // Fetch AI-generated key highlights for previous games
+  useEffect(() => {
+    if (!previousGames.length) return;
+    const dates = previousGames
+      .map((g) => g.gameDate?.split('T')[0])
+      .filter(Boolean) as string[];
+    if (!dates.length) return;
+    const earliest = dates.reduce((a, b) => (a < b ? a : b));
+    const latest = dates.reduce((a, b) => (a > b ? a : b));
+    (async () => {
+      const { data, error } = await supabase
+        .from('game_recaps' as any)
+        .select('game_date, highlights')
+        .eq('status', 'published')
+        .gte('game_date', earliest)
+        .lte('game_date', latest);
+      if (error || !data) return;
+      const map: Record<string, string[]> = {};
+      for (const row of data as any[]) {
+        const h = Array.isArray(row.highlights) ? row.highlights : [];
+        if (row.game_date && h.length) map[row.game_date] = h.slice(0, 5);
+      }
+      setHighlightsMap(map);
+    })();
+  }, [previousGames]);
+
   const getTeamAbbrev = (teamName: string) => {
     const abbreviations: Record<string, string> = {
       'New York Mets': 'NYM',
