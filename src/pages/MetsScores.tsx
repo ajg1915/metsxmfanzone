@@ -5,7 +5,8 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Clock, MapPin, Trophy, Circle, Timer } from 'lucide-react';
+import { Calendar, Clock, MapPin, Trophy, Circle, Timer, Sparkles } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 interface GameData {
   gamePk: number;
   gameDate: string;
