@@ -720,7 +720,7 @@ const MetsScores = () => {
                   <LoadingSkeleton />
                   <LoadingSkeleton />
                   <LoadingSkeleton />
-                </> : previousGames.length > 0 ? previousGames.map(game => <GameCard key={game.gamePk} game={game} />) : <Card className="col-span-full border-border/50 bg-card/50">
+                </> : previousGames.length > 0 ? previousGames.map(game => <GameCard key={game.gamePk} game={game} highlights={highlightsMap[game.gameDate?.split('T')[0]]} />) : <Card className="col-span-full border-border/50 bg-card/50">
                   <CardContent className="p-6 text-center text-muted-foreground">
                     No previous games found
                   </CardContent>
