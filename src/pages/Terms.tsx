@@ -9,7 +9,13 @@ const Terms = () => {
         <title>Terms of Service - MetsXMFanZone User Agreement</title>
         <meta name="description" content="Review MetsXMFanZone's terms of service and user agreement. Understand your rights and responsibilities when using our platform." />
         <meta name="keywords" content="terms of service, user agreement, terms and conditions, legal terms" />
-        <link rel="canonical" href="https://www.metsxmfanzone.com/terms" />
+        <link rel="canonical" href="https://metsxmfanzone.com/terms" />
+        <meta property="og:title" content="Terms of Service — MetsXMFanZone" />
+        <meta property="og:description" content="Your rights and responsibilities when using MetsXMFanZone. Read our full terms of service and user agreement." />
+        <meta property="og:url" content="https://metsxmfanzone.com/terms" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:title" content="Terms of Service — MetsXMFanZone" />
+        <meta name="twitter:description" content="Your rights and responsibilities when using MetsXMFanZone. Read our full terms of service and user agreement." />
       </Helmet>
       <Navigation />
       <main className="pt-12">
