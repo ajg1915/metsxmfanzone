@@ -16,6 +16,7 @@ import authLogo from "@/assets/metsxmfanzone-logo-auth.png";
 import { trackFailedLogin } from "@/utils/securityAlerts";
 import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/browser";
 import AuthLoadingScreen from "@/components/auth/AuthLoadingScreen";
+import { Helmet } from "react-helmet-async";
 
 
 
