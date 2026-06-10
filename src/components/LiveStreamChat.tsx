@@ -108,6 +108,14 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   const [loading, setLoading] = useState(true);
   const [roster, setRoster] = useState<string[]>(FALLBACK_ROSTER_FIRST);
   const [gameCtx, setGameCtx] = useState<{ opponent?: string; pitcher?: string }>({});
+  const [liveState, setLiveState] = useState<{
+    inning?: number; inningOrd?: string; half?: string;
+    balls?: number; strikes?: number; outs?: number;
+    batter?: string; pitcher?: string;
+    metsRuns?: number; oppRuns?: number; metsAreHome?: boolean;
+    status?: string;
+  }>({});
+  const [adminMsg, setAdminMsg] = useState<string>("");
   const recentRef = useRef<string[]>([]);
   const usedNameRef = useRef<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -148,6 +156,75 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
     return () => { cancelled = true; };
   }, [streamId]);
 
+  // Poll live MLB game state (inning, count, outs, batter) every 20s
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const fetchLive = async () => {
+      try {
+        const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+        const sch = await fetch(
+          `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=121&date=${today}&hydrate=linescore,team`
+        ).then((r) => r.json());
+        const game = sch?.dates?.[0]?.games?.[0];
+        if (!game || cancelled) return;
+        const metsAreHome = game?.teams?.home?.team?.id === 121;
+        const status: string = game?.status?.abstractGameState ?? "";
+        if (status !== "Live") {
+          setLiveState((s) => ({ ...s, status }));
+          return;
+        }
+        const feed = await fetch(`https://statsapi.mlb.com/api/v1.1/game/${game.gamePk}/feed/live`).then((r) => r.json());
+        if (cancelled) return;
+        const ls = feed?.liveData?.linescore;
+        const cur = feed?.liveData?.plays?.currentPlay;
+        setLiveState({
+          status: "Live",
+          inning: ls?.currentInning,
+          inningOrd: ls?.currentInningOrdinal,
+          half: ls?.inningState,
+          balls: ls?.balls,
+          strikes: ls?.strikes,
+          outs: ls?.outs,
+          batter: cur?.matchup?.batter?.fullName,
+          pitcher: cur?.matchup?.pitcher?.fullName,
+          metsRuns: metsAreHome ? ls?.teams?.home?.runs : ls?.teams?.away?.runs,
+          oppRuns: metsAreHome ? ls?.teams?.away?.runs : ls?.teams?.home?.runs,
+          metsAreHome,
+        });
+      } catch {}
+    };
+    fetchLive();
+    timer = setInterval(fetchLive, 20000);
+    return () => { cancelled = true; if (timer) clearInterval(timer); };
+  }, [streamId]);
+
+  // Listen to admin announcements for this stream and react in chat
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("live_stream_admin_updates")
+        .select("welcome_message, updated_at")
+        .eq("live_stream_id", streamId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data?.welcome_message) setAdminMsg(data.welcome_message);
+    })();
+    const ch = supabase
+      .channel(`admin_updates:${streamId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "live_stream_admin_updates", filter: `live_stream_id=eq.${streamId}` },
+        (payload) => {
+          const msg = (payload.new as any)?.welcome_message;
+          if (msg) setAdminMsg(msg);
+        }
+      )
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
+  }, [streamId]);
 
 
   // Hydrate profiles for a batch of user_ids
@@ -236,12 +313,76 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
         );
       }
 
+      // Inning / count / outs aware lines from live MLB feed
+      const liveLines: string[] = [];
+      const ls = liveState;
+      if (ls.status === "Live") {
+        const half = (ls.half || "").toLowerCase();
+        const metsBatting = (half.includes("top") && !ls.metsAreHome) || (half.includes("bot") && ls.metsAreHome);
+        if (ls.inningOrd && ls.half) {
+          liveLines.push(
+            `${ls.half} of the ${ls.inningOrd}, here we go`,
+            `${ls.inningOrd} inning vibes`,
+          );
+        }
+        if (typeof ls.balls === "number" && typeof ls.strikes === "number") {
+          const c = `${ls.balls}-${ls.strikes}`;
+          if (ls.strikes === 2) liveLines.push(`${c} count… don't chase 🙏`, `Two strikes, battle here`);
+          if (ls.balls === 3 && ls.strikes < 2) liveLines.push(`3 balls, make him throw a strike`, `Full count brewing 👀`);
+          if (ls.balls === 3 && ls.strikes === 2) liveLines.push(`FULL COUNT 😤`, `3-2, everybody up`);
+          if (ls.balls === 0 && ls.strikes === 0) liveLines.push(`Fresh count, work the AB`);
+        }
+        if (typeof ls.outs === "number") {
+          if (ls.outs === 2) liveLines.push(`2 outs, need a 2-out knock`, `Two down, keep the line moving`);
+          if (ls.outs === 0) liveLines.push(`Nobody out, let's stack 'em`);
+        }
+        if (ls.batter && metsBatting) {
+          liveLines.push(`${ls.batter} up — come through here 🙏`, `Let's go ${ls.batter}!`, `${ls.batter} locked in`);
+        }
+        if (ls.pitcher && !metsBatting) {
+          liveLines.push(`${ls.pitcher} on the mound, sit him down 🔥`, `Need a punchout from ${ls.pitcher}`);
+        }
+        if (typeof ls.metsRuns === "number" && typeof ls.oppRuns === "number") {
+          const diff = ls.metsRuns - ls.oppRuns;
+          if (diff > 0) liveLines.push(`Mets up ${ls.metsRuns}-${ls.oppRuns} 🧡💙`, `Hold this lead boys`);
+          else if (diff < 0) liveLines.push(`Down ${ls.oppRuns}-${ls.metsRuns}, comeback time`, `Let's chip away`);
+          else liveLines.push(`Tied ${ls.metsRuns}-${ls.oppRuns}, anyone's game`);
+        }
+      }
+
+      // Admin announcement reactions (stream issues, welcome notes)
+      const adminLines: string[] = [];
+      if (adminMsg) {
+        const a = adminMsg.toLowerCase();
+        if (/(buffer|lag|laggy|freeze|frozen|down|issue|problem|outage|delay|loading|reconnect|fix)/.test(a)) {
+          adminLines.push(
+            "Anyone else's stream buffering? 😩",
+            "Same here, refreshing now",
+            "Admin said they're on it, hang tight 🙏",
+            "Stream just hiccuped for me too",
+            "Mods working on it, ty",
+          );
+        } else if (/(welcome|tonight|joining|chat)/.test(a)) {
+          adminLines.push(
+            "What's up everyone 👋",
+            "Just got here, what'd I miss?",
+            "Glad to be here tonight",
+          );
+        } else {
+          adminLines.push("Saw the admin update, ty mods 🙌");
+        }
+      }
+
       const pool: string[] = [
         ...STATIC_MESSAGES,
         ...buildPlayerMessages(roster),
         ...timeContextMessages(),
         ...gameLines,
+        ...liveLines,
+        ...liveLines, // weight live-game lines higher when present
+        ...adminLines,
       ];
+
 
       const recent = recentRef.current;
       const fresh = pool.filter((m) => !recent.includes(m));
@@ -299,7 +440,7 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       if (timer) clearTimeout(timer);
       clearTimeout(initial);
     };
-  }, [streamId, roster, gameCtx.opponent, gameCtx.pitcher]);
+  }, [streamId, roster, gameCtx.opponent, gameCtx.pitcher, liveState, adminMsg]);
 
   useEffect(() => {
     const node = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null;
