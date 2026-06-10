@@ -577,6 +577,20 @@ const MetsScores = () => {
               <span className="truncate">{game.venue.name}</span>
             </div>}
 
+          {isFinal && highlights && highlights.length > 0 && <div className="mt-3 pt-3 border-t border-border/50">
+              <div className="flex items-center gap-1 mb-1.5 text-primary">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="text-[11px] font-semibold uppercase tracking-wide">Key Highlights</span>
+              </div>
+              <ul className="space-y-1 text-xs text-muted-foreground leading-snug">
+                {highlights.map((h, i) => <li key={i} className="flex gap-1.5">
+                    <span className="text-primary flex-shrink-0">•</span>
+                    <span>{h}</span>
+                  </li>)}
+              </ul>
+            </div>}
+
+
           {showCountdown && countdowns[game.gamePk] && <div className="mt-3 pt-3 border-t border-border/50">
               <div className="flex items-center justify-center gap-2 text-primary">
                 <Timer className="h-4 w-4" />
