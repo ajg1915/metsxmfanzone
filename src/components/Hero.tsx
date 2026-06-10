@@ -11,6 +11,7 @@ import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { Play, Info, ChevronLeft, ChevronRight, Bell, BellRing } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useToast } from "@/hooks/use-toast";
+import { AdminEditBadge } from "@/components/admin/AdminEditBadge";
 
 interface HeroSlide {
   id: string;
@@ -107,6 +108,7 @@ const Hero = () => {
 
   return (
     <section className="group/hero relative h-[clamp(280px,50vw,580px)] overflow-hidden bg-black">
+      <AdminEditBadge to="/admin/hero" label="Edit Hero" />
       <div ref={emblaRef} className="overflow-hidden absolute inset-0">
         <div className="flex h-full">
           {slidesToShow.map((slide, index) => (

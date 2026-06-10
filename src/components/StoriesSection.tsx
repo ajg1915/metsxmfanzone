@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/carousel";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
+import { AdminEditBadge } from "@/components/admin/AdminEditBadge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -344,7 +345,8 @@ const StoriesSection = () => {
 
   return (
     <>
-      <div className="w-full mt-2 sm:mt-3">
+      <div className="w-full mt-2 sm:mt-3 relative">
+        <AdminEditBadge to="/admin/stories" label="Edit Stories" />
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div 
             className="flex items-center justify-between mb-3 sm:mb-4 md:mb-6"

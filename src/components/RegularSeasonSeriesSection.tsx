@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
+import { AdminEditBadge } from "@/components/admin/AdminEditBadge";
 
 interface LiveStream {
   id: string;
@@ -170,6 +171,7 @@ const RegularSeasonSeriesSection = () => {
 
   return (
     <section className="py-6 sm:py-8 relative">
+      <AdminEditBadge to="/admin/live-streams" label="Edit Series" />
       <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-1.5 sm:gap-2">
