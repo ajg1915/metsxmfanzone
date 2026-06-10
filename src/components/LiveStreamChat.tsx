@@ -426,10 +426,11 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       const userRecent = messages.slice(-20).map((m) => norm(m.content || ""));
       userRecent.forEach((u) => recentSet.add(u));
 
-      const fresh = pool.filter((m) => !recentSet.has(norm(m)));
+      const fresh = pool.filter((m) => !recentSet.has(norm(m)) && isSafe(m));
       if (fresh.length === 0) return; // nothing safe to post — skip this tick
 
       const content: string = pick(fresh) ?? "";
+      if (!isSafe(content)) return; // final safety gate
       const key = norm(content);
       recent.push(key);
       if (recent.length > 120) recent.shift();
