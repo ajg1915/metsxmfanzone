@@ -276,7 +276,7 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       cancelled = true;
       clearTimeout(initial);
     };
-  }, [streamId, roster]);
+  }, [streamId, roster, gameCtx.opponent, gameCtx.pitcher]);
 
   useEffect(() => {
     const node = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null;
