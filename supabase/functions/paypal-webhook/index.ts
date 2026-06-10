@@ -147,6 +147,8 @@ Deno.serve(async (req: Request) => {
           
           if (subscription.plan_type === 'annual') {
             endDate.setFullYear(endDate.getFullYear() + 1);
+          } else if (subscription.plan_type === 'weekly') {
+            endDate.setDate(endDate.getDate() + 7);
           } else {
             endDate.setMonth(endDate.getMonth() + 1);
           }
