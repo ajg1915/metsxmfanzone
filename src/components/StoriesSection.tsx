@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/carousel";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/button";
+import { AdminEditBadge } from "@/components/admin/AdminEditBadge";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
