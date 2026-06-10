@@ -5,7 +5,8 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Clock, MapPin, Trophy, Circle, Timer } from 'lucide-react';
+import { Calendar, Clock, MapPin, Trophy, Circle, Timer, Sparkles } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 interface GameData {
   gamePk: number;
   gameDate: string;
@@ -43,6 +44,7 @@ const MetsScores = () => {
   const [previousGames, setPreviousGames] = useState<GameData[]>([]);
   const [currentGames, setCurrentGames] = useState<GameData[]>([]);
   const [upcomingGames, setUpcomingGames] = useState<GameData[]>([]);
+  const [highlightsMap, setHighlightsMap] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [isOffSeason, setIsOffSeason] = useState(false);
 
@@ -366,6 +368,33 @@ const MetsScores = () => {
       setLoading(false);
     }
   };
+
+  // Fetch AI-generated key highlights for previous games
+  useEffect(() => {
+    if (!previousGames.length) return;
+    const dates = previousGames
+      .map((g) => g.gameDate?.split('T')[0])
+      .filter(Boolean) as string[];
+    if (!dates.length) return;
+    const earliest = dates.reduce((a, b) => (a < b ? a : b));
+    const latest = dates.reduce((a, b) => (a > b ? a : b));
+    (async () => {
+      const { data, error } = await supabase
+        .from('game_recaps' as any)
+        .select('game_date, highlights')
+        .eq('status', 'published')
+        .gte('game_date', earliest)
+        .lte('game_date', latest);
+      if (error || !data) return;
+      const map: Record<string, string[]> = {};
+      for (const row of data as any[]) {
+        const h = Array.isArray(row.highlights) ? row.highlights : [];
+        if (row.game_date && h.length) map[row.game_date] = h.slice(0, 5);
+      }
+      setHighlightsMap(map);
+    })();
+  }, [previousGames]);
+
   const getTeamAbbrev = (teamName: string) => {
     const abbreviations: Record<string, string> = {
       'New York Mets': 'NYM',
@@ -475,11 +504,13 @@ const MetsScores = () => {
   const GameCard = ({
     game,
     showLive = false,
-    showCountdown = false
+    showCountdown = false,
+    highlights,
   }: {
     game: GameData;
     showLive?: boolean;
     showCountdown?: boolean;
+    highlights?: string[];
   }) => {
     const metsHome = isMetsHome(game);
     const opponent = metsHome ? game.teams.away.team : game.teams.home.team;
@@ -545,6 +576,20 @@ const MetsScores = () => {
               <MapPin className="h-3 w-3" />
               <span className="truncate">{game.venue.name}</span>
             </div>}
+
+          {isFinal && highlights && highlights.length > 0 && <div className="mt-3 pt-3 border-t border-border/50">
+              <div className="flex items-center gap-1 mb-1.5 text-primary">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="text-[11px] font-semibold uppercase tracking-wide">Key Highlights</span>
+              </div>
+              <ul className="space-y-1 text-xs text-muted-foreground leading-snug">
+                {highlights.map((h, i) => <li key={i} className="flex gap-1.5">
+                    <span className="text-primary flex-shrink-0">•</span>
+                    <span>{h}</span>
+                  </li>)}
+              </ul>
+            </div>}
+
 
           {showCountdown && countdowns[game.gamePk] && <div className="mt-3 pt-3 border-t border-border/50">
               <div className="flex items-center justify-center gap-2 text-primary">
@@ -675,7 +720,7 @@ const MetsScores = () => {
                   <LoadingSkeleton />
                   <LoadingSkeleton />
                   <LoadingSkeleton />
-                </> : previousGames.length > 0 ? previousGames.map(game => <GameCard key={game.gamePk} game={game} />) : <Card className="col-span-full border-border/50 bg-card/50">
+                </> : previousGames.length > 0 ? previousGames.map(game => <GameCard key={game.gamePk} game={game} highlights={highlightsMap[game.gameDate?.split('T')[0]]} />) : <Card className="col-span-full border-border/50 bg-card/50">
                   <CardContent className="p-6 text-center text-muted-foreground">
                     No previous games found
                   </CardContent>

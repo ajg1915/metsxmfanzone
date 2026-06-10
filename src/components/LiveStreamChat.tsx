@@ -301,6 +301,26 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
     const norm = (s: string) =>
       s.toLowerCase().replace(/\s+/g, " ").replace(/[!?.…]+$/g, "").trim();
 
+    // Content-safety filter: blocks profanity + obvious personal info before posting
+    const profanityRegex = /\b(f+u+c+k+\w*|s+h+i+t+\w*|b+i+t+c+h+\w*|a+s+s+h+o+l+e+\w*|d+i+c+k+\w*|p+u+s+s+y+\w*|c+u+n+t+\w*|b+a+s+t+a+r+d+\w*|n+i+g+\w*|f+a+g+\w*|r+e+t+a+r+d+\w*|w+h+o+r+e+\w*|s+l+u+t+\w*|c+o+c+k+\w*|t+w+a+t+\w*|w+a+n+k+\w*|m+o+t+h+e+r+f+\w*)\b/i;
+    const piiPatterns: RegExp[] = [
+      /[\w.+-]+@[\w-]+\.[\w.-]+/i,                                  // email
+      /(?:\+?\d{1,2}[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/,  // phone
+      /\b\d{3}-\d{2}-\d{4}\b/,                                      // SSN
+      /\b(?:\d[ -]*?){13,19}\b/,                                    // credit-card-ish
+      /\bhttps?:\/\/\S+/i,                                          // url
+      /\bwww\.\S+\.\w+/i,                                           // www url
+      /\b\d{1,5}\s+\w[\w.\s]{2,}\s+(street|st|avenue|ave|road|rd|blvd|boulevard|lane|ln|drive|dr|court|ct|way|place|pl)\b/i,
+      /\b\d{5}(?:-\d{4})?\b/,                                       // US zip
+      /(?:^|\s)@[A-Za-z0-9_]{3,}/,                                  // social handle
+    ];
+    const isSafe = (s: string) => {
+      if (!s) return false;
+      if (profanityRegex.test(s)) return false;
+      for (const r of piiPatterns) if (r.test(s)) return false;
+      return true;
+    };
+
     const postOne = () => {
       if (isOutage) return; // content-safety: stay quiet during outages
 
@@ -406,10 +426,11 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       const userRecent = messages.slice(-20).map((m) => norm(m.content || ""));
       userRecent.forEach((u) => recentSet.add(u));
 
-      const fresh = pool.filter((m) => !recentSet.has(norm(m)));
+      const fresh = pool.filter((m) => !recentSet.has(norm(m)) && isSafe(m));
       if (fresh.length === 0) return; // nothing safe to post — skip this tick
 
       const content: string = pick(fresh) ?? "";
+      if (!isSafe(content)) return; // final safety gate
       const key = norm(content);
       recent.push(key);
       if (recent.length > 120) recent.shift();
