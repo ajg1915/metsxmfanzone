@@ -94,6 +94,16 @@ const Maintenance = ({ message }: MaintenanceProps) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/10 flex flex-col">
+      <Helmet>
+        <title>We'll Be Right Back — MetsXMFanZone</title>
+        <meta name="description" content="MetsXMFanZone is briefly down for scheduled maintenance. Drop your email and we'll let you know the moment we're back." />
+        <meta name="robots" content="noindex,follow" />
+        <link rel="canonical" href="https://metsxmfanzone.com/maintenance" />
+        <meta property="og:title" content="We'll Be Right Back — MetsXMFanZone" />
+        <meta property="og:description" content="MetsXMFanZone is briefly down for maintenance. We'll be back shortly." />
+        <meta property="og:url" content="https://metsxmfanzone.com/maintenance" />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <div className="flex-1 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
