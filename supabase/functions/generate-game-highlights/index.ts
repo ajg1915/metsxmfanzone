@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
           slug: `mets-${gameDate}-${gamePk}`,
           published_at: new Date().toISOString(),
         },
-        { onConflict: "game_date" },
+        { onConflict: "slug" },
       );
     }
 
