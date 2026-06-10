@@ -216,7 +216,7 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       cancelled = true;
       clearTimeout(initial);
     };
-  }, [streamId]);
+  }, [streamId, roster]);
 
   useEffect(() => {
     const node = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null;
