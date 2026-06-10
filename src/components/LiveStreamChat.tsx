@@ -440,7 +440,7 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       if (timer) clearTimeout(timer);
       clearTimeout(initial);
     };
-  }, [streamId, roster, gameCtx.opponent, gameCtx.pitcher]);
+  }, [streamId, roster, gameCtx.opponent, gameCtx.pitcher, liveState, adminMsg]);
 
   useEffect(() => {
     const node = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null;
