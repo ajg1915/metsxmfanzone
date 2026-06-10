@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
+import { AdminEditBadge } from "@/components/admin/AdminEditBadge";
 
 interface LiveStream {
   id: string;
