@@ -13,7 +13,8 @@ import { toast } from "sonner";
 import {
   DndContext,
   closestCenter,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -84,9 +85,10 @@ const SortableStreamCard = ({
         <div
           {...attributes}
           {...listeners}
-          className="absolute -top-2 left-1/2 -translate-x-1/2 z-30 bg-primary text-primary-foreground rounded-full p-1.5 shadow-lg cursor-grab active:cursor-grabbing"
+          style={{ touchAction: "none" }}
+          className="absolute -top-2 left-1/2 -translate-x-1/2 z-30 bg-primary text-primary-foreground rounded-full p-2 shadow-lg cursor-grab active:cursor-grabbing select-none"
         >
-          <GripVertical className="w-4 h-4" />
+          <GripVertical className="w-5 h-5" />
         </div>
       )}
 
@@ -187,7 +189,8 @@ const LiveStreamsSection = () => {
   const [adminMode, setAdminMode] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
   );
 
   // Auto-check stream statuses based on scheduled times

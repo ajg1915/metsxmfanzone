@@ -49,7 +49,8 @@ import {
   DndContext,
   closestCenter,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -110,7 +111,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
       <div className="absolute top-2 right-2 z-10">
         <Checkbox checked={selected} onCheckedChange={() => onToggleSelect(stream.id)} />
       </div>
-      <div {...attributes} {...listeners} className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing p-1 rounded bg-background/80 backdrop-blur-sm">
+      <div {...attributes} {...listeners} style={{ touchAction: "none" }} className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing p-2 rounded bg-background/80 backdrop-blur-sm select-none">
         <GripVertical className="w-4 h-4 text-muted-foreground" />
       </div>
       <CardHeader className="pb-3 pl-10 pr-10">
@@ -550,7 +551,8 @@ export default function LiveStreamManagement() {
   };
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 

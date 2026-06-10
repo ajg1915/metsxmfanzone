@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Save, GripVertical, ChevronDown, ChevronUp, Eye, EyeOff, Image as ImageIcon, ImagePlus, Loader2, Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
-  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent,
+  DndContext, closestCenter, KeyboardSensor, MouseSensor, TouchSensor, useSensor, useSensors, DragEndEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy,
@@ -168,7 +168,7 @@ const SortableSlideRow = ({
   return (
     <Card ref={setNodeRef} style={style} className={`border-border overflow-hidden ${isDragging ? 'ring-2 ring-primary' : ''}`}>
       <div className="flex items-center gap-1.5 px-2 py-1.5 cursor-pointer" onClick={onToggle}>
-        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded" onClick={e => e.stopPropagation()}>
+        <div {...attributes} {...listeners} style={{ touchAction: "none" }} className="cursor-grab active:cursor-grabbing p-2 hover:bg-muted rounded select-none" onClick={e => e.stopPropagation()}>
           <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
         </div>
         {slide.image_url ? (
@@ -272,7 +272,8 @@ const HeroManagement = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
