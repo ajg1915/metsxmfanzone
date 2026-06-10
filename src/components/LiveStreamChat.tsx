@@ -32,30 +32,73 @@ const MAX_LENGTH = 500;
 
 const BOT_NAMES = [
   "MetsFan86", "AmazinAndy", "QueensKid", "FlushingFaithful", "PoloGrounder",
-  "PiazzaForever", "LGM_Tony", "CitiFieldCarl", "OrangeBlueJay", "DegromDanny",
-  "BuckShowtime", "AlonsoBomb", "LindorMagic", "NimmoNation", "StrawberryFields",
-  "MetsMomma", "BleacherBrendan", "SubwaySeriesSal", "ShortPorchSam", "JoseReyesFan",
-  "DavidWright5", "K_Corner", "RedSeatRyan", "ApplePopUp", "MrMet1962",
+  "PiazzaForever", "LGM_Tony", "CitiFieldCarl", "OrangeBlueJay", "BuckShowtime",
+  "AlonsoBomb", "LindorMagic", "NimmoNation", "StrawberryFields", "MetsMomma",
+  "BleacherBrendan", "SubwaySeriesSal", "ShortPorchSam", "K_Corner", "RedSeatRyan",
+  "ApplePopUp", "MrMet1962", "SengaForkball", "VientosVibes", "SotoShow",
 ];
-const BOT_MESSAGES = [
-  "LET'S GO METS!!! 🧡💙", "What a play!", "Alonso about to go yard 💣",
-  "Lindor is locked in tonight", "LFGM!!!", "This bullpen tho 😅",
-  "Nimmo running through walls again lol", "Best fanbase in baseball 🙌",
-  "Citi Field looking electric", "We need a hit here", "Strike him out!",
-  "Vamos Mets!", "I love this team man", "Big spot right here",
+
+// Fallback 2026 roster if MLB API is unavailable
+const FALLBACK_ROSTER_FIRST = [
+  "Lindor", "Soto", "Alonso", "Nimmo", "Vientos", "Marte", "McNeil",
+  "Acuña", "Baty", "Alvarez", "Senga", "Manaea", "Holmes", "Peterson",
+  "Megill", "Díaz", "Garrett", "Stanek",
+];
+
+const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+
+const STATIC_MESSAGES = [
+  "LET'S GO METS!!! 🧡💙", "LFGM!!!", "Vamos Mets!", "RALLY TIME",
+  "Best fanbase in baseball 🙌", "Citi Field looking electric tonight",
   "Anyone else watching from Queens?", "From Long Island, what's up everyone",
-  "Joining from Brooklyn 🍕", "Watching with my dad, lifelong fans ❤️",
-  "Chat moving fast tonight 🔥", "That ump is brutal", "RALLY TIME",
-  "Series win incoming", "Pete is a beast", "Francisco for MVP",
-  "Defense wins games", "This is why I love baseball",
+  "Joining from Brooklyn 🍕", "Watching with my dad ❤️",
+  "Chat moving fast tonight 🔥", "That ump is brutal 😤",
   "MetsXMFanZone in the house 🎙️", "Stream looks crisp 🔥",
   "Audio is perfect tonight", "Hot dog and a beer rn 🌭🍺",
-  "Wearing my '86 jersey for luck", "MAGIC IS BACK", "Comeback brewing 👀",
-  "One pitch at a time", "Trust the process", "LGM LGM LGM",
-  "Citi vibes immaculate", "Let's get this W", "BOOOOOO that call",
-  "He's been raking all week", "Defensive gem!!", "TEXTBOOK double play",
+  "MAGIC IS BACK", "Comeback brewing 👀", "One pitch at a time",
+  "LGM LGM LGM", "Citi vibes immaculate", "Let's get this W",
+  "BOOOOOO that call", "TEXTBOOK double play", "Defense wins games",
+  "This is why I love baseball", "Trust the process",
+  "Series win incoming", "Who else got off work early for this?",
+  "2026 squad is built different 💪", "Best stream on the internet fr",
 ];
-const pick = <T,>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+
+const buildPlayerMessages = (players: string[]): string[] => {
+  if (!players.length) return [];
+  const templates = [
+    (p: string) => `${p} about to do something special 👀`,
+    (p: string) => `${p} locked in tonight`,
+    (p: string) => `${p} 🔥🔥🔥`,
+    (p: string) => `Give ${p} the MVP already`,
+    (p: string) => `${p} with the laser!! 🚀`,
+    (p: string) => `${p} carrying us rn`,
+    (p: string) => `Need ${p} to come through here`,
+    (p: string) => `${p} for the W 🙏`,
+    (p: string) => `${p} is HIM`,
+    (p: string) => `Throw it to ${p} 😤`,
+    (p: string) => `${p} 🐐`,
+    (p: string) => `That's why we love ${p}`,
+    (p: string) => `${p}!!! LET'S GOOO`,
+    (p: string) => `${p} cooking tonight 🧑‍🍳`,
+  ];
+  return players.flatMap((p) => templates.map((t) => t(p)));
+};
+
+const timeContextMessages = (): string[] => {
+  const now = new Date();
+  const hour = now.getHours();
+  const month = now.getMonth(); // 0=Jan
+  const day = now.toLocaleDateString("en-US", { weekday: "long" });
+  const ctx: string[] = [];
+  if (hour < 12) ctx.push("Morning Mets fam ☀️", "Coffee + Mets, perfect combo ☕");
+  else if (hour < 17) ctx.push(`Happy ${day} afternoon Mets fam`, "Day game vibes ☀️⚾");
+  else if (hour < 21) ctx.push(`${day} night baseball, doesn't get better`, "Prime time Mets 🌃");
+  else ctx.push("Late night Mets crew checking in 🌙", "Staying up for every pitch");
+  if (month >= 2 && month <= 3) ctx.push("Spring Training looking good 🌱", "Can't wait for opening day");
+  else if (month >= 9) ctx.push("October baseball baby 🍂", "Playoff push is REAL");
+  else ctx.push("2026 season hitting different", "162 game grind 💪");
+  return ctx;
+};
 
 const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   const { user } = useAuth();
@@ -63,7 +106,25 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [roster, setRoster] = useState<string[]>(FALLBACK_ROSTER_FIRST);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Pull the live active 2026 Mets roster so chat references current players
+  useEffect(() => {
+    let cancelled = false;
+    fetch("https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=active&season=2026")
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const names: string[] = (data?.roster ?? [])
+          .map((p: any) => p?.person?.lastName || (p?.person?.fullName ?? "").split(" ").slice(-1)[0])
+          .filter(Boolean);
+        if (names.length) setRoster(names);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
 
   // Hydrate profiles for a batch of user_ids
   const hydrateProfiles = async (msgs: ChatMessage[]): Promise<ChatMessage[]> => {
@@ -128,7 +189,12 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       const t = setTimeout(() => {
         if (cancelled) return;
         const name = pick(BOT_NAMES);
-        const content = pick(BOT_MESSAGES);
+        const pool: string[] = [
+          ...STATIC_MESSAGES,
+          ...buildPlayerMessages(roster),
+          ...timeContextMessages(),
+        ];
+        const content: string = pick(pool) ?? "LFGM!!!";
         const fake: ChatMessage = {
           id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           stream_id: streamId,
@@ -150,7 +216,7 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       cancelled = true;
       clearTimeout(initial);
     };
-  }, [streamId]);
+  }, [streamId, roster]);
 
   useEffect(() => {
     const node = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null;
