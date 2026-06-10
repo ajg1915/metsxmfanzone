@@ -106,7 +106,25 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [roster, setRoster] = useState<string[]>(FALLBACK_ROSTER_FIRST);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Pull the live active 2026 Mets roster so chat references current players
+  useEffect(() => {
+    let cancelled = false;
+    fetch("https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=active&season=2026")
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        const names: string[] = (data?.roster ?? [])
+          .map((p: any) => p?.person?.lastName || (p?.person?.fullName ?? "").split(" ").slice(-1)[0])
+          .filter(Boolean);
+        if (names.length) setRoster(names);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
 
   // Hydrate profiles for a batch of user_ids
   const hydrateProfiles = async (msgs: ChatMessage[]): Promise<ChatMessage[]> => {
