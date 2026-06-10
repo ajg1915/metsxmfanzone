@@ -69,6 +69,28 @@ const Plans = () => {
 
   const allPlans = [
     {
+      id: "weekly",
+      name: "Weekly",
+      price: "$3.99",
+      priceValue: 3.99,
+      period: "per week",
+      billingNote: "Billed weekly",
+      description: "Budget-friendly full access",
+      features: [
+        "Full access to everything",
+        "All live streams",
+        "Full game replays",
+        "All highlights",
+        "Community forum access",
+        "Ad-free experience",
+        "HD streaming",
+        "Cancel anytime",
+      ],
+      notIncluded: [],
+      cta: "Subscribe Weekly",
+      popular: false,
+    },
+    {
       id: "premium",
       name: "Premium",
       price: "$9.99",
