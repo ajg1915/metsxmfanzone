@@ -209,16 +209,52 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   useEffect(() => {
     let cancelled = false;
     const schedule = () => {
-      const delay = 2500 + Math.random() * 5500; // 2.5s – 8s
+      const delay = 3000 + Math.random() * 6000; // 3s – 9s, more natural cadence
       const t = setTimeout(() => {
         if (cancelled) return;
-        const name = pick(BOT_NAMES);
+
+        // Pick a unique fan name (don't reuse a name twice in the same session
+        // until we've cycled through everyone) so it doesn't look like 2 bots
+        const availNames = BOT_NAMES.filter((n) => !usedNameRef.current.has(n));
+        if (availNames.length === 0) usedNameRef.current.clear();
+        const name = pick(availNames.length ? availNames : BOT_NAMES);
+        usedNameRef.current.add(name);
+
+        // Game-specific lines using today's opponent and starting pitcher
+        const opponent = gameCtx.opponent;
+        const pitcher = gameCtx.pitcher;
+        const gameLines: string[] = [];
+        if (opponent) {
+          gameLines.push(
+            `Let's take this one from the ${opponent} 💪`,
+            `Beat the ${opponent}!`,
+            `${opponent} fans quiet tonight 🤫`,
+            `Sweep the ${opponent} please`,
+          );
+        }
+        if (pitcher) {
+          gameLines.push(
+            `${pitcher} on the bump, we got this`,
+            `Need ${pitcher} to settle in here`,
+            `${pitcher} dealing 🔥`,
+            `Get to ${pitcher} early`,
+          );
+        }
+
         const pool: string[] = [
           ...STATIC_MESSAGES,
           ...buildPlayerMessages(roster),
           ...timeContextMessages(),
+          ...gameLines,
         ];
-        const content: string = pick(pool) ?? "LFGM!!!";
+
+        // No-repeat: skip any line used in the last 40 messages
+        const recent = recentRef.current;
+        const fresh = pool.filter((m) => !recent.includes(m));
+        const content: string = pick(fresh.length ? fresh : pool) ?? "LFGM!!!";
+        recent.push(content);
+        if (recent.length > 40) recent.shift();
+
         const fake: ChatMessage = {
           id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           stream_id: streamId,
