@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
         body: {
           userId: user.id,
           planType: subscription.plan_type,
-          amount: subscription.plan_type === 'annual' ? '$129.99' : '$9.99',
+          amount: subscription.plan_type === 'annual' ? '$129.99' : subscription.plan_type === 'weekly' ? '$3.99' : '$9.99',
           source: 'PayPal Subscription',
         },
       });
