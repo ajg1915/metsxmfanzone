@@ -16,6 +16,7 @@ import authLogo from "@/assets/metsxmfanzone-logo-auth.png";
 import { trackFailedLogin } from "@/utils/securityAlerts";
 import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/browser";
 import AuthLoadingScreen from "@/components/auth/AuthLoadingScreen";
+import { Helmet } from "react-helmet-async";
 
 
 
@@ -1122,6 +1123,16 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
+      <Helmet>
+        <title>Sign In or Sign Up — MetsXMFanZone</title>
+        <meta name="description" content="Sign in or create your MetsXMFanZone account to access live Mets streams, podcasts, the fan community, and exclusive content." />
+        <meta name="robots" content="noindex,follow" />
+        <link rel="canonical" href="https://metsxmfanzone.com/auth" />
+        <meta property="og:title" content="Sign In — MetsXMFanZone" />
+        <meta property="og:description" content="Sign in or create your MetsXMFanZone account to access live Mets streams, podcasts, and the fan community." />
+        <meta property="og:url" content="https://metsxmfanzone.com/auth" />
+        <meta property="og:type" content="website" />
+      </Helmet>
       <AuthBackground />
       {/* Decorative glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">

@@ -40,7 +40,24 @@ const Contact = () => {
         title="Contact MetsXMFanZone - Get in Touch"
         description="Contact MetsXMFanZone for support, feedback, or questions. We're here to help Mets fans with subscriptions, content, and more."
         keywords="contact Mets fan zone, MetsXM support, Mets customer service, contact us"
-        canonical="https://www.metsxmfanzone.com/contact"
+        canonical="https://metsxmfanzone.com/contact"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          name: "MetsXMFanZone",
+          url: "https://metsxmfanzone.com",
+          image: "https://metsxmfanzone.com/og-image.png",
+          telephone: "1-800-METS-FAN",
+          email: "support@metsxmfanzone.com",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "123 Baseball Ave",
+            addressLocality: "New York",
+            addressRegion: "NY",
+            postalCode: "10001",
+            addressCountry: "US",
+          },
+        }}
       />
       <Navigation />
       <main className="pt-12">
