@@ -369,7 +369,7 @@ const MetsScores = () => {
     }
   };
 
-  // Fetch AI-generated key highlights for previous games
+  // Fetch AI-generated key highlights for previous games; generate on demand if missing
   useEffect(() => {
     if (!previousGames.length) return;
     const dates = previousGames
@@ -378,21 +378,41 @@ const MetsScores = () => {
     if (!dates.length) return;
     const earliest = dates.reduce((a, b) => (a < b ? a : b));
     const latest = dates.reduce((a, b) => (a > b ? a : b));
+    let cancelled = false;
     (async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('game_recaps' as any)
         .select('game_date, highlights')
         .eq('status', 'published')
         .gte('game_date', earliest)
         .lte('game_date', latest);
-      if (error || !data) return;
       const map: Record<string, string[]> = {};
-      for (const row of data as any[]) {
+      for (const row of (data as any[]) || []) {
         const h = Array.isArray(row.highlights) ? row.highlights : [];
-        if (row.game_date && h.length) map[row.game_date] = h.slice(0, 5);
+        if (row.game_date && h.length) map[row.game_date] = h.slice(0, 6);
       }
+      if (cancelled) return;
       setHighlightsMap(map);
+
+      // Generate highlights for any previous game without cached highlights
+      const missing = previousGames.filter((g) => {
+        const d = g.gameDate?.split('T')[0];
+        return d && !map[d] && g.status.abstractGameState === 'Final';
+      });
+      for (const g of missing) {
+        const d = g.gameDate.split('T')[0];
+        try {
+          const { data: res } = await supabase.functions.invoke('generate-game-highlights', {
+            body: { gamePk: g.gamePk, gameDate: d },
+          });
+          const h = (res as any)?.highlights;
+          if (!cancelled && Array.isArray(h) && h.length) {
+            setHighlightsMap((prev) => ({ ...prev, [d]: h.slice(0, 6) }));
+          }
+        } catch { /* skip */ }
+      }
     })();
+    return () => { cancelled = true; };
   }, [previousGames]);
 
   const getTeamAbbrev = (teamName: string) => {
