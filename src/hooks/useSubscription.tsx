@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "./useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SubscriptionTier = "free" | "premium" | "annual";
+export type SubscriptionTier = "free" | "weekly" | "premium" | "annual";
 
 export const useSubscription = () => {
   const { user, loading: authLoading } = useAuth();
