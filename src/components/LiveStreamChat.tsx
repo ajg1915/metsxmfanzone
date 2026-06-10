@@ -108,6 +108,14 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   const [loading, setLoading] = useState(true);
   const [roster, setRoster] = useState<string[]>(FALLBACK_ROSTER_FIRST);
   const [gameCtx, setGameCtx] = useState<{ opponent?: string; pitcher?: string }>({});
+  const [liveState, setLiveState] = useState<{
+    inning?: number; inningOrd?: string; half?: string;
+    balls?: number; strikes?: number; outs?: number;
+    batter?: string; pitcher?: string;
+    metsRuns?: number; oppRuns?: number; metsAreHome?: boolean;
+    status?: string;
+  }>({});
+  const [adminMsg, setAdminMsg] = useState<string>("");
   const recentRef = useRef<string[]>([]);
   const usedNameRef = useRef<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
