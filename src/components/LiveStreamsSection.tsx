@@ -188,7 +188,8 @@ const LiveStreamsSection = () => {
   const [adminMode, setAdminMode] = useState(false);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
   );
 
   // Auto-check stream statuses based on scheduled times
