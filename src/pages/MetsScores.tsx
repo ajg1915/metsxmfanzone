@@ -504,11 +504,13 @@ const MetsScores = () => {
   const GameCard = ({
     game,
     showLive = false,
-    showCountdown = false
+    showCountdown = false,
+    highlights,
   }: {
     game: GameData;
     showLive?: boolean;
     showCountdown?: boolean;
+    highlights?: string[];
   }) => {
     const metsHome = isMetsHome(game);
     const opponent = metsHome ? game.teams.away.team : game.teams.home.team;
