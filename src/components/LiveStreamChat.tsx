@@ -287,11 +287,37 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
+    // Detect outage from admin message or stalled live feed → pause bots
+    const outageRegex = /(buffer|lag|laggy|freeze|frozen|down|offline|outage|delay|loading|reconnect|fix|fixing|maintenance|technical|issue|problem|restart)/i;
+    const isOutage = !!adminMsg && outageRegex.test(adminMsg);
+
+    // Per-fan-name cooldown: don't reuse a name within 60s
+    const nameCooldownMs = 60_000;
+    const nameTimeRef = (usedNameRef as any).times as Map<string, number> | undefined;
+    const nameTimes: Map<string, number> = nameTimeRef ?? new Map<string, number>();
+    (usedNameRef as any).times = nameTimes;
+
+    // Normalize content for dedupe (lowercase + collapse whitespace, strip trailing punctuation/emoji noise)
+    const norm = (s: string) =>
+      s.toLowerCase().replace(/\s+/g, " ").replace(/[!?.…]+$/g, "").trim();
+
     const postOne = () => {
-      const availNames = BOT_NAMES.filter((n) => !usedNameRef.current.has(n));
-      if (availNames.length === 0) usedNameRef.current.clear();
-      const name = pick(availNames.length ? availNames : BOT_NAMES);
-      usedNameRef.current.add(name);
+      if (isOutage) return; // content-safety: stay quiet during outages
+
+      // Pick a unique, cooldown-respecting fan name
+      const now = Date.now();
+      const avail = BOT_NAMES.filter((n) => {
+        const last = nameTimes.get(n) ?? 0;
+        return now - last > nameCooldownMs;
+      });
+      if (avail.length === 0) {
+        // Everyone on cooldown: clear oldest half to recycle
+        const sorted = [...nameTimes.entries()].sort((a, b) => a[1] - b[1]);
+        sorted.slice(0, Math.ceil(sorted.length / 2)).forEach(([n]) => nameTimes.delete(n));
+      }
+      const pickFrom = avail.length ? avail : BOT_NAMES;
+      const name = pick(pickFrom);
+      nameTimes.set(name, now);
 
       const opponent = gameCtx.opponent;
       const pitcher = gameCtx.pitcher;
@@ -350,27 +376,15 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
         }
       }
 
-      // Admin announcement reactions (stream issues, welcome notes)
+      // Welcome-style admin notes only (outage path is short-circuited above)
       const adminLines: string[] = [];
-      if (adminMsg) {
-        const a = adminMsg.toLowerCase();
-        if (/(buffer|lag|laggy|freeze|frozen|down|issue|problem|outage|delay|loading|reconnect|fix)/.test(a)) {
-          adminLines.push(
-            "Anyone else's stream buffering? 😩",
-            "Same here, refreshing now",
-            "Admin said they're on it, hang tight 🙏",
-            "Stream just hiccuped for me too",
-            "Mods working on it, ty",
-          );
-        } else if (/(welcome|tonight|joining|chat)/.test(a)) {
-          adminLines.push(
-            "What's up everyone 👋",
-            "Just got here, what'd I miss?",
-            "Glad to be here tonight",
-          );
-        } else {
-          adminLines.push("Saw the admin update, ty mods 🙌");
-        }
+      if (adminMsg && !isOutage && /(welcome|tonight|joining|chat|enjoy|thanks)/i.test(adminMsg)) {
+        adminLines.push(
+          "What's up everyone 👋",
+          "Just got here, what'd I miss?",
+          "Glad to be here tonight",
+          "Saw the admin note, ty mods 🙌",
+        );
       }
 
       const pool: string[] = [
@@ -383,12 +397,22 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
         ...adminLines,
       ];
 
-
+      // Stricter no-repeat:
+      // - 120-message rolling window
+      // - normalize for dedupe
+      // - also avoid recent real user messages
       const recent = recentRef.current;
-      const fresh = pool.filter((m) => !recent.includes(m));
-      const content: string = pick(fresh.length ? fresh : pool) ?? "LFGM!!!";
-      recent.push(content);
-      if (recent.length > 60) recent.shift();
+      const recentSet = new Set(recent.map(norm));
+      const userRecent = messages.slice(-20).map((m) => norm(m.content || ""));
+      userRecent.forEach((u) => recentSet.add(u));
+
+      const fresh = pool.filter((m) => !recentSet.has(norm(m)));
+      if (fresh.length === 0) return; // nothing safe to post — skip this tick
+
+      const content: string = pick(fresh) ?? "";
+      const key = norm(content);
+      recent.push(key);
+      if (recent.length > 120) recent.shift();
 
       const fake: ChatMessage = {
         id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -405,6 +429,12 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
     };
 
     const schedule = () => {
+      // During outages: don't post; just re-check every 8–14s
+      if (isOutage) {
+        timer = setTimeout(() => { if (!cancelled) schedule(); }, 8000 + Math.random() * 6000);
+        return;
+      }
+
       // 12% chance of a burst (big-play reaction): 3–5 quick msgs, then quiet
       const isBurst = Math.random() < 0.12;
       if (isBurst) {
