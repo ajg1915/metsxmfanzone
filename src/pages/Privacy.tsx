@@ -9,7 +9,13 @@ const Privacy = () => {
         <title>Privacy Policy - MetsXMFanZone Data Protection & Privacy</title>
         <meta name="description" content="Read MetsXMFanZone's privacy policy to understand how we collect, use, and protect your personal information and data." />
         <meta name="keywords" content="privacy policy, data protection, user privacy, terms and conditions" />
-        <link rel="canonical" href="https://www.metsxmfanzone.com/privacy" />
+        <link rel="canonical" href="https://metsxmfanzone.com/privacy" />
+        <meta property="og:title" content="Privacy Policy — MetsXMFanZone" />
+        <meta property="og:description" content="How MetsXMFanZone collects, uses, and protects your personal information and data." />
+        <meta property="og:url" content="https://metsxmfanzone.com/privacy" />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:title" content="Privacy Policy — MetsXMFanZone" />
+        <meta name="twitter:description" content="How MetsXMFanZone collects, uses, and protects your personal information and data." />
       </Helmet>
       <Navigation />
       <main className="pt-12">
