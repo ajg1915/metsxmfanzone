@@ -107,23 +107,47 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [roster, setRoster] = useState<string[]>(FALLBACK_ROSTER_FIRST);
+  const [gameCtx, setGameCtx] = useState<{ opponent?: string; pitcher?: string }>({});
+  const recentRef = useRef<string[]>([]);
+  const usedNameRef = useRef<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Pull the live active 2026 Mets roster so chat references current players
+  // Sync bot chat with today's published lineup (current players + opponent + starter)
   useEffect(() => {
     let cancelled = false;
-    fetch("https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=active&season=2026")
-      .then((r) => r.json())
-      .then((data) => {
+    (async () => {
+      const { data } = await supabase
+        .from("lineup_cards")
+        .select("opponent, lineup_data, starting_pitcher, game_date")
+        .eq("published", true)
+        .order("game_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data?.lineup_data && Array.isArray(data.lineup_data)) {
+        const names = (data.lineup_data as any[])
+          .map((p) => (typeof p?.name === "string" ? p.name : null))
+          .filter(Boolean) as string[];
+        if (names.length) setRoster(names);
+        setGameCtx({
+          opponent: typeof data.opponent === "string" ? data.opponent : undefined,
+          pitcher: (data.starting_pitcher as any)?.name,
+        });
+        return;
+      }
+      try {
+        const r = await fetch("https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=active&season=2026");
+        const d = await r.json();
         if (cancelled) return;
-        const names: string[] = (data?.roster ?? [])
-          .map((p: any) => p?.person?.lastName || (p?.person?.fullName ?? "").split(" ").slice(-1)[0])
+        const names: string[] = (d?.roster ?? [])
+          .map((p: any) => p?.person?.fullName)
           .filter(Boolean);
         if (names.length) setRoster(names);
-      })
-      .catch(() => {});
+      } catch {}
+    })();
     return () => { cancelled = true; };
-  }, []);
+  }, [streamId]);
+
 
 
   // Hydrate profiles for a batch of user_ids
