@@ -168,7 +168,7 @@ const SortableSlideRow = ({
   return (
     <Card ref={setNodeRef} style={style} className={`border-border overflow-hidden ${isDragging ? 'ring-2 ring-primary' : ''}`}>
       <div className="flex items-center gap-1.5 px-2 py-1.5 cursor-pointer" onClick={onToggle}>
-        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded" onClick={e => e.stopPropagation()}>
+        <div {...attributes} {...listeners} style={{ touchAction: "none" }} className="cursor-grab active:cursor-grabbing p-2 hover:bg-muted rounded select-none" onClick={e => e.stopPropagation()}>
           <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
         </div>
         {slide.image_url ? (
