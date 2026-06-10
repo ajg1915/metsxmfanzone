@@ -156,6 +156,75 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
     return () => { cancelled = true; };
   }, [streamId]);
 
+  // Poll live MLB game state (inning, count, outs, batter) every 20s
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const fetchLive = async () => {
+      try {
+        const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+        const sch = await fetch(
+          `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=121&date=${today}&hydrate=linescore,team`
+        ).then((r) => r.json());
+        const game = sch?.dates?.[0]?.games?.[0];
+        if (!game || cancelled) return;
+        const metsAreHome = game?.teams?.home?.team?.id === 121;
+        const status: string = game?.status?.abstractGameState ?? "";
+        if (status !== "Live") {
+          setLiveState((s) => ({ ...s, status }));
+          return;
+        }
+        const feed = await fetch(`https://statsapi.mlb.com/api/v1.1/game/${game.gamePk}/feed/live`).then((r) => r.json());
+        if (cancelled) return;
+        const ls = feed?.liveData?.linescore;
+        const cur = feed?.liveData?.plays?.currentPlay;
+        setLiveState({
+          status: "Live",
+          inning: ls?.currentInning,
+          inningOrd: ls?.currentInningOrdinal,
+          half: ls?.inningState,
+          balls: ls?.balls,
+          strikes: ls?.strikes,
+          outs: ls?.outs,
+          batter: cur?.matchup?.batter?.fullName,
+          pitcher: cur?.matchup?.pitcher?.fullName,
+          metsRuns: metsAreHome ? ls?.teams?.home?.runs : ls?.teams?.away?.runs,
+          oppRuns: metsAreHome ? ls?.teams?.away?.runs : ls?.teams?.home?.runs,
+          metsAreHome,
+        });
+      } catch {}
+    };
+    fetchLive();
+    timer = setInterval(fetchLive, 20000);
+    return () => { cancelled = true; if (timer) clearInterval(timer); };
+  }, [streamId]);
+
+  // Listen to admin announcements for this stream and react in chat
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("live_stream_admin_updates")
+        .select("welcome_message, updated_at")
+        .eq("live_stream_id", streamId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data?.welcome_message) setAdminMsg(data.welcome_message);
+    })();
+    const ch = supabase
+      .channel(`admin_updates:${streamId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "live_stream_admin_updates", filter: `live_stream_id=eq.${streamId}` },
+        (payload) => {
+          const msg = (payload.new as any)?.welcome_message;
+          if (msg) setAdminMsg(msg);
+        }
+      )
+      .subscribe();
+    return () => { cancelled = true; supabase.removeChannel(ch); };
+  }, [streamId]);
 
 
   // Hydrate profiles for a batch of user_ids
