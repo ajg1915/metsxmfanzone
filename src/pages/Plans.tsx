@@ -60,7 +60,7 @@ const Plans = () => {
     // If checkout was completed successfully, clear the pending plan
     if (!open && selectedPlan && selectedPlan !== "free") {
       // Check if subscription was created
-      if (tier === "premium" || tier === "annual") {
+      if (tier === "weekly" || tier === "premium" || tier === "annual") {
         localStorage.removeItem("pending_signup_plan");
         setHasPlanSelected(true);
       }
