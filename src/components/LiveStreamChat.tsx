@@ -107,23 +107,47 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [roster, setRoster] = useState<string[]>(FALLBACK_ROSTER_FIRST);
+  const [gameCtx, setGameCtx] = useState<{ opponent?: string; pitcher?: string }>({});
+  const recentRef = useRef<string[]>([]);
+  const usedNameRef = useRef<Set<string>>(new Set());
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Pull the live active 2026 Mets roster so chat references current players
+  // Sync bot chat with today's published lineup (current players + opponent + starter)
   useEffect(() => {
     let cancelled = false;
-    fetch("https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=active&season=2026")
-      .then((r) => r.json())
-      .then((data) => {
+    (async () => {
+      const { data } = await supabase
+        .from("lineup_cards")
+        .select("opponent, lineup_data, starting_pitcher, game_date")
+        .eq("published", true)
+        .order("game_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data?.lineup_data && Array.isArray(data.lineup_data)) {
+        const names = (data.lineup_data as any[])
+          .map((p) => (typeof p?.name === "string" ? p.name : null))
+          .filter(Boolean) as string[];
+        if (names.length) setRoster(names);
+        setGameCtx({
+          opponent: typeof data.opponent === "string" ? data.opponent : undefined,
+          pitcher: (data.starting_pitcher as any)?.name,
+        });
+        return;
+      }
+      try {
+        const r = await fetch("https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=active&season=2026");
+        const d = await r.json();
         if (cancelled) return;
-        const names: string[] = (data?.roster ?? [])
-          .map((p: any) => p?.person?.lastName || (p?.person?.fullName ?? "").split(" ").slice(-1)[0])
+        const names: string[] = (d?.roster ?? [])
+          .map((p: any) => p?.person?.fullName)
           .filter(Boolean);
         if (names.length) setRoster(names);
-      })
-      .catch(() => {});
+      } catch {}
+    })();
     return () => { cancelled = true; };
-  }, []);
+  }, [streamId]);
+
 
 
   // Hydrate profiles for a batch of user_ids
@@ -185,16 +209,52 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
   useEffect(() => {
     let cancelled = false;
     const schedule = () => {
-      const delay = 2500 + Math.random() * 5500; // 2.5s – 8s
+      const delay = 3000 + Math.random() * 6000; // 3s – 9s, more natural cadence
       const t = setTimeout(() => {
         if (cancelled) return;
-        const name = pick(BOT_NAMES);
+
+        // Pick a unique fan name (don't reuse a name twice in the same session
+        // until we've cycled through everyone) so it doesn't look like 2 bots
+        const availNames = BOT_NAMES.filter((n) => !usedNameRef.current.has(n));
+        if (availNames.length === 0) usedNameRef.current.clear();
+        const name = pick(availNames.length ? availNames : BOT_NAMES);
+        usedNameRef.current.add(name);
+
+        // Game-specific lines using today's opponent and starting pitcher
+        const opponent = gameCtx.opponent;
+        const pitcher = gameCtx.pitcher;
+        const gameLines: string[] = [];
+        if (opponent) {
+          gameLines.push(
+            `Let's take this one from the ${opponent} 💪`,
+            `Beat the ${opponent}!`,
+            `${opponent} fans quiet tonight 🤫`,
+            `Sweep the ${opponent} please`,
+          );
+        }
+        if (pitcher) {
+          gameLines.push(
+            `${pitcher} on the bump, we got this`,
+            `Need ${pitcher} to settle in here`,
+            `${pitcher} dealing 🔥`,
+            `Get to ${pitcher} early`,
+          );
+        }
+
         const pool: string[] = [
           ...STATIC_MESSAGES,
           ...buildPlayerMessages(roster),
           ...timeContextMessages(),
+          ...gameLines,
         ];
-        const content: string = pick(pool) ?? "LFGM!!!";
+
+        // No-repeat: skip any line used in the last 40 messages
+        const recent = recentRef.current;
+        const fresh = pool.filter((m) => !recent.includes(m));
+        const content: string = pick(fresh.length ? fresh : pool) ?? "LFGM!!!";
+        recent.push(content);
+        if (recent.length > 40) recent.shift();
+
         const fake: ChatMessage = {
           id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           stream_id: streamId,
@@ -216,7 +276,7 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
       cancelled = true;
       clearTimeout(initial);
     };
-  }, [streamId, roster]);
+  }, [streamId, roster, gameCtx.opponent, gameCtx.pitcher]);
 
   useEffect(() => {
     const node = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null;
