@@ -118,6 +118,8 @@ Deno.serve(async (req) => {
     const endDate = new Date(startDate);
     if (subscription.plan_type === 'annual') {
       endDate.setFullYear(endDate.getFullYear() + 1);
+    } else if (subscription.plan_type === 'weekly') {
+      endDate.setDate(endDate.getDate() + 7);
     } else {
       endDate.setMonth(endDate.getMonth() + 1);
     }
@@ -151,7 +153,7 @@ Deno.serve(async (req) => {
           email: profile?.email || user.email,
           name: profile?.full_name,
           planType: subscription.plan_type,
-          amount: subscription.amount?.toString() || (subscription.plan_type === 'annual' ? '129.99' : '9.99'),
+          amount: subscription.amount?.toString() || (subscription.plan_type === 'annual' ? '129.99' : subscription.plan_type === 'weekly' ? '3.99' : '9.99'),
           transactionDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
           subscriptionId: paypalSubId,
         },
@@ -166,7 +168,7 @@ Deno.serve(async (req) => {
         body: {
           userId: user.id,
           planType: subscription.plan_type,
-          amount: subscription.plan_type === 'annual' ? '$129.99' : '$9.99',
+          amount: subscription.plan_type === 'annual' ? '$129.99' : subscription.plan_type === 'weekly' ? '$3.99' : '$9.99',
           source: 'PayPal Subscription',
         },
       });
@@ -223,6 +225,8 @@ async function handleLegacyOrder(supabase: any, subscription: any, orderId: stri
   const endDate = new Date(startDate);
   if (subscription.plan_type === 'annual') {
     endDate.setFullYear(endDate.getFullYear() + 1);
+  } else if (subscription.plan_type === 'weekly') {
+    endDate.setDate(endDate.getDate() + 7);
   } else {
     endDate.setMonth(endDate.getMonth() + 1);
   }

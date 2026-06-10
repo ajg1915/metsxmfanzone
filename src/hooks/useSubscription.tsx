@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "./useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SubscriptionTier = "free" | "premium" | "annual";
+export type SubscriptionTier = "free" | "weekly" | "premium" | "annual";
 
 export const useSubscription = () => {
   const { user, loading: authLoading } = useAuth();
@@ -80,11 +80,11 @@ export const useSubscription = () => {
   const hasAccess = (requiredTier: "free" | "premium") => {
     if (isAdmin) return true; // Admins always have full access
     if (requiredTier === "free") return true;
-    if (tier === "premium" || tier === "annual") return true;
+    if (tier === "weekly" || tier === "premium" || tier === "annual") return true;
     return false;
   };
 
-  const isPremium = isAdmin || tier === "premium" || tier === "annual";
+  const isPremium = isAdmin || tier === "weekly" || tier === "premium" || tier === "annual";
 
   return {
     tier,

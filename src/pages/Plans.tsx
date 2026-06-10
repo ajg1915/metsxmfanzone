@@ -60,7 +60,7 @@ const Plans = () => {
     // If checkout was completed successfully, clear the pending plan
     if (!open && selectedPlan && selectedPlan !== "free") {
       // Check if subscription was created
-      if (tier === "premium" || tier === "annual") {
+      if (tier === "weekly" || tier === "premium" || tier === "annual") {
         localStorage.removeItem("pending_signup_plan");
         setHasPlanSelected(true);
       }
@@ -68,6 +68,28 @@ const Plans = () => {
   };
 
   const allPlans = [
+    {
+      id: "weekly",
+      name: "Weekly",
+      price: "$3.99",
+      priceValue: 3.99,
+      period: "per week",
+      billingNote: "Billed weekly",
+      description: "Budget-friendly full access",
+      features: [
+        "Full access to everything",
+        "All live streams",
+        "Full game replays",
+        "All highlights",
+        "Community forum access",
+        "Ad-free experience",
+        "HD streaming",
+        "Cancel anytime",
+      ],
+      notIncluded: [],
+      cta: "Subscribe Weekly",
+      popular: false,
+    },
     {
       id: "premium",
       name: "Premium",
