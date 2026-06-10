@@ -120,6 +120,38 @@ const LiveStreamChat = ({ streamId, streamTitle }: LiveStreamChatProps) => {
     };
   }, [streamId]);
 
+  // Simulated fan chat — keeps the room feeling alive in real time
+  useEffect(() => {
+    let cancelled = false;
+    const schedule = () => {
+      const delay = 2500 + Math.random() * 5500; // 2.5s – 8s
+      const t = setTimeout(() => {
+        if (cancelled) return;
+        const name = pick(BOT_NAMES);
+        const content = pick(BOT_MESSAGES);
+        const fake: ChatMessage = {
+          id: `bot-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          stream_id: streamId,
+          user_id: `bot-${name}`,
+          content,
+          created_at: new Date().toISOString(),
+          profile: { full_name: name, avatar_url: null },
+        };
+        setMessages((prev) => {
+          const next = [...prev, fake];
+          return next.length > 150 ? next.slice(next.length - 150) : next;
+        });
+        schedule();
+      }, delay);
+      return t;
+    };
+    const initial = setTimeout(schedule, 1500);
+    return () => {
+      cancelled = true;
+      clearTimeout(initial);
+    };
+  }, [streamId]);
+
   useEffect(() => {
     const node = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]") as HTMLElement | null;
     if (node) node.scrollTop = node.scrollHeight;
