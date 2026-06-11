@@ -63,7 +63,7 @@ const MediaImagePicker = ({ imageUrl, onImageChange }: { imageUrl: string | null
     const { data } = await supabase
       .from("media_library")
       .select("file_url, file_name, file_type")
-      .or("file_type.ilike.%image%,file_name.ilike.%.jpg,file_name.ilike.%.png,file_name.ilike.%.jpeg,file_name.ilike.%.webp")
+      .or("file_type.ilike.%image%,file_type.ilike.%video%,file_name.ilike.%.jpg,file_name.ilike.%.png,file_name.ilike.%.jpeg,file_name.ilike.%.webp,file_name.ilike.%.gif,file_name.ilike.%.mp4,file_name.ilike.%.webm,file_name.ilike.%.mov")
       .order("created_at", { ascending: false })
       .limit(200);
     setMediaFiles(data || []);
