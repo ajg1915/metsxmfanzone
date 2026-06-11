@@ -86,12 +86,18 @@ const MediaImagePicker = ({ imageUrl, onImageChange }: { imageUrl: string | null
     ? mediaFiles.filter(f => f.file_name.toLowerCase().includes(search.toLowerCase()))
     : mediaFiles;
 
+  const isVideo = (url: string) => /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
+
   return (
     <div className="space-y-1">
-      <Label className="text-[10px]">Image</Label>
+      <Label className="text-[10px]">Image / GIF / Video</Label>
       {imageUrl ? (
         <div className="relative group">
-          <img src={imageUrl} alt="" className="w-full h-20 rounded object-cover border border-border" />
+          {isVideo(imageUrl) ? (
+            <video src={imageUrl} muted loop playsInline autoPlay className="w-full h-20 rounded object-cover border border-border" />
+          ) : (
+            <img src={imageUrl} alt="" className="w-full h-20 rounded object-cover border border-border" />
+          )}
           <button onClick={handleOpen} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded text-[10px] text-white gap-1">
             <ImagePlus className="w-3 h-3" /> Replace
           </button>
@@ -107,7 +113,7 @@ const MediaImagePicker = ({ imageUrl, onImageChange }: { imageUrl: string | null
         <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-sm">
-              <ImagePlus className="w-4 h-4" /> Select Image from Media Library
+              <ImagePlus className="w-4 h-4" /> Select Image, GIF, or Video
             </DialogTitle>
           </DialogHeader>
           <div className="relative">
@@ -126,7 +132,7 @@ const MediaImagePicker = ({ imageUrl, onImageChange }: { imageUrl: string | null
               </div>
             ) : filtered.length === 0 ? (
               <p className="text-center text-muted-foreground text-sm py-12">
-                {search ? "No matching images found" : "No images in media library"}
+                {search ? "No matching files found" : "No media available"}
               </p>
             ) : (
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 p-1">
@@ -136,7 +142,14 @@ const MediaImagePicker = ({ imageUrl, onImageChange }: { imageUrl: string | null
                     onClick={() => selectImage(file.file_url)}
                     className="aspect-video rounded-md overflow-hidden border border-border hover:border-primary hover:ring-2 hover:ring-primary/30 transition-all cursor-pointer group relative"
                   >
-                    <img src={file.file_url} alt={file.file_name} className="w-full h-full object-cover" loading="lazy" />
+                    {isVideo(file.file_url) ? (
+                      <video src={file.file_url} muted loop playsInline className="w-full h-full object-cover" preload="metadata" />
+                    ) : (
+                      <img src={file.file_url} alt={file.file_name} className="w-full h-full object-cover" loading="lazy" />
+                    )}
+                    {isVideo(file.file_url) && (
+                      <span className="absolute top-1 left-1 text-[8px] bg-black/70 text-white px-1 rounded">VIDEO</span>
+                    )}
                     <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-1">
                       <span className="text-[9px] text-foreground truncate w-full">{file.file_name}</span>
                     </div>
