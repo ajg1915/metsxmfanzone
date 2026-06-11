@@ -121,13 +121,31 @@ const Hero = () => {
                 pointerEvents: selectedIndex === index ? "auto" : "none",
               }}
             >
-              {/* Full-bleed background image */}
-              <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{
-                  backgroundImage: `url(${slide.image})`,
-                }}
-              />
+              {/* Full-bleed background media (image, gif, or video) */}
+              {(() => {
+                const url = slide.image || "";
+                const isVideo = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
+                if (isVideo) {
+                  return (
+                    <video
+                      key={url}
+                      src={url}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                      preload="auto"
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  );
+                }
+                return (
+                  <div
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url(${url})` }}
+                  />
+                );
+              })()}
 
               {/* Netflix-style gradient: bottom fade + left vignette */}
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
