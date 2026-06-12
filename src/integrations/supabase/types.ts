@@ -1506,6 +1506,87 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_rewards: {
+        Row: {
+          admin_notes: string | null
+          carrier: string | null
+          claim_token: string
+          claimed_at: string | null
+          created_at: string
+          eligibility_start_date: string | null
+          email_sent_at: string | null
+          id: string
+          opted_out_at: string | null
+          phone: string | null
+          reward_type: string
+          shipped_at: string | null
+          shipping_address1: string | null
+          shipping_address2: string | null
+          shipping_city: string | null
+          shipping_country: string | null
+          shipping_name: string | null
+          shipping_state: string | null
+          shipping_zip: string | null
+          shirt_size: string | null
+          status: string
+          tracking_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          carrier?: string | null
+          claim_token?: string
+          claimed_at?: string | null
+          created_at?: string
+          eligibility_start_date?: string | null
+          email_sent_at?: string | null
+          id?: string
+          opted_out_at?: string | null
+          phone?: string | null
+          reward_type?: string
+          shipped_at?: string | null
+          shipping_address1?: string | null
+          shipping_address2?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_name?: string | null
+          shipping_state?: string | null
+          shipping_zip?: string | null
+          shirt_size?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          carrier?: string | null
+          claim_token?: string
+          claimed_at?: string | null
+          created_at?: string
+          eligibility_start_date?: string | null
+          email_sent_at?: string | null
+          id?: string
+          opted_out_at?: string | null
+          phone?: string | null
+          reward_type?: string
+          shipped_at?: string | null
+          shipping_address1?: string | null
+          shipping_address2?: string | null
+          shipping_city?: string | null
+          shipping_country?: string | null
+          shipping_name?: string | null
+          shipping_state?: string | null
+          shipping_zip?: string | null
+          shirt_size?: string | null
+          status?: string
+          tracking_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       media_library: {
         Row: {
           created_at: string
