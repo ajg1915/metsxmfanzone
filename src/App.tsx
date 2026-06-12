@@ -337,6 +337,7 @@ const AppContent = () => {
             <Route path="/help/return-policy" element={<ReturnPolicy />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/rewards/claim" element={<RewardClaim />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/faqs" element={<FAQs />} />
             <Route path="/privacy" element={<Privacy />} />
