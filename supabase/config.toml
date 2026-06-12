@@ -1,6 +1,10 @@
 project_id = "clwghkbtkofacsjeyrtk"
 
 [functions]
+  [functions.loyalty-reward-action]
+    verify_jwt = false
+  [functions.check-loyalty-rewards]
+    verify_jwt = false
   [functions.admin-pin-login]
     verify_jwt = false
   [functions.ai-user-management]
