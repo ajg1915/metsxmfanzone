@@ -52,13 +52,23 @@ export default function LoyaltyRewardsManagement() {
     setLoading(true);
     const { data, error } = await supabase
       .from("loyalty_rewards")
-      .select("*, profiles:user_id(email, full_name)")
+      .select("*")
       .order("created_at", { ascending: false });
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      setRewards((data || []) as any);
+      setLoading(false);
+      return;
     }
+    const ids = Array.from(new Set((data || []).map((r: any) => r.user_id)));
+    let profileMap: Record<string, { email: string | null; full_name: string | null }> = {};
+    if (ids.length) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, email, full_name")
+        .in("id", ids);
+      (profs || []).forEach((p: any) => { profileMap[p.id] = { email: p.email, full_name: p.full_name }; });
+    }
+    setRewards((data || []).map((r: any) => ({ ...r, profiles: profileMap[r.user_id] || null })));
     setLoading(false);
   };
 
