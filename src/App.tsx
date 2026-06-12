@@ -156,6 +156,8 @@ const ToastPromptManagement = lazyWithRetry(() => import("./pages/admin/ToastPro
 const PopupNotificationsManagement = lazyWithRetry(() => import("./pages/admin/PopupNotificationsManagement"), "page-admin-popup-notifications-management");
 const SweepstakesManagement = lazyWithRetry(() => import("./pages/admin/SweepstakesManagement"), "page-admin-sweepstakes-management");
 const WhatsNew = lazyWithRetry(() => import("./pages/WhatsNew"), "page-whats-new");
+const RewardClaim = lazyWithRetry(() => import("./pages/RewardClaim"), "page-reward-claim");
+const LoyaltyRewardsManagement = lazyWithRetry(() => import("./pages/admin/LoyaltyRewardsManagement"), "page-admin-loyalty-rewards");
 const Install = lazyWithRetry(() => import("./pages/Install"), "page-install");
 const MetsVsAstros = lazyWithRetry(() => import("./pages/matchups/MetsVsAstros"), "page-matchup-astros");
 const MetsVsBraves = lazyWithRetry(() => import("./pages/matchups/MetsVsBraves"), "page-matchup-braves");
@@ -397,6 +399,7 @@ const AppContent = () => {
               <Route path="gameday-live" element={<GameDayLiveAdmin />} />
               <Route path="game-recaps" element={<GameRecapsManagement />} />
               <Route path="podcast-outlines" element={<PodcastOutlineTemplates />} />
+              <Route path="loyalty-rewards" element={<LoyaltyRewardsManagement />} />
             </Route>
             {/* Writer Portal Routes */}
             <Route path="/writer" element={<WriterDashboard />} />
