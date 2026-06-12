@@ -57,6 +57,7 @@ const communityItems = [
   { title: "Predictions", url: "/admin/predictions", icon: Star },
   { title: "Player of the Month", url: "/admin/player-of-the-month", icon: Trophy },
   { title: "Sweepstakes", url: "/admin/sweepstakes", icon: Gift },
+  { title: "Loyalty Rewards", url: "/admin/loyalty-rewards", icon: Gift },
 ];
 
 const commerceItems = [
