@@ -103,11 +103,11 @@ const MetsXMFanZone = () => {
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
           </div>
 
-          {/* Compact Hero */}
-          <div className="container mx-auto px-4 pt-6 pb-4 relative z-10">
-            <div className="flex items-center gap-4">
-              <div className="relative shrink-0">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-xl shadow-primary/30 p-1.5 ring-1 ring-primary/40">
+          {/* Hero */}
+          <div className="container mx-auto px-4 pt-5 pb-4 relative z-10">
+            <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
+              <div className="relative shrink-0 self-start">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30 p-1.5 ring-1 ring-primary/40">
                   <img src={logo} alt="MetsXMFanZone" className="w-full h-full object-contain" />
                 </div>
                 <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full text-[9px] font-bold shadow-lg animate-pulse">
@@ -117,7 +117,13 @@ const MetsXMFanZone = () => {
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground leading-[1.05] tracking-tight">
+                  MetsXMFanZone <span className="text-primary">TV</span>
+                </h1>
+                <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+                  The ultimate destination where the fans go.
+                </p>
+                <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
                   <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30 text-[10px] h-5">
                     <Signal className="w-2.5 h-2.5 mr-1" /> Exclusive
                   </Badge>
@@ -128,12 +134,6 @@ const MetsXMFanZone = () => {
                     <Clock className="w-2.5 h-2.5 mr-1" /> 24/7
                   </Badge>
                 </div>
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground leading-tight tracking-tight">
-                  MetsXMFanZone <span className="text-primary">TV</span>
-                </h1>
-                <p className="text-muted-foreground text-xs sm:text-sm line-clamp-1">
-                  The ultimate destination where the fans go.
-                </p>
               </div>
             </div>
           </div>
