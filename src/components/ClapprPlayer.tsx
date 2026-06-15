@@ -68,7 +68,7 @@ export function ClapprPlayer({
 
     let cancelled = false;
 
-    loadCastSdk().then(() => {
+    Promise.all([loadCastSdk(), loadChromecastPlugin()]).then(([, ChromecastPlugin]) => {
       if (cancelled || !containerRef.current) return;
 
       if (playerRef.current) {
