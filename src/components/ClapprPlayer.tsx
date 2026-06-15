@@ -88,29 +88,61 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     };
   }, [source, showChrome, pageTitle]);
 
-  // Fallback iframe for pages that don't pass a direct stream URL (e.g. MetsXMFanZone)
+  // CDN-loaded Clappr for pages that don't pass a direct stream URL (e.g. MetsXMFanZone)
+  const cdnContainerRef = useRef<HTMLDivElement>(null);
+  const cdnPlayerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (source || !cdnContainerRef.current) return;
+
+    let destroyed = false;
+
+    const initCdnPlayer = () => {
+      if (destroyed || !cdnContainerRef.current) return;
+      if (typeof (window as any).Clappr === "undefined") return;
+
+      const player = new (window as any).Clappr.Player({
+        source: "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8",
+        parentId: "#clappr-player",
+        width: "100%",
+        height: "100%",
+        autoPlay: false,
+      });
+
+      cdnPlayerRef.current = player;
+    };
+
+    if (typeof (window as any).Clappr !== "undefined") {
+      initCdnPlayer();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js";
+      script.async = true;
+      script.onload = initCdnPlayer;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      destroyed = true;
+      if (cdnPlayerRef.current) {
+        try {
+          cdnPlayerRef.current.destroy();
+        } catch (e) {
+          // ignore cleanup errors
+        }
+      }
+      cdnPlayerRef.current = null;
+    };
+  }, [source]);
+
   if (!source) {
     return (
-      <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-        <iframe
-          title={pageTitle}
-          referrerPolicy="origin"
-          src="https://video1.getstreamhosting.com:2000/VideoPlayer/resywa2dpd?autoplay=1"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            width: "100%",
-            height: "100%",
-          }}
-          scrolling="no"
-          frameBorder="0"
-          allow="autoplay; fullscreen"
-          allowFullScreen
-        />
-      </div>
+      <div
+        id="clappr-player"
+        ref={cdnContainerRef}
+        className="w-full h-full bg-black"
+        style={{ position: "relative", minHeight: 320 }}
+      />
     );
   }
 
