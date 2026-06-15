@@ -1,7 +1,27 @@
 import { useEffect, useRef } from "react";
 import Clappr from "@clappr/player";
-// @ts-ignore - no types
-import ChromecastPlugin from "clappr-chromecast-plugin";
+
+// Expose Clappr globally so the UMD chromecast plugin can attach
+if (typeof window !== "undefined") {
+  (window as any).Clappr = Clappr;
+}
+
+// Lazy-load Chromecast plugin (UMD, needs global Clappr)
+let chromecastLoading: Promise<any> | null = null;
+function loadChromecastPlugin(): Promise<any> {
+  if (typeof window === "undefined") return Promise.resolve(null);
+  if ((window as any).ChromecastPlugin) return Promise.resolve((window as any).ChromecastPlugin);
+  if (chromecastLoading) return chromecastLoading;
+  chromecastLoading = new Promise((resolve) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/clappr-chromecast-plugin@0.1.1/dist/clappr-chromecast-plugin.min.js";
+    s.async = true;
+    s.onload = () => resolve((window as any).ChromecastPlugin || null);
+    s.onerror = () => resolve(null);
+    document.head.appendChild(s);
+  });
+  return chromecastLoading;
+}
 
 interface ClapprPlayerProps {
   pageTitle?: string;
@@ -48,7 +68,7 @@ export function ClapprPlayer({
 
     let cancelled = false;
 
-    loadCastSdk().then(() => {
+    Promise.all([loadCastSdk(), loadChromecastPlugin()]).then(([, ChromecastPlugin]) => {
       if (cancelled || !containerRef.current) return;
 
       if (playerRef.current) {
@@ -63,7 +83,7 @@ export function ClapprPlayer({
         width: "100%",
         height: "100%",
         autoPlay: true,
-        plugins: [ChromecastPlugin],
+        plugins: ChromecastPlugin ? [ChromecastPlugin] : [],
         chromecast: {
           appId: "CC1AD845", // default Styled Media Receiver
           media: {
