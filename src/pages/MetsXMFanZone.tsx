@@ -104,7 +104,7 @@ const MetsXMFanZone = () => {
           </div>
 
           {/* Hero */}
-          <div className="container mx-auto px-4 pt-5 pb-4 relative z-10">
+          <div className="container mx-auto px-3 sm:px-4 pt-5 pb-4 relative z-10 max-w-[1400px]">
             <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
               <div className="relative shrink-0 self-start">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30 p-1.5 ring-1 ring-primary/40">
