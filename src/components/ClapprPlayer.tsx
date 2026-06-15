@@ -123,15 +123,6 @@ export function ClapprPlayer({
       className="clappr-wrapper relative w-full rounded-lg overflow-hidden bg-black aspect-video"
       style={{ minHeight: 320 }}
     >
-      <style>{`
-        .clappr-wrapper .player-play-button,
-        .clappr-wrapper .play-wrapper,
-        .clappr-wrapper [data-play-button],
-        .clappr-wrapper .clappr-play-button,
-        .clappr-wrapper .media-control-center {
-          display: none !important;
-        }
-      `}</style>
       <div
         ref={containerRef}
         className="absolute inset-0 w-full h-full [&>.clappr]:absolute [&>.clappr]:inset-0 [&>.clappr]:w-full [&>.clappr]:h-full"
@@ -141,18 +132,15 @@ export function ClapprPlayer({
           onClick={enableAudio}
           aria-label="Turn on audio"
           title="Turn on audio"
-          className="group absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-black/30 hover:bg-black/40 transition-colors"
+          className="group absolute top-3 right-3 z-20 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/85 text-white shadow-lg backdrop-blur-sm transition-colors"
         >
-          <span className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary/90 group-hover:bg-primary text-primary-foreground shadow-2xl ring-4 ring-white/20 transition-transform group-hover:scale-105">
-            <Volume2 className="w-8 h-8 sm:w-9 sm:h-9" />
-          </span>
-          <span className="px-3 py-1 rounded-full bg-black/70 text-white text-xs font-semibold backdrop-blur-sm">
-            Tap to turn on audio
-          </span>
+          <Volume2 className="w-4 h-4" />
+          <span className="text-xs font-semibold">Tap for audio</span>
         </button>
       )}
     </div>
   );
+
 
   if (!showChrome) return playerEl;
 
