@@ -60,6 +60,7 @@
     "@tiptap/starter-kit": "^3.22.5",
     "@types/dompurify": "^3.2.0",
     "@videojs/http-streaming": "^3.17.2",
+    "clappr-chromecast-plugin": "^0.1.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

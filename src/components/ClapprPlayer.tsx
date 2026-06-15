@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import Clappr from "@clappr/player";
+// @ts-ignore - no types
+import ChromecastPlugin from "clappr-chromecast-plugin";
 
 interface ClapprPlayerProps {
   pageTitle?: string;
@@ -10,6 +12,26 @@ interface ClapprPlayerProps {
 
 const DEFAULT_SOURCE =
   "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
+
+// Load Google Cast SDK once
+let castSdkLoading: Promise<void> | null = null;
+function loadCastSdk(): Promise<void> {
+  if (typeof window === "undefined") return Promise.resolve();
+  if ((window as any).__castSdkLoaded) return Promise.resolve();
+  if (castSdkLoading) return castSdkLoading;
+  castSdkLoading = new Promise((resolve) => {
+    const s = document.createElement("script");
+    s.src = "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
+    s.async = true;
+    s.onload = () => {
+      (window as any).__castSdkLoaded = true;
+      resolve();
+    };
+    s.onerror = () => resolve();
+    document.head.appendChild(s);
+  });
+  return castSdkLoading;
+}
 
 export function ClapprPlayer({
   pageTitle = "Live Stream",
@@ -24,28 +46,59 @@ export function ClapprPlayer({
     if (!containerRef.current || !source) return;
     const container = containerRef.current;
 
-    if (playerRef.current) {
-      try { playerRef.current.destroy(); } catch {}
-      playerRef.current = null;
-    }
-    container.replaceChildren();
+    let cancelled = false;
 
-    const player = new (Clappr as any).Player({
-      source,
-      parent: container,
-      width: "100%",
-      height: "100%",
-      autoPlay: true,
+    loadCastSdk().then(() => {
+      if (cancelled || !containerRef.current) return;
+
+      if (playerRef.current) {
+        try { playerRef.current.destroy(); } catch {}
+        playerRef.current = null;
+      }
+      container.replaceChildren();
+
+      const player = new (Clappr as any).Player({
+        source,
+        parent: container,
+        width: "100%",
+        height: "100%",
+        autoPlay: true,
+        plugins: [ChromecastPlugin],
+        chromecast: {
+          appId: "CC1AD845", // default Styled Media Receiver
+          media: {
+            title: pageTitle,
+            subtitle: pageDescription,
+          },
+        },
+        playback: {
+          playInline: true,
+          hlsjsConfig: { enableWorker: true },
+          // Enables native AirPlay button on iOS/macOS Safari
+          controls: true,
+        },
+      });
+
+      // Enable AirPlay attributes on underlying <video>
+      setTimeout(() => {
+        const vid = container.querySelector("video");
+        if (vid) {
+          vid.setAttribute("x-webkit-airplay", "allow");
+          vid.setAttribute("airplay", "allow");
+          (vid as any).disableRemotePlayback = false;
+        }
+      }, 500);
+
+      playerRef.current = player;
     });
 
-    playerRef.current = player;
-
     return () => {
-      try { player.destroy(); } catch {}
+      cancelled = true;
+      try { playerRef.current?.destroy(); } catch {}
       playerRef.current = null;
       container.replaceChildren();
     };
-  }, [source]);
+  }, [source, pageTitle, pageDescription]);
 
   const playerEl = (
     <div
@@ -53,10 +106,7 @@ export function ClapprPlayer({
       className="relative w-full"
       style={{ minHeight: 320, height: "100%", marginBottom: 25 }}
     >
-      <div
-        ref={containerRef}
-        className="absolute inset-0 w-full h-full"
-      />
+      <div ref={containerRef} className="absolute inset-0 w-full h-full" />
     </div>
   );
 
