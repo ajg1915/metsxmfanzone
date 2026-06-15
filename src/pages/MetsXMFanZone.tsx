@@ -139,33 +139,35 @@ const MetsXMFanZone = () => {
           </div>
 
           {/* Player + Chat grid */}
-          <div className="container mx-auto px-4 pb-8 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
+          <div className="container mx-auto px-3 sm:px-4 pb-8 relative z-10 max-w-[1400px]">
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px] gap-4 lg:gap-6">
               {/* Player + meta */}
               <div className="space-y-4 min-w-0">
                 <div className="rounded-2xl overflow-hidden ring-1 ring-border/60 shadow-2xl shadow-primary/10 bg-card/80 backdrop-blur-xl">
-                  <ClapprPlayer
-                    pageTitle="MetsXMFanZone Live Stream"
-                    pageDescription="Ultimate Destination Where the Fans Go"
-                    showChrome={false}
-                  />
+                  <div className="relative aspect-video w-full bg-black">
+                    <ClapprPlayer
+                      pageTitle="MetsXMFanZone Live Stream"
+                      pageDescription="Ultimate Destination Where the Fans Go"
+                      showChrome={false}
+                    />
+                  </div>
                 </div>
 
                 {/* Channel info pills */}
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-3 hover:border-primary/40 transition-colors">
+                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-2.5 sm:p-3 hover:border-primary/40 transition-colors">
                     <Mic className="w-4 h-4 text-primary mb-1.5" />
-                    <p className="text-[11px] font-bold text-foreground">Live Shows</p>
+                    <p className="text-[11px] sm:text-xs font-bold text-foreground">Live Shows</p>
                     <p className="text-[10px] text-muted-foreground hidden sm:block">Fan discussions & reactions</p>
                   </div>
-                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-3 hover:border-primary/40 transition-colors">
+                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-2.5 sm:p-3 hover:border-primary/40 transition-colors">
                     <Users className="w-4 h-4 text-secondary mb-1.5" />
-                    <p className="text-[11px] font-bold text-foreground">Community</p>
+                    <p className="text-[11px] sm:text-xs font-bold text-foreground">Community</p>
                     <p className="text-[10px] text-muted-foreground hidden sm:block">Connect with fellow fans</p>
                   </div>
-                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-3 hover:border-primary/40 transition-colors">
+                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-2.5 sm:p-3 hover:border-primary/40 transition-colors">
                     <Trophy className="w-4 h-4 text-primary mb-1.5" />
-                    <p className="text-[11px] font-bold text-foreground">Exclusive</p>
+                    <p className="text-[11px] sm:text-xs font-bold text-foreground">Exclusive</p>
                     <p className="text-[10px] text-muted-foreground hidden sm:block">Interviews & analysis</p>
                   </div>
                 </div>
