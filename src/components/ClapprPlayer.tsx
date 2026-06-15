@@ -35,7 +35,7 @@ export function ClapprPlayer({
       parent: container,
       width: "100%",
       height: "100%",
-      autoPlay: false,
+      autoPlay: true,
     });
 
     playerRef.current = player;
