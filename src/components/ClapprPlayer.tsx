@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useRef, useEffect } from "react";
 
 interface ClapprPlayerProps {
   pageTitle?: string;
@@ -10,9 +10,22 @@ interface ClapprPlayerProps {
 export const ClapprPlayer = memo(function ClapprPlayer({
   pageTitle = "Live Stream",
 }: ClapprPlayerProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+    // Legacy fullscreen attributes for older browsers / casting support
+    iframe.setAttribute("webkitallowfullscreen", "true");
+    iframe.setAttribute("mozallowfullscreen", "true");
+    iframe.setAttribute("msallowfullscreen", "true");
+    iframe.setAttribute("oallowfullscreen", "true");
+  }, []);
+
   return (
     <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
       <iframe
+        ref={iframeRef}
         title={pageTitle}
         referrerPolicy="origin"
         src="https://video1.getstreamhosting.com:2000/VideoPlayer/resyweugpd?autoplay=1"
@@ -29,10 +42,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         frameBorder="0"
         allow="autoplay; fullscreen"
         allowFullScreen
-        webkitallowfullscreen="true"
-        mozallowfullscreen="true"
-        msallowfullscreen="true"
-        oallowfullscreen="true"
       />
     </div>
   );
