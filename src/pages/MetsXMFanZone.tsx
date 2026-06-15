@@ -104,7 +104,7 @@ const MetsXMFanZone = () => {
           </div>
 
           {/* Hero */}
-          <div className="container mx-auto px-4 pt-5 pb-4 relative z-10">
+          <div className="container mx-auto px-3 sm:px-4 pt-5 pb-4 relative z-10 max-w-[1400px]">
             <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
               <div className="relative shrink-0 self-start">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30 p-1.5 ring-1 ring-primary/40">
@@ -139,33 +139,35 @@ const MetsXMFanZone = () => {
           </div>
 
           {/* Player + Chat grid */}
-          <div className="container mx-auto px-4 pb-8 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-4">
+          <div className="container mx-auto px-3 sm:px-4 pb-8 relative z-10 max-w-[1400px]">
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px] gap-4 lg:gap-6">
               {/* Player + meta */}
               <div className="space-y-4 min-w-0">
                 <div className="rounded-2xl overflow-hidden ring-1 ring-border/60 shadow-2xl shadow-primary/10 bg-card/80 backdrop-blur-xl">
-                  <ClapprPlayer
-                    pageTitle="MetsXMFanZone Live Stream"
-                    pageDescription="Ultimate Destination Where the Fans Go"
-                    showChrome={false}
-                  />
+                  <div className="relative aspect-video w-full bg-black">
+                    <ClapprPlayer
+                      pageTitle="MetsXMFanZone Live Stream"
+                      pageDescription="Ultimate Destination Where the Fans Go"
+                      showChrome={false}
+                    />
+                  </div>
                 </div>
 
                 {/* Channel info pills */}
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-3 hover:border-primary/40 transition-colors">
+                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-2.5 sm:p-3 hover:border-primary/40 transition-colors">
                     <Mic className="w-4 h-4 text-primary mb-1.5" />
-                    <p className="text-[11px] font-bold text-foreground">Live Shows</p>
+                    <p className="text-[11px] sm:text-xs font-bold text-foreground">Live Shows</p>
                     <p className="text-[10px] text-muted-foreground hidden sm:block">Fan discussions & reactions</p>
                   </div>
-                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-3 hover:border-primary/40 transition-colors">
+                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-2.5 sm:p-3 hover:border-primary/40 transition-colors">
                     <Users className="w-4 h-4 text-secondary mb-1.5" />
-                    <p className="text-[11px] font-bold text-foreground">Community</p>
+                    <p className="text-[11px] sm:text-xs font-bold text-foreground">Community</p>
                     <p className="text-[10px] text-muted-foreground hidden sm:block">Connect with fellow fans</p>
                   </div>
-                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-3 hover:border-primary/40 transition-colors">
+                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-2.5 sm:p-3 hover:border-primary/40 transition-colors">
                     <Trophy className="w-4 h-4 text-primary mb-1.5" />
-                    <p className="text-[11px] font-bold text-foreground">Exclusive</p>
+                    <p className="text-[11px] sm:text-xs font-bold text-foreground">Exclusive</p>
                     <p className="text-[10px] text-muted-foreground hidden sm:block">Interviews & analysis</p>
                   </div>
                 </div>
@@ -246,7 +248,7 @@ const MetsXMFanZone = () => {
               </div>
 
               {/* Chat sidebar */}
-              <aside className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden lg:sticky lg:top-16 lg:h-[calc(100vh-5rem)] flex flex-col">
+              <aside className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:max-h-[760px] flex flex-col">
                 <div className="px-4 py-2.5 border-b border-border/50 flex items-center justify-between bg-gradient-to-r from-primary/15 to-transparent shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="relative flex items-center justify-center">
@@ -257,7 +259,7 @@ const MetsXMFanZone = () => {
                   </div>
                   <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Live</span>
                 </div>
-                <div className="flex-1 min-h-[400px] overflow-hidden">
+                <div className="flex-1 min-h-[420px] lg:min-h-0 overflow-hidden">
                   <LiveStreamChat
                     streamId="00000000-0000-0000-0000-00000000fa11"
                     streamTitle="MetsXMFanZone Live"
