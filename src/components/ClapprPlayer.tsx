@@ -83,7 +83,7 @@ export function ClapprPlayer({
         width: "100%",
         height: "100%",
         autoPlay: true,
-        plugins: [ChromecastPlugin],
+        plugins: ChromecastPlugin ? [ChromecastPlugin] : [],
         chromecast: {
           appId: "CC1AD845", // default Styled Media Receiver
           media: {
