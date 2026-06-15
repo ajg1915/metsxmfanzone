@@ -106,7 +106,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         parentId: "#clappr-player",
         width: "100%",
         height: "100%",
-        autoPlay: false,
+        autoPlay: true,
       });
 
       cdnPlayerRef.current = player;
