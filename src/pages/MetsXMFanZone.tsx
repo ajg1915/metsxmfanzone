@@ -248,7 +248,7 @@ const MetsXMFanZone = () => {
               </div>
 
               {/* Chat sidebar */}
-              <aside className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden lg:sticky lg:top-16 lg:h-[calc(100vh-5rem)] flex flex-col">
+              <aside className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:max-h-[760px] flex flex-col">
                 <div className="px-4 py-2.5 border-b border-border/50 flex items-center justify-between bg-gradient-to-r from-primary/15 to-transparent shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="relative flex items-center justify-center">
@@ -259,7 +259,7 @@ const MetsXMFanZone = () => {
                   </div>
                   <span className="text-[9px] text-muted-foreground uppercase tracking-wider">Live</span>
                 </div>
-                <div className="flex-1 min-h-[400px] overflow-hidden">
+                <div className="flex-1 min-h-[420px] lg:min-h-0 overflow-hidden">
                   <LiveStreamChat
                     streamId="00000000-0000-0000-0000-00000000fa11"
                     streamTitle="MetsXMFanZone Live"
