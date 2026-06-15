@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Clappr from "@clappr/player";
-import { Cast, Tv, Volume2, Airplay } from "lucide-react";
+import { Volume2 } from "lucide-react";
 
 interface ClapprPlayerProps {
   pageTitle?: string;
@@ -21,53 +21,7 @@ export function ClapprPlayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const retryTimerRef = useRef<number | null>(null);
-  const [isCasting, setIsCasting] = useState(false);
   const [audioOn, setAudioOn] = useState(false);
-
-  // Chromecast init
-  useEffect(() => {
-    const initChromecast = () => {
-      const chrome = (window as any).chrome;
-      if (!chrome?.cast) return;
-      const sessionRequest = new chrome.cast.SessionRequest(
-        chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID
-      );
-      const apiConfig = new chrome.cast.ApiConfig(
-        sessionRequest,
-        () => setIsCasting(true),
-        () => {}
-      );
-      chrome.cast.initialize(apiConfig, () => {}, () => {});
-    };
-    (window as any).__onGCastApiAvailable = (isAvailable: boolean) => {
-      if (isAvailable) initChromecast();
-    };
-    if ((window as any).chrome?.cast) initChromecast();
-  }, []);
-
-  const startCasting = () => {
-    const chrome = (window as any).chrome;
-    if (!chrome?.cast) {
-      alert(
-        "Chromecast is not available. Make sure you have a Chromecast device on your network."
-      );
-      return;
-    }
-    chrome.cast.requestSession(
-      (session: any) => {
-        setIsCasting(true);
-        const mediaInfo = new chrome.cast.media.MediaInfo(
-          source,
-          "application/x-mpegURL"
-        );
-        const request = new chrome.cast.media.LoadRequest(mediaInfo);
-        session.loadMedia(request, () => {}, () => {});
-      },
-      (err: any) => {
-        if (err.code !== "cancel") console.error("[Cast] Request error:", err);
-      }
-    );
-  };
 
   // Initialize Clappr player with low-latency HLS tuning
   useEffect(() => {
@@ -86,7 +40,6 @@ export function ClapprPlayer({
     }
     container.replaceChildren();
 
-    // Aggressive low-latency hls.js config to reduce lag/buffering on live HLS.
     const hlsLowLatencyConfig = {
       lowLatencyMode: true,
       backBufferLength: 8,
@@ -154,7 +107,6 @@ export function ClapprPlayer({
     };
   }, [source]);
 
-  // Toggle audio on user gesture (browsers block unmuted autoplay)
   const enableAudio = () => {
     try {
       playerRef.current?.unmute?.();
@@ -199,36 +151,6 @@ export function ClapprPlayer({
           </span>
         </button>
       )}
-      {/* Cast/AirPlay overlay — visible on all devices */}
-      <div className="absolute top-2 right-2 z-30 flex items-center gap-1.5">
-        <button
-          onClick={startCasting}
-          aria-label="Cast to TV"
-          title="Cast to TV (Chromecast)"
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-black/70 hover:bg-primary text-white text-xs font-semibold backdrop-blur-sm transition-colors"
-        >
-          {isCasting ? <Tv className="w-3.5 h-3.5" /> : <Cast className="w-3.5 h-3.5" />}
-          <span>{isCasting ? "Casting" : "Cast"}</span>
-        </button>
-        {typeof window !== "undefined" && (window as any).WebKitPlaybackTargetAvailabilityEvent !== undefined && (
-          <button
-            onClick={() => {
-              const video = containerRef.current?.querySelector("video") as any;
-              if (video?.webkitShowPlaybackTargetPicker) {
-                video.webkitShowPlaybackTargetPicker();
-              } else {
-                alert("AirPlay is not available on this device.");
-              }
-            }}
-            aria-label="AirPlay"
-            title="AirPlay to Apple TV"
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-black/70 hover:bg-primary text-white text-xs font-semibold backdrop-blur-sm transition-colors"
-          >
-            <Airplay className="w-3.5 h-3.5" />
-            <span>AirPlay</span>
-          </button>
-        )}
-      </div>
     </div>
   );
 
@@ -236,29 +158,11 @@ export function ClapprPlayer({
 
   return (
     <div className="mb-8 rounded-lg border border-border bg-card overflow-hidden">
-      <div className="p-4 sm:p-6 border-b border-border flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-foreground">{pageTitle}</h3>
-          <p className="text-sm text-muted-foreground">{pageDescription}</p>
-        </div>
-        <button
-          onClick={startCasting}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors text-sm font-medium"
-          title="Cast to TV"
-        >
-          {isCasting ? <Tv className="w-4 h-4" /> : <Cast className="w-4 h-4" />}
-          <span className="hidden sm:inline">{isCasting ? "Casting" : "Cast"}</span>
-        </button>
+      <div className="p-4 sm:p-6 border-b border-border">
+        <h3 className="text-lg font-semibold text-foreground">{pageTitle}</h3>
+        <p className="text-sm text-muted-foreground">{pageDescription}</p>
       </div>
-      <div className="p-4 sm:p-6 space-y-3">
-        {playerEl}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Cast className="w-3.5 h-3.5" />
-          <span>
-            Cast to TV via the Cast button above or your browser's cast menu.
-          </span>
-        </div>
-      </div>
+      <div className="p-4 sm:p-6">{playerEl}</div>
     </div>
   );
 }
