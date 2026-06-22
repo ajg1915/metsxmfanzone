@@ -137,3 +137,5 @@ project_id = "clwghkbtkofacsjeyrtk"
     verify_jwt = false
   [functions.fetch-sny-videos]
     verify_jwt = false
+  [functions.fetch-tiktok-feed]
+    verify_jwt = false
