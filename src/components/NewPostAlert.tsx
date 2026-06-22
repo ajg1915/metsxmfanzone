@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, X } from "lucide-react";
@@ -10,7 +10,17 @@ interface NewStory {
   thumbnail_url?: string | null;
   media_url?: string | null;
   media_type?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
+
+const resolveStoryAssetUrl = (url?: string | null) => {
+  if (!url) return null;
+  if (/^(https?:|blob:|data:)/i.test(url)) return url;
+  const fileName = url.includes("/stories/") ? url.split("/stories/").pop() : url.replace(/^stories\//, "");
+  if (!fileName) return null;
+  return supabase.storage.from("stories").getPublicUrl(fileName).data.publicUrl;
+};
 
 /**
  * Floating banner that pops up on the live stream player
@@ -20,6 +30,24 @@ export function NewPostAlert() {
   const [story, setStory] = useState<NewStory | null>(null);
   const [visible, setVisible] = useState(false);
   const [fsEl, setFsEl] = useState<Element | null>(null);
+  const latestMarkerRef = useRef<string | null>(null);
+
+  const showStory = useCallback((row: any, force = false) => {
+    if (!row || row.published === false) return;
+    const marker = `${row.id}:${row.updated_at || row.created_at || ""}`;
+    if (!force && latestMarkerRef.current === marker) return;
+    latestMarkerRef.current = marker;
+    setStory({
+      id: row.id,
+      title: row.title || "New update",
+      thumbnail_url: row.thumbnail_url,
+      media_url: row.media_url,
+      media_type: row.media_type,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+    });
+    setVisible(true);
+  }, []);
 
   useEffect(() => {
     const update = () =>
@@ -38,19 +66,30 @@ export function NewPostAlert() {
   }, []);
 
   useEffect(() => {
-    const handle = (payload: any) => {
-      const row = payload.new as any;
-      if (!row) return;
-      if (row.published === false) return;
-      setStory({
-        id: row.id,
-        title: row.title || "New update",
-        thumbnail_url: row.thumbnail_url,
-        media_url: row.media_url,
-        media_type: row.media_type,
-      });
-      setVisible(true);
+    let cancelled = false;
+
+    const fetchLatest = async (primeOnly = false) => {
+      const { data, error } = await supabase
+        .from("stories")
+        .select("id,title,thumbnail_url,media_url,media_type,published,created_at,updated_at")
+        .eq("published", true)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (cancelled || error || !data) return;
+      const marker = `${data.id}:${data.updated_at || data.created_at || ""}`;
+      if (primeOnly) {
+        latestMarkerRef.current = marker;
+        return;
+      }
+      if (latestMarkerRef.current !== marker) showStory(data);
     };
+
+    fetchLatest(true);
+    const poll = window.setInterval(() => fetchLatest(false), 12000);
+
+    const handle = (payload: any) => showStory(payload.new as any, true);
 
     const channel = supabase
       .channel("stream-new-story-alert")
@@ -69,9 +108,11 @@ export function NewPostAlert() {
       });
 
     return () => {
+      cancelled = true;
+      window.clearInterval(poll);
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [showStory]);
 
   useEffect(() => {
     if (!visible) return;
@@ -83,8 +124,8 @@ export function NewPostAlert() {
 
   // Prefer explicit thumbnail (fanart), fall back to the media itself if it's an image
   const thumb =
-    story.thumbnail_url ||
-    (story.media_type !== "video" ? story.media_url : null);
+    resolveStoryAssetUrl(story.thumbnail_url) ||
+    (story.media_type !== "video" ? resolveStoryAssetUrl(story.media_url) : null);
   const isVideo = story.media_type === "video";
 
   const content = (
