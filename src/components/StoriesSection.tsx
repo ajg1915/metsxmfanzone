@@ -90,10 +90,14 @@ const StoriesSection = () => {
 
       // Stories bucket is public — use getPublicUrl instead of signed URLs (no network requests!)
       const storiesWithUrls = (data || []).map((story) => {
-        const fileName = story.media_url.split('/stories/')[1] || story.media_url;
-        const { data: urlData } = supabase.storage
-          .from('stories')
-          .getPublicUrl(fileName);
+        let publicMediaUrl: string | null = null;
+        if (story.media_url) {
+          const fileName = story.media_url.split('/stories/')[1] || story.media_url;
+          const { data: urlData } = supabase.storage
+            .from('stories')
+            .getPublicUrl(fileName);
+          publicMediaUrl = urlData?.publicUrl || story.media_url;
+        }
 
         let thumbnailUrl = story.thumbnail_url;
         if (thumbnailUrl) {
@@ -106,12 +110,14 @@ const StoriesSection = () => {
 
         return {
           ...story,
-          media_type: story.media_type as 'image' | 'video',
-          media_url: urlData?.publicUrl || story.media_url,
-          thumbnail_url: thumbnailUrl
+          media_type: (story.media_type || 'text') as 'image' | 'video' | 'text',
+          media_url: publicMediaUrl,
+          thumbnail_url: thumbnailUrl,
+          text_content: (story as any).text_content ?? null,
         };
       });
       setStories(storiesWithUrls);
+
     } catch (error) {
       console.error("Error fetching stories:", error);
     } finally {
