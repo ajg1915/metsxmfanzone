@@ -126,11 +126,13 @@ const StoriesManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!mediaFile && !editingStory) {
+
+    const hasText = formData.text_content.trim().length > 0;
+
+    if (!mediaFile && !editingStory && !hasText) {
       toast({
         title: "Error",
-        description: "Please select a media file",
+        description: "Add a media file or text content",
         variant: "destructive",
       });
       return;
@@ -139,9 +141,10 @@ const StoriesManagement = () => {
     setUploading(true);
 
     try {
-      let mediaUrl = editingStory?.media_url || "";
+      let mediaUrl: string | null = editingStory?.media_url || null;
       let thumbnailUrl = editingStory?.thumbnail_url || null;
-      let mediaType = editingStory?.media_type || "image";
+      let mediaType: 'image' | 'video' | 'text' =
+        (editingStory?.media_type as any) || "image";
 
       if (mediaFile) {
         mediaType = mediaFile.type.startsWith("video/") ? "video" : "image";
@@ -153,6 +156,13 @@ const StoriesManagement = () => {
 
         if (uploadError) throw uploadError;
         mediaUrl = fileName;
+      } else if (!editingStory && hasText) {
+        // Brand new text-only story
+        mediaType = "text";
+        mediaUrl = null;
+      } else if (editingStory && hasText && !editingStory.media_url) {
+        mediaType = "text";
+        mediaUrl = null;
       }
 
       if (thumbnailFile) {
@@ -186,6 +196,7 @@ const StoriesManagement = () => {
         published: formData.published,
         link_url: finalLinkUrl,
         blog_post_id: linkType === "blog" ? formData.blog_post_id || null : null,
+        text_content: hasText ? formData.text_content.trim() : null,
       };
 
       if (editingStory) {
