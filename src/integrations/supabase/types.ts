@@ -2854,8 +2854,9 @@ export type Database = {
           id: string
           link_url: string | null
           media_type: string
-          media_url: string
+          media_url: string | null
           published: boolean
+          text_content: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string
@@ -2868,8 +2869,9 @@ export type Database = {
           id?: string
           link_url?: string | null
           media_type: string
-          media_url: string
+          media_url?: string | null
           published?: boolean
+          text_content?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string
@@ -2882,8 +2884,9 @@ export type Database = {
           id?: string
           link_url?: string | null
           media_type?: string
-          media_url?: string
+          media_url?: string | null
           published?: boolean
+          text_content?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string

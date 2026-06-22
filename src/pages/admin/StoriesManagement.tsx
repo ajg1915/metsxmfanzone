@@ -35,8 +35,8 @@ interface BlogPost {
 interface Story {
   id: string;
   title: string;
-  media_url: string;
-  media_type: 'image' | 'video';
+  media_url: string | null;
+  media_type: 'image' | 'video' | 'text';
   thumbnail_url: string | null;
   duration: number | null;
   display_order: number;
@@ -44,6 +44,7 @@ interface Story {
   created_at: string;
   link_url: string | null;
   blog_post_id: string | null;
+  text_content: string | null;
 }
 
 const StoriesManagement = () => {
@@ -62,6 +63,7 @@ const StoriesManagement = () => {
     published: false,
     link_url: "",
     blog_post_id: "",
+    text_content: "",
   });
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -124,11 +126,13 @@ const StoriesManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!mediaFile && !editingStory) {
+
+    const hasText = formData.text_content.trim().length > 0;
+
+    if (!mediaFile && !editingStory && !hasText) {
       toast({
         title: "Error",
-        description: "Please select a media file",
+        description: "Add a media file or text content",
         variant: "destructive",
       });
       return;
@@ -137,9 +141,10 @@ const StoriesManagement = () => {
     setUploading(true);
 
     try {
-      let mediaUrl = editingStory?.media_url || "";
+      let mediaUrl: string | null = editingStory?.media_url || null;
       let thumbnailUrl = editingStory?.thumbnail_url || null;
-      let mediaType = editingStory?.media_type || "image";
+      let mediaType: 'image' | 'video' | 'text' =
+        (editingStory?.media_type as any) || "image";
 
       if (mediaFile) {
         mediaType = mediaFile.type.startsWith("video/") ? "video" : "image";
@@ -151,6 +156,13 @@ const StoriesManagement = () => {
 
         if (uploadError) throw uploadError;
         mediaUrl = fileName;
+      } else if (!editingStory && hasText) {
+        // Brand new text-only story
+        mediaType = "text";
+        mediaUrl = null;
+      } else if (editingStory && hasText && !editingStory.media_url) {
+        mediaType = "text";
+        mediaUrl = null;
       }
 
       if (thumbnailFile) {
@@ -184,6 +196,7 @@ const StoriesManagement = () => {
         published: formData.published,
         link_url: finalLinkUrl,
         blog_post_id: linkType === "blog" ? formData.blog_post_id || null : null,
+        text_content: hasText ? formData.text_content.trim() : null,
       };
 
       if (editingStory) {
@@ -226,12 +239,14 @@ const StoriesManagement = () => {
     }
   };
 
-  const handleDelete = async (id: string, mediaUrl: string) => {
+  const handleDelete = async (id: string, mediaUrl: string | null) => {
     if (!confirm("Are you sure you want to delete this story?")) return;
 
     try {
-      const fileName = mediaUrl.split('/stories/')[1] || mediaUrl;
-      await supabase.storage.from("stories").remove([fileName]);
+      if (mediaUrl) {
+        const fileName = mediaUrl.split('/stories/')[1] || mediaUrl;
+        await supabase.storage.from("stories").remove([fileName]);
+      }
 
       const { error } = await supabase.from("stories").delete().eq("id", id);
 
@@ -302,6 +317,7 @@ const StoriesManagement = () => {
       published: story.published,
       link_url: story.link_url || "",
       blog_post_id: story.blog_post_id || "",
+      text_content: story.text_content || "",
     });
     // Set link type based on existing data
     setLinkType(story.blog_post_id ? "blog" : "custom");
@@ -446,7 +462,7 @@ const StoriesManagement = () => {
   };
 
   const resetForm = () => {
-    setFormData({ title: "", display_order: 0, published: false, link_url: "", blog_post_id: "" });
+    setFormData({ title: "", display_order: 0, published: false, link_url: "", blog_post_id: "", text_content: "" });
     setLinkType("blog");
     setMediaFile(null);
     setThumbnailFile(null);
@@ -605,14 +621,32 @@ const StoriesManagement = () => {
               </div>
 
               <div>
-                <Label htmlFor="media">Media File (Image or Video)</Label>
+                <Label htmlFor="media">Media File (Optional — leave empty for text-only post)</Label>
                 <Input
                   id="media"
                   type="file"
                   accept="image/*,video/*"
                   onChange={(e) => handleMediaFileChange(e.target.files?.[0] || null)}
-                  required={!editingStory}
                 />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Upload an image/video, or skip and fill in the text below for a text-only update.
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="text_content">Text Content (Optional)</Label>
+                <Textarea
+                  id="text_content"
+                  placeholder="Write a text-only update for the feed..."
+                  value={formData.text_content}
+                  onChange={(e) => setFormData({ ...formData, text_content: e.target.value })}
+                  className="min-h-[100px] text-sm"
+                />
+              </div>
+
+              <div className="hidden">{/* legacy preview slot */}</div>
+              <div>
+
                 {mediaPreview && (
                   <div className="mt-3 rounded-lg overflow-hidden border border-border">
                     <img 
@@ -892,7 +926,7 @@ const StoriesManagement = () => {
           onOpenChange={setShareDialogOpen}
           storyId={shareStory.id}
           storyTitle={shareStory.title}
-          mediaUrl={shareStory.media_url}
+          mediaUrl={shareStory.media_url || ''}
         />
       )}
     </div>

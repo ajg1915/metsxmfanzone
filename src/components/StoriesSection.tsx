@@ -23,12 +23,13 @@ import { useAuth } from "@/hooks/useAuth";
 interface Story {
   id: string;
   title: string;
-  media_url: string;
-  media_type: 'image' | 'video';
+  media_url: string | null;
+  media_type: 'image' | 'video' | 'text';
   thumbnail_url: string | null;
   duration: number | null;
   created_at: string;
   link_url: string | null;
+  text_content: string | null;
 }
 
 interface StoryComment {
@@ -89,10 +90,14 @@ const StoriesSection = () => {
 
       // Stories bucket is public — use getPublicUrl instead of signed URLs (no network requests!)
       const storiesWithUrls = (data || []).map((story) => {
-        const fileName = story.media_url.split('/stories/')[1] || story.media_url;
-        const { data: urlData } = supabase.storage
-          .from('stories')
-          .getPublicUrl(fileName);
+        let publicMediaUrl: string | null = null;
+        if (story.media_url) {
+          const fileName = story.media_url.split('/stories/')[1] || story.media_url;
+          const { data: urlData } = supabase.storage
+            .from('stories')
+            .getPublicUrl(fileName);
+          publicMediaUrl = urlData?.publicUrl || story.media_url;
+        }
 
         let thumbnailUrl = story.thumbnail_url;
         if (thumbnailUrl) {
@@ -105,12 +110,14 @@ const StoriesSection = () => {
 
         return {
           ...story,
-          media_type: story.media_type as 'image' | 'video',
-          media_url: urlData?.publicUrl || story.media_url,
-          thumbnail_url: thumbnailUrl
+          media_type: (story.media_type || 'text') as 'image' | 'video' | 'text',
+          media_url: publicMediaUrl,
+          thumbnail_url: thumbnailUrl,
+          text_content: (story as any).text_content ?? null,
         };
       });
       setStories(storiesWithUrls);
+
     } catch (error) {
       console.error("Error fetching stories:", error);
     } finally {
@@ -413,11 +420,19 @@ const StoriesSection = () => {
                         className="relative w-full h-full overflow-hidden"
                         onClick={handleClick}
                       >
-                        <img 
-                          src={story.media_type === 'video' && story.thumbnail_url ? story.thumbnail_url : story.media_url} 
-                          alt={story.title} 
-                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" 
-                        />
+                        {story.media_type === 'text' || !story.media_url ? (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/30 via-background to-orange-500/20 flex items-center justify-center p-3 transition-transform duration-700 ease-out group-hover:scale-105">
+                            <p className="text-foreground text-xs sm:text-sm font-semibold text-center line-clamp-6 leading-snug">
+                              {story.text_content || story.title}
+                            </p>
+                          </div>
+                        ) : (
+                          <img
+                            src={story.media_type === 'video' && story.thumbnail_url ? story.thumbnail_url : (story.media_url || '')}
+                            alt={story.title}
+                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                          />
+                        )}
                         {/* Shine sweep on hover */}
                         <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12 transition-transform duration-700 ease-out group-hover:translate-x-full" />
                         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent transition-opacity duration-300 group-hover:from-background/95" />
@@ -510,20 +525,26 @@ const StoriesSection = () => {
             <div className="relative bg-background/80 w-full animate-scale-in flex flex-col max-h-[85vh]">
               {/* Media section */}
               <div className="relative flex-shrink-0">
-                {selectedStory.media_type === 'video' ? (
-                  <video 
-                    src={selectedStory.media_url} 
-                    controls 
-                    autoPlay 
-                    playsInline 
-                    muted={false} 
+                {selectedStory.media_type === 'text' || !selectedStory.media_url ? (
+                  <div className="w-full bg-gradient-to-br from-primary/30 via-background to-orange-500/20 px-5 py-8 min-h-[180px] flex items-center justify-center">
+                    <p className="text-foreground text-base sm:text-lg font-medium text-center whitespace-pre-wrap leading-relaxed">
+                      {selectedStory.text_content || selectedStory.title}
+                    </p>
+                  </div>
+                ) : selectedStory.media_type === 'video' ? (
+                  <video
+                    src={selectedStory.media_url}
+                    controls
+                    autoPlay
+                    playsInline
+                    muted={false}
                     className="w-full h-auto max-h-[40vh] object-contain"
                   />
                 ) : (
-                  <img 
-                    src={selectedStory.media_url} 
-                    alt={selectedStory.title} 
-                    className="w-full h-auto max-h-[40vh] object-contain" 
+                  <img
+                    src={selectedStory.media_url}
+                    alt={selectedStory.title}
+                    className="w-full h-auto max-h-[40vh] object-contain"
                   />
                 )}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent p-2 sm:p-3">
