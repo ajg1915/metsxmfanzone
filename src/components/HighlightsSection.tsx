@@ -22,7 +22,7 @@ interface HighlightsSectionProps {
   badge?: React.ReactNode;
 }
 
-const CACHE_KEY = "sny_videos_cache_v1";
+const CACHE_KEY = "sny_videos_cache_v2";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 
 const HighlightsSection = ({ className, onVideoClick, badge }: HighlightsSectionProps) => {
