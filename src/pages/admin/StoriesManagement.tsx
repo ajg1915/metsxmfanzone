@@ -239,12 +239,14 @@ const StoriesManagement = () => {
     }
   };
 
-  const handleDelete = async (id: string, mediaUrl: string) => {
+  const handleDelete = async (id: string, mediaUrl: string | null) => {
     if (!confirm("Are you sure you want to delete this story?")) return;
 
     try {
-      const fileName = mediaUrl.split('/stories/')[1] || mediaUrl;
-      await supabase.storage.from("stories").remove([fileName]);
+      if (mediaUrl) {
+        const fileName = mediaUrl.split('/stories/')[1] || mediaUrl;
+        await supabase.storage.from("stories").remove([fileName]);
+      }
 
       const { error } = await supabase.from("stories").delete().eq("id", id);
 
