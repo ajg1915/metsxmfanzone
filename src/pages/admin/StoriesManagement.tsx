@@ -926,7 +926,7 @@ const StoriesManagement = () => {
           onOpenChange={setShareDialogOpen}
           storyId={shareStory.id}
           storyTitle={shareStory.title}
-          mediaUrl={shareStory.media_url}
+          mediaUrl={shareStory.media_url || ''}
         />
       )}
     </div>
