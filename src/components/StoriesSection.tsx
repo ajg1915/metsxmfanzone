@@ -23,12 +23,13 @@ import { useAuth } from "@/hooks/useAuth";
 interface Story {
   id: string;
   title: string;
-  media_url: string;
-  media_type: 'image' | 'video';
+  media_url: string | null;
+  media_type: 'image' | 'video' | 'text';
   thumbnail_url: string | null;
   duration: number | null;
   created_at: string;
   link_url: string | null;
+  text_content: string | null;
 }
 
 interface StoryComment {
