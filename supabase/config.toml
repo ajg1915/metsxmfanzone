@@ -135,3 +135,5 @@ project_id = "clwghkbtkofacsjeyrtk"
     verify_jwt = false
   [functions.fetch-sny-news]
     verify_jwt = false
+  [functions.fetch-sny-videos]
+    verify_jwt = false

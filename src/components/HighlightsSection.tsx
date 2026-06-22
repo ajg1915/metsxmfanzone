@@ -6,97 +6,76 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
-
-interface Video {
-  id: string;
+interface SNYVideo {
+  videoId: string;
   title: string;
-  video_url: string;
-  thumbnail_url: string | null;
-  description: string | null;
-  duration: number | null;
-  views: number | null;
-  category: string | null;
+  published: string;
+  description: string;
+  thumbnail: string;
 }
 
 interface HighlightsSectionProps {
   className?: string;
   /** If provided, called before opening a video. Return true to prevent the default dialog. */
-  onVideoClick?: (video: Video) => boolean | void;
+  onVideoClick?: (video: SNYVideo) => boolean | void;
   /** Optional badge element rendered inline next to the title */
   badge?: React.ReactNode;
 }
 
+const CACHE_KEY = "sny_videos_cache_v1";
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+
 const HighlightsSection = ({ className, onVideoClick, badge }: HighlightsSectionProps) => {
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
-  
+  const [videos, setVideos] = useState<SNYVideo[]>([]);
+  const [selectedVideo, setSelectedVideo] = useState<SNYVideo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
-  
+
+  const loadFromCache = (): SNYVideo[] | null => {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as { ts: number; videos: SNYVideo[] };
+      if (Date.now() - parsed.ts > CACHE_TTL_MS) return null;
+      return parsed.videos;
+    } catch {
+      return null;
+    }
+  };
 
   const fetchHighlights = useCallback(async () => {
+    const cached = loadFromCache();
+    if (cached && cached.length > 0) {
+      setVideos(cached);
+      setLoading(false);
+      return;
+    }
     try {
-      const { data, error } = await supabase
-        .from("videos")
-        .select("*")
-        .eq("published", true)
-        .eq("video_type", "highlight")
-        .order("published_at", { ascending: false })
-        .limit(12);
-
+      const { data, error } = await supabase.functions.invoke("fetch-sny-videos");
       if (error) throw error;
-      setVideos(data || []);
-    } catch (error) {
-      console.error("Error fetching highlights:", error);
+      const list: SNYVideo[] = data?.videos ?? [];
+      setVideos(list);
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), videos: list }));
+      } catch {
+        /* ignore quota */
+      }
+    } catch (err) {
+      console.error("Error fetching SNY videos:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const fetchMLBHighlights = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      console.log("Fetching Mets highlights from MLB API...");
-      const { data, error } = await supabase.functions.invoke("fetch-mets-highlights", {
-        body: { lookbackDays: 60, year: 2025 }
-      });
-      
-      if (error) {
-        console.error("Error fetching MLB highlights:", error);
-        return;
-      }
-      
-      console.log("MLB highlights fetch result:", data);
-      
-      if (data?.highlights?.length > 0) {
-        // Refresh the local list silently
-        await fetchHighlights();
-      }
-    } catch (err) {
-      console.error("Failed to fetch MLB highlights:", err);
-    } finally {
-      setRefreshing(false);
-    }
-  }, [fetchHighlights]);
-
   useEffect(() => {
     fetchHighlights();
-    // Removed auto MLB API fetch on mount — triggered by admin instead
   }, [fetchHighlights]);
-
-  const formatDuration = (seconds: number | null) => {
-    if (!seconds) return "";
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
 
   const scroll = (direction: 'left' | 'right') => {
     const container = document.getElementById('highlights-scroll');
     if (container) {
       const scrollAmount = container.clientWidth * 0.8;
-      const newPosition = direction === 'left' 
+      const newPosition = direction === 'left'
         ? Math.max(0, scrollPosition - scrollAmount)
         : scrollPosition + scrollAmount;
       container.scrollTo({ left: newPosition, behavior: 'smooth' });
@@ -127,12 +106,14 @@ const HighlightsSection = ({ className, onVideoClick, badge }: HighlightsSection
                   {badge}
                 </div>
                 <p className="text-[8px] sm:text-[10px] text-muted-foreground">
-                  Uploaded by Orange &amp; Blue Media
+                  Powered by SNY
                 </p>
               </div>
             </div>
             <a
-              href="/video-gallery"
+              href="https://sny.tv/video"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-1 text-[9px] sm:text-xs font-medium text-primary hover:text-primary/80 transition-colors shrink-0"
             >
               View All
@@ -143,7 +124,6 @@ const HighlightsSection = ({ className, onVideoClick, badge }: HighlightsSection
 
         {/* Netflix-style carousel container */}
         <div className="relative group/carousel">
-          {/* Left arrow */}
           {scrollPosition > 0 && (
             <button
               onClick={() => scroll('left')}
@@ -153,19 +133,17 @@ const HighlightsSection = ({ className, onVideoClick, badge }: HighlightsSection
             </button>
           )}
 
-          {/* Scrollable content */}
           <div
             id="highlights-scroll"
             onScroll={handleScroll}
             className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-4 sm:px-6 lg:px-8"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {/* Add left padding spacer */}
             <div className="flex-shrink-0 w-0 lg:w-[calc((100vw-1280px)/2)]" />
-            
+
             {videos.map((video) => (
               <div
-                key={video.id}
+                key={video.videoId}
                 onClick={() => {
                   if (onVideoClick) {
                     const prevented = onVideoClick(video);
@@ -176,60 +154,33 @@ const HighlightsSection = ({ className, onVideoClick, badge }: HighlightsSection
                 className="flex-shrink-0 w-[240px] sm:w-[280px] md:w-[320px] lg:w-[380px] cursor-pointer group"
               >
                 <div className="relative overflow-hidden rounded-md sm:rounded-lg transition-all duration-300 group-hover:scale-105 group-hover:z-10 group-hover:shadow-2xl group-hover:shadow-primary/20">
-                  {/* Thumbnail with GIF on hover */}
                   <div className="aspect-video relative">
-                    {video.thumbnail_url ? (
-                      <>
-                        <img
-                          src={video.thumbnail_url}
-                          alt={video.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </>
-                    ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center">
-                        <img src={metsLogo} alt="MetsXM" className="w-8 h-8 object-contain opacity-50" />
-                      </div>
-                    )}
-                    
-                    {/* Gradient overlay */}
+                    <img
+                      src={video.thumbnail}
+                      alt={video.title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-                    
-                    {/* Play button */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                       <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-transform">
                         <Play className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground ml-0.5" fill="currentColor" />
                       </div>
                     </div>
-
-                    {/* Duration badge */}
-                    {video.duration && (
-                      <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-background/90 backdrop-blur-sm text-[10px] sm:text-xs font-medium text-foreground">
-                        {formatDuration(video.duration)}
-                      </div>
-                    )}
                   </div>
 
-                  {/* Title overlay - appears on hover */}
                   <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 bg-gradient-to-t from-background to-transparent">
                     <p className="text-foreground text-xs sm:text-sm font-semibold line-clamp-2 group-hover:line-clamp-none transition-all">
                       {video.title}
                     </p>
-                    {video.views !== null && video.views > 0 && (
-                      <p className="text-muted-foreground text-[10px] sm:text-xs mt-0.5">
-                        {video.views.toLocaleString()} views
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
             ))}
-            
-            {/* Add right padding spacer */}
+
             <div className="flex-shrink-0 w-0 lg:w-[calc((100vw-1280px)/2)]" />
           </div>
 
-          {/* Right arrow */}
           <button
             onClick={() => scroll('right')}
             className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
@@ -239,24 +190,25 @@ const HighlightsSection = ({ className, onVideoClick, badge }: HighlightsSection
         </div>
       </section>
 
-      {/* Video player dialog */}
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
         <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] p-0 overflow-hidden glass-card border-border/30">
           {selectedVideo && (
             <div className="relative bg-background/90 w-full">
-              <video
-                src={selectedVideo.video_url}
-                controls
-                autoPlay
-                playsInline
-                className="w-full aspect-video"
-              />
+              <div className="aspect-video w-full">
+                <iframe
+                  src={`https://www.youtube.com/embed/${selectedVideo.videoId}?autoplay=1&rel=0`}
+                  title={selectedVideo.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                />
+              </div>
               <div className="p-3 sm:p-4">
                 <h3 className="text-foreground text-sm sm:text-base font-bold">
                   {selectedVideo.title}
                 </h3>
                 {selectedVideo.description && (
-                  <p className="text-muted-foreground text-xs sm:text-sm mt-1 line-clamp-2">
+                  <p className="text-muted-foreground text-xs sm:text-sm mt-1 line-clamp-2 whitespace-pre-line">
                     {selectedVideo.description}
                   </p>
                 )}
