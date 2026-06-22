@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, X } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -18,6 +19,23 @@ interface NewStory {
 export function NewPostAlert() {
   const [story, setStory] = useState<NewStory | null>(null);
   const [visible, setVisible] = useState(false);
+  const [fsEl, setFsEl] = useState<Element | null>(null);
+
+  useEffect(() => {
+    const update = () =>
+      setFsEl(
+        document.fullscreenElement ||
+          (document as any).webkitFullscreenElement ||
+          null,
+      );
+    update();
+    document.addEventListener("fullscreenchange", update);
+    document.addEventListener("webkitfullscreenchange", update);
+    return () => {
+      document.removeEventListener("fullscreenchange", update);
+      document.removeEventListener("webkitfullscreenchange", update);
+    };
+  }, []);
 
   useEffect(() => {
     const handle = (payload: any) => {
@@ -69,8 +87,10 @@ export function NewPostAlert() {
     (story.media_type !== "video" ? story.media_url : null);
   const isVideo = story.media_type === "video";
 
-  return (
-    <div className="pointer-events-none absolute bottom-16 left-3 sm:left-4 z-30 w-[min(88%,340px)] animate-slide-in-right">
+  const content = (
+    <div
+      className={`pointer-events-none ${fsEl ? "fixed" : "absolute"} bottom-16 left-3 sm:left-4 z-[2147483647] w-[min(88%,340px)] animate-slide-in-right`}
+    >
       <Link
         to="/#feed"
         onClick={() => setVisible(false)}
@@ -130,6 +150,8 @@ export function NewPostAlert() {
       </Link>
     </div>
   );
+
+  return fsEl ? createPortal(content, fsEl as Element) : content;
 }
 
 export default NewPostAlert;
