@@ -20,27 +20,35 @@ export function NewPostAlert() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    const handle = (payload: any) => {
+      const row = payload.new as any;
+      if (!row) return;
+      if (row.published === false) return;
+      setStory({
+        id: row.id,
+        title: row.title || "New update",
+        thumbnail_url: row.thumbnail_url,
+        media_url: row.media_url,
+        media_type: row.media_type,
+      });
+      setVisible(true);
+    };
+
     const channel = supabase
       .channel("stream-new-story-alert")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "stories" },
-        (payload) => {
-          const row = payload.new as any;
-          if (!row) return;
-          // Ignore drafts / unpublished
-          if (row.published === false) return;
-          setStory({
-            id: row.id,
-            title: row.title || "New update",
-            thumbnail_url: row.thumbnail_url,
-            media_url: row.media_url,
-            media_type: row.media_type,
-          });
-          setVisible(true);
-        },
+        handle,
       )
-      .subscribe();
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "stories" },
+        handle,
+      )
+      .subscribe((status) => {
+        console.log("[NewPostAlert] realtime:", status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -49,7 +57,7 @@ export function NewPostAlert() {
 
   useEffect(() => {
     if (!visible) return;
-    const t = setTimeout(() => setVisible(false), 12000);
+    const t = setTimeout(() => setVisible(false), 10000);
     return () => clearTimeout(t);
   }, [visible, story?.id]);
 
