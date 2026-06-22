@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { StreamAlertBanner } from "./StreamAlertBanner";
+import { NewPostAlert } from "./NewPostAlert";
 import ClapprPlayer from "./ClapprPlayer";
 
 interface LiveStream {
