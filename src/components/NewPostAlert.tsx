@@ -63,10 +63,11 @@ export function NewPostAlert() {
 
   if (!visible || !story) return null;
 
+  // Prefer explicit thumbnail (fanart), fall back to the media itself if it's an image
   const thumb =
-    story.media_type === "video" && story.thumbnail_url
-      ? story.thumbnail_url
-      : story.media_url;
+    story.thumbnail_url ||
+    (story.media_type !== "video" ? story.media_url : null);
+  const isVideo = story.media_type === "video";
 
   return (
     <div className="pointer-events-none absolute bottom-16 left-3 sm:left-4 z-30 w-[min(88%,340px)] animate-slide-in-right">
@@ -80,7 +81,21 @@ export function NewPostAlert() {
           <img
             src={thumb}
             alt=""
-            className="ml-1 w-16 h-16 rounded object-cover flex-shrink-0"
+            loading="eager"
+            crossOrigin="anonymous"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+            className="ml-1 w-16 h-16 rounded object-cover flex-shrink-0 bg-white/5"
+          />
+        ) : isVideo && story.media_url ? (
+          <video
+            src={story.media_url}
+            muted
+            playsInline
+            preload="metadata"
+            className="ml-1 w-16 h-16 rounded object-cover flex-shrink-0 bg-white/5"
           />
         ) : (
           <div className="ml-1 w-16 h-16 rounded bg-white/10 flex items-center justify-center flex-shrink-0">
