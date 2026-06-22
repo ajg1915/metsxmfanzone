@@ -53,16 +53,21 @@ export function NewPostAlert() {
       setFsEl(
         document.fullscreenElement ||
           (document as any).webkitFullscreenElement ||
+          (document as any).__iosPseudoFs ||
+          document.querySelector(".ios-pseudo-fullscreen") ||
           null,
       );
     update();
     document.addEventListener("fullscreenchange", update);
     document.addEventListener("webkitfullscreenchange", update);
+    const poll = window.setInterval(update, 500);
     return () => {
       document.removeEventListener("fullscreenchange", update);
       document.removeEventListener("webkitfullscreenchange", update);
+      window.clearInterval(poll);
     };
   }, []);
+
 
   useEffect(() => {
     let cancelled = false;
