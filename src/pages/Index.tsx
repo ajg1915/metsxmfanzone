@@ -15,7 +15,7 @@ const ImmersiveBackground = lazyWithRetry(() => import("@/components/ImmersiveBa
 const FreeTrialExpiryBanner = lazyWithRetry(() => import("@/components/FreeTrialExpiryBanner"), "home-free-trial-expiry-banner");
 const LiveNetworks = lazyWithRetry(() => import("@/components/LiveNetworks"), "home-live-networks");
 const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section");
-const RadioNetworkLiveSection = lazyWithRetry(() => import("@/components/RadioNetworkLiveSection"), "home-radio-network-live-section");
+
 const SpringTrainingGamesSection = lazyWithRetry(() => import("@/components/SpringTrainingGamesSection"), "home-spring-training-games-section");
 const GameHighlightsSection = lazyWithRetry(() => import("@/components/GameHighlightsSection"), "home-game-highlights-section");
 const ReplayGamesSection = lazyWithRetry(() => import("@/components/ReplayGamesSection"), "home-replay-games-section");
@@ -213,9 +213,6 @@ const Index = () => {
           </Suspense>
         </LazySection>
 
-        <Suspense fallback={null}>
-          <RadioNetworkLiveSection />
-        </Suspense>
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
