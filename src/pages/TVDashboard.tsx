@@ -167,18 +167,23 @@ const TVDashboard = () => {
 
   const resolvedStories = useMemo(() =>
     stories.map((s) => {
-      const fileName = s.media_url.split('/stories/')[1] || s.media_url;
-      const { data: urlData } = supabase.storage.from('stories').getPublicUrl(fileName);
+      let publicMediaUrl: string | null = null;
+      if (s.media_url) {
+        const fileName = s.media_url.split('/stories/')[1] || s.media_url;
+        const { data: urlData } = supabase.storage.from('stories').getPublicUrl(fileName);
+        publicMediaUrl = urlData?.publicUrl || s.media_url;
+      }
       let thumbnailUrl = s.thumbnail_url;
       if (thumbnailUrl) {
         const thumbFileName = thumbnailUrl.split('/stories/')[1] || thumbnailUrl;
         const { data: thumbData } = supabase.storage.from('stories').getPublicUrl(thumbFileName);
         thumbnailUrl = thumbData?.publicUrl || thumbnailUrl;
       }
-      return { ...s, media_url: urlData?.publicUrl || s.media_url, thumbnail_url: thumbnailUrl };
+      return { ...s, media_url: publicMediaUrl, thumbnail_url: thumbnailUrl };
     }),
     [stories]
   );
+
 
   const storyItems = useMemo(() =>
     resolvedStories.map((s) => ({
