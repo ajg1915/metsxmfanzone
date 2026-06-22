@@ -40,6 +40,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     if (!source || !containerRef.current) return;
 
     let destroyed = false;
+    let cleanupIos: (() => void) | null = null;
 
     const init = async () => {
       const ChromecastPlugin = await loadChromecastPlugin();
@@ -58,6 +59,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         autoPlay: true,
         mute: false,
         chromeless: !showChrome,
+        playInline: true,
+        playsinline: true,
         mediacontrol: { seekbar: "#E94560", buttons: "#E94560" },
         plugins,
         chromecast: ChromecastPlugin
@@ -71,12 +74,18 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       });
 
       playerRef.current = player;
+
+      // iOS pseudo-fullscreen so overlays (NewPostAlert) remain visible.
+      // iOS Safari's native <video> fullscreen is an OS layer that no DOM
+      // can paint on top of — so we prevent it and use CSS fullscreen instead.
+      cleanupIos = setupIosPseudoFullscreen(containerRef.current!);
     };
 
     init();
 
     return () => {
       destroyed = true;
+      if (cleanupIos) cleanupIos();
       if (playerRef.current) {
         try {
           playerRef.current.destroy();
@@ -87,6 +96,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       playerRef.current = null;
     };
   }, [source, showChrome, pageTitle]);
+
 
   // CDN-loaded Clappr for pages that don't pass a direct stream URL (e.g. MetsXMFanZone)
   const cdnContainerRef = useRef<HTMLDivElement>(null);
