@@ -315,6 +315,7 @@ const StoriesManagement = () => {
       published: story.published,
       link_url: story.link_url || "",
       blog_post_id: story.blog_post_id || "",
+      text_content: story.text_content || "",
     });
     // Set link type based on existing data
     setLinkType(story.blog_post_id ? "blog" : "custom");
