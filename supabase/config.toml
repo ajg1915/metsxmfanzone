@@ -133,3 +133,5 @@ project_id = "clwghkbtkofacsjeyrtk"
     verify_jwt = false
   [functions.handle-email-suppression]
     verify_jwt = false
+  [functions.fetch-sny-news]
+    verify_jwt = false
