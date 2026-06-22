@@ -28,6 +28,106 @@ function loadChromecastPlugin(): Promise<any> {
   });
 }
 
+const isIos = () => {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  return /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && (navigator as any).maxTouchPoints > 1);
+};
+
+function setupIosPseudoFullscreen(container: HTMLElement): () => void {
+  if (!isIos()) return () => {};
+
+  let cancelled = false;
+  let video: HTMLVideoElement | null = null;
+  let observer: MutationObserver | null = null;
+
+  const fireFullscreenChange = () => {
+    try {
+      document.dispatchEvent(new Event("fullscreenchange"));
+      document.dispatchEvent(new Event("webkitfullscreenchange"));
+    } catch {
+      // ignore
+    }
+  };
+
+  const enterPseudo = () => {
+    container.classList.add("ios-pseudo-fullscreen");
+    document.body.style.overflow = "hidden";
+    // Make this element look "fullscreen" so NewPostAlert portals into it.
+    (document as any).__iosPseudoFs = container;
+    Object.defineProperty(document, "webkitFullscreenElement", {
+      configurable: true,
+      get: () => (document as any).__iosPseudoFs || null,
+    });
+    fireFullscreenChange();
+  };
+
+  const exitPseudo = () => {
+    container.classList.remove("ios-pseudo-fullscreen");
+    document.body.style.overflow = "";
+    (document as any).__iosPseudoFs = null;
+    fireFullscreenChange();
+  };
+
+  const attach = (v: HTMLVideoElement) => {
+    video = v;
+    v.setAttribute("playsinline", "true");
+    v.setAttribute("webkit-playsinline", "true");
+    (v as any).playsInline = true;
+
+    // Override native iOS fullscreen entry
+    try {
+      (v as any).webkitEnterFullscreen = () => enterPseudo();
+      (v as any).webkitEnterFullScreen = () => enterPseudo();
+      (v as any).requestFullscreen = () => {
+        enterPseudo();
+        return Promise.resolve();
+      };
+    } catch {
+      // ignore
+    }
+
+    v.addEventListener("webkitbeginfullscreen", (e) => {
+      e.preventDefault?.();
+      try { (v as any).webkitExitFullscreen?.(); } catch {}
+      enterPseudo();
+    });
+  };
+
+  const findVideo = () => {
+    const v = container.querySelector("video") as HTMLVideoElement | null;
+    if (v && v !== video) attach(v);
+  };
+
+  findVideo();
+  observer = new MutationObserver(() => {
+    if (cancelled) return;
+    findVideo();
+  });
+  observer.observe(container, { childList: true, subtree: true });
+
+  // Intercept Clappr's fullscreen button (it calls element.requestFullscreen)
+  const clickHandler = (e: Event) => {
+    const target = e.target as HTMLElement;
+    if (!target) return;
+    if (target.closest('[data-fullscreen], .fullscreen-icon, .icon-fullscreen, [aria-label*="ull" i]')) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (container.classList.contains("ios-pseudo-fullscreen")) exitPseudo();
+      else enterPseudo();
+    }
+  };
+  container.addEventListener("click", clickHandler, true);
+
+  return () => {
+    cancelled = true;
+    observer?.disconnect();
+    container.removeEventListener("click", clickHandler, true);
+    if (container.classList.contains("ios-pseudo-fullscreen")) exitPseudo();
+  };
+}
+
+
 export const ClapprPlayer = memo(function ClapprPlayer({
   source,
   showChrome = true,
