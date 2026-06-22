@@ -63,6 +63,7 @@ const StoriesManagement = () => {
     published: false,
     link_url: "",
     blog_post_id: "",
+    text_content: "",
   });
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
