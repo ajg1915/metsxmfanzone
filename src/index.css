@@ -552,6 +552,27 @@ All colors MUST be HSL.
     animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  /* iOS pseudo-fullscreen for the live stream player so DOM overlays
+     (e.g. NewPostAlert) remain visible — iOS native <video> fullscreen
+     is an OS layer that no web overlay can sit on top of. */
+  .ios-pseudo-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 2147483646 !important;
+    background: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+  .ios-pseudo-fullscreen video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
   .animate-scale-in {
     animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
