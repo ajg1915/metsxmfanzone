@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, X } from "lucide-react";
-import { Link } from "react-router-dom";
 
 interface NewStory {
   id: string;
