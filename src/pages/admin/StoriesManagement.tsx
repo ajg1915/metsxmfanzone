@@ -35,8 +35,8 @@ interface BlogPost {
 interface Story {
   id: string;
   title: string;
-  media_url: string;
-  media_type: 'image' | 'video';
+  media_url: string | null;
+  media_type: 'image' | 'video' | 'text';
   thumbnail_url: string | null;
   duration: number | null;
   display_order: number;
@@ -44,6 +44,7 @@ interface Story {
   created_at: string;
   link_url: string | null;
   blog_post_id: string | null;
+  text_content: string | null;
 }
 
 const StoriesManagement = () => {
