@@ -129,7 +129,7 @@ export function NewPostAlert() {
 
   const content = (
     <div
-      className={`pointer-events-none ${fsEl ? "fixed" : "absolute"} bottom-16 left-3 sm:left-4 z-[2147483647] w-[min(88%,340px)] animate-slide-in-right`}
+      className="pointer-events-none fixed bottom-4 left-3 sm:left-4 w-[min(88%,340px)] animate-slide-in-right"
       style={{ zIndex: 2147483647 }}
     >
       <a
@@ -192,7 +192,15 @@ export function NewPostAlert() {
     </div>
   );
 
-  return fsEl ? createPortal(content, fsEl as Element) : content;
+  // When the browser is in real fullscreen, portal into the fullscreen element
+  // so the alert paints on top. iOS Safari's native video fullscreen is an OS
+  // layer that no DOM overlay can sit on top of — for that case we fall back to
+  // fixed positioning which appears as soon as the user exits fullscreen.
+  if (fsEl && typeof document !== "undefined") {
+    return createPortal(content, fsEl as Element);
+  }
+  return content;
+
 }
 
 export default NewPostAlert;
