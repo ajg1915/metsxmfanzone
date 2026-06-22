@@ -50,15 +50,6 @@ const TikTokFeedSection = () => {
           <h2 className="text-xl md:text-2xl font-bold text-foreground">
             Latest posts from <span className="text-primary">@{USERNAME}</span>
           </h2>
-          <a
-            href={PROFILE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#ff0050] to-[#00f2ea] text-white text-sm font-semibold hover:opacity-90 transition shadow-md"
-          >
-            Follow on TikTok
-            <ExternalLink className="w-4 h-4" />
-          </a>
         </div>
 
         {loading ? (
