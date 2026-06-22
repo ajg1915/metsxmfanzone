@@ -1,0 +1,1 @@
+ALTER TABLE public.stories ADD COLUMN IF NOT EXISTS text_content text; ALTER TABLE public.stories ALTER COLUMN media_url DROP NOT NULL;
