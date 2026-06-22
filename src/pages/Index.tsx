@@ -26,6 +26,7 @@ const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/Regu
 const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
 const HomeLineupCard = lazyWithRetry(() => import("@/components/HomeLineupCard"), "home-lineup-card");
 const FindUsSection = lazyWithRetry(() => import("@/components/FindUsSection"), "home-find-us-section");
+const TikTokFeedSection = lazyWithRetry(() => import("@/components/TikTokFeedSection"), "home-tiktok-feed-section");
 
 const StoriesSection = lazyWithRetry(() => import("@/components/StoriesSection"), "home-stories-section");
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
