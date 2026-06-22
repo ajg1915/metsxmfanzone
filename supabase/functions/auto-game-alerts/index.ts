@@ -268,6 +268,60 @@ serve(async (req) => {
         continue;
       }
 
+      // Handle game-live trigger (notify the moment a game actually goes In Progress)
+      if (triggerType === "game_live") {
+        const abstractState = game.status?.abstractGameState; // 'Preview' | 'Live' | 'Final'
+        if (abstractState !== 'Live') {
+          console.log(`Game ${game.gamePk} not Live yet (${abstractState}), skipping game_live.`);
+          continue;
+        }
+
+        const title = `🔴 LIVE NOW: Mets ${homeAway} ${opponent}`;
+        const message = `First pitch is underway! Mets ${homeAway} ${opponent} at ${venue}. Tune in now! 🟠🔵⚾`;
+        const linkUrl = gameType === 'S' ? '/spring-training-live' : '/metsxmfanzone';
+
+        // Dedup by exact title within today
+        const { data: existing } = await supabase
+          .from("game_alerts")
+          .select("id")
+          .eq("title", title)
+          .gte("created_at", `${todayET}T00:00:00Z`)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          console.log(`Live alert already exists for game ${game.gamePk}, skipping.`);
+          continue;
+        }
+
+        const { error: insertError } = await supabase
+          .from("game_alerts")
+          .insert({
+            title,
+            message,
+            alert_type: 'game_live',
+            severity: 'critical',
+            link_url: linkUrl,
+            is_active: true,
+            push_sent: false,
+            email_sent: false,
+          });
+
+        if (insertError) {
+          console.error("Failed to insert game_live alert:", insertError);
+          continue;
+        }
+
+        console.log(`Created game_live alert: ${title}`);
+        alertsCreated++;
+
+        await sendNotifications(
+          supabaseUrl, serviceKey, supabase, title, message, opponent, todayET, timeStr, venue, linkUrl,
+          'game_live', {}, 'game_live'
+        );
+        continue;
+      }
+
+
       // For time-based triggers, check if game is within the right window
       const nowMs = now.getTime();
       const gameMs = gameDate.getTime();

@@ -79,27 +79,42 @@ const RegularSeasonSeriesSection = () => {
         groupMap.get(opponent)!.push(game);
       }
 
-      const groups: SeriesGroup[] = Array.from(groupMap.entries()).map(([opponent, streams]) => {
+      const nowMs = Date.now();
+      const ONE_DAY = 24 * 60 * 60 * 1000;
+
+      const groups: (SeriesGroup & { isActive: boolean })[] = Array.from(groupMap.entries()).map(([opponent, streams]) => {
         const sorted = [...streams].sort((a, b) => {
           const aD = a.scheduled_start ? new Date(a.scheduled_start).getTime() : Infinity;
           const bD = b.scheduled_start ? new Date(b.scheduled_start).getTime() : Infinity;
           return aD - bD;
         });
 
+        const dates = sorted.map((s) => (s.scheduled_start ? new Date(s.scheduled_start).getTime() : null)).filter((t): t is number => t !== null);
+        const firstMs = dates[0] ?? null;
+        const lastMs = dates[dates.length - 1] ?? null;
+        const hasLive = sorted.some((stream) => stream.status === "live");
+        // Active = a series whose date range includes "now" (or within a 24h buffer of the last game)
+        const isActive = hasLive || (firstMs !== null && lastMs !== null && nowMs >= firstMs - ONE_DAY && nowMs <= lastMs + ONE_DAY);
+
         return {
           opponent,
           streams: sorted,
-          hasLive: sorted.some((stream) => stream.status === "live"),
+          hasLive,
           earliestDate: sorted[0]?.scheduled_start || null,
+          isActive,
         };
       });
 
       groups.sort((a, b) => {
-        if (a.hasLive && !b.hasLive) return -1;
-        if (!a.hasLive && b.hasLive) return 1;
+        // Live first, then active, then upcoming, then past
+        if (a.hasLive !== b.hasLive) return a.hasLive ? -1 : 1;
+        if (a.isActive !== b.isActive) return a.isActive ? -1 : 1;
 
         const aT = a.earliestDate ? new Date(a.earliestDate).getTime() : Infinity;
         const bT = b.earliestDate ? new Date(b.earliestDate).getTime() : Infinity;
+        const aIsPast = aT < nowMs - ONE_DAY;
+        const bIsPast = bT < nowMs - ONE_DAY;
+        if (aIsPast !== bIsPast) return aIsPast ? 1 : -1;
         return aT - bT;
       });
 
