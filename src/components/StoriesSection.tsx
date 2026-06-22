@@ -407,26 +407,29 @@ const StoriesSection = () => {
                       variant="interactive"
                       glow="blue"
                       delay={index * 0.05}
-                      className="h-56 sm:h-72 md:h-80 lg:h-96 cursor-pointer group"
+                      className="h-56 sm:h-72 md:h-80 lg:h-96 cursor-pointer group overflow-hidden transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_20px_45px_-12px_hsl(var(--primary)/0.55)] hover:ring-2 hover:ring-primary/50"
                     >
                       <div 
-                        className="relative w-full h-full"
+                        className="relative w-full h-full overflow-hidden"
                         onClick={handleClick}
                       >
                         <img 
                           src={story.media_type === 'video' && story.thumbnail_url ? story.thumbnail_url : story.media_url} 
                           alt={story.title} 
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" 
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+                        {/* Shine sweep on hover */}
+                        <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12 transition-transform duration-700 ease-out group-hover:translate-x-full" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent transition-opacity duration-300 group-hover:from-background/95" />
                         
                         {story.media_type === 'video' && (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="w-10 h-10 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center">
-                              <Play className="w-4 h-4 text-primary-foreground ml-0.5" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300 ease-out">
+                            <div className="w-12 h-12 rounded-full bg-primary/95 backdrop-blur-sm flex items-center justify-center shadow-xl ring-4 ring-primary/30">
+                              <Play className="w-5 h-5 text-primary-foreground fill-primary-foreground ml-0.5" />
                             </div>
                           </div>
                         )}
+                        
                         
                         {/* Interactive buttons overlay */}
                         <div 
