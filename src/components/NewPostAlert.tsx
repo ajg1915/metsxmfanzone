@@ -131,9 +131,10 @@ export function NewPostAlert() {
   const content = (
     <div
       className={`pointer-events-none ${fsEl ? "fixed" : "absolute"} bottom-16 left-3 sm:left-4 z-[2147483647] w-[min(88%,340px)] animate-slide-in-right`}
+      style={{ zIndex: 2147483647 }}
     >
-      <Link
-        to="/#feed"
+      <a
+        href="/#feed"
         onClick={() => setVisible(false)}
         className="pointer-events-auto group flex items-stretch gap-2 p-2 pr-8 rounded-lg bg-black/85 backdrop-blur-md border border-white/15 shadow-2xl hover:bg-black/90 transition-colors relative overflow-hidden"
       >
@@ -188,7 +189,7 @@ export function NewPostAlert() {
         >
           <X className="w-3.5 h-3.5" />
         </button>
-      </Link>
+      </a>
     </div>
   );
 
