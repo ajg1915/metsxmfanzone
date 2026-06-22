@@ -369,6 +369,13 @@ const Navigation = () => {
                     <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
                     <span className="font-medium">Home</span>
                   </NavLink>
+                  <button
+                    onClick={() => { setMobileMenuOpen(false); handleProtectedNavigation("/community"); }}
+                    className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                  >
+                    <Users className="w-3.5 h-3.5 text-primary" />
+                    <span className="font-medium">Community</span>
+                  </button>
                   {/* Podcast collapsible (includes Radio) */}
                   <Collapsible open={radioOpen} onOpenChange={setRadioOpen}>
                     <CollapsibleTrigger className="flex items-center justify-between w-full px-2.5 py-2 rounded-lg hover:bg-primary/8 transition-all">
