@@ -263,6 +263,13 @@ const Index = () => {
         <div className="section-divider my-1" />
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
+            <TikTokFeedSection />
+          </Suspense>
+        </LazySection>
+
+        <div className="section-divider my-1" />
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
             <FindUsSection />
           </Suspense>
         </LazySection>
