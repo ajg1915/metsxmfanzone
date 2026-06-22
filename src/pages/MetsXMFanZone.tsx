@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { ClapprPlayer } from "@/components/ClapprPlayer";
+import { NewPostAlert } from "@/components/NewPostAlert";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
 import LiveStreamChat from "@/components/LiveStreamChat";
 import SEOHead from "@/components/SEOHead";
@@ -150,6 +151,7 @@ const MetsXMFanZone = () => {
                       pageDescription="Ultimate Destination Where the Fans Go"
                       showChrome={false}
                     />
+                    <NewPostAlert />
                   </div>
                 </div>
 
