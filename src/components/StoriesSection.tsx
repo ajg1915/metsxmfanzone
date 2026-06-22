@@ -420,11 +420,19 @@ const StoriesSection = () => {
                         className="relative w-full h-full overflow-hidden"
                         onClick={handleClick}
                       >
-                        <img 
-                          src={story.media_type === 'video' && story.thumbnail_url ? story.thumbnail_url : story.media_url} 
-                          alt={story.title} 
-                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110" 
-                        />
+                        {story.media_type === 'text' || !story.media_url ? (
+                          <div className="w-full h-full bg-gradient-to-br from-primary/30 via-background to-orange-500/20 flex items-center justify-center p-3 transition-transform duration-700 ease-out group-hover:scale-105">
+                            <p className="text-foreground text-xs sm:text-sm font-semibold text-center line-clamp-6 leading-snug">
+                              {story.text_content || story.title}
+                            </p>
+                          </div>
+                        ) : (
+                          <img
+                            src={story.media_type === 'video' && story.thumbnail_url ? story.thumbnail_url : (story.media_url || '')}
+                            alt={story.title}
+                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                          />
+                        )}
                         {/* Shine sweep on hover */}
                         <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent skew-x-12 transition-transform duration-700 ease-out group-hover:translate-x-full" />
                         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent transition-opacity duration-300 group-hover:from-background/95" />
