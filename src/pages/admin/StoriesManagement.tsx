@@ -46,6 +46,7 @@ interface Story {
   link_url: string | null;
   blog_post_id: string | null;
   text_content: string | null;
+  text_bg_style?: string | null;
 }
 
 const StoriesManagement = () => {
