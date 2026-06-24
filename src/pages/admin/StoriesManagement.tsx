@@ -804,9 +804,11 @@ const StoriesManagement = () => {
                 {uploading ? "Uploading..." : editingStory ? "Update Story" : "Create Story"}
               </Button>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
 
       {/* AI Image Generator Section */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
