@@ -467,7 +467,7 @@ const StoriesManagement = () => {
   };
 
   const resetForm = () => {
-    setFormData({ title: "", display_order: 0, published: false, link_url: "", blog_post_id: "", text_content: "" });
+    setFormData({ title: "", display_order: 0, published: false, link_url: "", blog_post_id: "", text_content: "", text_bg_style: "gradient" });
     setLinkType("blog");
     setMediaFile(null);
     setThumbnailFile(null);
