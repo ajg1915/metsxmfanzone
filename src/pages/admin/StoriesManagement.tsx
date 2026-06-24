@@ -322,6 +322,7 @@ const StoriesManagement = () => {
       link_url: story.link_url || "",
       blog_post_id: story.blog_post_id || "",
       text_content: story.text_content || "",
+      text_bg_style: story.text_bg_style || "gradient",
     });
     // Set link type based on existing data
     setLinkType(story.blog_post_id ? "blog" : "custom");
