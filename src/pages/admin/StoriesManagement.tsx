@@ -200,6 +200,7 @@ const StoriesManagement = () => {
         link_url: finalLinkUrl,
         blog_post_id: linkType === "blog" ? formData.blog_post_id || null : null,
         text_content: hasText ? formData.text_content.trim() : null,
+        text_bg_style: mediaType === "text" ? formData.text_bg_style : null,
       };
 
       if (editingStory) {
