@@ -602,20 +602,38 @@ const StoriesManagement = () => {
     <div className="max-w-full px-2 py-3 space-y-4 overflow-x-hidden">
       <div className="flex justify-between items-center">
         <h1 className="text-lg sm:text-xl font-bold">Stories</h1>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="h-8 text-xs">
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              Add
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="w-[90vw] max-w-xs sm:max-w-sm p-3 gap-2">
-            <DialogHeader>
-              <DialogTitle>{editingStory ? "Edit Story" : "Add New Story"}</DialogTitle>
-            </DialogHeader>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs"
+            onClick={() => {
+              resetForm();
+              setTextOnlyMode(true);
+              setIsDialogOpen(true);
+            }}
+          >
+            <FileText className="w-3.5 h-3.5 mr-1" />
+            Add Text
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => setTextOnlyMode(false)}
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                Add
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[90vw] max-w-xs sm:max-w-sm p-3 gap-2">
+              <DialogHeader>
+                <DialogTitle>{editingStory ? "Edit Story" : textOnlyMode ? "Add Text Story" : "Add New Story"}</DialogTitle>
+              </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="title">Title</Label>
