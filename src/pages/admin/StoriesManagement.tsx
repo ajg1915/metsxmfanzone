@@ -480,6 +480,7 @@ const StoriesManagement = () => {
     setVideoFrames([]);
     setSelectedFrameIndex(0);
     setEditingStory(null);
+    setTextOnlyMode(false);
   };
 
   const handleGenerateImage = async () => {
