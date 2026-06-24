@@ -85,6 +85,7 @@ const StoriesSection = () => {
         .from("stories")
         .select("*")
         .eq("published", true)
+        .neq("media_type", "text")
         .order("display_order", { ascending: true })
         .order("created_at", { ascending: false });
       
