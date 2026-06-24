@@ -649,6 +649,36 @@ const StoriesManagement = () => {
                 />
               </div>
 
+              {!mediaFile && !editingStory?.media_url && formData.text_content.trim().length > 0 && (
+                <div>
+                  <Label className="text-xs">Background Style</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {STORY_BG_STYLES.map((s) => {
+                      const active = formData.text_bg_style === s.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, text_bg_style: s.id })}
+                          className={`relative h-16 rounded-md overflow-hidden border-2 transition-all ${s.className} ${active ? "border-primary ring-2 ring-primary/40" : "border-border/40 hover:border-primary/50"}`}
+                          title={s.label}
+                        >
+                          <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold ${s.textClassName || "text-foreground"}`}>
+                            Aa
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className={`mt-2 rounded-lg p-4 min-h-[100px] flex items-center justify-center ${getStoryBgStyle(formData.text_bg_style).className}`}>
+                    <p className={`text-center font-bold text-base leading-snug whitespace-pre-wrap ${getStoryBgStyle(formData.text_bg_style).textClassName || "text-foreground"}`}>
+                      {formData.text_content}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+
               <div className="hidden">{/* legacy preview slot */}</div>
               <div>
 
