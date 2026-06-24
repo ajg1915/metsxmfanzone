@@ -66,6 +66,7 @@ const StoriesManagement = () => {
     link_url: "",
     blog_post_id: "",
     text_content: "",
+    text_bg_style: "gradient",
   });
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
