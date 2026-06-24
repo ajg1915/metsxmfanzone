@@ -21,7 +21,7 @@ const navItems: NavItem[] = [
   { label: "Post", path: "/community", requiresPremium: false },
   { label: "Blog", path: "/blog", requiresPremium: true },
   { label: "Podcast", path: "/podcast", requiresPremium: true },
-  { label: "Alerts", path: "#notifications", requiresPremium: false },
+  { label: "Games", path: "/mets-schedule-2026", requiresPremium: false },
 ];
 
 const SocialMediaBar = () => {
