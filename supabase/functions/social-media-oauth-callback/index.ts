@@ -31,18 +31,35 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Parse state to get user_id and redirect_uri
-    let stateData: { userId: string; redirectUri: string };
-    try {
-      stateData = JSON.parse(atob(state || ''));
-    } catch {
-      return new Response(JSON.stringify({ error: 'Invalid state parameter' }), { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    // Verify CSRF state via server-stored token (replaces unsigned base64 state)
+    let userId: string;
+    let redirectUri: string;
+    if (!state) {
+      return new Response(JSON.stringify({ error: 'Missing state' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    const { data: tokenRow, error: tokenErr } = await supabaseAdmin
+      .from('oauth_csrf_tokens')
+      .select('user_id, redirect_uri, expires_at')
+      .eq('state', state)
+      .maybeSingle();
+    if (tokenErr || !tokenRow) {
+      return new Response(JSON.stringify({ error: 'Invalid or expired state' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (new Date(tokenRow.expires_at).getTime() < Date.now()) {
+      await supabaseAdmin.from('oauth_csrf_tokens').delete().eq('state', state);
+      return new Response(JSON.stringify({ error: 'State expired' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    userId = tokenRow.user_id;
+    redirectUri = tokenRow.redirect_uri;
+    // Single-use: consume immediately
+    await supabaseAdmin.from('oauth_csrf_tokens').delete().eq('state', state);
 
-    const { userId, redirectUri } = stateData;
 
     console.log(`Processing OAuth callback for ${platform}, user: ${userId}`);
 
