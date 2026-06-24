@@ -58,6 +58,7 @@ const StoriesManagement = () => {
   const [editingStory, setEditingStory] = useState<Story | null>(null);
   const [uploading, setUploading] = useState(false);
   const [linkType, setLinkType] = useState<"blog" | "custom">("blog");
+  const [textOnlyMode, setTextOnlyMode] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -479,6 +480,7 @@ const StoriesManagement = () => {
     setVideoFrames([]);
     setSelectedFrameIndex(0);
     setEditingStory(null);
+    setTextOnlyMode(false);
   };
 
   const handleGenerateImage = async () => {
@@ -600,20 +602,38 @@ const StoriesManagement = () => {
     <div className="max-w-full px-2 py-3 space-y-4 overflow-x-hidden">
       <div className="flex justify-between items-center">
         <h1 className="text-lg sm:text-xl font-bold">Stories</h1>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="h-8 text-xs">
-              <Plus className="w-3.5 h-3.5 mr-1" />
-              Add
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="w-[90vw] max-w-xs sm:max-w-sm p-3 gap-2">
-            <DialogHeader>
-              <DialogTitle>{editingStory ? "Edit Story" : "Add New Story"}</DialogTitle>
-            </DialogHeader>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 text-xs"
+            onClick={() => {
+              resetForm();
+              setTextOnlyMode(true);
+              setIsDialogOpen(true);
+            }}
+          >
+            <FileText className="w-3.5 h-3.5 mr-1" />
+            Add Text
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button
+                size="sm"
+                className="h-8 text-xs"
+                onClick={() => setTextOnlyMode(false)}
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" />
+                Add
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[90vw] max-w-xs sm:max-w-sm p-3 gap-2">
+              <DialogHeader>
+                <DialogTitle>{editingStory ? "Edit Story" : textOnlyMode ? "Add Text Story" : "Add New Story"}</DialogTitle>
+              </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="title">Title</Label>
@@ -625,31 +645,34 @@ const StoriesManagement = () => {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="media">Media File (Optional — leave empty for text-only post)</Label>
-                <Input
-                  id="media"
-                  type="file"
-                  accept="image/*,video/*"
-                  onChange={(e) => handleMediaFileChange(e.target.files?.[0] || null)}
-                />
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Upload an image/video, or skip and fill in the text below for a text-only update.
-                </p>
-              </div>
+              {!textOnlyMode && (
+                <div>
+                  <Label htmlFor="media">Media File (Optional — leave empty for text-only post)</Label>
+                  <Input
+                    id="media"
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={(e) => handleMediaFileChange(e.target.files?.[0] || null)}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Upload an image/video, or skip and fill in the text below for a text-only update.
+                  </p>
+                </div>
+              )}
 
               <div>
-                <Label htmlFor="text_content">Text Content (Optional)</Label>
+                <Label htmlFor="text_content">Text Content {textOnlyMode ? "" : "(Optional)"}</Label>
                 <Textarea
                   id="text_content"
                   placeholder="Write a text-only update for the feed..."
                   value={formData.text_content}
                   onChange={(e) => setFormData({ ...formData, text_content: e.target.value })}
                   className="min-h-[100px] text-sm"
+                  required={textOnlyMode}
                 />
               </div>
 
-              {!mediaFile && !editingStory?.media_url && formData.text_content.trim().length > 0 && (
+              {(textOnlyMode || (!mediaFile && !editingStory?.media_url && formData.text_content.trim().length > 0)) && (
                 <div>
                   <Label className="text-xs">Background Style</Label>
                   <div className="grid grid-cols-3 gap-2 mt-2">
@@ -784,9 +807,11 @@ const StoriesManagement = () => {
                 {uploading ? "Uploading..." : editingStory ? "Update Story" : "Create Story"}
               </Button>
             </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
 
       {/* AI Image Generator Section */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
