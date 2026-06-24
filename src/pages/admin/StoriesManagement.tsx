@@ -25,6 +25,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { validateFile, generateSafeFilename, FileType } from "@/utils/fileValidation";
 import { SocialShareDialog } from "@/components/SocialShareDialog";
+import { STORY_BG_STYLES, getStoryBgStyle } from "@/lib/storyBackgrounds";
 
 interface BlogPost {
   id: string;
@@ -45,6 +46,7 @@ interface Story {
   link_url: string | null;
   blog_post_id: string | null;
   text_content: string | null;
+  text_bg_style?: string | null;
 }
 
 const StoriesManagement = () => {
@@ -64,6 +66,7 @@ const StoriesManagement = () => {
     link_url: "",
     blog_post_id: "",
     text_content: "",
+    text_bg_style: "gradient",
   });
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -197,6 +200,7 @@ const StoriesManagement = () => {
         link_url: finalLinkUrl,
         blog_post_id: linkType === "blog" ? formData.blog_post_id || null : null,
         text_content: hasText ? formData.text_content.trim() : null,
+        text_bg_style: mediaType === "text" ? formData.text_bg_style : null,
       };
 
       if (editingStory) {
@@ -318,6 +322,7 @@ const StoriesManagement = () => {
       link_url: story.link_url || "",
       blog_post_id: story.blog_post_id || "",
       text_content: story.text_content || "",
+      text_bg_style: story.text_bg_style || "gradient",
     });
     // Set link type based on existing data
     setLinkType(story.blog_post_id ? "blog" : "custom");
@@ -462,7 +467,7 @@ const StoriesManagement = () => {
   };
 
   const resetForm = () => {
-    setFormData({ title: "", display_order: 0, published: false, link_url: "", blog_post_id: "", text_content: "" });
+    setFormData({ title: "", display_order: 0, published: false, link_url: "", blog_post_id: "", text_content: "", text_bg_style: "gradient" });
     setLinkType("blog");
     setMediaFile(null);
     setThumbnailFile(null);
@@ -643,6 +648,36 @@ const StoriesManagement = () => {
                   className="min-h-[100px] text-sm"
                 />
               </div>
+
+              {!mediaFile && !editingStory?.media_url && formData.text_content.trim().length > 0 && (
+                <div>
+                  <Label className="text-xs">Background Style</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    {STORY_BG_STYLES.map((s) => {
+                      const active = formData.text_bg_style === s.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, text_bg_style: s.id })}
+                          className={`relative h-16 rounded-md overflow-hidden border-2 transition-all ${s.className} ${active ? "border-primary ring-2 ring-primary/40" : "border-border/40 hover:border-primary/50"}`}
+                          title={s.label}
+                        >
+                          <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold ${s.textClassName || "text-foreground"}`}>
+                            Aa
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className={`mt-2 rounded-lg p-4 min-h-[100px] flex items-center justify-center ${getStoryBgStyle(formData.text_bg_style).className}`}>
+                    <p className={`text-center font-bold text-base leading-snug whitespace-pre-wrap ${getStoryBgStyle(formData.text_bg_style).textClassName || "text-foreground"}`}>
+                      {formData.text_content}
+                    </p>
+                  </div>
+                </div>
+              )}
+
 
               <div className="hidden">{/* legacy preview slot */}</div>
               <div>

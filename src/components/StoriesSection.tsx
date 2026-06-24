@@ -19,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { getStoryBgStyle } from "@/lib/storyBackgrounds";
 
 interface Story {
   id: string;
@@ -30,6 +31,7 @@ interface Story {
   created_at: string;
   link_url: string | null;
   text_content: string | null;
+  text_bg_style?: string | null;
 }
 
 interface StoryComment {
@@ -114,6 +116,7 @@ const StoriesSection = () => {
           media_url: publicMediaUrl,
           thumbnail_url: thumbnailUrl,
           text_content: (story as any).text_content ?? null,
+          text_bg_style: (story as any).text_bg_style ?? null,
         };
       });
       setStories(storiesWithUrls);
@@ -420,13 +423,16 @@ const StoriesSection = () => {
                         className="relative w-full h-full overflow-hidden"
                         onClick={handleClick}
                       >
-                        {story.media_type === 'text' || !story.media_url ? (
-                          <div className="w-full h-full bg-gradient-to-br from-primary/30 via-background to-orange-500/20 flex items-center justify-center p-3 transition-transform duration-700 ease-out group-hover:scale-105">
-                            <p className="text-foreground text-xs sm:text-sm font-semibold text-center line-clamp-6 leading-snug">
-                              {story.text_content || story.title}
-                            </p>
-                          </div>
-                        ) : (
+                        {story.media_type === 'text' || !story.media_url ? (() => {
+                          const bg = getStoryBgStyle(story.text_bg_style);
+                          return (
+                            <div className={`w-full h-full flex items-center justify-center p-3 transition-transform duration-700 ease-out group-hover:scale-105 ${bg.className}`}>
+                              <p className={`text-xs sm:text-base font-bold text-center line-clamp-6 leading-snug ${bg.textClassName || "text-foreground"}`}>
+                                {story.text_content || story.title}
+                              </p>
+                            </div>
+                          );
+                        })() : (
                           <img
                             src={story.media_type === 'video' && story.thumbnail_url ? story.thumbnail_url : (story.media_url || '')}
                             alt={story.title}
@@ -525,13 +531,16 @@ const StoriesSection = () => {
             <div className="relative bg-background/80 w-full animate-scale-in flex flex-col max-h-[85vh]">
               {/* Media section */}
               <div className="relative flex-shrink-0">
-                {selectedStory.media_type === 'text' || !selectedStory.media_url ? (
-                  <div className="w-full bg-gradient-to-br from-primary/30 via-background to-orange-500/20 px-5 py-8 min-h-[180px] flex items-center justify-center">
-                    <p className="text-foreground text-base sm:text-lg font-medium text-center whitespace-pre-wrap leading-relaxed">
-                      {selectedStory.text_content || selectedStory.title}
-                    </p>
-                  </div>
-                ) : selectedStory.media_type === 'video' ? (
+                {selectedStory.media_type === 'text' || !selectedStory.media_url ? (() => {
+                  const bg = getStoryBgStyle(selectedStory.text_bg_style);
+                  return (
+                    <div className={`w-full px-5 py-12 min-h-[260px] flex items-center justify-center ${bg.className}`}>
+                      <p className={`text-xl sm:text-2xl font-bold text-center whitespace-pre-wrap leading-snug ${bg.textClassName || "text-foreground"}`}>
+                        {selectedStory.text_content || selectedStory.title}
+                      </p>
+                    </div>
+                  );
+                })() : selectedStory.media_type === 'video' ? (
                   <video
                     src={selectedStory.media_url}
                     controls
