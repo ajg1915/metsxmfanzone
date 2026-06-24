@@ -19,6 +19,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { getStoryBgStyle } from "@/lib/storyBackgrounds";
 
 interface Story {
   id: string;
@@ -30,6 +31,7 @@ interface Story {
   created_at: string;
   link_url: string | null;
   text_content: string | null;
+  text_bg_style?: string | null;
 }
 
 interface StoryComment {
