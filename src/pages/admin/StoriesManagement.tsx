@@ -58,6 +58,7 @@ const StoriesManagement = () => {
   const [editingStory, setEditingStory] = useState<Story | null>(null);
   const [uploading, setUploading] = useState(false);
   const [linkType, setLinkType] = useState<"blog" | "custom">("blog");
+  const [textOnlyMode, setTextOnlyMode] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
