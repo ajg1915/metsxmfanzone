@@ -423,13 +423,16 @@ const StoriesSection = () => {
                         className="relative w-full h-full overflow-hidden"
                         onClick={handleClick}
                       >
-                        {story.media_type === 'text' || !story.media_url ? (
-                          <div className="w-full h-full bg-gradient-to-br from-primary/30 via-background to-orange-500/20 flex items-center justify-center p-3 transition-transform duration-700 ease-out group-hover:scale-105">
-                            <p className="text-foreground text-xs sm:text-sm font-semibold text-center line-clamp-6 leading-snug">
-                              {story.text_content || story.title}
-                            </p>
-                          </div>
-                        ) : (
+                        {story.media_type === 'text' || !story.media_url ? (() => {
+                          const bg = getStoryBgStyle(story.text_bg_style);
+                          return (
+                            <div className={`w-full h-full flex items-center justify-center p-3 transition-transform duration-700 ease-out group-hover:scale-105 ${bg.className}`}>
+                              <p className={`text-xs sm:text-base font-bold text-center line-clamp-6 leading-snug ${bg.textClassName || "text-foreground"}`}>
+                                {story.text_content || story.title}
+                              </p>
+                            </div>
+                          );
+                        })() : (
                           <img
                             src={story.media_type === 'video' && story.thumbnail_url ? story.thumbnail_url : (story.media_url || '')}
                             alt={story.title}
