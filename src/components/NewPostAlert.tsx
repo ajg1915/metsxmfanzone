@@ -131,6 +131,7 @@ export function NewPostAlert() {
     resolveStoryAssetUrl(story.thumbnail_url) ||
     (story.media_type !== "video" ? resolveStoryAssetUrl(story.media_url) : null);
   const isVideo = story.media_type === "video";
+  const hasMedia = !!thumb || (isVideo && !!story.media_url);
 
   const content = (
     <div
@@ -164,8 +165,8 @@ export function NewPostAlert() {
             className="ml-1 w-16 h-16 rounded object-cover flex-shrink-0 bg-white/5"
           />
         ) : (
-          <div className="ml-1 w-16 h-16 rounded bg-white/10 flex items-center justify-center flex-shrink-0">
-            <Sparkles className="w-6 h-6 text-white" />
+          <div className="ml-2 flex items-center flex-shrink-0">
+            <Sparkles className="w-5 h-5 text-primary" />
           </div>
         )}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -176,7 +177,7 @@ export function NewPostAlert() {
             </span>
             New Feed Update
           </div>
-          <p className="text-white text-sm font-semibold leading-tight line-clamp-2 mt-0.5">
+          <p className={`text-white font-semibold leading-tight mt-0.5 text-sm ${hasMedia ? "line-clamp-2" : "line-clamp-4"}`}>
             {story.title}
           </p>
           <p className="text-white/60 text-[10px] mt-0.5">Tap to view</p>
@@ -196,6 +197,7 @@ export function NewPostAlert() {
       </a>
     </div>
   );
+
 
   // When the browser is in real fullscreen, portal into the fullscreen element
   // so the alert paints on top. iOS Safari's native video fullscreen is an OS
