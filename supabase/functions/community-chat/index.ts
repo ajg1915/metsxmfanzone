@@ -1,4 +1,13 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { z } from "npm:zod@3.23.8";
+
+const MessageSchema = z.object({
+  role: z.enum(["user", "assistant", "system"]),
+  content: z.string().min(1).max(4000),
+});
+const BodySchema = z.object({
+  messages: z.array(MessageSchema).min(1).max(20),
+});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
