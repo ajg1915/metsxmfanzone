@@ -1,4 +1,4 @@
-import { MessageSquarePlus, Share2, Tv, PenLine, BookOpen, Mic, Lock, Bell } from "lucide-react";
+import { MessageSquarePlus, Share2, Tv, PenLine, BookOpen, Mic, Lock, Bell, CalendarDays } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
