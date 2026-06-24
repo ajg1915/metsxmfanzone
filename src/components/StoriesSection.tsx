@@ -116,6 +116,7 @@ const StoriesSection = () => {
           media_url: publicMediaUrl,
           thumbnail_url: thumbnailUrl,
           text_content: (story as any).text_content ?? null,
+          text_bg_style: (story as any).text_bg_style ?? null,
         };
       });
       setStories(storiesWithUrls);
