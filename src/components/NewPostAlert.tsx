@@ -164,11 +164,7 @@ export function NewPostAlert() {
             preload="metadata"
             className="ml-1 w-16 h-16 rounded object-cover flex-shrink-0 bg-white/5"
           />
-        ) : (
-          <div className="ml-2 flex items-center flex-shrink-0">
-            <Sparkles className="w-5 h-5 text-primary" />
-          </div>
-        )}
+        ) : null}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-primary">
             <span className="relative flex h-2 w-2">
