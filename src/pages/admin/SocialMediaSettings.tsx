@@ -97,9 +97,9 @@ const SocialMediaSettings = () => {
     return connections.find((c) => c.platform === platform);
   };
 
-  const handleMetaConnect = (platform: 'facebook' | 'instagram') => {
+  const handleMetaConnect = async (platform: 'facebook' | 'instagram') => {
     const META_APP_ID = import.meta.env.VITE_META_APP_ID;
-    
+
     if (!META_APP_ID) {
       toast({
         title: "Configuration Required",
@@ -112,38 +112,40 @@ const SocialMediaSettings = () => {
     setConnectingPlatform(platform);
 
     const redirectUri = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/social-media-oauth-callback`;
-    
-    // Get current user
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in",
-          variant: "destructive",
-        });
-        return;
-      }
 
-      const state = btoa(JSON.stringify({ 
-        userId: user.id, 
-        redirectUri,
-        platform 
-      }));
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({ title: "Error", description: "You must be logged in", variant: "destructive" });
+      setConnectingPlatform(null);
+      return;
+    }
 
-      const scopes = platform === 'instagram' 
-        ? 'pages_manage_posts,instagram_basic,instagram_content_publish,pages_read_engagement'
-        : 'pages_manage_posts,pages_read_engagement,pages_show_list';
+    // Get a signed CSRF state from server (no client-trusted userId in state)
+    const { data: stateRes, error: stateErr } = await supabase.functions.invoke(
+      'social-media-oauth-init',
+      { body: { platform, redirectUri } }
+    );
+    if (stateErr || !stateRes?.state) {
+      toast({ title: "Error", description: "Could not start OAuth flow", variant: "destructive" });
+      setConnectingPlatform(null);
+      return;
+    }
+    const state = stateRes.state as string;
 
-      const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?` +
-        `client_id=${META_APP_ID}&` +
-        `redirect_uri=${encodeURIComponent(redirectUri)}&` +
-        `scope=${scopes}&` +
-        `state=${state}&` +
-        `response_type=code`;
+    const scopes = platform === 'instagram'
+      ? 'pages_manage_posts,instagram_basic,instagram_content_publish,pages_read_engagement'
+      : 'pages_manage_posts,pages_read_engagement,pages_show_list';
 
-      window.location.href = authUrl;
-    });
+    const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?` +
+      `client_id=${META_APP_ID}&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `scope=${scopes}&` +
+      `state=${state}&` +
+      `response_type=code`;
+
+    window.location.href = authUrl;
   };
+
 
   const handleTwitterConnect = async () => {
     if (!twitterCredentials.apiKey || !twitterCredentials.apiSecret || 
