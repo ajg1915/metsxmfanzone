@@ -531,13 +531,16 @@ const StoriesSection = () => {
             <div className="relative bg-background/80 w-full animate-scale-in flex flex-col max-h-[85vh]">
               {/* Media section */}
               <div className="relative flex-shrink-0">
-                {selectedStory.media_type === 'text' || !selectedStory.media_url ? (
-                  <div className="w-full bg-gradient-to-br from-primary/30 via-background to-orange-500/20 px-5 py-8 min-h-[180px] flex items-center justify-center">
-                    <p className="text-foreground text-base sm:text-lg font-medium text-center whitespace-pre-wrap leading-relaxed">
-                      {selectedStory.text_content || selectedStory.title}
-                    </p>
-                  </div>
-                ) : selectedStory.media_type === 'video' ? (
+                {selectedStory.media_type === 'text' || !selectedStory.media_url ? (() => {
+                  const bg = getStoryBgStyle(selectedStory.text_bg_style);
+                  return (
+                    <div className={`w-full px-5 py-12 min-h-[260px] flex items-center justify-center ${bg.className}`}>
+                      <p className={`text-xl sm:text-2xl font-bold text-center whitespace-pre-wrap leading-snug ${bg.textClassName || "text-foreground"}`}>
+                        {selectedStory.text_content || selectedStory.title}
+                      </p>
+                    </div>
+                  );
+                })() : selectedStory.media_type === 'video' ? (
                   <video
                     src={selectedStory.media_url}
                     controls
