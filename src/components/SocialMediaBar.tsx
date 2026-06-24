@@ -95,8 +95,8 @@ const SocialMediaBar = () => {
                 <BookOpen className="h-7 w-7" />
               ) : item.label === "Podcast" ? (
                 <Mic className="h-7 w-7" />
-              ) : item.label === "Alerts" ? (
-                <Bell className="h-7 w-7" />
+              ) : item.label === "Games" ? (
+                <CalendarDays className="h-7 w-7" />
               ) : (
                 <img src={metsLogo} alt={item.label} className="h-7 w-7 object-contain" />
               )}
@@ -104,15 +104,7 @@ const SocialMediaBar = () => {
             </>
           );
 
-          if (item.label === "Alerts") {
-            return (
-              <NotificationsPanel key={item.label}>
-                <button className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-primary transition-colors relative">
-                  {buttonInner}
-                </button>
-              </NotificationsPanel>
-            );
-          }
+
 
           return (
             <button
