@@ -25,6 +25,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { validateFile, generateSafeFilename, FileType } from "@/utils/fileValidation";
 import { SocialShareDialog } from "@/components/SocialShareDialog";
+import { STORY_BG_STYLES, getStoryBgStyle } from "@/lib/storyBackgrounds";
 
 interface BlogPost {
   id: string;
