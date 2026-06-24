@@ -645,31 +645,34 @@ const StoriesManagement = () => {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="media">Media File (Optional — leave empty for text-only post)</Label>
-                <Input
-                  id="media"
-                  type="file"
-                  accept="image/*,video/*"
-                  onChange={(e) => handleMediaFileChange(e.target.files?.[0] || null)}
-                />
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Upload an image/video, or skip and fill in the text below for a text-only update.
-                </p>
-              </div>
+              {!textOnlyMode && (
+                <div>
+                  <Label htmlFor="media">Media File (Optional — leave empty for text-only post)</Label>
+                  <Input
+                    id="media"
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={(e) => handleMediaFileChange(e.target.files?.[0] || null)}
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Upload an image/video, or skip and fill in the text below for a text-only update.
+                  </p>
+                </div>
+              )}
 
               <div>
-                <Label htmlFor="text_content">Text Content (Optional)</Label>
+                <Label htmlFor="text_content">Text Content {textOnlyMode ? "" : "(Optional)"}</Label>
                 <Textarea
                   id="text_content"
                   placeholder="Write a text-only update for the feed..."
                   value={formData.text_content}
                   onChange={(e) => setFormData({ ...formData, text_content: e.target.value })}
                   className="min-h-[100px] text-sm"
+                  required={textOnlyMode}
                 />
               </div>
 
-              {!mediaFile && !editingStory?.media_url && formData.text_content.trim().length > 0 && (
+              {(textOnlyMode || (!mediaFile && !editingStory?.media_url && formData.text_content.trim().length > 0)) && (
                 <div>
                   <Label className="text-xs">Background Style</Label>
                   <div className="grid grid-cols-3 gap-2 mt-2">
