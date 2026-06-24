@@ -51,15 +51,14 @@ const PlayerOfTheMonthSection = () => {
 
       setEntry(data as PlayerEntry);
 
-      // Fetch vote counts
-      const { data: allVotes } = await supabase
-        .from("player_of_the_month_votes")
-        .select("vote_type")
-        .eq("player_of_the_month_id", data.id);
+      // Fetch vote counts via aggregate RPC (votes table is no longer publicly readable)
+      const { data: counts } = await supabase
+        .rpc("get_potm_vote_counts", { p_player_of_the_month_id: data.id });
 
-      const agree = allVotes?.filter(v => v.vote_type === "agree").length || 0;
-      const disagree = allVotes?.filter(v => v.vote_type === "disagree").length || 0;
-      setVotes({ agree, disagree });
+      const agree = counts?.find((r: any) => r.vote_type === "agree")?.vote_count ?? 0;
+      const disagree = counts?.find((r: any) => r.vote_type === "disagree")?.vote_count ?? 0;
+      setVotes({ agree: Number(agree), disagree: Number(disagree) });
+
 
       // Check user vote
       if (user) {

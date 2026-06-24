@@ -1803,6 +1803,33 @@ export type Database = {
         }
         Relationships: []
       }
+      oauth_csrf_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          platform: string
+          redirect_uri: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          platform: string
+          redirect_uri: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          platform?: string
+          redirect_uri?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       player_of_the_month: {
         Row: {
           admin_opinion: string
@@ -2664,6 +2691,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_public: boolean
           setting_key: string
           setting_type: string
           setting_value: Json
@@ -2672,6 +2700,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_public?: boolean
           setting_key: string
           setting_type?: string
           setting_value?: Json
@@ -2680,6 +2709,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_public?: boolean
           setting_key?: string
           setting_type?: string
           setting_value?: Json
@@ -3969,6 +3999,13 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_potm_vote_counts: {
+        Args: { p_player_of_the_month_id: string }
+        Returns: {
+          vote_count: number
+          vote_type: string
+        }[]
       }
       get_user_subscription_safe: {
         Args: { p_user_id: string }

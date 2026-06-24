@@ -1,4 +1,13 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { z } from "npm:zod@3.23.8";
+
+const MessageSchema = z.object({
+  role: z.enum(["user", "assistant", "system"]),
+  content: z.string().min(1).max(4000),
+});
+const BodySchema = z.object({
+  messages: z.array(MessageSchema).min(1).max(20),
+});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,7 +72,13 @@ Deno.serve(async (req) => {
     // Log this message
     await adminClient.from("chat_usage").insert({ user_id: user.id });
 
-    const { messages } = await req.json();
+    const parsed = BodySchema.safeParse(await req.json().catch(() => null));
+    if (!parsed.success) {
+      return new Response(JSON.stringify({ error: "Invalid request body", details: parsed.error.flatten().fieldErrors }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { messages } = parsed.data;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
