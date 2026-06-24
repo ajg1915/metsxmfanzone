@@ -2856,6 +2856,7 @@ export type Database = {
           media_type: string
           media_url: string | null
           published: boolean
+          text_bg_style: string | null
           text_content: string | null
           thumbnail_url: string | null
           title: string
@@ -2871,6 +2872,7 @@ export type Database = {
           media_type: string
           media_url?: string | null
           published?: boolean
+          text_bg_style?: string | null
           text_content?: string | null
           thumbnail_url?: string | null
           title: string
@@ -2886,6 +2888,7 @@ export type Database = {
           media_type?: string
           media_url?: string | null
           published?: boolean
+          text_bg_style?: string | null
           text_content?: string | null
           thumbnail_url?: string | null
           title?: string
