@@ -1,4 +1,4 @@
-import { MessageSquarePlus, Share2, Tv, PenLine, BookOpen, Mic, Lock, Bell } from "lucide-react";
+import { MessageSquarePlus, Share2, Tv, PenLine, BookOpen, Mic, Lock, Bell, CalendarDays } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,7 +21,7 @@ const navItems: NavItem[] = [
   { label: "Post", path: "/community", requiresPremium: false },
   { label: "Blog", path: "/blog", requiresPremium: true },
   { label: "Podcast", path: "/podcast", requiresPremium: true },
-  { label: "Alerts", path: "#notifications", requiresPremium: false },
+  { label: "Games", path: "/mets-schedule-2026", requiresPremium: false },
 ];
 
 const SocialMediaBar = () => {
@@ -95,8 +95,8 @@ const SocialMediaBar = () => {
                 <BookOpen className="h-7 w-7" />
               ) : item.label === "Podcast" ? (
                 <Mic className="h-7 w-7" />
-              ) : item.label === "Alerts" ? (
-                <Bell className="h-7 w-7" />
+              ) : item.label === "Games" ? (
+                <CalendarDays className="h-7 w-7" />
               ) : (
                 <img src={metsLogo} alt={item.label} className="h-7 w-7 object-contain" />
               )}
@@ -104,15 +104,7 @@ const SocialMediaBar = () => {
             </>
           );
 
-          if (item.label === "Alerts") {
-            return (
-              <NotificationsPanel key={item.label}>
-                <button className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-primary transition-colors relative">
-                  {buttonInner}
-                </button>
-              </NotificationsPanel>
-            );
-          }
+
 
           return (
             <button
