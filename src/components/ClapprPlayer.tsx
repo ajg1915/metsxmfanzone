@@ -1,6 +1,7 @@
 import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Clappr from "@clappr/player";
 import { Loader2, AlertCircle, RotateCw, Volume2 } from "lucide-react";
+import { CastButton } from "./CastButton";
 
 interface ClapprPlayerProps {
   pageTitle?: string;
@@ -177,7 +178,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           height: "100%",
           autoPlay: true,
           mute: true,
-          chromeless: !showChrome,
+          chromeless: false, // always show controls so users can access fullscreen/volume/cast
           playInline: true,
           playsinline: true,
           hlsjsConfig: {
@@ -227,6 +228,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   return (
     <div className="relative w-full h-full aspect-video bg-black overflow-hidden">
       <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+      <CastButton source={effectiveSource} title={pageTitle} />
 
       {status === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white gap-2 pointer-events-none">
