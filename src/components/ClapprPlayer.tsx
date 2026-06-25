@@ -1,5 +1,6 @@
-import { memo, useRef, useEffect } from "react";
+import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Clappr from "@clappr/player";
+import { Loader2, AlertCircle, RotateCw, Volume2 } from "lucide-react";
 
 interface ClapprPlayerProps {
   pageTitle?: string;
@@ -7,6 +8,9 @@ interface ClapprPlayerProps {
   source?: string;
   showChrome?: boolean;
 }
+
+const FALLBACK_SOURCE =
+  "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
 
 function loadChromecastPlugin(): Promise<any> {
   return new Promise((resolve) => {
@@ -53,12 +57,13 @@ function setupIosPseudoFullscreen(container: HTMLElement): () => void {
   const enterPseudo = () => {
     container.classList.add("ios-pseudo-fullscreen");
     document.body.style.overflow = "hidden";
-    // Make this element look "fullscreen" so NewPostAlert portals into it.
     (document as any).__iosPseudoFs = container;
-    Object.defineProperty(document, "webkitFullscreenElement", {
-      configurable: true,
-      get: () => (document as any).__iosPseudoFs || null,
-    });
+    try {
+      Object.defineProperty(document, "webkitFullscreenElement", {
+        configurable: true,
+        get: () => (document as any).__iosPseudoFs || null,
+      });
+    } catch {}
     fireFullscreenChange();
   };
 
@@ -75,7 +80,6 @@ function setupIosPseudoFullscreen(container: HTMLElement): () => void {
     v.setAttribute("webkit-playsinline", "true");
     (v as any).playsInline = true;
 
-    // Override native iOS fullscreen entry
     try {
       (v as any).webkitEnterFullscreen = () => enterPseudo();
       (v as any).webkitEnterFullScreen = () => enterPseudo();
@@ -83,9 +87,7 @@ function setupIosPseudoFullscreen(container: HTMLElement): () => void {
         enterPseudo();
         return Promise.resolve();
       };
-    } catch {
-      // ignore
-    }
+    } catch {}
 
     v.addEventListener("webkitbeginfullscreen", (e) => {
       e.preventDefault?.();
@@ -106,7 +108,6 @@ function setupIosPseudoFullscreen(container: HTMLElement): () => void {
   });
   observer.observe(container, { childList: true, subtree: true });
 
-  // Intercept Clappr's fullscreen button (it calls element.requestFullscreen)
   const clickHandler = (e: Event) => {
     const target = e.target as HTMLElement;
     if (!target) return;
@@ -127,7 +128,6 @@ function setupIosPseudoFullscreen(container: HTMLElement): () => void {
   };
 }
 
-
 export const ClapprPlayer = memo(function ClapprPlayer({
   source,
   showChrome = true,
@@ -135,50 +135,87 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 }: ClapprPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [needsUnmute, setNeedsUnmute] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+
+  const effectiveSource = source || FALLBACK_SOURCE;
+
+  const handleUnmute = useCallback(() => {
+    try {
+      const p = playerRef.current;
+      if (!p) return;
+      p.setVolume?.(100);
+      p.play?.();
+      setNeedsUnmute(false);
+    } catch {}
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    setStatus("loading");
+    setRetryKey((k) => k + 1);
+  }, []);
 
   useEffect(() => {
-    if (!source || !containerRef.current) return;
+    if (!containerRef.current) return;
 
     let destroyed = false;
     let cleanupIos: (() => void) | null = null;
+    setStatus("loading");
+    setNeedsUnmute(false);
 
     const init = async () => {
       const ChromecastPlugin = await loadChromecastPlugin();
-      if (destroyed) return;
+      if (destroyed || !containerRef.current) return;
 
-      // Expose Clappr globally so the Chromecast plugin can attach
       (window as any).Clappr = Clappr;
-
       const plugins = ChromecastPlugin ? [ChromecastPlugin] : [];
 
-      const player = new (Clappr as any).Player({
-        parent: containerRef.current,
-        source,
-        width: "100%",
-        height: "100%",
-        autoPlay: true,
-        mute: false,
-        chromeless: !showChrome,
-        playInline: true,
-        playsinline: true,
-        mediacontrol: { seekbar: "#E94560", buttons: "#E94560" },
-        plugins,
-        chromecast: ChromecastPlugin
-          ? {
-              appId: "9DB1A077",
-              media: {
-                title: pageTitle,
-              },
-            }
-          : undefined,
-      });
+      try {
+        const player = new (Clappr as any).Player({
+          parent: containerRef.current,
+          source: effectiveSource,
+          width: "100%",
+          height: "100%",
+          autoPlay: true,
+          mute: true, // start muted so browsers don't block autoplay → no black screens
+          chromeless: !showChrome,
+          playInline: true,
+          playsinline: true,
+          hlsjsConfig: {
+            enableWorker: true,
+            lowLatencyMode: true,
+            backBufferLength: 30,
+          },
+          mediacontrol: { seekbar: "#E94560", buttons: "#E94560" },
+          plugins,
+          chromecast: ChromecastPlugin
+            ? { appId: "9DB1A077", media: { title: pageTitle } }
+            : undefined,
+          events: {
+            onReady: () => {
+              if (destroyed) return;
+              setStatus("ready");
+              setNeedsUnmute(true);
+            },
+            onPlay: () => {
+              if (destroyed) return;
+              setStatus("ready");
+            },
+            onError: (err: any) => {
+              if (destroyed) return;
+              console.error("[ClapprPlayer] error:", err);
+              setStatus("error");
+            },
+          },
+        });
 
-      playerRef.current = player;
-
-      // iOS pseudo-fullscreen so overlays (NewPostAlert) remain visible.
-      // iOS Safari's native <video> fullscreen is an OS layer that no DOM
-      // can paint on top of — so we prevent it and use CSS fullscreen instead.
-      cleanupIos = setupIosPseudoFullscreen(containerRef.current!);
+        playerRef.current = player;
+        cleanupIos = setupIosPseudoFullscreen(containerRef.current!);
+      } catch (e) {
+        console.error("[ClapprPlayer] init failed:", e);
+        if (!destroyed) setStatus("error");
+      }
     };
 
     init();
@@ -187,76 +224,47 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       destroyed = true;
       if (cleanupIos) cleanupIos();
       if (playerRef.current) {
-        try {
-          playerRef.current.destroy();
-        } catch (e) {
-          // ignore cleanup errors
-        }
+        try { playerRef.current.destroy(); } catch {}
       }
       playerRef.current = null;
     };
-  }, [source, showChrome, pageTitle]);
+  }, [effectiveSource, showChrome, pageTitle, retryKey]);
 
+  return (
+    <div className="relative w-full h-full aspect-video bg-black overflow-hidden">
+      <div ref={containerRef} className="absolute inset-0 w-full h-full" />
 
-  // CDN-loaded Clappr for pages that don't pass a direct stream URL (e.g. MetsXMFanZone)
-  const cdnContainerRef = useRef<HTMLDivElement>(null);
-  const cdnPlayerRef = useRef<any>(null);
+      {status === "loading" && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white gap-2 pointer-events-none">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-xs text-white/80">Loading stream…</p>
+        </div>
+      )}
 
-  useEffect(() => {
-    if (source || !cdnContainerRef.current) return;
+      {status === "error" && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white gap-3 p-4 text-center">
+          <AlertCircle className="w-10 h-10 text-destructive" />
+          <p className="text-sm font-medium">Stream unavailable</p>
+          <p className="text-xs text-white/70">The broadcast couldn't be loaded. Please try again.</p>
+          <button
+            onClick={handleRetry}
+            className="mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+          >
+            <RotateCw className="w-3.5 h-3.5" /> Retry
+          </button>
+        </div>
+      )}
 
-    let destroyed = false;
-
-    const initCdnPlayer = () => {
-      if (destroyed || !cdnContainerRef.current) return;
-      if (typeof (window as any).Clappr === "undefined") return;
-
-      const player = new (window as any).Clappr.Player({
-        source: "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8",
-        parentId: "#clappr-player",
-        width: "100%",
-        height: "100%",
-        autoPlay: true,
-      });
-
-      cdnPlayerRef.current = player;
-    };
-
-    if (typeof (window as any).Clappr !== "undefined") {
-      initCdnPlayer();
-    } else {
-      const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js";
-      script.async = true;
-      script.onload = initCdnPlayer;
-      document.head.appendChild(script);
-    }
-
-    return () => {
-      destroyed = true;
-      if (cdnPlayerRef.current) {
-        try {
-          cdnPlayerRef.current.destroy();
-        } catch (e) {
-          // ignore cleanup errors
-        }
-      }
-      cdnPlayerRef.current = null;
-    };
-  }, [source]);
-
-  if (!source) {
-    return (
-      <div
-        id="clappr-player"
-        ref={cdnContainerRef}
-        className="w-full h-full bg-black"
-        style={{ position: "relative", minHeight: 320 }}
-      />
-    );
-  }
-
-  return <div ref={containerRef} className="w-full h-full bg-black" />;
+      {status === "ready" && needsUnmute && (
+        <button
+          onClick={handleUnmute}
+          className="absolute bottom-3 left-3 z-20 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-colors"
+        >
+          <Volume2 className="w-3.5 h-3.5" /> Tap to unmute
+        </button>
+      )}
+    </div>
+  );
 });
 
 export default ClapprPlayer;
