@@ -87,7 +87,7 @@ export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPla
   return (
     <div className="mb-8 space-y-4">
       <StreamAlertBanner streamId={stream.id} />
-      <div className="relative">
+      <div className="relative rounded-2xl overflow-hidden ring-1 ring-border/60 shadow-2xl shadow-primary/10 bg-black">
         <NewPostAlert />
         <ClapprPlayer
           source={stream.stream_url}
