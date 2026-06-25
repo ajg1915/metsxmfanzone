@@ -165,11 +165,9 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     setNeedsUnmute(false);
 
     const init = async () => {
-      const ChromecastPlugin = await loadChromecastPlugin();
       if (destroyed || !containerRef.current) return;
 
       (window as any).Clappr = Clappr;
-      const plugins = ChromecastPlugin ? [ChromecastPlugin] : [];
 
       try {
         const player = new (Clappr as any).Player({
@@ -178,7 +176,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           width: "100%",
           height: "100%",
           autoPlay: true,
-          mute: true, // start muted so browsers don't block autoplay → no black screens
+          mute: true,
           chromeless: !showChrome,
           playInline: true,
           playsinline: true,
