@@ -186,10 +186,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             backBufferLength: 30,
           },
           mediacontrol: { seekbar: "#E94560", buttons: "#E94560" },
-          plugins,
-          chromecast: ChromecastPlugin
-            ? { appId: "9DB1A077", media: { title: pageTitle } }
-            : undefined,
           events: {
             onReady: () => {
               if (destroyed) return;
