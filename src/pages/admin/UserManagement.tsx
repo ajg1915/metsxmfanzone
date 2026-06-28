@@ -46,7 +46,7 @@ const UserManagement = () => {
   const [command, setCommand] = useState("");
   const [aiMessages, setAiMessages] = useState<AIMessage[]>([]);
   const [aiProcessing, setAiProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState("ai-overview");
+  const [activeTab, setActiveTab] = useState("members");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
