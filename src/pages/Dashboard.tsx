@@ -37,6 +37,35 @@ const Dashboard = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [postCount, setPostCount] = useState(0);
   const [memberDays, setMemberDays] = useState(0);
+  const [cancelling, setCancelling] = useState(false);
+
+  const handleCancelSubscription = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel your subscription? You'll keep access until the end of your current billing period."
+    );
+    if (!confirmed) return;
+    setCancelling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("cancel-subscription", { body: {} });
+      if (error || (data as any)?.error) {
+        throw new Error((data as any)?.error || error?.message || "Failed to cancel");
+      }
+      toast({
+        title: "Subscription Cancelled",
+        description: "You'll continue to have access until the end of your billing period.",
+      });
+      setSubscriptionStatus("cancelled");
+      setSubscriptionDialogOpen(false);
+    } catch (e: any) {
+      toast({
+        title: "Cancellation failed",
+        description: e?.message || "Please try again or contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -341,6 +370,21 @@ const Dashboard = () => {
                       </div>
                       <div className="pt-4 space-y-2">
                         <Button className="w-full" onClick={() => { setSubscriptionDialogOpen(false); navigate("/pricing"); }}>Change Plan</Button>
+                        {subscriptionStatus === "active" && (
+                          <Button
+                            variant="destructive"
+                            className="w-full"
+                            disabled={cancelling}
+                            onClick={handleCancelSubscription}
+                          >
+                            {cancelling ? (<><Loader2 className="w-4 h-4 animate-spin" /> Cancelling…</>) : "Cancel Subscription"}
+                          </Button>
+                        )}
+                        {subscriptionStatus !== "active" && (
+                          <p className="text-xs text-muted-foreground text-center">
+                            Your subscription is {subscriptionStatus}. Access remains until {subscriptionEndDate ? subscriptionEndDate.toLocaleDateString() : 'the end of your billing period'}.
+                          </p>
+                        )}
                         <Button variant="outline" className="w-full" onClick={() => setSubscriptionDialogOpen(false)}>Close</Button>
                       </div>
                     </div>
