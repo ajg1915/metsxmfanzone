@@ -9,13 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Bot, Send, Loader2, Users, UserCheck, UserX, CreditCard, Shield,
-  Sparkles, RefreshCw, ChevronRight,
+  Sparkles, RefreshCw, UserPlus,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
 import RolesTab from "@/components/admin/RolesTab";
 import MembersTab from "@/components/admin/MembersTab";
+import SignupsTab from "@/components/admin/SignupsTab";
 import { maskEmail, maskSensitiveField } from "@/utils/secureDataVault";
 
 interface MemberRow {
@@ -46,7 +46,7 @@ const UserManagement = () => {
   const [command, setCommand] = useState("");
   const [aiMessages, setAiMessages] = useState<AIMessage[]>([]);
   const [aiProcessing, setAiProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState("ai-overview");
+  const [activeTab, setActiveTab] = useState("members");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -275,117 +275,47 @@ const UserManagement = () => {
         </Card>
       )}
 
-      {/* Tabs: Overview / Subscriptions (overrides) / Roles */}
+      {/* Tabs: Members / Signups / Transactions / Roles */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 max-w-2xl">
-          <TabsTrigger value="ai-overview" className="gap-2 text-xs">
-            <Users className="w-3.5 h-3.5" />Overview
+        <TabsList className="grid w-full grid-cols-4 max-w-3xl">
+          <TabsTrigger value="members" className="gap-1.5 text-xs">
+            <Users className="w-3.5 h-3.5" />Members
           </TabsTrigger>
-          <TabsTrigger value="members" className="gap-2 text-xs">
-            <Shield className="w-3.5 h-3.5" />Members
+          <TabsTrigger value="signups" className="gap-1.5 text-xs">
+            <UserPlus className="w-3.5 h-3.5" />Signups
           </TabsTrigger>
-          <TabsTrigger value="overrides" className="gap-2 text-xs">
+          <TabsTrigger value="transactions" className="gap-1.5 text-xs">
             <CreditCard className="w-3.5 h-3.5" />Transactions
           </TabsTrigger>
-          <TabsTrigger value="roles" className="gap-2 text-xs">
+          <TabsTrigger value="roles" className="gap-1.5 text-xs">
             <Shield className="w-3.5 h-3.5" />Roles
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="ai-overview">
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            <Card>
-              <CardContent className="pt-4 pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total</p>
-                    <p className="text-xl font-bold">{totalMembers}</p>
-                  </div>
-                  <Users className="w-6 h-6 text-primary opacity-40" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Active</p>
-                    <p className="text-xl font-bold text-affirmative">{activeMembers}</p>
-                  </div>
-                  <UserCheck className="w-6 h-6 text-affirmative opacity-40" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Inactive</p>
-                    <p className="text-xl font-bold text-destructive">{inactiveMembers}</p>
-                  </div>
-                  <UserX className="w-6 h-6 text-destructive opacity-40" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Members List - Always masked in overview */}
-          <Card className="mt-4">
-            <CardHeader className="py-3 px-4 flex-row items-center justify-between">
-              <CardTitle className="text-sm flex items-center gap-2">
-                🔒 Members (Encrypted View)
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={fetchMembers} className="h-7">
-                <RefreshCw className="w-3 h-3 mr-1" /> Refresh
-              </Button>
-            </CardHeader>
-            <CardContent className="px-4 pb-4 pt-0">
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {members.map(m => (
-                    <div key={m.user_id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm truncate font-mono">
-                            {maskSensitiveField(m.full_name)}
-                          </p>
-                          {m.roles.map(r => (
-                            <Badge key={r} variant="outline" className="text-[10px] capitalize px-1.5 py-0">{r}</Badge>
-                          ))}
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate font-mono">
-                          {maskEmail(m.email)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 ml-2">
-                        <Badge className={`text-[10px] ${getStatusColor(m.status)}`}>
-                          {m.status || "none"}
-                        </Badge>
-                        <Badge variant="outline" className="text-[10px] capitalize">
-                          {m.plan_type}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                  <p className="text-xs text-muted-foreground text-center pt-2">
-                    Go to the <button onClick={() => setActiveTab("members")} className="text-primary underline">Members tab</button> to decrypt and view full data
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="members">
+          {/* Quick stats from the live members fetch */}
+          <div className="grid grid-cols-3 gap-3 mt-4">
+            <Card><CardContent className="pt-4 pb-3 flex items-center justify-between">
+              <div><p className="text-xs text-muted-foreground">Total</p><p className="text-xl font-bold">{totalMembers}</p></div>
+              <Users className="w-6 h-6 text-primary opacity-40" />
+            </CardContent></Card>
+            <Card><CardContent className="pt-4 pb-3 flex items-center justify-between">
+              <div><p className="text-xs text-muted-foreground">Active</p><p className="text-xl font-bold text-affirmative">{activeMembers}</p></div>
+              <UserCheck className="w-6 h-6 text-affirmative opacity-40" />
+            </CardContent></Card>
+            <Card><CardContent className="pt-4 pb-3 flex items-center justify-between">
+              <div><p className="text-xs text-muted-foreground">Inactive</p><p className="text-xl font-bold text-destructive">{inactiveMembers}</p></div>
+              <UserX className="w-6 h-6 text-destructive opacity-40" />
+            </CardContent></Card>
+          </div>
           <MembersTab />
         </TabsContent>
 
-        <TabsContent value="overrides">
+        <TabsContent value="signups">
+          <SignupsTab />
+        </TabsContent>
+
+        <TabsContent value="transactions">
           <SubscriptionsTab />
         </TabsContent>
 
