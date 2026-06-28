@@ -9,13 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Bot, Send, Loader2, Users, UserCheck, UserX, CreditCard, Shield,
-  Sparkles, RefreshCw, ChevronRight,
+  Sparkles, RefreshCw, UserPlus,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
 import RolesTab from "@/components/admin/RolesTab";
 import MembersTab from "@/components/admin/MembersTab";
+import SignupsTab from "@/components/admin/SignupsTab";
 import { maskEmail, maskSensitiveField } from "@/utils/secureDataVault";
 
 interface MemberRow {
