@@ -341,6 +341,21 @@ const Dashboard = () => {
                       </div>
                       <div className="pt-4 space-y-2">
                         <Button className="w-full" onClick={() => { setSubscriptionDialogOpen(false); navigate("/pricing"); }}>Change Plan</Button>
+                        {subscriptionStatus === "active" && (
+                          <Button
+                            variant="destructive"
+                            className="w-full"
+                            disabled={cancelling}
+                            onClick={handleCancelSubscription}
+                          >
+                            {cancelling ? (<><Loader2 className="w-4 h-4 animate-spin" /> Cancelling…</>) : "Cancel Subscription"}
+                          </Button>
+                        )}
+                        {subscriptionStatus !== "active" && (
+                          <p className="text-xs text-muted-foreground text-center">
+                            Your subscription is {subscriptionStatus}. Access remains until {subscriptionEndDate ? subscriptionEndDate.toLocaleDateString() : 'the end of your billing period'}.
+                          </p>
+                        )}
                         <Button variant="outline" className="w-full" onClick={() => setSubscriptionDialogOpen(false)}>Close</Button>
                       </div>
                     </div>
