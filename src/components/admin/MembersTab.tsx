@@ -128,9 +128,11 @@ export default function MembersTab() {
 
   const logActivity = async (m: MemberRow, action: string, details: any) => {
     if (!m.subscription_id) return;
-    await supabase.from("subscription_activity").insert({
-      subscription_id: m.subscription_id, user_id: m.user_id, action, details, performed_by: user?.id,
-    }).catch(() => {});
+    try {
+      await supabase.from("subscription_activity").insert({
+        subscription_id: m.subscription_id, user_id: m.user_id, action, details, performed_by: user?.id,
+      });
+    } catch { /* non-fatal */ }
   };
 
   const changePlan = async (m: MemberRow, plan: string) => {
