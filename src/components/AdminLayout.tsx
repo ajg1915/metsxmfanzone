@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Home, RefreshCw, Search, Bell } from "lucide-react";
 import { AdminPinVerification } from "@/components/AdminPinVerification";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
+import logo from "@/assets/metsxmfanzone-logo.png";
 
 function AdminHeader({ navigate }: { navigate: (path: string | number) => void }) {
   return (
