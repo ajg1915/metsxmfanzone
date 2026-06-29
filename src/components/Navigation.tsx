@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, PenLine, ShoppingBag } from "lucide-react";
+import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, PenLine, ShoppingBag, Bell } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import liveStreamIcon from "@/assets/live-streaming-icon.png";
 import podcastIcon from "@/assets/podcast-icon.png";
@@ -267,6 +267,10 @@ const Navigation = () => {
                     <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                       <LayoutDashboard className="w-4 h-4 mr-2" />
                       Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/dashboard?tab=notifications")}>
+                      <Bell className="w-4 h-4 mr-2" />
+                      Notifications
                     </DropdownMenuItem>
                     {isWriter && (
                       <DropdownMenuItem onClick={() => navigate("/writer")}>
