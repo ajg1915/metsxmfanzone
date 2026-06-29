@@ -4,16 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Radio, Play, ChevronRight, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import mlbFanart from "@/assets/mlb-network-fanart.jpg";
-import snyFanart from "@/assets/sny-tv-fanart.jpg";
-import msgFanart from "@/assets/msg-network-fanart.jpg";
-import espnFanart from "@/assets/espn-network-fanart.jpg";
 
 interface RelatedStream {
   id: string;
   title: string;
   subtitle: string;
-  thumbnail: string;
+  thumbnail: string | null;
   href: string;
   external?: boolean;
   assignedPages?: string[];
@@ -32,28 +28,28 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     id: "mlb-network",
     title: "MLB Network 24/7",
     subtitle: "24/7 — League-wide highlights, analysis & live look-ins",
-    thumbnail: mlbFanart,
+    thumbnail: null,
     href: "/mlb-network",
   },
   {
     id: "sny-tv",
     title: "SNY.TV 24/7",
     subtitle: "24/7 — SportsNet New York, the official home of the Mets",
-    thumbnail: snyFanart,
+    thumbnail: null,
     href: "/live/sny-tv",
   },
   {
     id: "msg-network",
     title: "MSG Network 24/7",
     subtitle: "24/7 — Madison Square Garden Network, NY sports all day",
-    thumbnail: msgFanart,
+    thumbnail: null,
     href: "/live/msg-network",
   },
   {
     id: "espn-network",
     title: "ESPN 24/7",
     subtitle: "24/7 — ESPN live sports, highlights & analysis",
-    thumbnail: espnFanart,
+    thumbnail: null,
     href: "/espn-network",
   },
 ];
