@@ -200,25 +200,31 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-background to-slate-950 relative">
+      {/* Ambient background glow */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,hsl(var(--primary)/0.18),transparent_60%)] blur-3xl" />
+        <div className="absolute top-1/3 -left-40 w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,hsl(var(--secondary)/0.12),transparent_60%)] blur-3xl" />
+      </div>
+
       <OnboardingWalkthrough onComplete={() => {}} />
       <Navigation />
-      <main className="pt-12">
-        <div className="container mx-auto px-4 max-w-5xl py-8 space-y-6">
+      <main className="pt-12 relative z-10">
+        <div className="container mx-auto px-4 max-w-6xl py-8 space-y-6">
 
           {/* Hero Profile Section */}
-          <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-[hsl(var(--mets-blue-dark))] via-card to-card p-4 sm:p-8">
-            {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.15),transparent_70%)] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--secondary)/0.1),transparent_70%)] pointer-events-none" />
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-2xl shadow-2xl shadow-primary/5 p-5 sm:p-8">
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,hsl(var(--primary)/0.12),transparent_40%,hsl(var(--secondary)/0.08))] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-72 h-72 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.25),transparent_70%)] pointer-events-none" />
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-[radial-gradient(circle,hsl(var(--secondary)/0.15),transparent_70%)] pointer-events-none" />
 
             <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-5">
               {/* Avatar */}
               <div className="relative group">
-                <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary to-secondary opacity-70 blur-sm group-hover:opacity-100 transition-opacity" />
-                <Avatar className="relative h-16 w-16 sm:h-24 sm:w-24 ring-2 ring-background">
+                <div className="absolute -inset-1.5 rounded-full bg-gradient-to-br from-primary via-primary/60 to-secondary opacity-80 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all" />
+                <Avatar className="relative h-20 w-20 sm:h-28 sm:w-28 ring-2 ring-white/20">
                   <AvatarImage src={avatarUrl} alt="Profile avatar" />
-                  <AvatarFallback className="bg-primary/20 text-primary text-2xl font-bold">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/30 to-secondary/30 text-primary text-3xl font-bold">
                     {fullName ? fullName.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -226,26 +232,26 @@ const Dashboard = () => {
 
               {/* User Info */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent truncate">
                     {fullName || "MetsXMFanZone Member"}
                   </h1>
                   {userPlan !== "free" && (
-                    <Badge className="bg-primary/20 text-primary border-primary/30 shrink-0">
-                      <Star className="w-3 h-3 mr-1" />
+                    <Badge className="bg-gradient-to-r from-primary to-primary/70 text-primary-foreground border-0 shadow-lg shadow-primary/30 shrink-0">
+                      <Star className="w-3 h-3 mr-1 fill-current" />
                       {planLabel}
                     </Badge>
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground flex-wrap">
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10">
+                    <Calendar className="w-3.5 h-3.5 text-primary" />
                     Joined {new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    {memberDays} days
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 border border-white/10">
+                    <Clock className="w-3.5 h-3.5 text-primary" />
+                    {memberDays} days active
                   </span>
                 </div>
               </div>
@@ -254,7 +260,7 @@ const Dashboard = () => {
               <div className="flex gap-2 shrink-0">
                 <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-1.5">
+                    <Button variant="outline" size="sm" className="gap-1.5 bg-white/5 border-white/10 hover:bg-white/10 backdrop-blur-sm">
                       <Settings className="w-3.5 h-3.5" />
                       Edit Profile
                     </Button>
@@ -298,120 +304,128 @@ const Dashboard = () => {
             </div>
 
             {/* Stats Row */}
-            <div className="relative grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-border/30">
-              <div className="text-center">
-                <p className="text-2xl sm:text-3xl font-bold text-primary">{postCount}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Posts</p>
-              </div>
-              <div className="text-center">
-                <p className="text-2xl sm:text-3xl font-bold text-primary">{memberDays}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Days Active</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl sm:text-3xl font-bold text-primary">{planLabel}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">Plan</p>
-              </div>
+            <div className="relative grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/10">
+              {[
+                { value: postCount, label: "Posts" },
+                { value: memberDays, label: "Days Active" },
+                { value: planLabel, label: "Plan" },
+              ].map((stat, i) => (
+                <div key={i} className="text-center rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm py-3 px-2 hover:bg-white/10 transition-colors">
+                  <p className="text-xl sm:text-3xl font-bold bg-gradient-to-br from-primary to-primary/60 bg-clip-text text-transparent">
+                    {stat.value}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 uppercase tracking-wider">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Subscription Card */}
-          <div className="rounded-2xl border border-border/40 bg-card p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-primary" />
-                <h2 className="text-lg font-semibold text-foreground">Subscription</h2>
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-2xl shadow-xl p-5 sm:p-6">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[radial-gradient(circle,hsl(var(--primary)/0.12),transparent_70%)] pointer-events-none" />
+            <div className="relative">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 flex items-center justify-center">
+                    <CreditCard className="w-4.5 h-4.5 text-primary" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-foreground">Subscription</h2>
+                </div>
+                <Badge variant={userPlan === "free" ? "secondary" : "default"} className={userPlan !== "free" ? "bg-gradient-to-r from-primary to-primary/70 border-0 shadow-lg shadow-primary/20" : ""}>
+                  {planLabel}
+                </Badge>
               </div>
-              <Badge variant={userPlan === "free" ? "secondary" : "default"} className="text-xs">
-                {planLabel}
-              </Badge>
-            </div>
 
-            <div className="flex items-end justify-between">
-              <div>
-                <p className="text-3xl font-bold text-foreground">{planPrice}</p>
-                {subscriptionEndDate && userPlan !== "free" && (
-                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    Next billing: {subscriptionEndDate.toLocaleDateString()}
-                  </p>
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <p className="text-3xl sm:text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent">{planPrice}</p>
+                  {subscriptionEndDate && userPlan !== "free" && (
+                    <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      Next billing: {subscriptionEndDate.toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+
+                {userPlan === "free" ? (
+                  <Button onClick={() => navigate("/pricing")} className="gap-1.5 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/30">
+                    <ArrowUpCircle className="w-4 h-4" />
+                    Upgrade
+                  </Button>
+                ) : (
+                  <Dialog open={subscriptionDialogOpen} onOpenChange={setSubscriptionDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10">Manage</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Subscription Details</DialogTitle>
+                        <DialogDescription>Manage your subscription and billing</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label>Current Plan</Label>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="default">{planLabel.toUpperCase()}</Badge>
+                            <span className="text-foreground font-semibold">{planPrice}</span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Status</Label>
+                          <Badge variant={subscriptionStatus === "active" ? "default" : "secondary"}>{subscriptionStatus.toUpperCase()}</Badge>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Next Billing Date</Label>
+                          <p className="text-foreground">{subscriptionEndDate ? subscriptionEndDate.toLocaleDateString() : 'N/A'}</p>
+                        </div>
+                        <div className="pt-4 space-y-2">
+                          <Button className="w-full" onClick={() => { setSubscriptionDialogOpen(false); navigate("/pricing"); }}>Change Plan</Button>
+                          {subscriptionStatus === "active" && (
+                            <Button
+                              variant="destructive"
+                              className="w-full"
+                              disabled={cancelling}
+                              onClick={handleCancelSubscription}
+                            >
+                              {cancelling ? (<><Loader2 className="w-4 h-4 animate-spin" /> Cancelling…</>) : "Cancel Subscription"}
+                            </Button>
+                          )}
+                          {subscriptionStatus !== "active" && (
+                            <p className="text-xs text-muted-foreground text-center">
+                              Your subscription is {subscriptionStatus}. Access remains until {subscriptionEndDate ? subscriptionEndDate.toLocaleDateString() : 'the end of your billing period'}.
+                            </p>
+                          )}
+                          <Button variant="outline" className="w-full" onClick={() => setSubscriptionDialogOpen(false)}>Close</Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 )}
               </div>
 
-              {userPlan === "free" ? (
-                <Button onClick={() => navigate("/pricing")} className="gap-1.5">
-                  <ArrowUpCircle className="w-4 h-4" />
-                  Upgrade
-                </Button>
-              ) : (
-                <Dialog open={subscriptionDialogOpen} onOpenChange={setSubscriptionDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">Manage</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Subscription Details</DialogTitle>
-                      <DialogDescription>Manage your subscription and billing</DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label>Current Plan</Label>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="default">{planLabel.toUpperCase()}</Badge>
-                          <span className="text-foreground font-semibold">{planPrice}</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Status</Label>
-                        <Badge variant={subscriptionStatus === "active" ? "default" : "secondary"}>{subscriptionStatus.toUpperCase()}</Badge>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Next Billing Date</Label>
-                        <p className="text-foreground">{subscriptionEndDate ? subscriptionEndDate.toLocaleDateString() : 'N/A'}</p>
-                      </div>
-                      <div className="pt-4 space-y-2">
-                        <Button className="w-full" onClick={() => { setSubscriptionDialogOpen(false); navigate("/pricing"); }}>Change Plan</Button>
-                        {subscriptionStatus === "active" && (
-                          <Button
-                            variant="destructive"
-                            className="w-full"
-                            disabled={cancelling}
-                            onClick={handleCancelSubscription}
-                          >
-                            {cancelling ? (<><Loader2 className="w-4 h-4 animate-spin" /> Cancelling…</>) : "Cancel Subscription"}
-                          </Button>
-                        )}
-                        {subscriptionStatus !== "active" && (
-                          <p className="text-xs text-muted-foreground text-center">
-                            Your subscription is {subscriptionStatus}. Access remains until {subscriptionEndDate ? subscriptionEndDate.toLocaleDateString() : 'the end of your billing period'}.
-                          </p>
-                        )}
-                        <Button variant="outline" className="w-full" onClick={() => setSubscriptionDialogOpen(false)}>Close</Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+              {userPlan === "free" && (
+                <div className="mt-4 p-3.5 rounded-2xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 backdrop-blur-sm">
+                  <p className="text-sm text-foreground">
+                    <Sparkles className="w-4 h-4 inline mr-1 text-primary" />
+                    <strong>Special Offer:</strong> Free Spring Training access on Signup!
+                  </p>
+                </div>
               )}
-            </div>
 
-            {userPlan === "free" && (
-              <div className="mt-4 p-3 rounded-xl bg-primary/5 border border-primary/20">
-                <p className="text-sm text-foreground">
-                  <Sparkles className="w-4 h-4 inline mr-1 text-primary" />
-                  <strong>Special Offer:</strong> Free Spring Training access on Signup!
-                </p>
+              <div className="mt-3 pt-3 border-t border-white/10">
+                <Link to="/help/return-policy" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+                  View Return Policy
+                </Link>
               </div>
-            )}
-
-            <div className="mt-3 pt-3 border-t border-border/20">
-              <Link to="/help/return-policy" className="text-xs text-muted-foreground hover:text-primary transition-colors">
-                View Return Policy
-              </Link>
             </div>
           </div>
 
           {/* Quick Links Grid */}
           <div>
-            <h2 className="text-lg font-semibold text-foreground mb-3">Quick Access</h2>
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-1 h-6 rounded-full bg-gradient-to-b from-primary to-primary/40" />
+              <h2 className="text-lg font-semibold text-foreground">Quick Access</h2>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {quickLinks.map((link) => {
                 const Icon = link.icon;
@@ -420,18 +434,21 @@ const Dashboard = () => {
                   <Link
                     key={link.label}
                     to={locked ? "/pricing" : link.href}
-                    className="group relative rounded-xl border border-border/40 bg-card p-4 hover:border-primary/50 hover:bg-card/80 transition-all"
+                    className="group relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl p-5 hover:border-primary/50 hover:bg-slate-900/80 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300"
                   >
-                    <div className="flex flex-col items-center text-center gap-2">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.15),transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="relative flex flex-col items-center text-center gap-2.5">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center group-hover:scale-110 group-hover:from-primary/30 group-hover:to-primary/10 transition-all">
                         <Icon className="w-5 h-5 text-primary" />
                       </div>
-                      <span className="text-xs font-medium text-foreground">{link.label}</span>
-                      {locked && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                      <span className="text-xs font-semibold text-foreground">{link.label}</span>
+                      {locked ? (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
                           <Shield className="w-2.5 h-2.5 mr-0.5" />
                           Premium
                         </Badge>
+                      ) : (
+                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                       )}
                     </div>
                   </Link>
@@ -441,8 +458,14 @@ const Dashboard = () => {
           </div>
 
           {/* Notifications & Security */}
-          <NotificationPreferencesCard />
-          <PasskeyManager />
+          <div className="grid gap-6">
+            <div className="rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-2xl shadow-xl overflow-hidden [&>*]:!border-0 [&>*]:!bg-transparent">
+              <NotificationPreferencesCard />
+            </div>
+            <div className="rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-2xl shadow-xl overflow-hidden [&>*]:!border-0 [&>*]:!bg-transparent">
+              <PasskeyManager />
+            </div>
+          </div>
 
         </div>
       </main>
