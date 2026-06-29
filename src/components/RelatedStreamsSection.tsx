@@ -65,14 +65,15 @@ const RelatedStreamsSection = () => {
               onClick={() => handleClick(s)}
               className="group relative overflow-hidden rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 text-left"
             >
-              <div className="aspect-video relative bg-gradient-to-br from-secondary/40 to-background flex items-center justify-center">
+              <div className="aspect-video relative overflow-hidden">
                 <img
                   src={s.thumbnail}
                   alt={s.title}
-                  className="max-w-[60%] max-h-[60%] object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-500"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   loading="lazy"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/60" />
 
                 <div className="absolute top-2 right-2 flex items-center gap-1.5">
                   <Badge className="text-[10px] px-1.5 py-0.5 font-semibold bg-primary/90 text-primary-foreground backdrop-blur-sm">
@@ -80,9 +81,9 @@ const RelatedStreamsSection = () => {
                   </Badge>
                 </div>
 
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-12 h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg scale-75 group-hover:scale-100 transition-transform">
-                    <Play className="w-5 h-5 text-primary-foreground ml-0.5" fill="currentColor" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-90 group-hover:scale-100 transition-transform">
+                    <Play className="w-6 h-6 text-white ml-0.5" fill="currentColor" />
                   </div>
                 </div>
 
