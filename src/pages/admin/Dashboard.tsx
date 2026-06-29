@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import CreateBusinessAdForm from "@/components/CreateBusinessAdForm";
+
 import { toast } from "sonner";
 import {
   Dialog,
@@ -289,11 +289,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {adminUserId && (
-        <div className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl p-5">
-          <CreateBusinessAdForm userId={adminUserId} />
-        </div>
-      )}
     </div>
   );
 }

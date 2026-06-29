@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, X, Trash2, ExternalLink, Mail, Phone } from "lucide-react";
+import CreateBusinessAdForm from "@/components/CreateBusinessAdForm";
 
 interface BusinessAd {
   id: string;
@@ -22,10 +23,12 @@ interface BusinessAd {
 export default function BusinessAdsManagement() {
   const [ads, setAds] = useState<BusinessAd[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adminUserId, setAdminUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchAds();
+    supabase.auth.getUser().then(({ data }) => setAdminUserId(data.user?.id ?? null));
   }, []);
 
   const fetchAds = async () => {
@@ -125,8 +128,14 @@ export default function BusinessAdsManagement() {
     <div className="max-w-full px-2 py-3 space-y-4 overflow-x-hidden">
       <div>
         <h2 className="text-lg sm:text-xl font-bold">Business Ads</h2>
-        <p className="text-xs text-muted-foreground">Review submissions</p>
+        <p className="text-xs text-muted-foreground">Create and review submissions</p>
       </div>
+
+      {adminUserId && (
+        <div className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl p-4">
+          <CreateBusinessAdForm userId={adminUserId} />
+        </div>
+      )}
 
       <div className="grid gap-3">
         {ads.length === 0 ? (
