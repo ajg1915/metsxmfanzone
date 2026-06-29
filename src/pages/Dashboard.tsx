@@ -440,6 +440,9 @@ const Dashboard = () => {
             </div>
           </div>
 
+          {/* Notifications Inbox */}
+          <DashboardNotificationsInbox />
+
           {/* Notifications & Security */}
           <NotificationPreferencesCard />
           <PasskeyManager />
