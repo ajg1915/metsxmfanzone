@@ -6,10 +6,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Home, RefreshCw, Search, Bell } from "lucide-react";
+import { Home, RefreshCw, Search } from "lucide-react";
 import { AdminPinVerification } from "@/components/AdminPinVerification";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 import logo from "@/assets/metsxmfanzone-logo.png";
+import { NotificationsBell } from "@/components/admin/NotificationsBell";
 
 function AdminHeader({ navigate }: { navigate: (path: string | number) => void }) {
   return (
@@ -44,13 +45,7 @@ function AdminHeader({ navigate }: { navigate: (path: string | number) => void }
         >
           <RefreshCw className="w-4 h-4" />
         </button>
-        <button
-          className="relative p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition-all hidden sm:inline-flex"
-          title="Notifications"
-        >
-          <Bell className="w-4 h-4" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#FF5910] rounded-full" />
-        </button>
+        <NotificationsBell />
         <Button
           variant="ghost"
           size="sm"
