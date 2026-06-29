@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, PenLine, ShoppingBag, Bell } from "lucide-react";
+import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, PenLine, ShoppingBag, Bell, Newspaper, Trophy, Loader2 } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import liveStreamIcon from "@/assets/live-streaming-icon.png";
 import podcastIcon from "@/assets/podcast-icon.png";
@@ -17,6 +17,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -32,6 +35,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { formatDistanceToNow } from "date-fns";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
@@ -47,6 +51,109 @@ const Navigation = () => {
   const [tvScheduleOpen, setTvScheduleOpen] = useState(false);
   const [communityOpen, setCommunityOpen] = useState(false);
   const [radioOpen, setRadioOpen] = useState(false);
+  const [notifItems, setNotifItems] = useState<any[]>([]);
+  const [notifLoading, setNotifLoading] = useState(false);
+
+  type NotifItem = {
+    id: string;
+    type: "live" | "game_alert" | "story" | "blog";
+    title: string;
+    message: string;
+    time: string;
+    link?: string;
+  };
+
+  const fetchNotifs = async () => {
+    setNotifLoading(true);
+    const since = new Date();
+    since.setDate(since.getDate() - 14);
+    const sinceISO = since.toISOString();
+
+    const [liveStreams, gameAlerts, stories, blogPosts] = await Promise.all([
+      supabase
+        .from("live_streams")
+        .select("id, title, status, updated_at")
+        .in("status", ["live", "scheduled"])
+        .eq("published", true)
+        .gte("updated_at", sinceISO)
+        .order("updated_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("game_alerts")
+        .select("id, title, message, created_at, link_url")
+        .eq("is_active", true)
+        .gte("created_at", sinceISO)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("stories")
+        .select("id, title, created_at")
+        .eq("published", true)
+        .gte("created_at", sinceISO)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("blog_posts")
+        .select("id, title, slug, published_at")
+        .eq("published", true)
+        .gte("published_at", sinceISO)
+        .order("published_at", { ascending: false })
+        .limit(10),
+    ]);
+
+    const list: NotifItem[] = [];
+    (liveStreams.data || []).forEach((s: any) =>
+      list.push({
+        id: `live-${s.id}`,
+        type: "live",
+        title: s.status === "live" ? "🔴 LIVE NOW" : "Coming Soon",
+        message: s.title,
+        time: s.updated_at,
+        link: "/metsxmfanzone",
+      })
+    );
+    (gameAlerts.data || []).forEach((a: any) =>
+      list.push({
+        id: `alert-${a.id}`,
+        type: "game_alert",
+        title: a.title,
+        message: a.message,
+        time: a.created_at,
+        link: a.link_url || undefined,
+      })
+    );
+    (stories.data || []).forEach((s: any) =>
+      list.push({
+        id: `story-${s.id}`,
+        type: "story",
+        title: "New Story",
+        message: s.title,
+        time: s.created_at,
+        link: "/",
+      })
+    );
+    (blogPosts.data || []).forEach((b: any) =>
+      list.push({
+        id: `blog-${b.id}`,
+        type: "blog",
+        title: "New Article",
+        message: b.title,
+        time: b.published_at || "",
+        link: `/blog/${b.slug}`,
+      })
+    );
+
+    list.sort((a, b) => +new Date(b.time) - +new Date(a.time));
+    setNotifItems(list.slice(0, 15));
+    setNotifLoading(false);
+  };
+
+  const notifTypeConfig: Record<string, { icon: any; label: string; color: string }> = {
+    live: { icon: Tv, label: "Live Now", color: "text-red-500" },
+    game_alert: { icon: Trophy, label: "Game Alert", color: "text-amber-500" },
+    story: { icon: Bell, label: "New Story", color: "text-blue-500" },
+    blog: { icon: Newspaper, label: "New Article", color: "text-emerald-500" },
+  };
 
 
   const handleRefresh = () => {
@@ -268,10 +375,56 @@ const Navigation = () => {
                       <LayoutDashboard className="w-4 h-4 mr-2" />
                       Dashboard
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/dashboard?tab=notifications")}>
-                      <Bell className="w-4 h-4 mr-2" />
-                      Notifications
-                    </DropdownMenuItem>
+                    <DropdownMenuSub onOpenChange={(open) => { if (open) fetchNotifs(); }}>
+                      <DropdownMenuSubTrigger className="flex items-center px-2 py-1.5 text-sm cursor-default">
+                        <Bell className="w-4 h-4 mr-2" />
+                        Notifications
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="w-72 max-h-[420px] overflow-y-auto bg-background border border-border shadow-lg rounded-md p-0">
+                        <div className="px-3 py-2 border-b border-border/30">
+                          <p className="text-xs font-semibold text-foreground">Notifications</p>
+                          <p className="text-[10px] text-muted-foreground">Recent alerts, streams & stories</p>
+                        </div>
+                        {notifLoading ? (
+                          <div className="flex items-center justify-center py-6">
+                            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : notifItems.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                            <Bell className="w-5 h-5 mb-1 opacity-40" />
+                            <p className="text-xs">No notifications yet</p>
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-border/20">
+                            {notifItems.map((n) => {
+                              const cfg = notifTypeConfig[n.type];
+                              const Icon = cfg.icon;
+                              return (
+                                <button
+                                  key={n.id}
+                                  onClick={() => { if (n.link) { window.location.href = n.link; } }}
+                                  className="flex items-start gap-2.5 w-full px-3 py-2.5 hover:bg-muted/40 transition-colors text-left"
+                                >
+                                  <div className={`mt-0.5 ${cfg.color}`}>
+                                    <Icon className="w-3.5 h-3.5" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${cfg.color}`}>
+                                      {cfg.label}
+                                    </span>
+                                    <p className="text-xs font-medium text-foreground truncate">{n.title}</p>
+                                    <p className="text-[11px] text-muted-foreground truncate">{n.message}</p>
+                                    <p className="text-[9px] text-muted-foreground mt-0.5">
+                                      {n.time ? formatDistanceToNow(new Date(n.time), { addSuffix: true }) : ""}
+                                    </p>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
                     {isWriter && (
                       <DropdownMenuItem onClick={() => navigate("/writer")}>
                         <PenLine className="w-4 h-4 mr-2" />
