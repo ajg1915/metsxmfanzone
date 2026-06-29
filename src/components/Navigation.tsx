@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, PenLine, ShoppingBag, Bell } from "lucide-react";
+import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, PenLine, ShoppingBag, Bell, Newspaper, Trophy, Loader2 } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import liveStreamIcon from "@/assets/live-streaming-icon.png";
 import podcastIcon from "@/assets/podcast-icon.png";
@@ -17,6 +17,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -32,6 +35,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { formatDistanceToNow } from "date-fns";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
