@@ -402,56 +402,77 @@ const Navigation = () => {
                         <span className="text-sm">Dashboard</span>
                       </DropdownMenuItem>
 
-                      <DropdownMenuSub onOpenChange={(open) => { if (open) fetchNotifs(); }}>
-                        <DropdownMenuSubTrigger className="flex items-center rounded-lg px-2 py-1.5 text-sm cursor-default hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors">
-                          <Bell className="w-4 h-4 mr-2.5 text-secondary" />
-                          Notifications
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent className="w-72 max-h-[420px] overflow-y-auto bg-card/95 backdrop-blur-xl border border-primary/20 shadow-elevation-high rounded-xl p-0">
-                          <div className="px-3 py-2.5 border-b border-border/30 bg-gradient-to-r from-primary/10 to-transparent">
+                      <Collapsible
+                        open={notifOpen}
+                        onOpenChange={(open) => {
+                          setNotifOpen(open);
+                          if (open) fetchNotifs();
+                        }}
+                      >
+                        <CollapsibleTrigger asChild>
+                          <button
+                            type="button"
+                            className="w-full flex items-center rounded-lg px-2 py-1.5 text-sm hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors outline-none"
+                          >
+                            <Bell className="w-4 h-4 mr-2.5 text-secondary" />
+                            <span className="flex-1 text-left">Notifications</span>
+                            <ChevronDown
+                              className={`w-3.5 h-3.5 text-muted-foreground transition-transform ${notifOpen ? "rotate-180" : ""}`}
+                            />
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-1 mx-1 rounded-lg border border-primary/15 bg-background/60 overflow-hidden">
+                          <div className="px-3 py-2 border-b border-border/30 bg-gradient-to-r from-primary/10 to-transparent">
                             <p className="text-xs font-bold text-foreground">Notifications</p>
                             <p className="text-[10px] text-muted-foreground">Recent alerts, streams & stories</p>
                           </div>
-                          {notifLoading ? (
-                            <div className="flex items-center justify-center py-6">
-                              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                            </div>
-                          ) : notifItems.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
-                              <Bell className="w-5 h-5 mb-1 opacity-40" />
-                              <p className="text-xs">No notifications yet</p>
-                            </div>
-                          ) : (
-                            <div className="divide-y divide-border/20">
-                              {notifItems.map((n) => {
-                                const cfg = notifTypeConfig[n.type];
-                                const Icon = cfg.icon;
-                                return (
-                                  <button
-                                    key={n.id}
-                                    onClick={() => { if (n.link) { window.location.href = n.link; } }}
-                                    className="flex items-start gap-2.5 w-full px-3 py-2.5 hover:bg-primary/5 transition-colors text-left"
-                                  >
-                                    <div className={`mt-0.5 ${cfg.color}`}>
-                                      <Icon className="w-3.5 h-3.5" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <span className={`text-[10px] font-semibold uppercase tracking-wide ${cfg.color}`}>
-                                        {cfg.label}
-                                      </span>
-                                      <p className="text-xs font-medium text-foreground truncate">{n.title}</p>
-                                      <p className="text-[11px] text-muted-foreground truncate">{n.message}</p>
-                                      <p className="text-[9px] text-muted-foreground mt-0.5">
-                                        {n.time ? formatDistanceToNow(new Date(n.time), { addSuffix: true }) : ""}
-                                      </p>
-                                    </div>
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </DropdownMenuSubContent>
-                      </DropdownMenuSub>
+                          <div className="max-h-[300px] overflow-y-auto">
+                            {notifLoading ? (
+                              <div className="flex items-center justify-center py-6">
+                                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                              </div>
+                            ) : notifItems.length === 0 ? (
+                              <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                                <Bell className="w-5 h-5 mb-1 opacity-40" />
+                                <p className="text-xs">No notifications yet</p>
+                              </div>
+                            ) : (
+                              <div className="divide-y divide-border/20">
+                                {notifItems.map((n) => {
+                                  const cfg = notifTypeConfig[n.type];
+                                  const Icon = cfg.icon;
+                                  return (
+                                    <button
+                                      key={n.id}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (n.link) window.location.href = n.link;
+                                      }}
+                                      className="flex items-start gap-2.5 w-full px-3 py-2.5 hover:bg-primary/5 transition-colors text-left"
+                                    >
+                                      <div className={`mt-0.5 ${cfg.color}`}>
+                                        <Icon className="w-3.5 h-3.5" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <span className={`text-[10px] font-semibold uppercase tracking-wide ${cfg.color}`}>
+                                          {cfg.label}
+                                        </span>
+                                        <p className="text-xs font-medium text-foreground truncate">{n.title}</p>
+                                        <p className="text-[11px] text-muted-foreground truncate">{n.message}</p>
+                                        <p className="text-[9px] text-muted-foreground mt-0.5">
+                                          {n.time ? formatDistanceToNow(new Date(n.time), { addSuffix: true }) : ""}
+                                        </p>
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+
 
                       {isWriter && (
                         <DropdownMenuItem
