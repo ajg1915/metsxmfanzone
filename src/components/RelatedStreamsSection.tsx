@@ -74,7 +74,7 @@ const RelatedStreamsSection = () => {
 
                 <div className="absolute top-2 right-2 flex items-center gap-1.5">
                   <Badge className="text-[10px] px-1.5 py-0.5 font-semibold bg-primary/90 text-primary-foreground backdrop-blur-sm">
-                    RELATED
+                    24/7
                   </Badge>
                 </div>
 
