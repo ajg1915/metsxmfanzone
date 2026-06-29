@@ -48,11 +48,11 @@ const RelatedStreamsSection = () => {
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Radio className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             <h2 className="text-sm sm:text-xl md:text-2xl font-bold text-foreground">
-              Related Streams
+              Sports Network Streams
             </h2>
           </div>
           <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-            MLB · SNY.TV
+            24/7 · MLB Network · SNY.TV
           </span>
         </div>
 
