@@ -16,14 +16,14 @@ const RELATED_STREAMS: RelatedStream[] = [
   {
     id: "mlb-network",
     title: "MLB Network",
-    subtitle: "League-wide highlights, analysis & live look-ins",
+    subtitle: "24/7 — League-wide highlights, analysis & live look-ins",
     thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/MLB_Network_logo_2017.svg/1200px-MLB_Network_logo_2017.svg.png",
     href: "/mlb-network",
   },
   {
     id: "sny-tv",
     title: "SNY.TV",
-    subtitle: "SportsNet New York — the official home of the Mets",
+    subtitle: "24/7 — SportsNet New York, the official home of the Mets",
     thumbnail: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/SNY_logo.svg/1200px-SNY_logo.svg.png",
     href: "https://sny.tv/mets",
     external: true,
@@ -48,11 +48,11 @@ const RelatedStreamsSection = () => {
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Radio className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
             <h2 className="text-sm sm:text-xl md:text-2xl font-bold text-foreground">
-              Related Streams
+              Sports Network Streams
             </h2>
           </div>
           <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-            MLB · SNY.TV
+            24/7 · MLB Network · SNY.TV
           </span>
         </div>
 
@@ -74,7 +74,7 @@ const RelatedStreamsSection = () => {
 
                 <div className="absolute top-2 right-2 flex items-center gap-1.5">
                   <Badge className="text-[10px] px-1.5 py-0.5 font-semibold bg-primary/90 text-primary-foreground backdrop-blur-sm">
-                    RELATED
+                    24/7
                   </Badge>
                 </div>
 
