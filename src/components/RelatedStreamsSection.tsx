@@ -122,10 +122,12 @@ const RelatedStreamsSection = () => {
   const streams = useMemo(() => {
     const mlbStream = networkStreams.find(isMlbNetwork24x7);
     const snyStream = networkStreams.find(isSnyTv24x7);
+    const msgStream = networkStreams.find(isMsgNetwork24x7);
 
     return [
       mlbStream ? streamToCard(mlbStream, FALLBACK_STREAMS[0]) : FALLBACK_STREAMS[0],
       snyStream ? streamToCard(snyStream, FALLBACK_STREAMS[1]) : FALLBACK_STREAMS[1],
+      msgStream ? streamToCard(msgStream, FALLBACK_STREAMS[2]) : FALLBACK_STREAMS[2],
     ];
   }, [networkStreams]);
 
@@ -148,11 +150,12 @@ const RelatedStreamsSection = () => {
             </h2>
           </div>
           <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-            24/7 · MLB Network · SNY.TV
+            24/7 · MLB Network · SNY.TV · MSG Network
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+
           {streams.map((s) => (
             <button
               key={s.id}
