@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Radio, Play, ChevronRight, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import mlbFanart from "@/assets/mlb-network-fanart.jpg";
+import snyFanart from "@/assets/sny-tv-fanart.jpg";
 
 interface RelatedStream {
   id: string;
