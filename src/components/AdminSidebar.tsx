@@ -1,8 +1,8 @@
-import { 
-  Home, FileText, Video, Radio, Bell, Mic, TrendingUp, 
+import {
+  Home, FileText, Video, Radio, Bell, Mic, TrendingUp,
   MessageSquare, ChevronDown, Users, Mail, Palette,
-  Megaphone, BookOpen, Trophy, UserCog, Send, Wallpaper, ShoppingBag, 
-  Activity, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor, 
+  Megaphone, BookOpen, Trophy, UserCog, Send, Wallpaper, ShoppingBag,
+  Activity, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
   ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -16,6 +16,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -128,42 +130,65 @@ export function AdminSidebar() {
     setOpenMap((m) => ({ ...m, [title]: value }));
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-muted/30">
-      <SidebarContent className="gap-1 py-2">
+    <Sidebar
+      collapsible="icon"
+      className="border-r border-white/5 bg-[#020617]/95 backdrop-blur-2xl"
+    >
+      <SidebarHeader className="p-4 group-data-[collapsible=icon]:p-2">
+        <div className="flex items-center gap-2.5 px-1">
+          <div className="w-8 h-8 rounded-lg bg-[#002D72] flex items-center justify-center border border-[#FF5910]/40 shadow-[0_0_18px_-4px_rgba(255,89,16,0.5)] flex-shrink-0">
+            <div className="w-3.5 h-3.5 bg-[#FF5910] rounded-full" />
+          </div>
+          <span className="font-bold text-[15px] tracking-tight text-white truncate group-data-[collapsible=icon]:hidden">
+            MetsXM<span className="text-[#FF5910]">FanZone</span>
+          </span>
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent className="gap-0.5 px-2 py-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-white/10">
         {sections.map(({ title, icon: Icon, items }) => {
           const isOpen = !!openMap[title];
           return (
-            <SidebarGroup key={title}>
+            <SidebarGroup key={title} className="px-0 py-0.5">
               <Collapsible open={isOpen} onOpenChange={(v) => setOpen(title, v)}>
                 <SidebarGroupLabel asChild>
-                  <CollapsibleTrigger className="flex items-center justify-between w-full hover:bg-muted/50 rounded-md px-2 py-1.5">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full rounded-md px-2 py-1.5 text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all group-data-[collapsible=icon]:justify-center">
                     <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 flex-shrink-0" />
-                      <span className="text-xs font-medium">{title}</span>
+                      <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest group-data-[collapsible=icon]:hidden">
+                        {title}
+                      </span>
                     </div>
                     <ChevronDown
-                      className={`h-3 w-3 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
+                      className={`h-3 w-3 transition-transform flex-shrink-0 group-data-[collapsible=icon]:hidden ${
+                        isOpen ? "rotate-180" : ""
+                      }`}
                     />
                   </CollapsibleTrigger>
                 </SidebarGroupLabel>
                 <CollapsibleContent>
                   <SidebarGroupContent>
-                    <SidebarMenu>
+                    <SidebarMenu className="gap-0.5">
                       {items.map((item) => {
                         const active = isActive(item.url);
                         return (
                           <SidebarMenuItem key={item.title}>
-                            <SidebarMenuButton asChild tooltip={item.title} isActive={active}>
+                            <SidebarMenuButton
+                              asChild
+                              tooltip={item.title}
+                              isActive={active}
+                              className="h-8"
+                            >
                               <NavLink
                                 to={item.url}
-                                className={`relative flex items-center gap-2 pl-4 rounded-md transition-all duration-200 ${
+                                className={`flex items-center gap-2.5 rounded-lg px-3 transition-all duration-200 ${
                                   active
-                                    ? "bg-gradient-to-r from-primary/90 via-primary to-orange-500/80 text-primary-foreground font-semibold shadow-[0_0_18px_-4px_hsl(var(--primary)/0.7)] ring-1 ring-primary/40 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1 before:rounded-full before:bg-orange-400 before:shadow-[0_0_10px_hsl(25_95%_55%/0.9)]"
-                                    : "hover:bg-muted/50 hover:translate-x-0.5"
+                                    ? "bg-[#FF5910]/10 text-[#FF5910] border border-[#FF5910]/20 font-semibold shadow-[inset_0_0_12px_-4px_rgba(255,89,16,0.4)]"
+                                    : "text-slate-400 hover:bg-white/5 hover:text-white border border-transparent"
                                 }`}
                               >
-                                <item.icon className={`h-3.5 w-3.5 flex-shrink-0 ${active ? "drop-shadow-[0_0_4px_rgba(255,255,255,0.8)]" : ""}`} />
-                                <span className="text-xs truncate">{item.title}</span>
+                                <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                                <span className="text-[12px] truncate">{item.title}</span>
                               </NavLink>
                             </SidebarMenuButton>
                           </SidebarMenuItem>
@@ -177,6 +202,16 @@ export function AdminSidebar() {
           );
         })}
       </SidebarContent>
+
+      <SidebarFooter className="p-3 border-t border-white/5 group-data-[collapsible=icon]:p-2">
+        <div className="flex items-center gap-2.5 p-2 rounded-lg bg-white/5 border border-white/5">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#002D72] to-[#FF5910] border border-white/20 flex-shrink-0" />
+          <div className="flex-1 overflow-hidden group-data-[collapsible=icon]:hidden">
+            <p className="text-[11px] font-semibold text-white truncate leading-tight">Admin</p>
+            <p className="text-[9px] text-slate-500 truncate">MetsXMFanZone</p>
+          </div>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }
