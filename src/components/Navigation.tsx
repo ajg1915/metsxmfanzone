@@ -268,6 +268,10 @@ const Navigation = () => {
                       <LayoutDashboard className="w-4 h-4 mr-2" />
                       Dashboard
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/dashboard?tab=notifications")}>
+                      <Bell className="w-4 h-4 mr-2" />
+                      Notifications
+                    </DropdownMenuItem>
                     {isWriter && (
                       <DropdownMenuItem onClick={() => navigate("/writer")}>
                         <PenLine className="w-4 h-4 mr-2" />
