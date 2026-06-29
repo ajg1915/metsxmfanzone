@@ -418,17 +418,23 @@ const Dashboard = () => {
                             <ArrowUpCircle className="w-4 h-4" />
                             Change Plan
                           </Button>
-                          {subscriptionStatus === "active" && (
-                            <Button
-                              variant="ghost"
-                              className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
-                              disabled={cancelling}
-                              onClick={handleCancelSubscription}
-                            >
-                              {cancelling ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Cancelling…</>) : "Cancel Subscription"}
-                            </Button>
-                          )}
+                          <Button
+                            variant="outline"
+                            className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60"
+                            disabled={cancelling || subscriptionStatus !== "active"}
+                            onClick={handleCancelSubscription}
+                          >
+                            {cancelling
+                              ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Cancelling…</>)
+                              : subscriptionStatus === "active"
+                                ? "Cancel Subscription"
+                                : "Subscription Already Cancelled"}
+                          </Button>
+                          <p className="text-[11px] text-muted-foreground text-center pt-1">
+                            You'll keep access until the end of your billing period.
+                          </p>
                         </div>
+
                       </div>
                     </DialogContent>
                   </Dialog>
