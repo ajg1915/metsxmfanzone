@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import mlbFanart from "@/assets/mlb-network-fanart.jpg";
 import snyFanart from "@/assets/sny-tv-fanart.jpg";
 import msgFanart from "@/assets/msg-network-fanart.jpg";
+import espnFanart from "@/assets/espn-network-fanart.jpg";
 
 interface RelatedStream {
   id: string;
@@ -48,6 +49,13 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     thumbnail: msgFanart,
     href: "/live/msg-network",
   },
+  {
+    id: "espn-network",
+    title: "ESPN 24/7",
+    subtitle: "24/7 — ESPN live sports, highlights & analysis",
+    thumbnail: espnFanart,
+    href: "/espn-network",
+  },
 ];
 
 const isMlbNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
@@ -65,10 +73,16 @@ const isMsgNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pag
   return title.includes("msg network") && title.includes("24/7") || stream.assigned_pages?.includes("msg-network");
 };
 
+const isEspn24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  const title = stream.title.toLowerCase();
+  return title.includes("espn") && title.includes("24/7") || stream.assigned_pages?.includes("espn-network");
+};
+
 const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => {
   const pages = stream.assigned_pages || [];
   let href = `/live/${stream.id}`;
   if (pages.includes("mlb-network")) href = "/mlb-network";
+  else if (pages.includes("espn-network")) href = "/espn-network";
   else if (pages.includes("msg-network")) href = "/live/msg-network";
   return {
     id: stream.id,
@@ -79,6 +93,7 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
     assignedPages: pages,
   };
 };
+
 
 
 const RelatedStreamsSection = () => {
