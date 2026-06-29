@@ -6,7 +6,6 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import OnboardingWalkthrough from "@/components/OnboardingWalkthrough";
 import NotificationPreferencesCard from "@/components/NotificationPreferencesCard";
-import DashboardNotificationsInbox from "@/components/DashboardNotificationsInbox";
 import PasskeyManager from "@/components/PasskeyManager";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -440,9 +439,6 @@ const Dashboard = () => {
               })}
             </div>
           </div>
-
-          {/* Notifications Inbox */}
-          <DashboardNotificationsInbox />
 
           {/* Notifications & Security */}
           <NotificationPreferencesCard />
