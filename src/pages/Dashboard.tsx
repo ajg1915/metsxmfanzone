@@ -357,45 +357,77 @@ const Dashboard = () => {
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10">Manage</Button>
                     </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Subscription Details</DialogTitle>
-                        <DialogDescription>Manage your subscription and billing</DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4">
-                        <div className="space-y-2">
-                          <Label>Current Plan</Label>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="default">{planLabel.toUpperCase()}</Badge>
-                            <span className="text-foreground font-semibold">{planPrice}</span>
+                    <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-slate-900/95 backdrop-blur-2xl border-white/10">
+                      {/* Gradient header */}
+                      <div className="relative overflow-hidden p-6 pb-5 bg-gradient-to-br from-primary/25 via-primary/10 to-transparent border-b border-white/10">
+                        <div className="absolute -top-16 -right-16 w-48 h-48 bg-[radial-gradient(circle,hsl(var(--primary)/0.35),transparent_70%)] pointer-events-none" />
+                        <div className="relative flex items-center gap-3">
+                          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center shadow-lg shadow-primary/30">
+                            <CreditCard className="w-5 h-5 text-primary-foreground" />
+                          </div>
+                          <div>
+                            <DialogTitle className="text-lg font-bold">Subscription Details</DialogTitle>
+                            <DialogDescription className="text-xs">Manage your plan and billing</DialogDescription>
                           </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label>Status</Label>
-                          <Badge variant={subscriptionStatus === "active" ? "default" : "secondary"}>{subscriptionStatus.toUpperCase()}</Badge>
+                      </div>
+
+                      <div className="p-6 space-y-4">
+                        {/* Plan summary card */}
+                        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-4">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Current Plan</p>
+                              <p className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">{planLabel}</p>
+                              <p className="text-sm text-primary font-semibold mt-0.5">{planPrice}</p>
+                            </div>
+                            <Badge className={`shrink-0 ${subscriptionStatus === "active" ? "bg-gradient-to-r from-emerald-500/20 to-emerald-500/10 text-emerald-400 border-emerald-500/30" : "bg-amber-500/15 text-amber-400 border-amber-500/30"}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${subscriptionStatus === "active" ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`} />
+                              {subscriptionStatus.toUpperCase()}
+                            </Badge>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label>Next Billing Date</Label>
-                          <p className="text-foreground">{subscriptionEndDate ? subscriptionEndDate.toLocaleDateString() : 'N/A'}</p>
+
+                        {/* Billing info */}
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-4 flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/20 flex items-center justify-center shrink-0">
+                            <Calendar className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Next Billing Date</p>
+                            <p className="text-sm font-semibold text-foreground">
+                              {subscriptionEndDate ? subscriptionEndDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                            </p>
+                          </div>
                         </div>
-                        <div className="pt-4 space-y-2">
-                          <Button className="w-full" onClick={() => { setSubscriptionDialogOpen(false); navigate("/pricing"); }}>Change Plan</Button>
+
+                        {subscriptionStatus !== "active" && (
+                          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-3">
+                            <p className="text-xs text-amber-200/90 text-center">
+                              Your subscription is <strong>{subscriptionStatus}</strong>. Access remains until {subscriptionEndDate ? subscriptionEndDate.toLocaleDateString() : 'the end of your billing period'}.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="space-y-2 pt-2">
+                          <Button
+                            className="w-full gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/30"
+                            onClick={() => { setSubscriptionDialogOpen(false); navigate("/pricing"); }}
+                          >
+                            <ArrowUpCircle className="w-4 h-4" />
+                            Change Plan
+                          </Button>
                           {subscriptionStatus === "active" && (
                             <Button
-                              variant="destructive"
-                              className="w-full"
+                              variant="ghost"
+                              className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
                               disabled={cancelling}
                               onClick={handleCancelSubscription}
                             >
-                              {cancelling ? (<><Loader2 className="w-4 h-4 animate-spin" /> Cancelling…</>) : "Cancel Subscription"}
+                              {cancelling ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Cancelling…</>) : "Cancel Subscription"}
                             </Button>
                           )}
-                          {subscriptionStatus !== "active" && (
-                            <p className="text-xs text-muted-foreground text-center">
-                              Your subscription is {subscriptionStatus}. Access remains until {subscriptionEndDate ? subscriptionEndDate.toLocaleDateString() : 'the end of your billing period'}.
-                            </p>
-                          )}
-                          <Button variant="outline" className="w-full" onClick={() => setSubscriptionDialogOpen(false)}>Close</Button>
                         </div>
                       </div>
                     </DialogContent>
