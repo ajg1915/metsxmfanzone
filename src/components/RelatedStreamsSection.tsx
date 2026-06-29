@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import mlbFanart from "@/assets/mlb-network-fanart.jpg";
 import snyFanart from "@/assets/sny-tv-fanart.jpg";
+import msgFanart from "@/assets/msg-network-fanart.jpg";
 
 interface RelatedStream {
   id: string;
@@ -40,6 +41,13 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     thumbnail: snyFanart,
     href: "/live/sny-tv",
   },
+  {
+    id: "msg-network",
+    title: "MSG Network 24/7",
+    subtitle: "24/7 — Madison Square Garden Network, NY sports all day",
+    thumbnail: msgFanart,
+    href: "/live/msg-network",
+  },
 ];
 
 const isMlbNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
@@ -52,14 +60,26 @@ const isSnyTv24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">)
   return title.includes("sny.tv") && title.includes("24/7") || stream.assigned_pages?.includes("sny-tv");
 };
 
-const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => ({
-  id: stream.id,
-  title: stream.title,
-  subtitle: stream.description || fallback.subtitle,
-  thumbnail: stream.thumbnail_url || fallback.thumbnail,
-  href: stream.assigned_pages?.includes("mlb-network") ? "/mlb-network" : `/live/${stream.id}`,
-  assignedPages: stream.assigned_pages || [],
-});
+const isMsgNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  const title = stream.title.toLowerCase();
+  return title.includes("msg network") && title.includes("24/7") || stream.assigned_pages?.includes("msg-network");
+};
+
+const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => {
+  const pages = stream.assigned_pages || [];
+  let href = `/live/${stream.id}`;
+  if (pages.includes("mlb-network")) href = "/mlb-network";
+  else if (pages.includes("msg-network")) href = "/live/msg-network";
+  return {
+    id: stream.id,
+    title: stream.title,
+    subtitle: stream.description || fallback.subtitle,
+    thumbnail: stream.thumbnail_url || fallback.thumbnail,
+    href,
+    assignedPages: pages,
+  };
+};
+
 
 const RelatedStreamsSection = () => {
   const navigate = useNavigate();
@@ -102,10 +122,12 @@ const RelatedStreamsSection = () => {
   const streams = useMemo(() => {
     const mlbStream = networkStreams.find(isMlbNetwork24x7);
     const snyStream = networkStreams.find(isSnyTv24x7);
+    const msgStream = networkStreams.find(isMsgNetwork24x7);
 
     return [
       mlbStream ? streamToCard(mlbStream, FALLBACK_STREAMS[0]) : FALLBACK_STREAMS[0],
       snyStream ? streamToCard(snyStream, FALLBACK_STREAMS[1]) : FALLBACK_STREAMS[1],
+      msgStream ? streamToCard(msgStream, FALLBACK_STREAMS[2]) : FALLBACK_STREAMS[2],
     ];
   }, [networkStreams]);
 
@@ -128,11 +150,12 @@ const RelatedStreamsSection = () => {
             </h2>
           </div>
           <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-            24/7 · MLB Network · SNY.TV
+            24/7 · MLB Network · SNY.TV · MSG Network
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+
           {streams.map((s) => (
             <button
               key={s.id}
