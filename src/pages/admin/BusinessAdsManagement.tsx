@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Check, X, Trash2, ExternalLink, Mail, Phone } from "lucide-react";
+import CreateBusinessAdForm from "@/components/CreateBusinessAdForm";
 
 interface BusinessAd {
   id: string;
