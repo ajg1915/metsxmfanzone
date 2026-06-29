@@ -839,7 +839,7 @@ export default function LiveStreamManagement() {
                   <Label htmlFor="assigned_pages">Assign to Pages *</Label>
                   <div className="space-y-2 mt-2">
                     {(() => {
-                      const defaultPages = ['guide', 'live', 'metsxmfanzone', 'mlb-network', 'espn-network', 'pix11-network', 'msg-network', 'regular-season-games', 'replay-games'];
+                      const defaultPages = ['guide', 'live', 'metsxmfanzone', 'mlb-network', 'sny-tv', 'msg-network', 'espn-network', 'pix11-network', 'regular-season-games', 'replay-games'];
                       const customPages = formData.assigned_pages.filter(p => !defaultPages.includes(p));
                       const allPages = [...defaultPages, ...customPages];
                       return allPages.map((page) => (
