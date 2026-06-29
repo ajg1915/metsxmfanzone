@@ -6,10 +6,11 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Home, RefreshCw, Search, Bell } from "lucide-react";
+import { Home, RefreshCw, Search } from "lucide-react";
 import { AdminPinVerification } from "@/components/AdminPinVerification";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 import logo from "@/assets/metsxmfanzone-logo.png";
+import { NotificationsBell } from "@/components/admin/NotificationsBell";
 
 function AdminHeader({ navigate }: { navigate: (path: string | number) => void }) {
   return (
