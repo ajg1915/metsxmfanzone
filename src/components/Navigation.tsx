@@ -53,6 +53,7 @@ const Navigation = () => {
   const [radioOpen, setRadioOpen] = useState(false);
   const [notifItems, setNotifItems] = useState<any[]>([]);
   const [notifLoading, setNotifLoading] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
 
   type NotifItem = {
     id: string;
