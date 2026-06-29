@@ -1,7 +1,9 @@
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Radio, Play, ChevronRight, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import mlbFanart from "@/assets/mlb-network-fanart.jpg";
 import snyFanart from "@/assets/sny-tv-fanart.jpg";
 
@@ -12,28 +14,100 @@ interface RelatedStream {
   thumbnail: string;
   href: string;
   external?: boolean;
+  assignedPages?: string[];
 }
 
-const RELATED_STREAMS: RelatedStream[] = [
+interface LiveStreamRecord {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  assigned_pages: string[] | null;
+}
+
+const FALLBACK_STREAMS: RelatedStream[] = [
   {
     id: "mlb-network",
-    title: "MLB Network",
+    title: "MLB Network 24/7",
     subtitle: "24/7 — League-wide highlights, analysis & live look-ins",
     thumbnail: mlbFanart,
     href: "/mlb-network",
   },
   {
     id: "sny-tv",
-    title: "SNY.TV",
+    title: "SNY.TV 24/7",
     subtitle: "24/7 — SportsNet New York, the official home of the Mets",
     thumbnail: snyFanart,
-    href: "https://sny.tv/mets",
-    external: true,
+    href: "/live/sny-tv",
   },
 ];
 
+const isMlbNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  const title = stream.title.toLowerCase();
+  return title.includes("mlb network") && title.includes("24/7") || stream.assigned_pages?.includes("mlb-network");
+};
+
+const isSnyTv24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  const title = stream.title.toLowerCase();
+  return title.includes("sny.tv") && title.includes("24/7") || stream.assigned_pages?.includes("sny-tv");
+};
+
+const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => ({
+  id: stream.id,
+  title: stream.title,
+  subtitle: stream.description || fallback.subtitle,
+  thumbnail: stream.thumbnail_url || fallback.thumbnail,
+  href: stream.assigned_pages?.includes("mlb-network") ? "/mlb-network" : `/live/${stream.id}`,
+  assignedPages: stream.assigned_pages || [],
+});
+
 const RelatedStreamsSection = () => {
   const navigate = useNavigate();
+  const [networkStreams, setNetworkStreams] = useState<LiveStreamRecord[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchNetworkStreams = async () => {
+      const { data, error } = await supabase
+        .from("live_streams")
+        .select("id, title, description, thumbnail_url, assigned_pages")
+        .eq("published", true)
+        .eq("status", "live")
+        .limit(25);
+
+      if (error) {
+        console.error("Error fetching sports network streams:", error);
+        return;
+      }
+
+      if (!cancelled) {
+        setNetworkStreams((data || []) as LiveStreamRecord[]);
+      }
+    };
+
+    fetchNetworkStreams();
+
+    const channel = supabase
+      .channel("sports-network-streams")
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_streams" }, fetchNetworkStreams)
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const streams = useMemo(() => {
+    const mlbStream = networkStreams.find(isMlbNetwork24x7);
+    const snyStream = networkStreams.find(isSnyTv24x7);
+
+    return [
+      mlbStream ? streamToCard(mlbStream, FALLBACK_STREAMS[0]) : FALLBACK_STREAMS[0],
+      snyStream ? streamToCard(snyStream, FALLBACK_STREAMS[1]) : FALLBACK_STREAMS[1],
+    ];
+  }, [networkStreams]);
 
   const handleClick = (s: RelatedStream) => {
     if (s.external) {
@@ -59,7 +133,7 @@ const RelatedStreamsSection = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-          {RELATED_STREAMS.map((s) => (
+          {streams.map((s) => (
             <button
               key={s.id}
               onClick={() => handleClick(s)}

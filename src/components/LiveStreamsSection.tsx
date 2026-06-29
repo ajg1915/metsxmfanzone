@@ -287,9 +287,15 @@ const LiveStreamsSection = () => {
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
 
-      // Exclude MLB Network and SNY.TV — they live in Sports Network Streams
+      // Exclude the 24/7 sports network streams — they live in Sports Network Streams
       const excludedPages = ['mlb-network', 'sny-tv', 'sny.tv'];
-      const filtered = sorted.filter(s => !s.assigned_pages?.some(p => excludedPages.includes(p.toLowerCase())));
+      const filtered = sorted.filter(s => {
+        const title = s.title.toLowerCase();
+        const isSportsNetwork24x7 =
+          (title.includes('mlb network') || title.includes('sny.tv')) && title.includes('24/7');
+
+        return !isSportsNetwork24x7 && !s.assigned_pages?.some(p => excludedPages.includes(p.toLowerCase()));
+      });
 
       setStreams(filtered as LiveStream[]);
     } catch (error) {
