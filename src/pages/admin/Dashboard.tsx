@@ -164,188 +164,125 @@ export default function AdminDashboard() {
   );
 
   return (
-    <div className="w-full max-w-full px-1 sm:px-2 py-2 sm:py-3 overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-        <h2 className="text-base sm:text-lg font-bold">Dashboard</h2>
-        <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2">
-              <HelpCircle className="h-4 w-4" />
-              How to Use
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Admin Portal Navigation Guide</DialogTitle>
-              <DialogDescription>
-                Learn how to navigate and use the admin portal effectively
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Quick Access Cards</h3>
-                <p className="text-sm text-muted-foreground">
-                  Use the quick access cards below to jump directly to the most commonly used features: Blog Management, Live Streams, Lineup Cards, and User Management.
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Sidebar Navigation</h3>
-                <p className="text-sm text-muted-foreground">
-                  The sidebar on the left organizes all admin features into categories:
-                </p>
-                <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-                  <li>• <span className="font-medium">Media</span> - Manage blogs, videos, podcasts, and newsletters</li>
-                  <li>• <span className="font-medium">Live Management</span> - Control live streams, stories, and events</li>
-                  <li>• <span className="font-medium">User</span> - Manage users, posts, and subscriptions</li>
-                </ul>
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Common Tasks</h3>
-                <div className="space-y-3">
-                  <div className="border-l-2 border-primary pl-3">
-                    <p className="font-medium text-sm">Creating a Live Stream</p>
-                    <p className="text-xs text-muted-foreground">Navigate to Live Management → Live Streams → Add Live Stream. Enter stream URL, assign to pages, and set status.</p>
-                  </div>
-                  <div className="border-l-2 border-primary pl-3">
-                    <p className="font-medium text-sm">Publishing a Blog Post</p>
-                    <p className="text-xs text-muted-foreground">Go to Media → Blog Management → Create New Post. Write content, add featured image, and toggle Published switch.</p>
-                  </div>
-                  <div className="border-l-2 border-primary pl-3">
-                    <p className="font-medium text-sm">Managing Users</p>
-                    <p className="text-xs text-muted-foreground">Access User → User Management to view all users, change subscription plans, and manage accounts.</p>
-                  </div>
+    <div className="w-full max-w-full space-y-6">
+      {/* Page Heading */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard Overview</h1>
+          <p className="text-slate-400 text-sm mt-1">Welcome back. Here's what's happening today in the zone.</p>
+        </div>
+        <div className="flex gap-2">
+          <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
+            <DialogTrigger asChild>
+              <Button className="h-9 px-4 bg-white/5 border border-white/10 rounded-lg text-xs font-medium text-slate-200 hover:bg-white/10 transition-all">
+                <HelpCircle className="h-3.5 w-3.5 mr-1.5" />
+                How to Use
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-[#0a0f1e] border-white/10 text-slate-200">
+              <DialogHeader>
+                <DialogTitle className="text-white">Admin Portal Navigation Guide</DialogTitle>
+                <DialogDescription className="text-slate-400">
+                  Learn how to navigate and use the admin portal effectively
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm text-white">Quick Access Cards</h3>
+                  <p className="text-sm text-slate-400">
+                    Use the quick access cards below to jump directly to the most commonly used features.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-sm text-white">Sidebar Navigation</h3>
+                  <p className="text-sm text-slate-400">
+                    The sidebar on the left organizes all admin features into categories: Overview, Streaming, Content, Podcasts, Community, Commerce, Members, Notifications, Email, and Settings.
+                  </p>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Need More Help?</h3>
-                <p className="text-sm text-muted-foreground">
-                  Each management page includes intuitive forms and buttons. Look for "Add New", "Create", or "+" buttons to create content, and "Edit" or pencil icons to modify existing items.
-                </p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-      
-      <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-4">
-        <Card className="min-w-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium truncate">Users</CardTitle>
-            <Users className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground flex-shrink-0" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-lg sm:text-xl font-bold">{stats.totalUsers}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0 cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/admin/stories")}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium truncate">Stories</CardTitle>
-            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground flex-shrink-0" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-lg sm:text-xl font-bold">{stats.totalStories}</div>
-            <p className="text-[10px] text-muted-foreground">Total Stories</p>
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0 cursor-pointer hover:border-primary transition-colors" onClick={() => navigate("/admin/settings")}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium truncate">Settings</CardTitle>
-            <Settings className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground flex-shrink-0" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-lg sm:text-xl font-bold text-primary">Manage</div>
-            <p className="text-[10px] text-muted-foreground">Site Settings</p>
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium truncate">Status</CardTitle>
-            <Activity className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground flex-shrink-0" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-lg sm:text-xl font-bold text-green-500">Online</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Manual Fetch Actions */}
-      <div className="mt-4 sm:mt-6">
-        <h3 className="text-sm sm:text-base font-semibold mb-2">Manual Fetch</h3>
-        <div className="flex flex-wrap gap-2">
-          <ManualFetchButton
-            label="Fetch Lineup Card"
-            icon={<ClipboardList className="h-4 w-4" />}
-            functionName="fetch-mets-lineup"
-            successMessage="Lineup card fetched successfully!"
-          />
-          <ManualFetchButton
-            label="Fetch Highlights"
-            icon={<Video className="h-4 w-4" />}
-            functionName="fetch-mets-highlights"
-            successMessage="Highlights fetched successfully!"
-          />
-          <ManualFetchButton
-            label="Fetch Schedule"
-            icon={<RefreshCw className="h-4 w-4" />}
-            functionName="fetch-mets-schedule"
-            successMessage="Schedule fetched successfully!"
-          />
-          <ManualFetchButton
-            label="Generate Predictions"
-            icon={<Sparkles className="h-4 w-4" />}
-            functionName="generate-daily-predictions"
-            successMessage="Anthony's Predictions generated successfully!"
-            onCreditsExhausted={() => navigate("/admin/predictions")}
-          />
+            </DialogContent>
+          </Dialog>
+          <Button
+            onClick={() => navigate("/admin/live-streams")}
+            className="h-9 px-4 bg-[#FF5910] hover:brightness-110 rounded-lg text-xs font-bold text-white shadow-lg shadow-[#FF5910]/20 transition-all"
+          >
+            <Radio className="h-3.5 w-3.5 mr-1.5" /> Go Live
+          </Button>
         </div>
       </div>
 
-      <div className="mt-4 sm:mt-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2 sm:mb-3">
-          <h3 className="text-sm sm:text-base font-semibold">Quick Access</h3>
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "Total Users", value: stats.totalUsers, icon: Users, accent: "text-[#FF5910]", sub: "All registered fans" },
+          { label: "Blog Posts", value: stats.totalBlogs, icon: FileText, accent: "text-[#22c55e]", sub: "Published articles" },
+          { label: "Stories", value: stats.totalStories, icon: Sparkles, accent: "text-[#FF5910]", sub: "Active stories" },
+          { label: "Live Streams", value: `${stats.activeStreams}/${stats.totalStreams}`, icon: Radio, accent: "text-[#FF5910]", sub: stats.activeStreams > 0 ? "Live now" : "Standby" },
+        ].map(({ label, value, icon: Icon, accent, sub }) => (
+          <div
+            key={label}
+            className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl relative overflow-hidden hover:border-[#FF5910]/30 transition-all group"
+          >
+            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Icon className={`w-12 h-12 ${accent}`} />
+            </div>
+            <p className="text-xs text-slate-400 font-medium mb-1">{label}</p>
+            <h3 className="text-2xl font-bold text-white">{value}</h3>
+            <p className={`text-[10px] mt-2 font-bold ${accent}`}>{sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Manual Fetch Actions */}
+      <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-bold text-white">Manual Fetch</h3>
+          <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Daily Sync</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <ManualFetchButton label="Lineup Card" icon={<ClipboardList className="h-3.5 w-3.5" />} functionName="fetch-mets-lineup" successMessage="Lineup card fetched!" />
+          <ManualFetchButton label="Highlights" icon={<Video className="h-3.5 w-3.5" />} functionName="fetch-mets-highlights" successMessage="Highlights fetched!" />
+          <ManualFetchButton label="Schedule" icon={<RefreshCw className="h-3.5 w-3.5" />} functionName="fetch-mets-schedule" successMessage="Schedule fetched!" />
+          <ManualFetchButton label="Predictions" icon={<Sparkles className="h-3.5 w-3.5" />} functionName="generate-daily-predictions" successMessage="Predictions generated!" onCreditsExhausted={() => navigate("/admin/predictions")} />
+        </div>
+      </div>
+
+      {/* Quick Access */}
+      <div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <h3 className="text-sm font-bold text-white">Quick Access</h3>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
             <Input
               placeholder="Search management areas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-8 text-xs"
+              className="pl-9 h-9 text-xs bg-white/5 border-white/10 rounded-full text-slate-200 placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-[#FF5910]/60"
             />
           </div>
         </div>
-        <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {filteredItems.length > 0 ? filteredItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Card 
+              <button
                 key={item.title}
-                className="cursor-pointer hover:border-primary transition-colors min-w-0 min-h-[132px] sm:min-h-[148px]"
                 onClick={() => navigate(item.url)}
+                className="text-left p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl hover:border-[#FF5910]/40 hover:bg-white/[0.07] transition-all group relative overflow-hidden"
               >
-                <CardHeader className="pb-3 pt-5 px-5 sm:px-6">
-                  <div className="flex items-center justify-between">
-                    {/* Use explicit icon sizes (not just CSS) so mobile touch targets are reliably large */}
-                    <Icon size={56} className="text-primary flex-shrink-0" />
-                    <ArrowRight size={34} className="text-muted-foreground flex-shrink-0" />
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#FF5910]/10 border border-[#FF5910]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Icon className="w-5 h-5 text-[#FF5910]" />
                   </div>
-                </CardHeader>
-                <CardContent className="px-5 sm:px-6 pb-6">
-                  <CardTitle className="text-base sm:text-lg mb-1.5 truncate">{item.title}</CardTitle>
-                  <CardDescription className="text-sm sm:text-base mb-2.5 line-clamp-2">
-                    {item.description}
-                  </CardDescription>
-                  <p className="text-sm sm:text-base font-semibold text-primary">{item.stat}</p>
-                </CardContent>
-              </Card>
+                  <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-[#FF5910] group-hover:translate-x-0.5 transition-all" />
+                </div>
+                <h4 className="text-sm font-bold text-white mb-1 truncate">{item.title}</h4>
+                <p className="text-xs text-slate-400 line-clamp-2 mb-3">{item.description}</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-[#FF5910]">{item.stat}</p>
+              </button>
             );
           }) : (
-            <div className="col-span-full text-center py-8 text-muted-foreground text-sm">
+            <div className="col-span-full text-center py-10 text-slate-500 text-sm">
               No management areas found for "{searchQuery}"
             </div>
           )}
@@ -353,7 +290,7 @@ export default function AdminDashboard() {
       </div>
 
       {adminUserId && (
-        <div className="mt-4 sm:mt-6">
+        <div className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl p-5">
           <CreateBusinessAdForm userId={adminUserId} />
         </div>
       )}
