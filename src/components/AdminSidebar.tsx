@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
+import logo from "@/assets/metsxmfanzone-logo.png";
 import {
   Sidebar,
   SidebarContent,
