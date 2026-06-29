@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import mlbFanart from "@/assets/mlb-network-fanart.jpg";
 import snyFanart from "@/assets/sny-tv-fanart.jpg";
+import msgFanart from "@/assets/msg-network-fanart.jpg";
 
 interface RelatedStream {
   id: string;
@@ -40,6 +41,13 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     thumbnail: snyFanart,
     href: "/live/sny-tv",
   },
+  {
+    id: "msg-network",
+    title: "MSG Network 24/7",
+    subtitle: "24/7 — Madison Square Garden Network, NY sports all day",
+    thumbnail: msgFanart,
+    href: "/live/msg-network",
+  },
 ];
 
 const isMlbNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
@@ -52,14 +60,26 @@ const isSnyTv24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">)
   return title.includes("sny.tv") && title.includes("24/7") || stream.assigned_pages?.includes("sny-tv");
 };
 
-const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => ({
-  id: stream.id,
-  title: stream.title,
-  subtitle: stream.description || fallback.subtitle,
-  thumbnail: stream.thumbnail_url || fallback.thumbnail,
-  href: stream.assigned_pages?.includes("mlb-network") ? "/mlb-network" : `/live/${stream.id}`,
-  assignedPages: stream.assigned_pages || [],
-});
+const isMsgNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  const title = stream.title.toLowerCase();
+  return title.includes("msg network") && title.includes("24/7") || stream.assigned_pages?.includes("msg-network");
+};
+
+const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => {
+  const pages = stream.assigned_pages || [];
+  let href = `/live/${stream.id}`;
+  if (pages.includes("mlb-network")) href = "/mlb-network";
+  else if (pages.includes("msg-network")) href = "/live/msg-network";
+  return {
+    id: stream.id,
+    title: stream.title,
+    subtitle: stream.description || fallback.subtitle,
+    thumbnail: stream.thumbnail_url || fallback.thumbnail,
+    href,
+    assignedPages: pages,
+  };
+};
+
 
 const RelatedStreamsSection = () => {
   const navigate = useNavigate();
