@@ -4,16 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Radio, Play, ChevronRight, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import mlbFanart from "@/assets/mlb-network-fanart.jpg";
-import snyFanart from "@/assets/sny-tv-fanart.jpg";
-import msgFanart from "@/assets/msg-network-fanart.jpg";
-import espnFanart from "@/assets/espn-network-fanart.jpg";
 
 interface RelatedStream {
   id: string;
   title: string;
   subtitle: string;
-  thumbnail: string;
+  thumbnail: string | null;
   href: string;
   external?: boolean;
   assignedPages?: string[];
@@ -32,28 +28,28 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     id: "mlb-network",
     title: "MLB Network 24/7",
     subtitle: "24/7 — League-wide highlights, analysis & live look-ins",
-    thumbnail: mlbFanart,
+    thumbnail: null,
     href: "/mlb-network",
   },
   {
     id: "sny-tv",
     title: "SNY.TV 24/7",
     subtitle: "24/7 — SportsNet New York, the official home of the Mets",
-    thumbnail: snyFanart,
+    thumbnail: null,
     href: "/live/sny-tv",
   },
   {
     id: "msg-network",
     title: "MSG Network 24/7",
     subtitle: "24/7 — Madison Square Garden Network, NY sports all day",
-    thumbnail: msgFanart,
+    thumbnail: null,
     href: "/live/msg-network",
   },
   {
     id: "espn-network",
     title: "ESPN 24/7",
     subtitle: "24/7 — ESPN live sports, highlights & analysis",
-    thumbnail: espnFanart,
+    thumbnail: null,
     href: "/espn-network",
   },
 ];
@@ -180,15 +176,22 @@ const RelatedStreamsSection = () => {
               onClick={() => handleClick(s)}
               className="group relative overflow-hidden rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 text-left"
             >
-              <div className="aspect-video relative overflow-hidden">
-                <img
-                  src={s.thumbnail}
-                  alt={s.title}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
+              <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-primary/20 via-background to-background">
+                {s.thumbnail ? (
+                  <img
+                    src={s.thumbnail}
+                    alt={s.title}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Radio className="w-12 h-12 text-primary/40" />
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/60" />
+
 
                 <div className="absolute top-2 right-2 flex items-center gap-1.5">
                   <Badge className="text-[10px] px-1.5 py-0.5 font-semibold bg-primary/90 text-primary-foreground backdrop-blur-sm">
