@@ -137,9 +137,11 @@ export function AdminSidebar() {
     >
       <SidebarHeader className="p-4 group-data-[collapsible=icon]:p-2">
         <div className="flex items-center gap-2.5 px-1">
-          <div className="w-8 h-8 rounded-lg bg-[#002D72] flex items-center justify-center border border-[#FF5910]/40 shadow-[0_0_18px_-4px_rgba(255,89,16,0.5)] flex-shrink-0">
-            <div className="w-3.5 h-3.5 bg-[#FF5910] rounded-full" />
-          </div>
+          <img
+            src={logo}
+            alt="MetsXMFanZone Logo"
+            className="h-8 w-auto flex-shrink-0"
+          />
           <span className="font-bold text-[15px] tracking-tight text-white truncate group-data-[collapsible=icon]:hidden">
             MetsXM<span className="text-[#FF5910]">FanZone</span>
           </span>
