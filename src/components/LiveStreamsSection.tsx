@@ -287,7 +287,11 @@ const LiveStreamsSection = () => {
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
 
-      setStreams(sorted as LiveStream[]);
+      // Exclude MLB Network and SNY.TV — they live in Sports Network Streams
+      const excludedPages = ['mlb-network', 'sny-tv', 'sny.tv'];
+      const filtered = sorted.filter(s => !s.assigned_pages?.some(p => excludedPages.includes(p.toLowerCase())));
+
+      setStreams(filtered as LiveStream[]);
     } catch (error) {
       console.error("Error fetching streams:", error);
     } finally {
