@@ -9,12 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Home, RefreshCw, Search, Bell } from "lucide-react";
 import { AdminPinVerification } from "@/components/AdminPinVerification";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
+import logo from "@/assets/metsxmfanzone-logo.png";
 
 function AdminHeader({ navigate }: { navigate: (path: string | number) => void }) {
   return (
     <header className="h-14 border-b border-white/10 flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-4 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-20">
       <div className="flex items-center gap-2 flex-shrink-0">
         <SidebarTrigger className="h-8 w-8 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg" />
+        <div className="hidden sm:flex items-center gap-1.5 cursor-pointer" onClick={() => navigate("/")}>
+          <img src={logo} alt="MetsXMFanZone Logo" className="h-7 w-auto" />
+          <span className="text-[11px] font-semibold text-foreground">MetsXMFanZone</span>
+        </div>
       </div>
 
       <div className="flex-1 max-w-xl hidden sm:block">
