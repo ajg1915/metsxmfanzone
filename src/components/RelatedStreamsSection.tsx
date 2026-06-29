@@ -176,15 +176,22 @@ const RelatedStreamsSection = () => {
               onClick={() => handleClick(s)}
               className="group relative overflow-hidden rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 text-left"
             >
-              <div className="aspect-video relative overflow-hidden">
-                <img
-                  src={s.thumbnail}
-                  alt={s.title}
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
+              <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-primary/20 via-background to-background">
+                {s.thumbnail ? (
+                  <img
+                    src={s.thumbnail}
+                    alt={s.title}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Radio className="w-12 h-12 text-primary/40" />
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
                 <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/60" />
+
 
                 <div className="absolute top-2 right-2 flex items-center gap-1.5">
                   <Badge className="text-[10px] px-1.5 py-0.5 font-semibold bg-primary/90 text-primary-foreground backdrop-blur-sm">
