@@ -368,80 +368,121 @@ const Navigation = () => {
                       <span className="max-w-[120px] truncate">{userProfile.full_name || user.email}</span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 bg-background z-50">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                      <LayoutDashboard className="w-4 h-4 mr-2" />
-                      Dashboard
-                    </DropdownMenuItem>
-                    <DropdownMenuSub onOpenChange={(open) => { if (open) fetchNotifs(); }}>
-                      <DropdownMenuSubTrigger className="flex items-center px-2 py-1.5 text-sm cursor-default">
-                        <Bell className="w-4 h-4 mr-2" />
-                        Notifications
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent className="w-72 max-h-[420px] overflow-y-auto bg-background border border-border shadow-lg rounded-md p-0">
-                        <div className="px-3 py-2 border-b border-border/30">
-                          <p className="text-xs font-semibold text-foreground">Notifications</p>
-                          <p className="text-[10px] text-muted-foreground">Recent alerts, streams & stories</p>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-64 z-50 bg-card/90 backdrop-blur-xl border border-primary/20 rounded-xl shadow-elevation-high p-0 overflow-hidden"
+                    sideOffset={6}
+                  >
+                    {/* User profile header */}
+                    <div className="relative px-4 pt-4 pb-3 bg-gradient-to-br from-primary/20 to-secondary/10">
+                      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.15),transparent_60%)]" />
+                      <div className="relative flex items-center gap-3">
+                        <Avatar className="h-10 w-10 ring-2 ring-primary/40 shadow-md">
+                          <AvatarImage src={userProfile.avatar_url || undefined} alt="Profile" />
+                          <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground">
+                            {userProfile.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-foreground truncate">
+                            {userProfile.full_name || 'Member'}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
                         </div>
-                        {notifLoading ? (
-                          <div className="flex items-center justify-center py-6">
-                            <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
-                          </div>
-                        ) : notifItems.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
-                            <Bell className="w-5 h-5 mb-1 opacity-40" />
-                            <p className="text-xs">No notifications yet</p>
-                          </div>
-                        ) : (
-                          <div className="divide-y divide-border/20">
-                            {notifItems.map((n) => {
-                              const cfg = notifTypeConfig[n.type];
-                              const Icon = cfg.icon;
-                              return (
-                                <button
-                                  key={n.id}
-                                  onClick={() => { if (n.link) { window.location.href = n.link; } }}
-                                  className="flex items-start gap-2.5 w-full px-3 py-2.5 hover:bg-muted/40 transition-colors text-left"
-                                >
-                                  <div className={`mt-0.5 ${cfg.color}`}>
-                                    <Icon className="w-3.5 h-3.5" />
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${cfg.color}`}>
-                                      {cfg.label}
-                                    </span>
-                                    <p className="text-xs font-medium text-foreground truncate">{n.title}</p>
-                                    <p className="text-[11px] text-muted-foreground truncate">{n.message}</p>
-                                    <p className="text-[9px] text-muted-foreground mt-0.5">
-                                      {n.time ? formatDistanceToNow(new Date(n.time), { addSuffix: true }) : ""}
-                                    </p>
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    {isWriter && (
-                      <DropdownMenuItem onClick={() => navigate("/writer")}>
-                        <PenLine className="w-4 h-4 mr-2" />
-                        Writers Portal
+                      </div>
+                    </div>
+
+                    <div className="p-1.5 space-y-0.5">
+                      <DropdownMenuItem
+                        onClick={() => navigate("/dashboard")}
+                        className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
+                      >
+                        <LayoutDashboard className="w-4 h-4 mr-2.5 text-primary" />
+                        <span className="text-sm">Dashboard</span>
                       </DropdownMenuItem>
-                    )}
-                    {isAdmin && (
-                      <DropdownMenuItem onClick={() => navigate("/admin")}>
-                        <Shield className="w-4 h-4 mr-2" />
-                        Admin Portal
+
+                      <DropdownMenuSub onOpenChange={(open) => { if (open) fetchNotifs(); }}>
+                        <DropdownMenuSubTrigger className="flex items-center rounded-lg px-2 py-1.5 text-sm cursor-default hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors">
+                          <Bell className="w-4 h-4 mr-2.5 text-secondary" />
+                          Notifications
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent className="w-72 max-h-[420px] overflow-y-auto bg-card/95 backdrop-blur-xl border border-primary/20 shadow-elevation-high rounded-xl p-0">
+                          <div className="px-3 py-2.5 border-b border-border/30 bg-gradient-to-r from-primary/10 to-transparent">
+                            <p className="text-xs font-bold text-foreground">Notifications</p>
+                            <p className="text-[10px] text-muted-foreground">Recent alerts, streams & stories</p>
+                          </div>
+                          {notifLoading ? (
+                            <div className="flex items-center justify-center py-6">
+                              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                            </div>
+                          ) : notifItems.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                              <Bell className="w-5 h-5 mb-1 opacity-40" />
+                              <p className="text-xs">No notifications yet</p>
+                            </div>
+                          ) : (
+                            <div className="divide-y divide-border/20">
+                              {notifItems.map((n) => {
+                                const cfg = notifTypeConfig[n.type];
+                                const Icon = cfg.icon;
+                                return (
+                                  <button
+                                    key={n.id}
+                                    onClick={() => { if (n.link) { window.location.href = n.link; } }}
+                                    className="flex items-start gap-2.5 w-full px-3 py-2.5 hover:bg-primary/5 transition-colors text-left"
+                                  >
+                                    <div className={`mt-0.5 ${cfg.color}`}>
+                                      <Icon className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <span className={`text-[10px] font-semibold uppercase tracking-wide ${cfg.color}`}>
+                                        {cfg.label}
+                                      </span>
+                                      <p className="text-xs font-medium text-foreground truncate">{n.title}</p>
+                                      <p className="text-[11px] text-muted-foreground truncate">{n.message}</p>
+                                      <p className="text-[9px] text-muted-foreground mt-0.5">
+                                        {n.time ? formatDistanceToNow(new Date(n.time), { addSuffix: true }) : ""}
+                                      </p>
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </DropdownMenuSubContent>
+                      </DropdownMenuSub>
+
+                      {isWriter && (
+                        <DropdownMenuItem
+                          onClick={() => navigate("/writer")}
+                          className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
+                        >
+                          <PenLine className="w-4 h-4 mr-2.5 text-purple-400" />
+                          <span className="text-sm">Writers Portal</span>
+                        </DropdownMenuItem>
+                      )}
+                      {isAdmin && (
+                        <DropdownMenuItem
+                          onClick={() => navigate("/admin")}
+                          className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
+                        >
+                          <Shield className="w-4 h-4 mr-2.5 text-destructive" />
+                          <span className="text-sm">Admin Portal</span>
+                        </DropdownMenuItem>
+                      )}
+                    </div>
+
+                    <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-1" />
+
+                    <div className="p-1.5 pb-2">
+                      <DropdownMenuItem
+                        onClick={handleAuthClick}
+                        className="rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive transition-colors"
+                      >
+                        <LogOut className="w-4 h-4 mr-2.5" />
+                        <span className="text-sm">Sign Out</span>
                       </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleAuthClick}>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </DropdownMenuItem>
+                    </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </>
