@@ -198,6 +198,12 @@ const Index = () => {
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
+            <RelatedStreamsSection />
+          </Suspense>
+        </LazySection>
+
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
             <RegularSeasonSeriesSection />
           </Suspense>
         </LazySection>
