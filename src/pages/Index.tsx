@@ -15,6 +15,7 @@ const ImmersiveBackground = lazyWithRetry(() => import("@/components/ImmersiveBa
 const FreeTrialExpiryBanner = lazyWithRetry(() => import("@/components/FreeTrialExpiryBanner"), "home-free-trial-expiry-banner");
 const LiveNetworks = lazyWithRetry(() => import("@/components/LiveNetworks"), "home-live-networks");
 const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section");
+const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedStreamsSection"), "home-related-streams-section");
 
 const SpringTrainingGamesSection = lazyWithRetry(() => import("@/components/SpringTrainingGamesSection"), "home-spring-training-games-section");
 const GameHighlightsSection = lazyWithRetry(() => import("@/components/GameHighlightsSection"), "home-game-highlights-section");
