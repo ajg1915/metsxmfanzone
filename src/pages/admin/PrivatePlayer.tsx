@@ -8,29 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tv, Save, Eye, ExternalLink } from "lucide-react";
-
-export const PRIVATE_PLAYER_SETTING_KEY = "admin_private_player";
-
-export type PrivatePlayerConfig = {
-  enabled: boolean;
-  title: string;
-  iframeUrl: string;
-  rawEmbed: string; // optional raw <iframe ...> HTML
-};
-
-export const PRIVATE_PLAYER_DEFAULTS: PrivatePlayerConfig = {
-  enabled: true,
-  title: "Admin Private Player",
-  iframeUrl: "",
-  rawEmbed: "",
-};
-
-// Extract src="..." from a raw <iframe ...> HTML snippet.
-export const extractIframeSrc = (raw: string): string | null => {
-  if (!raw) return null;
-  const match = raw.match(/<iframe[^>]*\ssrc=["']([^"']+)["']/i);
-  return match?.[1] ?? null;
-};
+import {
+  PRIVATE_PLAYER_DEFAULTS,
+  PRIVATE_PLAYER_SETTING_KEY,
+  getPrivatePlayerIframeUrl,
+  getPrivatePlayerSourceError,
+  type PrivatePlayerConfig,
+} from "@/lib/privatePlayer";
 
 export default function PrivatePlayer() {
   const [cfg, setCfg] = useState<PrivatePlayerConfig>(PRIVATE_PLAYER_DEFAULTS);
@@ -72,7 +56,8 @@ export default function PrivatePlayer() {
   const set = <K extends keyof PrivatePlayerConfig>(k: K, v: PrivatePlayerConfig[K]) =>
     setCfg((c) => ({ ...c, [k]: v }));
 
-  const effectiveUrl = cfg.iframeUrl.trim() || extractIframeSrc(cfg.rawEmbed) || "";
+  const effectiveUrl = getPrivatePlayerIframeUrl(cfg);
+  const sourceError = getPrivatePlayerSourceError(cfg);
 
   if (loading) return <div className="p-6 text-muted-foreground">Loading…</div>;
 
@@ -105,12 +90,12 @@ export default function PrivatePlayer() {
           <div className="space-y-2">
             <Label>Iframe URL</Label>
             <Input
-              placeholder="https://example.com/embed/your-stream"
+              placeholder='https://example.com/embed/your-stream or <iframe src="https://..."></iframe>'
               value={cfg.iframeUrl}
               onChange={(e) => set("iframeUrl", e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              Direct URL to embed. Leave blank if you're pasting the full &lt;iframe&gt; snippet below.
+              You can paste a direct embed URL or the full &lt;iframe&gt; code here.
             </p>
           </div>
 
@@ -123,7 +108,7 @@ export default function PrivatePlayer() {
               onChange={(e) => set("rawEmbed", e.target.value)}
             />
             <p className="text-xs text-muted-foreground">
-              We extract the <code>src</code> and render it in a safe sandboxed iframe.
+              If you paste iframe code in either box, the player will automatically use its <code>src</code>.
             </p>
           </div>
 
@@ -148,13 +133,18 @@ export default function PrivatePlayer() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {effectiveUrl ? (
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black ring-1 ring-border">
+          {sourceError ? (
+            <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
+              {sourceError}
+            </div>
+          ) : effectiveUrl ? (
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-background ring-1 ring-border">
               <iframe
                 src={effectiveUrl}
                 className="absolute inset-0 w-full h-full"
                 allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
                 allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
                 title={cfg.title}
               />
             </div>
