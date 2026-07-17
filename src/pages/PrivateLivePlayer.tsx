@@ -5,9 +5,10 @@ import { Tv, Lock } from "lucide-react";
 import {
   PRIVATE_PLAYER_SETTING_KEY,
   PRIVATE_PLAYER_DEFAULTS,
-  extractIframeSrc,
+  getPrivatePlayerIframeUrl,
+  getPrivatePlayerSourceError,
   type PrivatePlayerConfig,
-} from "@/pages/admin/PrivatePlayer";
+} from "@/lib/privatePlayer";
 
 export default function PrivateLivePlayer() {
   const navigate = useNavigate();
@@ -66,7 +67,8 @@ export default function PrivateLivePlayer() {
     );
   }
 
-  const effectiveUrl = cfg.iframeUrl.trim() || extractIframeSrc(cfg.rawEmbed) || "";
+  const effectiveUrl = getPrivatePlayerIframeUrl(cfg);
+  const sourceError = getPrivatePlayerSourceError(cfg);
 
   return (
     <div className="min-h-screen bg-background">
@@ -87,13 +89,22 @@ export default function PrivateLivePlayer() {
             </a>
             .
           </div>
+        ) : sourceError ? (
+          <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-8 text-center text-destructive">
+            {sourceError} Update it in{" "}
+            <a href="/admin/private-player" className="underline">
+              Admin → Private Player
+            </a>
+            .
+          </div>
         ) : effectiveUrl ? (
-          <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-black ring-1 ring-border shadow-2xl shadow-primary/10">
+          <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-background ring-1 ring-border shadow-2xl shadow-primary/10">
             <iframe
               src={effectiveUrl}
               className="absolute inset-0 w-full h-full"
               allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
               allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
               title={cfg.title}
             />
           </div>
