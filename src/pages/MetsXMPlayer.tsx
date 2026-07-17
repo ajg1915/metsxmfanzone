@@ -28,11 +28,13 @@ function loadHls(): Promise<any> {
   });
 }
 
+const DEFAULT_STREAM_URL = "http://173.56.47.85:8080/hls/metsxmfanzone.m3u8";
+
 export default function MetsXMPlayer() {
   const [params] = useSearchParams();
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<any>(null);
-  const [streamUrl, setStreamUrl] = useState<string | null>(params.get("src"));
+  const [streamUrl, setStreamUrl] = useState<string | null>(params.get("src") || DEFAULT_STREAM_URL);
   const [title, setTitle] = useState("MetsXMFanZone Live");
   const [description, setDescription] = useState("Watch the Mets game live!");
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
