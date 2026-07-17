@@ -45,6 +45,8 @@ const PostsManagement = lazyWithRetry(() => import("./pages/admin/PostsManagemen
 const UserRoles = lazyWithRetry(() => import("./pages/admin/UserRoles"), "page-admin-user-roles");
 const AdminSettings = lazyWithRetry(() => import("./pages/admin/AdminSettings"), "page-admin-settings");
 const WelcomeScreenManagement = lazyWithRetry(() => import("./pages/admin/WelcomeScreenManagement"), "page-admin-welcome-screen");
+const PrivatePlayer = lazyWithRetry(() => import("./pages/admin/PrivatePlayer"), "page-admin-private-player");
+const PrivateLivePlayer = lazyWithRetry(() => import("./pages/PrivateLivePlayer"), "page-private-live-player");
 const BlogManagement = lazyWithRetry(() => import("./pages/admin/BlogManagement"), "page-admin-blog-management");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
 const PodcastManagement = lazyWithRetry(() => import("./pages/admin/PodcastManagement"), "page-admin-podcast-management");
