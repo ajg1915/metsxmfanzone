@@ -33,6 +33,7 @@ const streamingItems = [
   { title: "Live Streams", url: "/admin/live-streams", icon: Radio },
   { title: "Stream Health", url: "/admin/stream-health", icon: HeartPulse },
   { title: "Stream Tester", url: "/admin/stream-tester", icon: Activity },
+  { title: "Private Player", url: "/admin/private-player", icon: Monitor },
   { title: "Radio Network", url: "/admin/gameday-live", icon: Sparkles },
   { title: "Podcast Live", url: "/admin/podcast-live-stream", icon: Mic },
 ];
