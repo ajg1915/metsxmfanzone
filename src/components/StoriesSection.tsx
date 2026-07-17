@@ -94,7 +94,7 @@ const StoriesSection = () => {
       // Stories bucket is public — use getPublicUrl instead of signed URLs (no network requests!)
       const storiesWithUrls = (data || []).map((story) => {
         let publicMediaUrl: string | null = null;
-        if (story.media_url) {
+        if (story.media_url && typeof story.media_url === 'string') {
           const fileName = story.media_url.split('/stories/')[1] || story.media_url;
           const { data: urlData } = supabase.storage
             .from('stories')
@@ -102,8 +102,8 @@ const StoriesSection = () => {
           publicMediaUrl = urlData?.publicUrl || story.media_url;
         }
 
-        let thumbnailUrl = story.thumbnail_url;
-        if (thumbnailUrl) {
+        let thumbnailUrl: string | null = story.thumbnail_url ?? null;
+        if (thumbnailUrl && typeof thumbnailUrl === 'string') {
           const thumbFileName = thumbnailUrl.split('/stories/')[1] || thumbnailUrl;
           const { data: thumbData } = supabase.storage
             .from('stories')
