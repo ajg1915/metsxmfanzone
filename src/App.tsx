@@ -354,6 +354,7 @@ const AppContent = () => {
             <Route path="/legal/admin-setup" element={<AdminSetup />} />
             <Route path="/admin-portal" element={<AdminPortal />} />
             <Route path="/private-player" element={<PrivateLivePlayer />} />
+            <Route path="/metsxm-player" element={<MetsXMPlayer />} />
             <Route path="/admin-pin-reset" element={<AdminPinReset />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
