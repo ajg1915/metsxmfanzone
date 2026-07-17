@@ -1,3 +1,4 @@
+// hls-proxy v2: force https rewrite
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
 const ORIGIN = 'http://173.56.47.85:8080';
