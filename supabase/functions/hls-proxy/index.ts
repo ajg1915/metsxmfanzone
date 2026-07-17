@@ -1,3 +1,4 @@
+// hls-proxy v2: force https rewrite
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 
 const ORIGIN = 'http://173.56.47.85:8080';
@@ -46,7 +47,8 @@ Deno.serve(async (req) => {
     if (isPlaylist) {
       const text = await upstreamRes.text();
       const upstreamUrl = new URL(upstream);
-      const selfBase = `${url.origin}${url.pathname.slice(0, idx + '/hls-proxy'.length)}`;
+      const sbUrl = Deno.env.get('SUPABASE_URL') || `${url.protocol}//${url.host}`;
+      const selfBase = `${sbUrl.replace(/\/$/, '')}/functions/v1/hls-proxy`;
 
       const rewritten = text
         .split('\n')
