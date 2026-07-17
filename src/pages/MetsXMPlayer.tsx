@@ -28,7 +28,9 @@ function loadHls(): Promise<any> {
   });
 }
 
-const DEFAULT_STREAM_URL = "http://173.56.47.85:8080/hls/metsxmfanzone.m3u8";
+// Proxied through Lovable Cloud so HTTPS pages can play the HTTP origin without mixed-content blocking.
+const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+const DEFAULT_STREAM_URL = `https://${PROJECT_ID}.supabase.co/functions/v1/hls-proxy/hls/metsxmfanzone.m3u8`;
 
 export default function MetsXMPlayer() {
   const [params] = useSearchParams();
