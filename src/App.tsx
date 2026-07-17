@@ -47,6 +47,7 @@ const AdminSettings = lazyWithRetry(() => import("./pages/admin/AdminSettings"),
 const WelcomeScreenManagement = lazyWithRetry(() => import("./pages/admin/WelcomeScreenManagement"), "page-admin-welcome-screen");
 const PrivatePlayer = lazyWithRetry(() => import("./pages/admin/PrivatePlayer"), "page-admin-private-player");
 const PrivateLivePlayer = lazyWithRetry(() => import("./pages/PrivateLivePlayer"), "page-private-live-player");
+const MetsXMPlayer = lazyWithRetry(() => import("./pages/MetsXMPlayer"), "page-metsxm-player");
 const BlogManagement = lazyWithRetry(() => import("./pages/admin/BlogManagement"), "page-admin-blog-management");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
 const PodcastManagement = lazyWithRetry(() => import("./pages/admin/PodcastManagement"), "page-admin-podcast-management");
@@ -353,6 +354,7 @@ const AppContent = () => {
             <Route path="/legal/admin-setup" element={<AdminSetup />} />
             <Route path="/admin-portal" element={<AdminPortal />} />
             <Route path="/private-player" element={<PrivateLivePlayer />} />
+            <Route path="/metsxm-player" element={<MetsXMPlayer />} />
             <Route path="/admin-pin-reset" element={<AdminPinReset />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
