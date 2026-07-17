@@ -45,6 +45,8 @@ const PostsManagement = lazyWithRetry(() => import("./pages/admin/PostsManagemen
 const UserRoles = lazyWithRetry(() => import("./pages/admin/UserRoles"), "page-admin-user-roles");
 const AdminSettings = lazyWithRetry(() => import("./pages/admin/AdminSettings"), "page-admin-settings");
 const WelcomeScreenManagement = lazyWithRetry(() => import("./pages/admin/WelcomeScreenManagement"), "page-admin-welcome-screen");
+const PrivatePlayer = lazyWithRetry(() => import("./pages/admin/PrivatePlayer"), "page-admin-private-player");
+const PrivateLivePlayer = lazyWithRetry(() => import("./pages/PrivateLivePlayer"), "page-private-live-player");
 const BlogManagement = lazyWithRetry(() => import("./pages/admin/BlogManagement"), "page-admin-blog-management");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
 const PodcastManagement = lazyWithRetry(() => import("./pages/admin/PodcastManagement"), "page-admin-podcast-management");
@@ -350,6 +352,7 @@ const AppContent = () => {
             <Route path="/business-partner" element={<BusinessPartner />} />
             <Route path="/legal/admin-setup" element={<AdminSetup />} />
             <Route path="/admin-portal" element={<AdminPortal />} />
+            <Route path="/private-player" element={<PrivateLivePlayer />} />
             <Route path="/admin-pin-reset" element={<AdminPinReset />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
@@ -389,6 +392,7 @@ const AppContent = () => {
               <Route path="polls" element={<PollManagement />} />
               <Route path="settings" element={<AdminSettings />} />
               <Route path="welcome-screen" element={<WelcomeScreenManagement />} />
+              <Route path="private-player" element={<PrivatePlayer />} />
               <Route path="social-media" element={<SocialMediaSettings />} />
               <Route path="tutorials" element={<TutorialManagement />} />
               <Route path="media-library" element={<MediaLibrary />} />
