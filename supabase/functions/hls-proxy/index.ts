@@ -46,9 +46,8 @@ Deno.serve(async (req) => {
     if (isPlaylist) {
       const text = await upstreamRes.text();
       const upstreamUrl = new URL(upstream);
-      const proto = req.headers.get('x-forwarded-proto') || 'https';
-      const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || url.host;
-      const selfBase = `${proto}://${host}${url.pathname.slice(0, idx + '/hls-proxy'.length)}`;
+      const sbUrl = Deno.env.get('SUPABASE_URL') || `${url.protocol}//${url.host}`;
+      const selfBase = `${sbUrl.replace(/\/$/, '')}/functions/v1/hls-proxy`;
 
       const rewritten = text
         .split('\n')
