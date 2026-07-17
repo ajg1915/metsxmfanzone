@@ -391,6 +391,7 @@ const AppContent = () => {
               <Route path="polls" element={<PollManagement />} />
               <Route path="settings" element={<AdminSettings />} />
               <Route path="welcome-screen" element={<WelcomeScreenManagement />} />
+              <Route path="private-player" element={<PrivatePlayer />} />
               <Route path="social-media" element={<SocialMediaSettings />} />
               <Route path="tutorials" element={<TutorialManagement />} />
               <Route path="media-library" element={<MediaLibrary />} />
