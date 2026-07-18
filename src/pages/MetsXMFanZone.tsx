@@ -10,7 +10,8 @@ import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Radio, Tv, Signal, Clock, MapPin, Users, Mic, Trophy, Swords, Calendar, Loader2, Home, Plane } from "lucide-react";
+import { Radio, Tv, Signal, Clock, MapPin, Users, Mic, Trophy, Swords, Calendar, Loader2, Home, Plane, Share2, Cast, Settings, Eye } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -97,61 +98,96 @@ const MetsXMFanZone = () => {
       <main className="flex-1 pt-12">
         {/* Ambient backdrop */}
         <div className="relative">
-          <div className="absolute inset-0 h-[460px] pointer-events-none overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-primary/5 to-transparent" />
+          <div className="absolute inset-0 h-[520px] pointer-events-none overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-secondary/10 to-transparent" />
             <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-secondary/20 rounded-full blur-3xl" />
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
           </div>
 
-          {/* Hero */}
-          <div className="container mx-auto px-3 sm:px-4 pt-5 pb-4 relative z-10 max-w-[1400px]">
-            <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5">
-              <div className="relative shrink-0 self-start">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30 p-1.5 ring-1 ring-primary/40">
-                  <img src={logo} alt="MetsXMFanZone" className="w-full h-full object-contain" />
-                </div>
-                <span className="absolute -bottom-1 -right-1 flex items-center gap-0.5 bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full text-[9px] font-bold shadow-lg animate-pulse">
-                  <span className="w-1 h-1 rounded-full bg-white" />
-                  LIVE
-                </span>
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground leading-[1.05] tracking-tight">
-                  MetsXMFanZone <span className="text-primary">TV</span>
-                </h1>
-                <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-                  The ultimate destination where the fans go.
-                </p>
-                <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-                  <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30 text-[10px] h-5">
-                    <Signal className="w-2.5 h-2.5 mr-1" /> Exclusive
-                  </Badge>
-                  <Badge variant="outline" className="border-muted-foreground/30 text-[10px] h-5">
-                    <Tv className="w-2.5 h-2.5 mr-1" /> HD
-                  </Badge>
-                  <Badge variant="outline" className="border-muted-foreground/30 text-[10px] h-5">
-                    <Clock className="w-2.5 h-2.5 mr-1" /> 24/7
-                  </Badge>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Player + Chat grid */}
-          <div className="container mx-auto px-3 sm:px-4 pb-8 relative z-10 max-w-[1400px]">
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px] gap-4 lg:gap-6">
+          {/* Player + Chat command-center grid */}
+          <div className="container mx-auto px-3 sm:px-4 pt-4 pb-8 relative z-10 max-w-[1400px]">
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px] gap-4 lg:gap-5">
               {/* Player + meta */}
-              <div className="space-y-4 min-w-0">
-                <div className="rounded-2xl overflow-hidden ring-1 ring-border/60 shadow-2xl shadow-primary/10 bg-card/80 backdrop-blur-xl">
-                  <div className="relative aspect-video w-full bg-black">
-                    <ClapprPlayer
-                      pageTitle="MetsXMFanZone Live Stream"
-                      pageDescription="Ultimate Destination Where the Fans Go"
-                      showChrome={false}
-                    />
-                    <NewPostAlert />
+              <div className="flex flex-col gap-4 min-w-0">
+                {/* 16:9 Player */}
+                <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden border border-border/60 shadow-2xl shadow-primary/10 group">
+                  <ClapprPlayer
+                    pageTitle="MetsXMFanZone Live Stream"
+                    pageDescription="Ultimate Destination Where the Fans Go"
+                    showChrome={false}
+                  />
+                  <NewPostAlert />
+                </div>
+
+                {/* Metadata & Quick Actions Row */}
+                <div className="bg-secondary/90 backdrop-blur-md border border-border/60 rounded-xl p-4 sm:p-5 flex flex-col gap-4">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    {/* Left: title + badges */}
+                    <div className="flex flex-col gap-2 min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary text-primary-foreground text-[10px] font-extrabold rounded uppercase tracking-tighter">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                          Live
+                        </span>
+                        <span className="px-2 py-0.5 bg-white/10 text-[10px] font-bold text-white/70 rounded uppercase tracking-tighter">HD</span>
+                        <span className="px-2 py-0.5 bg-white/10 text-[10px] font-bold text-white/70 rounded uppercase tracking-tighter">24/7</span>
+                        <span className="px-2 py-0.5 bg-white/10 text-[10px] font-bold text-white/70 rounded uppercase tracking-tighter inline-flex items-center gap-1">
+                          <Signal className="w-2.5 h-2.5" /> Exclusive
+                        </span>
+                        <span className="ml-1 inline-flex items-center gap-1.5 text-white/60 text-[11px]">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span className="font-medium tabular-nums">Live now</span>
+                        </span>
+                      </div>
+                      <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-snug">
+                        MetsXMFanZone <span className="text-primary">TV</span> — Ultimate Destination Where the Fans Go
+                      </h1>
+                    </div>
+
+                    {/* Right: quick actions */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        onClick={async () => {
+                          const url = window.location.href;
+                          try {
+                            if (navigator.share) {
+                              await navigator.share({ title: 'MetsXMFanZone TV', url });
+                            } else {
+                              await navigator.clipboard.writeText(url);
+                              toast.success('Link copied');
+                            }
+                          } catch {}
+                        }}
+                        className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-xs font-semibold text-white transition-all"
+                      >
+                        <Share2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">Share</span>
+                      </button>
+                      <button
+                        onClick={() => toast.info('Tap the cast icon in the player controls')}
+                        className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all"
+                        aria-label="Cast"
+                      >
+                        <Cast className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => toast.info('Quality settings available in player menu')}
+                        className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white transition-all"
+                        aria-label="Settings"
+                      >
+                        <Settings className="w-5 h-5" />
+                      </button>
+                      <div className="h-8 w-px bg-white/10 mx-1" />
+                      <div className="flex gap-1.5">
+                        <button className="px-3 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-primary/20 hover:border-primary/40 border border-white/10 transition-all text-[10px] font-black tracking-wider text-white">
+                          LGM
+                        </button>
+                        <button className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-primary/20 hover:border-primary/40 border border-white/10 transition-all text-lg text-primary font-bold">
+                          !!
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
