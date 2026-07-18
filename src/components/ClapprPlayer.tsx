@@ -138,8 +138,11 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [needsUnmute, setNeedsUnmute] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [usingBackup, setUsingBackup] = useState(false);
 
-  const effectiveSource = source || FALLBACK_SOURCE;
+  const primarySource = source || FALLBACK_SOURCE;
+  const hasBackup = !!source && source !== FALLBACK_SOURCE;
+  const effectiveSource = usingBackup && hasBackup ? FALLBACK_SOURCE : primarySource;
 
   const handleUnmute = useCallback(() => {
     try {
@@ -153,6 +156,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
   const handleRetry = useCallback(() => {
     setStatus("loading");
+    setUsingBackup(false);
     setRetryKey((k) => k + 1);
   }, []);
 
@@ -199,7 +203,13 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             onError: (err: any) => {
               if (destroyed) return;
               console.error("[ClapprPlayer] error:", err);
-              setStatus("error");
+              if (hasBackup && !usingBackup) {
+                console.warn("[ClapprPlayer] primary failed, switching to backup HLS");
+                setUsingBackup(true);
+                setStatus("loading");
+              } else {
+                setStatus("error");
+              }
             },
           },
         });
@@ -257,6 +267,12 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         >
           <Volume2 className="w-3.5 h-3.5" /> Tap to unmute
         </button>
+      )}
+
+      {usingBackup && status === "ready" && (
+        <div className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/90 text-black text-[10px] font-bold backdrop-blur-md">
+          BACKUP FEED
+        </div>
       )}
     </div>
   );
