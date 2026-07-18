@@ -156,6 +156,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
   const handleRetry = useCallback(() => {
     setStatus("loading");
+    setUsingBackup(false);
     setRetryKey((k) => k + 1);
   }, []);
 
