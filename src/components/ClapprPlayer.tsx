@@ -201,8 +201,31 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           hlsjsConfig: {
             enableWorker: true,
             lowLatencyMode: true,
-            backBufferLength: 30,
+            backBufferLength: 10,
+            maxBufferLength: 8,
+            maxMaxBufferLength: 20,
+            maxBufferSize: 30 * 1000 * 1000,
+            liveSyncDurationCount: 2,
+            liveMaxLatencyDurationCount: 5,
+            liveDurationInfinity: true,
+            highBufferWatchdogPeriod: 1,
+            nudgeMaxRetry: 10,
+            manifestLoadingTimeOut: 8000,
+            manifestLoadingMaxRetry: 4,
+            levelLoadingTimeOut: 8000,
+            fragLoadingTimeOut: 12000,
+            startFragPrefetch: true,
+            progressive: true,
           },
+          playback: {
+            hlsjsConfig: {
+              enableWorker: true,
+              lowLatencyMode: true,
+              liveSyncDurationCount: 2,
+            },
+            preload: 'auto',
+安: true,
+          } as any,
           mediacontrol: { seekbar: "#E94560", buttons: "#E94560" },
           events: {
             onReady: () => {
