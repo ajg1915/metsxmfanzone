@@ -8,116 +8,114 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Mets Royal Blue and Orange Sports Theme */
-    --background: 225 70% 12%;
-    --foreground: 0 0% 98%;
+    /* Gameday Vibrant — Mets Royal Navy + Vivid Orange */
+    --background: 216 100% 12%;
+    --foreground: 36 100% 98%;
 
-    --card: 225 65% 16%;
-    --card-foreground: 0 0% 98%;
+    --card: 216 80% 16%;
+    --card-foreground: 36 100% 98%;
 
-    --popover: 225 65% 18%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 216 85% 18%;
+    --popover-foreground: 36 100% 98%;
 
-    /* Mets Orange - Primary (#ff4500 = hsl(16 100% 50%)) */
-    --primary: 16 100% 50%;
+    /* Primary: #ff5910 vivid Mets orange */
+    --primary: 17 100% 53%;
     --primary-foreground: 0 0% 100%;
 
-    /* Royal Blue - Secondary */
-    --secondary: 225 73% 50%;
+    /* Secondary: #1e5fbf bright royal blue */
+    --secondary: 214 73% 43%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 225 50% 22%;
-    --muted-foreground: 225 30% 75%;
+    --muted: 216 55% 22%;
+    --muted-foreground: 216 30% 78%;
 
-    --accent: 16 100% 50%;
+    --accent: 17 100% 53%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Mets Orange border accents (#ff4500) */
-    --border: 16 100% 50%;
-    --input: 16 100% 50%;
-    --ring: 16 100% 50%;
-    --input-foreground: 0 0% 100%;
+    --border: 214 73% 43%;
+    --input: 214 73% 43%;
+    --ring: 17 100% 53%;
+    --input-foreground: 36 100% 98%;
 
     --radius: 1rem;
 
-    /* Custom design tokens - Royal Blue Theme */
-    --mets-blue: 225 73% 57%;
-    --mets-blue-light: 225 70% 65%;
-    --mets-blue-dark: 225 75% 20%;
-    --mets-orange: 16 100% 50%;
-    --mets-orange-light: 16 100% 60%;
-    
-    /* Glass morphism tokens - royal blue */
-    --glass-bg: 225 65% 16% / 0.75;
-    --glass-border: 225 70% 55% / 0.3;
-    --glass-blur: 20px;
-    --glass-highlight: 0 0% 100% / 0.1;
-    
-    /* Depth & Shadow tokens */
-    --shadow-color: 225 70% 8%;
-    --shadow-elevation-low: 
-      0 1px 2px hsl(var(--shadow-color) / 0.3),
-      0 2px 4px hsl(var(--shadow-color) / 0.2);
-    --shadow-elevation-medium: 
-      0 2px 4px hsl(var(--shadow-color) / 0.3),
-      0 4px 8px hsl(var(--shadow-color) / 0.25),
-      0 8px 16px hsl(var(--shadow-color) / 0.2);
-    --shadow-elevation-high: 
-      0 4px 8px hsl(var(--shadow-color) / 0.25),
-      0 8px 16px hsl(var(--shadow-color) / 0.2),
-      0 16px 32px hsl(var(--shadow-color) / 0.15),
-      0 32px 64px hsl(var(--shadow-color) / 0.1);
-    
-    --hero-overlay: 225 70% 10% / 0.8;
-    --card-border: 225 73% 57%;
-    --gradient-hero: linear-gradient(135deg, hsl(225 70% 12%), hsl(225 65% 20%));
-    --gradient-card: linear-gradient(180deg, hsl(225 65% 18%), hsl(225 70% 14%));
-    --gradient-blue: linear-gradient(135deg, hsl(225 73% 50%), hsl(225 70% 60%));
-    --gradient-radial-blue: radial-gradient(ellipse at center, hsl(225 73% 45% / 0.4), transparent 70%);
-    --gradient-radial-orange: radial-gradient(ellipse at center, hsl(16 100% 50% / 0.2), transparent 70%);
-    --glow-blue: 0 0 60px hsl(225 73% 57% / 0.5);
-    --glow-orange: 0 0 60px hsl(16 100% 50% / 0.3);
-    --glow-subtle: 0 0 120px hsl(225 73% 50% / 0.2);
-    
-    --sidebar-background: 225 70% 14%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 50%;
+    --mets-blue: 214 73% 43%;
+    --mets-blue-light: 214 80% 60%;
+    --mets-blue-dark: 216 100% 12%;
+    --mets-orange: 17 100% 53%;
+    --mets-orange-light: 17 100% 63%;
+
+    --glass-bg: 216 80% 14% / 0.72;
+    --glass-border: 214 73% 55% / 0.35;
+    --glass-blur: 24px;
+    --glass-highlight: 36 100% 98% / 0.08;
+
+    --shadow-color: 216 100% 6%;
+    --shadow-elevation-low:
+      0 1px 2px hsl(var(--shadow-color) / 0.35),
+      0 2px 4px hsl(var(--shadow-color) / 0.25);
+    --shadow-elevation-medium:
+      0 2px 4px hsl(var(--shadow-color) / 0.35),
+      0 4px 8px hsl(var(--shadow-color) / 0.3),
+      0 8px 20px hsl(var(--shadow-color) / 0.25);
+    --shadow-elevation-high:
+      0 4px 10px hsl(var(--shadow-color) / 0.3),
+      0 12px 24px hsl(var(--shadow-color) / 0.25),
+      0 24px 48px hsl(var(--shadow-color) / 0.2),
+      0 40px 80px hsl(var(--shadow-color) / 0.15);
+
+    --hero-overlay: 216 100% 8% / 0.82;
+    --card-border: 214 73% 50%;
+    --gradient-hero: linear-gradient(135deg, hsl(216 100% 10%), hsl(214 73% 28%));
+    --gradient-card: linear-gradient(180deg, hsl(216 80% 18%), hsl(216 90% 12%));
+    --gradient-blue: linear-gradient(135deg, hsl(214 73% 43%), hsl(214 80% 58%));
+    --gradient-orange: linear-gradient(135deg, hsl(17 100% 53%), hsl(20 100% 62%));
+    --gradient-gameday: linear-gradient(135deg, hsl(216 100% 12%) 0%, hsl(214 73% 30%) 55%, hsl(17 100% 53%) 100%);
+    --gradient-radial-blue: radial-gradient(ellipse at center, hsl(214 73% 45% / 0.45), transparent 70%);
+    --gradient-radial-orange: radial-gradient(ellipse at center, hsl(17 100% 53% / 0.28), transparent 70%);
+    --glow-blue: 0 0 60px hsl(214 73% 55% / 0.55);
+    --glow-orange: 0 0 60px hsl(17 100% 53% / 0.4);
+    --glow-subtle: 0 0 120px hsl(214 73% 45% / 0.22);
+
+    --sidebar-background: 216 90% 14%;
+    --sidebar-foreground: 36 100% 98%;
+    --sidebar-primary: 17 100% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 73% 50%;
+    --sidebar-accent: 214 73% 43%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 16 100% 50%;
-    --sidebar-ring: 16 100% 50%;
+    --sidebar-border: 17 100% 53%;
+    --sidebar-ring: 17 100% 53%;
   }
 
   .dark {
-    --background: 225 70% 12%;
-    --foreground: 0 0% 98%;
-    --card: 225 65% 16%;
-    --card-foreground: 0 0% 98%;
-    --popover: 225 65% 18%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 16 100% 50%;
+    --background: 216 100% 12%;
+    --foreground: 36 100% 98%;
+    --card: 216 80% 16%;
+    --card-foreground: 36 100% 98%;
+    --popover: 216 85% 18%;
+    --popover-foreground: 36 100% 98%;
+    --primary: 17 100% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 225 73% 50%;
+    --secondary: 214 73% 43%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 225 50% 22%;
-    --muted-foreground: 225 30% 75%;
-    --accent: 16 100% 50%;
+    --muted: 216 55% 22%;
+    --muted-foreground: 216 30% 78%;
+    --accent: 17 100% 53%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 16 100% 50%;
-    --input: 16 100% 50%;
-    --ring: 16 100% 50%;
-    --input-foreground: 0 0% 100%;
-    --sidebar-background: 225 70% 14%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 16 100% 50%;
+    --border: 214 73% 43%;
+    --input: 214 73% 43%;
+    --ring: 17 100% 53%;
+    --input-foreground: 36 100% 98%;
+    --sidebar-background: 216 90% 14%;
+    --sidebar-foreground: 36 100% 98%;
+    --sidebar-primary: 17 100% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 225 73% 50%;
+    --sidebar-accent: 214 73% 43%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 16 100% 50%;
     --sidebar-ring: 16 100% 50%;

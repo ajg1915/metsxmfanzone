@@ -21,13 +21,13 @@ export type GateConfig = {
 
 export const GATE_DEFAULTS: GateConfig = {
   enabled: true,
-  title: "Best viewed on mobile",
+  title: "Built for your phone",
   subtitle:
-    "MetsXMFanZone is optimized for the mobile experience. For the best experience, please open this site on your phone.",
-  note: "Prefer to continue on desktop? Choose an option below.",
-  primaryLabel: "Continue to Home",
+    "MetsXMFanZone is a mobile-first experience — live streams, stories, gameday chat and highlights all feel best on your phone.",
+  note: "Grab your phone and open metsxmfanzone.com — or continue on desktop with the classic look below.",
+  primaryLabel: "Continue on Desktop",
   primaryUrl: "/",
-  secondaryLabel: "Login",
+  secondaryLabel: "Sign In",
   secondaryUrl: "/auth",
 };
 
