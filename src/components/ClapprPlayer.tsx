@@ -254,6 +254,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
     return () => {
       destroyed = true;
+      if (autoplayCheckTimer) window.clearTimeout(autoplayCheckTimer);
       if (cleanupIos) cleanupIos();
       if (playerRef.current) {
         try { playerRef.current.destroy(); } catch {}
