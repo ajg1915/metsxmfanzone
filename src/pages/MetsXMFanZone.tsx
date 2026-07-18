@@ -108,6 +108,11 @@ const MetsXMFanZone = () => {
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px] gap-4 lg:gap-5">
               {/* Player + meta */}
               <div className="flex flex-col gap-4 min-w-0">
+                {/* MLB Live Scores Ticker (scrolls left, above player) */}
+                <div className="rounded-xl overflow-hidden border border-border/60 shadow-lg shadow-primary/10">
+                  <MLBScoresTicker />
+                </div>
+
                 {/* 16:9 Player */}
                 <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden border border-border/60 shadow-2xl shadow-primary/10 group">
                   <ClapprPlayer
