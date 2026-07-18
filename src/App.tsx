@@ -298,8 +298,10 @@ const AppContent = () => {
         <ForceNotificationPrompt />
         <SweepstakesWheel />
         <DesktopWelcomeGate />
+        <UpdatePrompt />
         
         <Suspense fallback={<PageLoader />}>
+
           <Routes>
 
 
