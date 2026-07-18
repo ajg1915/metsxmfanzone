@@ -137,6 +137,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const playerRef = useRef<any>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [needsUnmute, setNeedsUnmute] = useState(false);
+  const [needsTap, setNeedsTap] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [usingBackup, setUsingBackup] = useState(false);
 
@@ -151,6 +152,17 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       p.setVolume?.(100);
       p.play?.();
       setNeedsUnmute(false);
+    } catch {}
+  }, []);
+
+  const handleTapPlay = useCallback(() => {
+    try {
+      const p = playerRef.current;
+      if (!p) return;
+      p.play?.();
+      const v = containerRef.current?.querySelector("video") as HTMLVideoElement | null;
+      v?.play?.().catch(() => {});
+      setNeedsTap(false);
     } catch {}
   }, []);
 
