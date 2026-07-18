@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { ClapprPlayer } from "@/components/ClapprPlayer";
+import { MLBScoresTicker } from "@/components/MLBScoresTicker";
 import { NewPostAlert } from "@/components/NewPostAlert";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
 import LiveStreamChat from "@/components/LiveStreamChat";
