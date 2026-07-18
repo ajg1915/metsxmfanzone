@@ -134,8 +134,15 @@ export const UpdatePrompt = () => {
       showUpdateToast();
     };
 
+    const handleSwMessage = (event: MessageEvent) => {
+      if (event?.data?.type === "SW_UPDATED") {
+        showUpdateToast();
+      }
+    };
+
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.addEventListener("controllerchange", handleControllerChange);
+      navigator.serviceWorker.addEventListener("message", handleSwMessage);
     }
 
     return () => {
@@ -143,11 +150,13 @@ export const UpdatePrompt = () => {
       if (intervalId) window.clearInterval(intervalId);
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.removeEventListener("controllerchange", handleControllerChange);
+        navigator.serviceWorker.removeEventListener("message", handleSwMessage);
       }
     };
   }, []);
 
   return null;
 };
+
 
 export default UpdatePrompt;
