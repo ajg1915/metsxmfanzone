@@ -218,13 +218,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             progressive: true,
           },
           playback: {
-            hlsjsConfig: {
-              enableWorker: true,
-              lowLatencyMode: true,
-              liveSyncDurationCount: 2,
-            },
             preload: 'auto',
-安: true,
+            hlsMinimumDvrSize: 0,
           } as any,
           mediacontrol: { seekbar: "#E94560", buttons: "#E94560" },
           events: {
