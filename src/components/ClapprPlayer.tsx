@@ -298,6 +298,21 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         </button>
       )}
 
+      {status === "ready" && needsTap && (
+        <button
+          onClick={handleTapPlay}
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-black/70 backdrop-blur-sm text-white transition-colors hover:bg-black/80"
+        >
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 animate-pulse">
+            <Play className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground ml-1" fill="currentColor" />
+          </div>
+          <p className="text-sm sm:text-base font-bold">Tap to play</p>
+          <p className="text-[11px] sm:text-xs text-white/70 max-w-[280px] text-center px-4">
+            Your browser blocked autoplay. Tap anywhere on the player to start the stream.
+          </p>
+        </button>
+      )}
+
       {usingBackup && status === "ready" && (
         <div className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/90 text-black text-[10px] font-bold backdrop-blur-md">
           BACKUP FEED
