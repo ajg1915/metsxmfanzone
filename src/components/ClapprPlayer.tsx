@@ -209,10 +209,24 @@ export const ClapprPlayer = memo(function ClapprPlayer({
               if (destroyed) return;
               setStatus("ready");
               setNeedsUnmute(true);
+              // If autoplay is blocked, video stays paused — prompt a tap.
+              autoplayCheckTimer = window.setTimeout(() => {
+                if (destroyed) return;
+                const v = containerRef.current?.querySelector("video") as HTMLVideoElement | null;
+                if (v && v.paused) {
+                  v.play().catch(() => setNeedsTap(true));
+                  // Re-check shortly after
+                  window.setTimeout(() => {
+                    if (destroyed) return;
+                    if (v.paused) setNeedsTap(true);
+                  }, 800);
+                }
+              }, 1500);
             },
             onPlay: () => {
               if (destroyed) return;
               setStatus("ready");
+              setNeedsTap(false);
             },
             onError: (err: any) => {
               if (destroyed) return;
