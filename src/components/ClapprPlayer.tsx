@@ -177,8 +177,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
     let destroyed = false;
     let cleanupIos: (() => void) | null = null;
+    let autoplayCheckTimer: number | undefined;
     setStatus("loading");
     setNeedsUnmute(false);
+    setNeedsTap(false);
 
     const init = async () => {
       if (destroyed || !containerRef.current) return;
