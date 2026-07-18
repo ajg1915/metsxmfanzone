@@ -19,6 +19,8 @@ import { TVModeWrapper } from "@/components/TVModeWrapper";
 import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
 import { DesktopWelcomeGate } from "@/components/DesktopWelcomeGate";
+import { UpdatePrompt } from "@/components/UpdatePrompt";
+
 
 
 import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
@@ -296,8 +298,10 @@ const AppContent = () => {
         <ForceNotificationPrompt />
         <SweepstakesWheel />
         <DesktopWelcomeGate />
+        <UpdatePrompt />
         
         <Suspense fallback={<PageLoader />}>
+
           <Routes>
 
 

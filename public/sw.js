@@ -6,15 +6,27 @@ self.addEventListener('install', () => {
   self.skipWaiting();
 });
 
-// Activate - destroy ALL caches immediately
+// Activate - destroy ALL caches immediately and notify clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((names) =>
-      Promise.all(names.map((name) => caches.delete(name)))
-    )
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((name) => caches.delete(name)));
+      await self.clients.claim();
+
+      // Tell every open client that a new version is active so it can prompt for refresh
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      clients.forEach((client) => {
+        try {
+          client.postMessage({ type: 'SW_UPDATED', version: 'v4' });
+        } catch (e) {
+          // Ignore clients that can't receive messages
+        }
+      });
+    })()
   );
-  self.clients.claim();
 });
+
 
 // Fetch - ALWAYS go to network, never cache anything
 self.addEventListener('fetch', (event) => {
