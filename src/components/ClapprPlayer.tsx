@@ -268,6 +268,12 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           <Volume2 className="w-3.5 h-3.5" /> Tap to unmute
         </button>
       )}
+
+      {usingBackup && status === "ready" && (
+        <div className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/90 text-black text-[10px] font-bold backdrop-blur-md">
+          BACKUP FEED
+        </div>
+      )}
     </div>
   );
 });
