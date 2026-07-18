@@ -1,6 +1,6 @@
 import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Clappr from "@clappr/player";
-import { Loader2, AlertCircle, RotateCw, Volume2 } from "lucide-react";
+import { Loader2, AlertCircle, RotateCw, Volume2, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
 
 interface ClapprPlayerProps {
@@ -137,6 +137,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const playerRef = useRef<any>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [needsUnmute, setNeedsUnmute] = useState(false);
+  const [needsTap, setNeedsTap] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [usingBackup, setUsingBackup] = useState(false);
 
@@ -154,6 +155,17 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     } catch {}
   }, []);
 
+  const handleTapPlay = useCallback(() => {
+    try {
+      const p = playerRef.current;
+      if (!p) return;
+      p.play?.();
+      const v = containerRef.current?.querySelector("video") as HTMLVideoElement | null;
+      v?.play?.().catch(() => {});
+      setNeedsTap(false);
+    } catch {}
+  }, []);
+
   const handleRetry = useCallback(() => {
     setStatus("loading");
     setUsingBackup(false);
@@ -165,8 +177,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
     let destroyed = false;
     let cleanupIos: (() => void) | null = null;
+    let autoplayCheckTimer: number | undefined;
     setStatus("loading");
     setNeedsUnmute(false);
+    setNeedsTap(false);
 
     const init = async () => {
       if (destroyed || !containerRef.current) return;
@@ -195,10 +209,24 @@ export const ClapprPlayer = memo(function ClapprPlayer({
               if (destroyed) return;
               setStatus("ready");
               setNeedsUnmute(true);
+              // If autoplay is blocked, video stays paused — prompt a tap.
+              autoplayCheckTimer = window.setTimeout(() => {
+                if (destroyed) return;
+                const v = containerRef.current?.querySelector("video") as HTMLVideoElement | null;
+                if (v && v.paused) {
+                  v.play().catch(() => setNeedsTap(true));
+                  // Re-check shortly after
+                  window.setTimeout(() => {
+                    if (destroyed) return;
+                    if (v.paused) setNeedsTap(true);
+                  }, 800);
+                }
+              }, 1500);
             },
             onPlay: () => {
               if (destroyed) return;
               setStatus("ready");
+              setNeedsTap(false);
             },
             onError: (err: any) => {
               if (destroyed) return;
@@ -226,6 +254,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
     return () => {
       destroyed = true;
+      if (autoplayCheckTimer) window.clearTimeout(autoplayCheckTimer);
       if (cleanupIos) cleanupIos();
       if (playerRef.current) {
         try { playerRef.current.destroy(); } catch {}
@@ -266,6 +295,21 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           className="absolute bottom-3 left-3 z-20 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-colors"
         >
           <Volume2 className="w-3.5 h-3.5" /> Tap to unmute
+        </button>
+      )}
+
+      {status === "ready" && needsTap && (
+        <button
+          onClick={handleTapPlay}
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-black/70 backdrop-blur-sm text-white transition-colors hover:bg-black/80"
+        >
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 animate-pulse">
+            <Play className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground ml-1" fill="currentColor" />
+          </div>
+          <p className="text-sm sm:text-base font-bold">Tap to play</p>
+          <p className="text-[11px] sm:text-xs text-white/70 max-w-[280px] text-center px-4">
+            Your browser blocked autoplay. Tap anywhere on the player to start the stream.
+          </p>
         </button>
       )}
 
