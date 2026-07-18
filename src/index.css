@@ -573,6 +573,28 @@ All colors MUST be HSL.
     object-fit: contain !important;
   }
 
+  /* ========================================
+     CLAPPR PLAYER — centered play button
+     ======================================== */
+  .clappr-player .play-wrapper,
+  [class*="clappr"] .play-wrapper,
+  .player-play-button,
+  .play-wrapper {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+  }
+
+  .clappr-player .play-wrapper svg,
+  .clappr-player .play-wrapper .play-button,
+  .player-play-button svg,
+  .play-wrapper svg {
+    display: block !important;
+    margin: 0 auto !important;
+  }
+
   .animate-scale-in {
     animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   }
