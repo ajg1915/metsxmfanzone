@@ -1,6 +1,6 @@
 import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Clappr from "@clappr/player";
-import { Loader2, AlertCircle, RotateCw, Volume2 } from "lucide-react";
+import { Loader2, AlertCircle, RotateCw, Volume2, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
 
 interface ClapprPlayerProps {
