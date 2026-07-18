@@ -999,10 +999,24 @@ All colors MUST be HSL.
    Placed unlayered at end of file so it beats
    Clappr's own injected stylesheet.
    ======================================== */
-.player-poster[data-poster] .play-wrapper[data-poster],
-.player-poster[data-poster] .play-wrapper[data-poster] svg,
-.player-poster[data-poster] .poster-icon,
-.player-poster[data-poster] [class*="playButton"],
-.player-poster[data-poster] [class*="play-button"] {
-  display: none !important;
+.player-poster[data-poster] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.player-poster[data-poster] .play-wrapper[data-poster] {
+  position: static !important;
+  width: auto !important;
+  height: 25% !important;
+  margin: 0 !important;
+  transform: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.player-poster[data-poster] .play-wrapper[data-poster] svg {
+  height: 100% !important;
+  width: auto !important;
+  display: block !important;
+  margin: 0 !important;
 }

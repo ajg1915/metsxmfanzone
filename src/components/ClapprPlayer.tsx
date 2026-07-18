@@ -181,21 +181,9 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           height: "100%",
           autoPlay: true,
           mute: true,
-          muted: true,
           chromeless: false, // always show controls so users can access fullscreen/volume/cast
           playInline: true,
           playsinline: true,
-          playback: {
-            playInline: true,
-            playsinline: true,
-            preload: "auto",
-            controls: false,
-            hlsjsConfig: {
-              enableWorker: true,
-              lowLatencyMode: true,
-              backBufferLength: 30,
-            },
-          },
           hlsjsConfig: {
             enableWorker: true,
             lowLatencyMode: true,
@@ -206,26 +194,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             onReady: () => {
               if (destroyed) return;
               setStatus("ready");
-              // Force playsinline + autoplay attrs on the underlying <video>
-              // so iOS Safari + strict autoplay policies accept muted autoplay.
-              const v = containerRef.current?.querySelector("video") as HTMLVideoElement | null;
-              if (v) {
-                v.setAttribute("playsinline", "true");
-                v.setAttribute("webkit-playsinline", "true");
-                v.setAttribute("autoplay", "true");
-                v.setAttribute("muted", "true");
-                (v as any).playsInline = true;
-                v.muted = true;
-                v.autoplay = true;
-                const p = v.play();
-                if (p && typeof p.catch === "function") {
-                  p.catch(() => {
-                    // Autoplay blocked — ensure muted and retry once.
-                    v.muted = true;
-                    v.play().catch(() => {});
-                  });
-                }
-              }
               setNeedsUnmute(true);
             },
             onPlay: () => {
