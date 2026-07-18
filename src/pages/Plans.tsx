@@ -49,16 +49,6 @@ const Plans = () => {
     }
   }, [mustSelectPlan, hasPlanSelected]);
 
-  // Pricing is for signed-out visitors and new signups only.
-  // Existing paid members get sent back to their dashboard.
-  useEffect(() => {
-    if (subscriptionLoading) return;
-    if (mustSelectPlan) return;
-    if (!user) return;
-    const isPaid = tier === "weekly" || tier === "premium" || tier === "annual";
-    if (isPaid) navigate("/dashboard", { replace: true });
-  }, [user, tier, subscriptionLoading, mustSelectPlan, navigate]);
-
   const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
     setCheckoutOpen(true);
