@@ -397,10 +397,14 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                     </div>
                     <div className="relative shrink-0">
                       <div className="absolute inset-0 bg-white/15 blur-xl" aria-hidden />
-                      <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md flex items-center justify-center border-2 border-white/15 shadow-2xl">
-                        <span className="text-xl sm:text-3xl font-black tracking-tighter text-white/80 drop-shadow">
-                          {lineupCard ? lineupCard.opponent.slice(0, 3).toUpperCase() : "—"}
-                        </span>
+                      <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md flex items-center justify-center border-2 border-white/15 shadow-2xl p-1.5 sm:p-2">
+                        {getTeamLogo(lineupCard?.opponent) ? (
+                          <img src={getTeamLogo(lineupCard?.opponent)} alt={lineupCard?.opponent || "Opponent"} className="w-full h-full object-contain drop-shadow" />
+                        ) : (
+                          <span className="text-xl sm:text-3xl font-black tracking-tighter text-white/80 drop-shadow">
+                            {lineupCard ? lineupCard.opponent.slice(0, 3).toUpperCase() : "—"}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
