@@ -56,7 +56,7 @@ All colors MUST be HSL.
     --glass-bg: 240 44% 14% / 0.7;
     --glass-border: 16 100% 50% / 0.35;
     --glass-blur: 22px;
-    --glass-highlight: 0 0% 100% / 0.08;
+    --glass-highlight: 16 100% 50% / 0.12;
 
     /* Depth & Shadow tokens */
     --shadow-color: 240 60% 4%;
@@ -288,7 +288,7 @@ All colors MUST be HSL.
     -webkit-backdrop-filter: blur(30px);
     border: 1px solid hsl(220 80% 40% / 0.3);
     box-shadow: 
-      inset 0 1px 0 0 hsl(0 0% 100% / 0.08),
+      inset 0 1px 0 0 hsl(var(--mets-orange) / 0.14),
       var(--shadow-elevation-high);
   }
   
@@ -302,7 +302,7 @@ All colors MUST be HSL.
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid hsl(220 80% 40% / 0.2);
     box-shadow: 
-      inset 0 1px 0 0 hsl(0 0% 100% / 0.05),
+      inset 0 1px 0 0 hsl(var(--mets-orange) / 0.1),
       0 8px 32px hsl(220 80% 5% / 0.4);
   }
   
@@ -1216,4 +1216,21 @@ All colors MUST be HSL.
 
 [class*="divide-white/"] > :not([hidden]) ~ :not([hidden]) {
   border-color: hsl(var(--mets-orange) / 0.4) !important;
+}
+
+/* Final hard stop: any visible border/ring/shadow highlight now reads Mets orange-red, never white. */
+:where(.border, .border-t, .border-r, .border-b, .border-l, .border-x, .border-y, [class*="border-"]):not(.border-transparent):not([class*="border-transparent"]) {
+  border-color: hsl(var(--mets-orange) / 0.62) !important;
+}
+
+:where(input, textarea, select, button, [role="button"]):not(.border-transparent):not([class*="border-transparent"]) {
+  border-color: hsl(var(--mets-orange) / 0.72) !important;
+}
+
+:where([class*="ring-white"], [class*="ring-slate"], [class*="ring-zinc"], [class*="ring-gray"], [class*="ring-neutral"]) {
+  --tw-ring-color: hsl(var(--mets-orange) / 0.55) !important;
+}
+
+:where(.glass, .glass-strong, .glass-card) {
+  border-color: hsl(var(--mets-orange) / 0.45) !important;
 }
