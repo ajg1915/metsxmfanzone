@@ -37,10 +37,10 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Softer, neutral borders — no more aggressive orange outlines */
-    --border: 240 40% 24% / 0.6;
-    --input: 240 40% 22%;
-    --ring: 243 75% 59%;
+    /* Mets orange-red borders across the site */
+    --border: 16 100% 50% / 0.55;
+    --input: 16 100% 50% / 0.35;
+    --ring: 16 100% 50%;
     --input-foreground: 0 0% 100%;
 
     --radius: 1rem;
@@ -54,7 +54,7 @@ All colors MUST be HSL.
 
     /* Glass morphism — indigo tinted */
     --glass-bg: 240 44% 14% / 0.7;
-    --glass-border: 243 60% 55% / 0.25;
+    --glass-border: 16 100% 50% / 0.35;
     --glass-blur: 22px;
     --glass-highlight: 0 0% 100% / 0.08;
 
@@ -74,7 +74,7 @@ All colors MUST be HSL.
       0 48px 96px hsl(var(--shadow-color) / 0.15);
 
     --hero-overlay: 240 60% 4% / 0.82;
-    --card-border: 243 60% 55%;
+    --card-border: 16 100% 50%;
     --gradient-hero: linear-gradient(135deg, hsl(240 47% 6%), hsl(240 51% 14%));
     --gradient-card: linear-gradient(180deg, hsl(240 44% 16%), hsl(240 47% 10%));
     --gradient-blue: linear-gradient(135deg, hsl(243 75% 59%), hsl(240 51% 40%));
@@ -90,7 +90,7 @@ All colors MUST be HSL.
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 243 75% 59%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 240 40% 20%;
+    --sidebar-border: 16 100% 50% / 0.4;
     --sidebar-ring: 243 75% 59%;
   }
 
@@ -111,9 +111,9 @@ All colors MUST be HSL.
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 40% 24% / 0.6;
-    --input: 240 40% 22%;
-    --ring: 243 75% 59%;
+    --border: 16 100% 50% / 0.55;
+    --input: 16 100% 50% / 0.35;
+    --ring: 16 100% 50%;
     --input-foreground: 0 0% 100%;
     --sidebar-background: 240 47% 8%;
     --sidebar-foreground: 0 0% 100%;
@@ -121,7 +121,7 @@ All colors MUST be HSL.
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 243 75% 59%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 240 40% 20%;
+    --sidebar-border: 16 100% 50% / 0.4;
     --sidebar-ring: 243 75% 59%;
   }
 }
@@ -1114,7 +1114,7 @@ All colors MUST be HSL.
   background: hsl(var(--card) / 0.55);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border: 1px solid hsl(0 0% 100% / 0.08);
+  border: 1px solid hsl(var(--mets-orange) / 0.35);
 }
 
 /* Subtle live pulse dot */
@@ -1152,4 +1152,50 @@ All colors MUST be HSL.
 @media (max-width: 380px) {
   section { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
   h1 { font-size: 1.4rem; }
+}
+
+/* ============================================================
+   Global white-border override → Mets orange-red
+   Ensures no white/neutral outlines slip through Tailwind utilities.
+   ============================================================ */
+.border-white,
+.border-white\/5,
+.border-white\/10,
+.border-white\/20,
+.border-white\/30,
+.border-white\/40,
+.border-white\/50,
+.border-white\/60,
+.border-white\/70,
+.border-white\/80,
+.border-white\/90,
+.border-neutral-100,
+.border-neutral-200,
+.border-neutral-300,
+.border-gray-100,
+.border-gray-200,
+.border-gray-300,
+.border-slate-100,
+.border-slate-200,
+.border-slate-300,
+.border-zinc-100,
+.border-zinc-200,
+.border-zinc-300,
+.border-stone-100,
+.border-stone-200 {
+  border-color: hsl(var(--mets-orange) / 0.55) !important;
+}
+
+.divide-white > :not([hidden]) ~ :not([hidden]),
+.divide-white\/10 > :not([hidden]) ~ :not([hidden]),
+.divide-white\/20 > :not([hidden]) ~ :not([hidden]) {
+  border-color: hsl(var(--mets-orange) / 0.4) !important;
+}
+
+.ring-white,
+.ring-white\/10,
+.ring-white\/20,
+.ring-white\/30,
+.ring-white\/50 {
+  --tw-ring-color: hsl(var(--mets-orange) / 0.55) !important;
 }
