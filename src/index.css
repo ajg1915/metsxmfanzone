@@ -37,10 +37,10 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Softer, neutral borders — no more aggressive orange outlines */
-    --border: 240 40% 24% / 0.6;
-    --input: 240 40% 22%;
-    --ring: 243 75% 59%;
+    /* Mets orange-red borders across the site */
+    --border: 16 100% 50% / 0.55;
+    --input: 16 100% 50% / 0.35;
+    --ring: 16 100% 50%;
     --input-foreground: 0 0% 100%;
 
     --radius: 1rem;
