@@ -10,7 +10,7 @@ interface ClapprPlayerProps {
   showChrome?: boolean;
 }
 
-const FALLBACK_SOURCE = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/hls-proxy/hls/metsxmfanzone.m3u8`;
+const FALLBACK_SOURCE = "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
 
 function loadChromecastPlugin(): Promise<any> {
   return new Promise((resolve) => {
