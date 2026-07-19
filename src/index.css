@@ -1022,3 +1022,123 @@ All colors MUST be HSL.
 .animate-marquee-left:hover {
   animation-play-state: paused;
 }
+
+/* =========================================================
+   MOBILE REFRESH — Broadcast Sports Feed (2026)
+   Applies compact, dense, glass-sports-app treatment on
+   phones (<768px). Larger screens keep existing look.
+   Does NOT touch live stream fanart imagery.
+   ========================================================= */
+
+/* Broadcast body font on mobile */
+@media (max-width: 767px) {
+  html, body {
+    font-family: 'Barlow', system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.005em;
+  }
+
+  /* Bold condensed broadcast headlines on mobile */
+  h1, h2, h3, h4,
+  .mx-broadcast {
+    font-family: 'Bebas Neue', 'Barlow', system-ui, sans-serif;
+    letter-spacing: 0.02em;
+    font-weight: 700;
+  }
+
+  /* Tighten mobile section padding for higher density */
+  section {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+  }
+
+  /* Reduce vertical rhythm between sections on mobile */
+  main > section,
+  main > div > section {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+  }
+
+  /* Section dividers hairline on mobile */
+  .section-divider {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Refined card surfaces: tighter radius + padding on mobile */
+  .rounded-2xl { border-radius: 1rem; }
+  .rounded-xl { border-radius: 0.875rem; }
+}
+
+/* ---------- Reusable mobile eyebrow / section header ---------- */
+.mx-eyebrow {
+  font-family: 'Barlow', system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--secondary) / 0.9);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.mx-eyebrow::before {
+  content: '';
+  width: 14px;
+  height: 2px;
+  background: hsl(var(--primary));
+  border-radius: 2px;
+}
+
+/* Italic bold wordmark utility (Oswald) */
+.mx-wordmark {
+  font-family: 'Oswald', 'Bebas Neue', sans-serif;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Refined glass surface for mobile-first cards */
+.mx-glass {
+  background: hsl(var(--card) / 0.55);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+}
+
+/* Subtle live pulse dot */
+.mx-live-dot {
+  position: relative;
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: hsl(var(--primary));
+  box-shadow: 0 0 0 0 hsl(var(--primary) / 0.7);
+  animation: mx-live-pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes mx-live-pulse {
+  0%   { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.55); }
+  70%  { box-shadow: 0 0 0 8px hsl(var(--primary) / 0); }
+  100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+}
+
+/* Tap-scale press feedback on mobile cards */
+@media (max-width: 767px) {
+  a:active, button:active, [role="button"]:active {
+    transform: scale(0.985);
+    transition: transform 90ms ease-out;
+  }
+
+  /* Softer, tighter section title on mobile — used broadly by h2 in sections */
+  section h2 {
+    font-size: clamp(1.05rem, 4.5vw, 1.35rem);
+    line-height: 1.1;
+  }
+}
+
+/* Small-screen refinement: floor at 360px devices */
+@media (max-width: 380px) {
+  section { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+  h1 { font-size: 1.4rem; }
+}
