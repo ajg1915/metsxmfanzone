@@ -54,7 +54,7 @@ All colors MUST be HSL.
 
     /* Glass morphism — indigo tinted */
     --glass-bg: 240 44% 14% / 0.7;
-    --glass-border: 243 60% 55% / 0.25;
+    --glass-border: 16 100% 50% / 0.35;
     --glass-blur: 22px;
     --glass-highlight: 0 0% 100% / 0.08;
 
