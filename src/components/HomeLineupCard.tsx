@@ -21,6 +21,27 @@ const getSpringFallback = (opponent: string): string => {
   return "";
 };
 
+// MLB team name → official team ID (for logo assets)
+const MLB_TEAM_IDS: Record<string, number> = {
+  "diamondbacks": 109, "braves": 144, "orioles": 110, "red sox": 111,
+  "cubs": 112, "white sox": 145, "reds": 113, "guardians": 114,
+  "rockies": 115, "tigers": 116, "astros": 117, "royals": 118,
+  "angels": 108, "dodgers": 119, "marlins": 146, "brewers": 158,
+  "twins": 142, "yankees": 147, "mets": 121, "athletics": 133,
+  "phillies": 143, "pirates": 134, "padres": 135, "giants": 137,
+  "mariners": 136, "cardinals": 138, "rays": 139, "rangers": 140,
+  "blue jays": 141, "nationals": 120,
+};
+
+const getTeamLogo = (name?: string): string | undefined => {
+  if (!name) return undefined;
+  const key = name.toLowerCase().trim();
+  for (const [team, id] of Object.entries(MLB_TEAM_IDS)) {
+    if (key.includes(team)) return `https://www.mlbstatic.com/team-logos/${id}.svg`;
+  }
+  return undefined;
+};
+
 // Format a YYYY-MM-DD game date safely in Eastern Time (avoids UTC off-by-one).
 const formatGameDateET = (ymd: string): string => {
   const [y, m, d] = ymd.split("-").map(Number);
@@ -342,8 +363,8 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                   <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1">
                     <div className="relative shrink-0">
                       <div className="absolute inset-0 bg-orange-500/40 blur-xl" aria-hidden />
-                      <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md flex items-center justify-center border-2 border-white/25 shadow-2xl">
-                        <span className="text-xl sm:text-3xl font-black tracking-tighter text-white drop-shadow-lg">NY</span>
+                      <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md flex items-center justify-center border-2 border-white/25 shadow-2xl p-1.5 sm:p-2">
+                        <img src="https://www.mlbstatic.com/team-logos/121.svg" alt="Mets" className="w-full h-full object-contain drop-shadow-lg" />
                       </div>
                     </div>
                     <div className="min-w-0">
@@ -376,10 +397,14 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                     </div>
                     <div className="relative shrink-0">
                       <div className="absolute inset-0 bg-white/15 blur-xl" aria-hidden />
-                      <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md flex items-center justify-center border-2 border-white/15 shadow-2xl">
-                        <span className="text-xl sm:text-3xl font-black tracking-tighter text-white/80 drop-shadow">
-                          {lineupCard ? lineupCard.opponent.slice(0, 3).toUpperCase() : "—"}
-                        </span>
+                      <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md flex items-center justify-center border-2 border-white/15 shadow-2xl p-1.5 sm:p-2">
+                        {getTeamLogo(lineupCard?.opponent) ? (
+                          <img src={getTeamLogo(lineupCard?.opponent)} alt={lineupCard?.opponent || "Opponent"} className="w-full h-full object-contain drop-shadow" />
+                        ) : (
+                          <span className="text-xl sm:text-3xl font-black tracking-tighter text-white/80 drop-shadow">
+                            {lineupCard ? lineupCard.opponent.slice(0, 3).toUpperCase() : "—"}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
