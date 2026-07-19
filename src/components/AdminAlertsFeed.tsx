@@ -66,7 +66,7 @@ export default function AdminAlertsFeed() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="text-[9px] uppercase tracking-[0.15em] font-black text-primary">
-                      Admin Alert
+                      {isAdmin ? "Admin Alert" : "Game Alert"}
                     </span>
                     <span className="text-[9px] text-muted-foreground">
                       · {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true })}
