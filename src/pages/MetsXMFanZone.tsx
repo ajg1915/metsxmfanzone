@@ -6,7 +6,7 @@ import { ClapprPlayer } from "@/components/ClapprPlayer";
 import { MLBScoresTicker } from "@/components/MLBScoresTicker";
 import { NewPostAlert } from "@/components/NewPostAlert";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
-import LiveStreamChat from "@/components/LiveStreamChat";
+import AdminAlertsFeed from "@/components/AdminAlertsFeed";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
