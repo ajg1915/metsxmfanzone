@@ -158,18 +158,24 @@ const Hero = () => {
                 {/* Logo + tag */}
                 <div className="flex items-center gap-2 mb-2 sm:mb-3">
                   <img src={logo} alt="MetsXMFanZone" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
-                  <span className="text-[9px] sm:text-[10px] font-bold tracking-[0.2em] text-primary/90 uppercase">
+                  <span className="mx-eyebrow !text-primary/95">
                     {slide.tag}
                   </span>
+                  {isLiveNow && (
+                    <span className="ml-1 inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-sm bg-destructive/90 text-[9px] font-black uppercase tracking-widest text-white">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      Live
+                    </span>
+                  )}
                 </div>
 
-                {/* Title — fluid sizing handled by global h1 clamp */}
-                <h1 className="font-black text-foreground mb-1.5 sm:mb-2 max-w-xl leading-[1.1] uppercase tracking-tight drop-shadow-lg" style={{ color: 'white' }}>
+                {/* Title — broadcast wordmark on mobile */}
+                <h1 className="mx-wordmark sm:not-italic font-black text-foreground mb-1.5 sm:mb-2 max-w-xl leading-[0.95] sm:leading-[1.1] uppercase tracking-tight drop-shadow-lg" style={{ color: 'white' }}>
                   {slide.title}
                 </h1>
 
                 {/* Description */}
-                <p className="text-[clamp(0.65rem,1.5vw,0.875rem)] text-foreground/75 mb-3 sm:mb-4 max-w-md leading-relaxed line-clamp-2 sm:line-clamp-3" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                <p className="text-[clamp(0.7rem,1.5vw,0.875rem)] text-foreground/75 mb-3 sm:mb-4 max-w-md leading-relaxed line-clamp-2 sm:line-clamp-3" style={{ color: 'rgba(255,255,255,0.78)' }}>
                   {slide.description}
                 </p>
 
