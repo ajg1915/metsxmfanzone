@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { Megaphone, ExternalLink, BellOff } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface AdminAlert {
   id: string;
@@ -13,6 +14,7 @@ interface AdminAlert {
 export default function AdminAlertsFeed() {
   const [alerts, setAlerts] = useState<AdminAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isAdmin } = useSubscription();
 
   const load = async () => {
     const { data } = await supabase
@@ -64,7 +66,7 @@ export default function AdminAlertsFeed() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="text-[9px] uppercase tracking-[0.15em] font-black text-primary">
-                      Admin Alert
+                      {isAdmin ? "Admin Alert" : "Game Alert"}
                     </span>
                     <span className="text-[9px] text-muted-foreground">
                       · {formatDistanceToNow(new Date(alert.created_at), { addSuffix: true })}
