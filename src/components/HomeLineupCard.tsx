@@ -248,44 +248,53 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="flex items-center justify-between mb-4 sm:mb-8 pb-3 sm:pb-5 border-b border-border/40"
+          className="relative mb-4 sm:mb-8 rounded-3xl overflow-hidden border border-primary/20 bg-gradient-to-br from-[#001f5b] via-[#002d72] to-[#001233] shadow-2xl"
         >
-          <div className="flex items-center gap-2.5 sm:gap-4">
-            <div className="relative shrink-0">
-              <div className="absolute inset-0 bg-primary/40 blur-xl opacity-60" aria-hidden />
-              <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-2xl overflow-hidden border border-primary/30 shadow-2xl ring-1 ring-white/5">
-                <img src={logoImage} alt="MetsXMFanZone" className="w-full h-full object-cover" />
+          {/* Decorative accents */}
+          <div className="absolute -top-16 -right-16 w-56 h-56 bg-primary/25 rounded-full blur-3xl" aria-hidden />
+          <div className="absolute -bottom-20 -left-10 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl" aria-hidden />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+          <div className="relative flex items-center justify-between gap-3 p-3 sm:p-5">
+            <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+              <div className="relative shrink-0">
+                <div className="absolute inset-0 bg-primary/50 blur-2xl opacity-70" aria-hidden />
+                <div className="relative w-11 h-11 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl ring-1 ring-primary/40">
+                  <img src={logoImage} alt="MetsXMFanZone" className="w-full h-full object-cover" />
+                </div>
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-70 animate-ping" />
+                    <span className="relative inline-flex rounded-full h-full w-full bg-orange-400" />
+                  </span>
+                  <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-orange-300 font-black">Live · 2026 Season</p>
+                </div>
+                <h2 className="text-lg sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-none uppercase truncate">
+                  Mets <span className="text-orange-400">Game Center</span>
+                </h2>
+                <p className="hidden sm:block text-[11px] uppercase tracking-[0.18em] text-white/60 font-semibold mt-1.5">Lineup · Standings · Matchup</p>
               </div>
             </div>
-            <div>
-              <h2 className="text-base sm:text-2xl lg:text-3xl font-black tracking-tight text-foreground leading-none uppercase">
-                Mets <span className="text-primary">Game Center</span>
-              </h2>
-              <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
-                <span className="relative flex h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping" />
-                  <span className="relative inline-flex rounded-full h-full w-full bg-primary" />
-                </span>
-                <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">Live Stats &middot; Lineup &middot; 2026 Season</p>
-              </div>
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRefreshLineup}
+                disabled={isRefreshing}
+                className="text-white/90 hover:text-white hover:bg-white/10 h-8 sm:h-10 px-2 sm:px-3 text-[10px] sm:text-xs rounded-xl border border-white/15 backdrop-blur-md bg-white/5"
+              >
+                <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 sm:mr-1.5 text-orange-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
+              </Button>
+              <Link to="/video-gallery" className="flex items-center gap-1.5 text-white transition-all text-[10px] sm:text-xs font-black uppercase tracking-wider bg-gradient-to-r from-orange-500 to-orange-600 hover:brightness-110 px-3 sm:px-4 py-1.5 sm:py-2.5 rounded-xl shadow-lg shadow-orange-500/30 h-8 sm:h-10 border border-orange-400/40">
+                <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span className="hidden sm:inline">Highlights</span>
+                <span className="sm:hidden">Video</span>
+              </Link>
             </div>
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRefreshLineup}
-              disabled={isRefreshing}
-              className="text-foreground/80 hover:text-primary hover:bg-primary/10 h-8 sm:h-9 px-2 sm:px-3 text-[10px] sm:text-xs rounded-xl border border-border/40 backdrop-blur-md bg-card/40"
-            >
-              <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 mr-0.5 sm:mr-1 text-primary ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
-            <Link to="/video-gallery" className="flex items-center gap-1.5 text-primary-foreground transition-all text-[10px] sm:text-xs font-bold bg-gradient-to-r from-primary to-primary/80 hover:brightness-110 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl shadow-lg shadow-primary/20 h-8 sm:h-9">
-              <Video className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              <span className="hidden sm:inline">Watch Highlights</span>
-              <span className="sm:hidden">Videos</span>
-            </Link>
           </div>
         </motion.div>
 
