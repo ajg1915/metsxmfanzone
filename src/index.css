@@ -1153,3 +1153,49 @@ All colors MUST be HSL.
   section { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
   h1 { font-size: 1.4rem; }
 }
+
+/* ============================================================
+   Global white-border override → Mets orange-red
+   Ensures no white/neutral outlines slip through Tailwind utilities.
+   ============================================================ */
+.border-white,
+.border-white\/5,
+.border-white\/10,
+.border-white\/20,
+.border-white\/30,
+.border-white\/40,
+.border-white\/50,
+.border-white\/60,
+.border-white\/70,
+.border-white\/80,
+.border-white\/90,
+.border-neutral-100,
+.border-neutral-200,
+.border-neutral-300,
+.border-gray-100,
+.border-gray-200,
+.border-gray-300,
+.border-slate-100,
+.border-slate-200,
+.border-slate-300,
+.border-zinc-100,
+.border-zinc-200,
+.border-zinc-300,
+.border-stone-100,
+.border-stone-200 {
+  border-color: hsl(var(--mets-orange) / 0.55) !important;
+}
+
+.divide-white > :not([hidden]) ~ :not([hidden]),
+.divide-white\/10 > :not([hidden]) ~ :not([hidden]),
+.divide-white\/20 > :not([hidden]) ~ :not([hidden]) {
+  border-color: hsl(var(--mets-orange) / 0.4) !important;
+}
+
+.ring-white,
+.ring-white\/10,
+.ring-white\/20,
+.ring-white\/30,
+.ring-white\/50 {
+  --tw-ring-color: hsl(var(--mets-orange) / 0.55) !important;
+}
