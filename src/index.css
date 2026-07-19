@@ -1199,3 +1199,21 @@ All colors MUST be HSL.
 .ring-white\/50 {
   --tw-ring-color: hsl(var(--mets-orange) / 0.55) !important;
 }
+
+/* Catch arbitrary-opacity white borders like border-white/[0.03] and dark slate borders */
+[class*="border-white/"],
+[class*="border-slate-7"],
+[class*="border-slate-8"],
+[class*="border-slate-9"],
+[class*="border-zinc-7"],
+[class*="border-zinc-8"],
+[class*="border-neutral-7"],
+[class*="border-neutral-8"],
+[class*="border-gray-7"],
+[class*="border-gray-8"] {
+  border-color: hsl(var(--mets-orange) / 0.55) !important;
+}
+
+[class*="divide-white/"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: hsl(var(--mets-orange) / 0.4) !important;
+}
