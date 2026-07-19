@@ -74,7 +74,7 @@ All colors MUST be HSL.
       0 48px 96px hsl(var(--shadow-color) / 0.15);
 
     --hero-overlay: 240 60% 4% / 0.82;
-    --card-border: 243 60% 55%;
+    --card-border: 16 100% 50%;
     --gradient-hero: linear-gradient(135deg, hsl(240 47% 6%), hsl(240 51% 14%));
     --gradient-card: linear-gradient(180deg, hsl(240 44% 16%), hsl(240 47% 10%));
     --gradient-blue: linear-gradient(135deg, hsl(243 75% 59%), hsl(240 51% 40%));
