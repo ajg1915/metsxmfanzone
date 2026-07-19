@@ -307,32 +307,95 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-2 rounded-2xl overflow-hidden border border-border/30 backdrop-blur-xl bg-card/60 shadow-xl"
           >
-            {/* Top Bar — Matchup */}
-            <div className="relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/95 to-primary/70" />
-              <div className="absolute -right-10 -top-10 w-48 h-48 bg-white/15 rounded-full blur-3xl" aria-hidden />
-              <div className="absolute right-1/3 inset-y-0 w-32 bg-white/10 -skew-x-12 translate-x-1/2" aria-hidden />
-              <div className="relative p-4 sm:p-5 text-primary-foreground">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                    <div className="w-11 h-11 sm:w-14 sm:h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 shadow-xl shrink-0">
-                      <span className="text-sm sm:text-lg font-black tracking-tight">NY</span>
+            {/* Top Bar — Matchup Scoreboard */}
+            <div className="relative overflow-hidden border-b border-white/5">
+              {/* Layered background */}
+              <div className="absolute inset-0 bg-[linear-gradient(115deg,#001233_0%,#002d72_45%,#001f5b_100%)]" />
+              <div className="absolute inset-0 opacity-[0.07] mix-blend-overlay" style={{
+                backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+                backgroundSize: "18px 18px",
+              }} aria-hidden />
+              <div className="absolute -right-20 -top-24 w-72 h-72 bg-orange-500/25 rounded-full blur-3xl" aria-hidden />
+              <div className="absolute -left-16 -bottom-24 w-72 h-72 bg-primary/40 rounded-full blur-3xl" aria-hidden />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-400/60 to-transparent" />
+
+              <div className="relative p-4 sm:p-6 text-white">
+                {/* Eyebrow row */}
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="h-[3px] w-6 sm:w-8 rounded-full bg-orange-400" />
+                    <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.28em] font-black text-orange-300">Today's Matchup</p>
+                  </div>
+                  {lineupCard && (
+                    <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] bg-white/10 border border-white/15 backdrop-blur-md rounded-full px-2.5 sm:px-3 py-1">
+                      <Clock className="w-3 h-3 text-orange-400" />
+                      <span>{format(new Date(lineupCard.game_date), "EEE MMM d")}</span>
+                      <span className="text-white/40">·</span>
+                      <span className="text-orange-300">{lineupCard.game_time}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Scoreboard row: NY  VS  OPP */}
+                <div className="flex items-center justify-between gap-3 sm:gap-6">
+                  {/* Mets side */}
+                  <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1">
+                    <div className="relative shrink-0">
+                      <div className="absolute inset-0 bg-orange-500/40 blur-xl" aria-hidden />
+                      <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-md flex items-center justify-center border-2 border-white/25 shadow-2xl">
+                        <span className="text-xl sm:text-3xl font-black tracking-tighter text-white drop-shadow-lg">NY</span>
+                      </div>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold opacity-80">Today's Matchup</p>
-                      <p className="font-black text-base sm:text-xl tracking-tight uppercase truncate">
-                        {lineupCard ? `vs ${lineupCard.opponent}` : "Lineup Pending"}
+                      <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-white/60">Home</p>
+                      <p className="font-black text-lg sm:text-2xl leading-none uppercase tracking-tight text-white">Mets</p>
+                      <p className="text-[9px] sm:text-[11px] font-bold text-orange-300/90 mt-1 uppercase tracking-wider">
+                        {metsStanding ? `${metsStanding.wins}–${metsStanding.losses}` : "2026 Season"}
                       </p>
-                      {lineupCard && (
-                        <p className="text-[10px] sm:text-xs opacity-90 flex items-center gap-1.5 mt-0.5 font-semibold">
-                          <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          {format(new Date(lineupCard.game_date), "EEE, MMM d")} • {lineupCard.game_time}
-                        </p>
-                      )}
                     </div>
                   </div>
-                  <Link to="/mets-roster" className="flex items-center gap-1.5 text-[10px] sm:text-xs font-bold bg-black/25 hover:bg-black/40 backdrop-blur-md px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl transition-all border border-white/20 uppercase tracking-wider shrink-0">
-                    Roster <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+
+                  {/* VS divider */}
+                  <div className="flex flex-col items-center shrink-0">
+                    <div className="w-px h-6 sm:h-8 bg-gradient-to-b from-transparent to-white/30" />
+                    <div className="relative my-1 sm:my-1.5">
+                      <div className="absolute inset-0 bg-orange-500/40 blur-md" aria-hidden />
+                      <span className="relative text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-white bg-black/30 border border-orange-400/40 rounded-full px-2.5 sm:px-3 py-0.5 sm:py-1 backdrop-blur-md">VS</span>
+                    </div>
+                    <div className="w-px h-6 sm:h-8 bg-gradient-to-t from-transparent to-white/30" />
+                  </div>
+
+                  {/* Opponent side */}
+                  <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1 justify-end text-right">
+                    <div className="min-w-0">
+                      <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-white/60">Away</p>
+                      <p className="font-black text-lg sm:text-2xl leading-none uppercase tracking-tight text-white truncate">
+                        {lineupCard ? lineupCard.opponent : "TBD"}
+                      </p>
+                      <p className="text-[9px] sm:text-[11px] font-bold text-white/50 mt-1 uppercase tracking-wider">Visitors</p>
+                    </div>
+                    <div className="relative shrink-0">
+                      <div className="absolute inset-0 bg-white/15 blur-xl" aria-hidden />
+                      <div className="relative w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-md flex items-center justify-center border-2 border-white/15 shadow-2xl">
+                        <span className="text-xl sm:text-3xl font-black tracking-tighter text-white/80 drop-shadow">
+                          {lineupCard ? lineupCard.opponent.slice(0, 3).toUpperCase() : "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action row */}
+                <div className="flex items-center justify-between gap-2 mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-white/10">
+                  <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.18em] font-bold text-white/60">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70 animate-ping" />
+                      <span className="relative inline-flex rounded-full h-full w-full bg-emerald-400" />
+                    </span>
+                    Lineup Ready
+                  </div>
+                  <Link to="/mets-roster" className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-white/10 hover:bg-white/20 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-all border border-white/20 text-white shrink-0">
+                    Full Roster <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   </Link>
                 </div>
               </div>
