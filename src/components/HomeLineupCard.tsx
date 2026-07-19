@@ -21,6 +21,27 @@ const getSpringFallback = (opponent: string): string => {
   return "";
 };
 
+// MLB team name → official team ID (for logo assets)
+const MLB_TEAM_IDS: Record<string, number> = {
+  "diamondbacks": 109, "braves": 144, "orioles": 110, "red sox": 111,
+  "cubs": 112, "white sox": 145, "reds": 113, "guardians": 114,
+  "rockies": 115, "tigers": 116, "astros": 117, "royals": 118,
+  "angels": 108, "dodgers": 119, "marlins": 146, "brewers": 158,
+  "twins": 142, "yankees": 147, "mets": 121, "athletics": 133,
+  "phillies": 143, "pirates": 134, "padres": 135, "giants": 137,
+  "mariners": 136, "cardinals": 138, "rays": 139, "rangers": 140,
+  "blue jays": 141, "nationals": 120,
+};
+
+const getTeamLogo = (name?: string): string | undefined => {
+  if (!name) return undefined;
+  const key = name.toLowerCase().trim();
+  for (const [team, id] of Object.entries(MLB_TEAM_IDS)) {
+    if (key.includes(team)) return `https://www.mlbstatic.com/team-logos/${id}.svg`;
+  }
+  return undefined;
+};
+
 // Format a YYYY-MM-DD game date safely in Eastern Time (avoids UTC off-by-one).
 const formatGameDateET = (ymd: string): string => {
   const [y, m, d] = ymd.split("-").map(Number);
