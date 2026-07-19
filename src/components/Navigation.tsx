@@ -536,94 +536,133 @@ const Navigation = () => {
                   <Menu className="w-4 h-4 text-primary" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[260px] sm:w-[280px] bg-card/95 backdrop-blur-2xl p-0 border-l border-muted/30">
-                {/* Header with user profile or logo */}
-                <SheetHeader className="px-3 py-3 border-b border-muted/20">
+              <SheetContent
+                side="right"
+                className="w-[290px] sm:w-[320px] p-0 border-l border-primary/30 bg-gradient-to-b from-[#0a0f2c] via-[#0b1226] to-[#050814] text-foreground overflow-hidden [&>button]:hidden"
+              >
+                {/* Ambient glow */}
+                <div className="pointer-events-none absolute -top-24 -right-16 w-72 h-72 rounded-full bg-primary/20 blur-3xl" />
+                <div className="pointer-events-none absolute bottom-0 -left-16 w-64 h-64 rounded-full bg-secondary/10 blur-3xl" />
+
+                {/* Header */}
+                <SheetHeader className="relative px-4 pt-4 pb-4 border-b border-primary/20 bg-gradient-to-br from-primary/15 via-transparent to-transparent">
+                  <button
+                    onClick={() => setMobileMenuOpen(false)}
+                    aria-label="Close menu"
+                    className="absolute top-3 right-3 h-7 w-7 rounded-full bg-white/5 hover:bg-primary/20 border border-primary/30 flex items-center justify-center transition-colors"
+                  >
+                    <X className="w-3.5 h-3.5 text-primary" />
+                  </button>
+
                   {user ? (
-                    <div className="flex items-center gap-2.5">
-                      <Avatar className="h-9 w-9 ring-2 ring-primary/40">
-                        <AvatarImage src={userProfile.avatar_url || undefined} alt="Profile" />
-                        <AvatarFallback className="text-[10px] bg-primary text-primary-foreground font-bold">
-                          {userProfile.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <SheetTitle className="text-sm font-bold text-foreground truncate">{userProfile.full_name || 'Member'}</SheetTitle>
-                        <SheetDescription className="text-[9px] text-muted-foreground truncate">{user.email}</SheetDescription>
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary to-secondary blur-md opacity-60" />
+                        <Avatar className="relative h-11 w-11 ring-2 ring-primary/60">
+                          <AvatarImage src={userProfile.avatar_url || undefined} alt="Profile" />
+                          <AvatarFallback className="text-xs bg-gradient-to-br from-primary to-secondary text-primary-foreground font-black">
+                            {userProfile.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <div className="flex-1 min-w-0 text-left">
+                        <SheetTitle className="text-sm font-bold text-foreground truncate tracking-wide">
+                          {userProfile.full_name || 'Member'}
+                        </SheetTitle>
+                        <SheetDescription className="text-[10px] text-muted-foreground truncate">
+                          {user.email}
+                        </SheetDescription>
+                        <div className="mt-1 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/15 border border-primary/30">
+                          <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
+                          <span className="text-[8px] font-bold tracking-widest text-primary uppercase">
+                            {isAdmin ? 'Admin' : isWriter ? 'Writer' : 'Member'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <img src={logo} alt="Logo" className="w-6 h-6 object-contain" />
-                      <div>
-                        <SheetTitle className="text-sm font-bold text-primary">Menu</SheetTitle>
-                        <SheetDescription className="text-[9px] text-muted-foreground">MetsXMFanZone</SheetDescription>
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className="absolute inset-0 rounded-lg bg-primary/40 blur-md" />
+                        <img src={logo} alt="Logo" className="relative w-10 h-10 object-contain" />
+                      </div>
+                      <div className="text-left">
+                        <SheetTitle className="text-sm font-black text-foreground tracking-wide">MetsXMFanZone</SheetTitle>
+                        <SheetDescription className="text-[10px] text-primary/80 font-semibold tracking-widest uppercase">
+                          Fan Command Center
+                        </SheetDescription>
                       </div>
                     </div>
                   )}
                 </SheetHeader>
-                
-                <div className="flex flex-col py-2 px-2 gap-0.5 overflow-y-auto max-h-[calc(100vh-100px)]">
-                  {/* Nav items - ultra compact */}
-                  <NavLink 
-                    to="/" 
-                    className="flex items-center gap-2.5 text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-xs"
+
+                <div className="relative flex flex-col py-3 px-3 gap-1 overflow-y-auto max-h-[calc(100vh-110px)]">
+                  <p className="px-2 text-[9px] font-black tracking-[0.2em] text-primary/70 uppercase mb-1">Explore</p>
+
+                  <NavLink
+                    to="/"
+                    className="group flex items-center gap-3 text-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-all py-2.5 px-3 rounded-xl text-[13px]"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <img src={logo} alt="" className="w-3.5 h-3.5 object-contain" />
-                    <span className="font-medium">Home</span>
+                    <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 group-hover:bg-primary/20 border border-white/5 group-hover:border-primary/40 transition-colors">
+                      <img src={logo} alt="" className="w-4 h-4 object-contain" />
+                    </span>
+                    <span className="font-semibold flex-1">Home</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </NavLink>
+
                   <button
                     onClick={() => { setMobileMenuOpen(false); handleProtectedNavigation("/community"); }}
-                    className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                    className="group flex items-center gap-3 w-full text-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-all py-2.5 px-3 rounded-xl text-left text-[13px]"
                   >
-                    <Users className="w-3.5 h-3.5 text-primary" />
-                    <span className="font-medium">Community</span>
+                    <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 group-hover:bg-primary/20 border border-white/5 group-hover:border-primary/40 transition-colors">
+                      <Users className="w-3.5 h-3.5 text-primary" />
+                    </span>
+                    <span className="font-semibold flex-1">Community</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </button>
+
                   <button
                     onClick={() => { setMobileMenuOpen(false); handleProNavigation("/podcast"); }}
-                    className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                    className="group flex items-center gap-3 w-full text-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-all py-2.5 px-3 rounded-xl text-left text-[13px]"
                   >
-                    <img src={podcastIcon} alt="" className="w-3.5 h-3.5 object-contain" />
-                    <span className="font-medium">Podcast</span>
+                    <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 group-hover:bg-primary/20 border border-white/5 group-hover:border-primary/40 transition-colors">
+                      <img src={podcastIcon} alt="" className="w-4 h-4 object-contain" />
+                    </span>
+                    <span className="font-semibold flex-1">Podcast</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </button>
 
-                  {user && (
-                    <button
-                      onClick={() => { setMobileMenuOpen(false); navigate("/mets-roster"); }}
-                      className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
-                    >
-                      <Users className="w-3.5 h-3.5 text-secondary" />
-                      <span className="font-medium">Roster</span>
-                    </button>
-                  )}
                   {!user && (
-                    <NavLink 
-                      to="/pricing" 
-                      className="flex items-center gap-2.5 text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-xs"
+                    <NavLink
+                      to="/pricing"
+                      className="group flex items-center gap-3 text-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-all py-2.5 px-3 rounded-xl text-[13px]"
                       onClick={() => setMobileMenuOpen(false)}
                     >
-                      <Shield className="w-3.5 h-3.5 text-primary" />
-                      <span className="font-medium">Pricing</span>
+                      <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 group-hover:bg-primary/20 border border-white/5 group-hover:border-primary/40 transition-colors">
+                        <Shield className="w-3.5 h-3.5 text-primary" />
+                      </span>
+                      <span className="font-semibold flex-1">Pricing</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </NavLink>
                   )}
-                  
-                  {/* Divider */}
-                  <div className="h-px bg-muted/20 my-1.5 mx-1" />
 
-                  {/* Mets collapsible */}
+                  <p className="px-2 mt-3 text-[9px] font-black tracking-[0.2em] text-primary/70 uppercase mb-1">Mets Connect</p>
+
                   <Collapsible open={tvScheduleOpen} onOpenChange={setTvScheduleOpen}>
-                    <CollapsibleTrigger className="flex items-center justify-between w-full px-2.5 py-2 rounded-lg hover:bg-muted/30 transition-colors">
-                      <div className="flex items-center gap-2.5">
-                        <img src={`https://www.mlbstatic.com/team-logos/121.svg`} alt="" className="w-3.5 h-3.5 object-contain" />
-                        <span className="font-medium text-xs">Mets Connect</span>
+                    <CollapsibleTrigger className="group flex items-center justify-between w-full px-3 py-2.5 rounded-xl border border-transparent hover:border-primary/30 hover:bg-primary/10 transition-all">
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 border border-white/5 group-hover:border-primary/40 transition-colors">
+                          <img src={`https://www.mlbstatic.com/team-logos/121.svg`} alt="" className="w-4 h-4 object-contain" />
+                        </span>
+                        <span className="font-semibold text-[13px]">Mets Hub</span>
                       </div>
-                      <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform duration-200 ${tvScheduleOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown className={`w-3.5 h-3.5 text-primary transition-transform duration-300 ${tvScheduleOpen ? 'rotate-180' : ''}`} />
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-0.5 mt-0.5 ml-6">
+                    <CollapsibleContent className="mt-1 ml-3 pl-3 border-l border-primary/20 space-y-0.5">
                       <button
                         onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); handleProtectedNavigation("/mets-schedule-2026"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary hover:bg-primary/5 py-1.5 px-2.5 rounded-md text-left text-[11.5px] transition-colors"
                       >
                         <CalendarDays className="w-3.5 h-3.5" />
                         Schedule
@@ -631,7 +670,7 @@ const Navigation = () => {
                       {user && (
                         <button
                           onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); navigate("/mets-roster"); }}
-                          className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                          className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary hover:bg-primary/5 py-1.5 px-2.5 rounded-md text-left text-[11.5px] transition-colors"
                         >
                           <Users className="w-3.5 h-3.5" />
                           Roster
@@ -639,14 +678,14 @@ const Navigation = () => {
                       )}
                       <button
                         onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); handleProNavigation("/video-gallery"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary hover:bg-primary/5 py-1.5 px-2.5 rounded-md text-left text-[11.5px] transition-colors"
                       >
                         <Tv className="w-3.5 h-3.5" />
                         Highlights
                       </button>
                       <button
                         onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); navigate("/mets-game-recaps"); }}
-                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary py-1.5 px-2.5 rounded-md text-left text-[11px]"
+                        className="flex items-center gap-2 w-full text-muted-foreground hover:text-primary hover:bg-primary/5 py-1.5 px-2.5 rounded-md text-left text-[11.5px] transition-colors"
                       >
                         <CalendarDays className="w-3.5 h-3.5" />
                         Game Recaps
@@ -654,72 +693,83 @@ const Navigation = () => {
                     </CollapsibleContent>
                   </Collapsible>
 
-                  {/* Radio moved into Podcast dropdown above */}
-
-                  
-                  {/* Divider */}
-                  <div className="h-px bg-muted/20 my-1.5 mx-1" />
-
-                  {/* User account actions */}
                   {user ? (
-                    <div className="space-y-0.5">
-                      <button 
+                    <>
+                      <p className="px-2 mt-3 text-[9px] font-black tracking-[0.2em] text-primary/70 uppercase mb-1">Account</p>
+
+                      <button
                         onClick={() => { navigate("/dashboard"); setMobileMenuOpen(false); }}
-                        className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                        className="group flex items-center gap-3 w-full text-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-all py-2.5 px-3 rounded-xl text-left text-[13px]"
                       >
-                        <LayoutDashboard className="w-3.5 h-3.5 text-primary" />
-                        <span className="font-medium">Dashboard</span>
+                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 group-hover:bg-primary/20 border border-white/5 group-hover:border-primary/40 transition-colors">
+                          <LayoutDashboard className="w-3.5 h-3.5 text-primary" />
+                        </span>
+                        <span className="font-semibold flex-1">Dashboard</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </button>
+
                       {isWriter && (
-                        <button 
+                        <button
                           onClick={() => { navigate("/writer"); setMobileMenuOpen(false); }}
-                          className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                          className="group flex items-center gap-3 w-full text-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-all py-2.5 px-3 rounded-xl text-left text-[13px]"
                         >
-                          <PenLine className="w-3.5 h-3.5 text-secondary" />
-                          <span className="font-medium">Writers Portal</span>
+                          <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 group-hover:bg-primary/20 border border-white/5 group-hover:border-primary/40 transition-colors">
+                            <PenLine className="w-3.5 h-3.5 text-secondary" />
+                          </span>
+                          <span className="font-semibold flex-1">Writers Portal</span>
+                          <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                         </button>
                       )}
+
                       {isAdmin && (
                         <>
-                          <button 
+                          <button
                             onClick={() => { navigate("/admin/stories"); setMobileMenuOpen(false); }}
-                            className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                            className="group flex items-center gap-3 w-full text-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-all py-2.5 px-3 rounded-xl text-left text-[13px]"
                           >
-                            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                            <span className="font-medium">Admin Stories</span>
+                            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 group-hover:bg-primary/20 border border-white/5 group-hover:border-primary/40 transition-colors">
+                              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                            </span>
+                            <span className="font-semibold flex-1">Admin Stories</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                           </button>
-                          <button 
+                          <button
                             onClick={() => { navigate("/admin"); setMobileMenuOpen(false); }}
-                            className="flex items-center gap-2.5 w-full text-foreground hover:text-primary hover:bg-primary/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                            className="group flex items-center gap-3 w-full text-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 transition-all py-2.5 px-3 rounded-xl text-left text-[13px]"
                           >
-                            <Shield className="w-3.5 h-3.5 text-destructive" />
-                            <span className="font-medium">Admin Portal</span>
+                            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 group-hover:bg-primary/20 border border-white/5 group-hover:border-primary/40 transition-colors">
+                              <Shield className="w-3.5 h-3.5 text-destructive" />
+                            </span>
+                            <span className="font-semibold flex-1">Admin Portal</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                           </button>
                         </>
                       )}
-                      
-                      <div className="h-px bg-muted/20 my-1 mx-1" />
-                      
-                      <button 
+
+                      <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent my-2" />
+
+                      <button
                         onClick={async () => { await handleAuthClick(); }}
-                        className="flex items-center gap-2.5 w-full text-destructive hover:bg-destructive/8 transition-all py-2 px-2.5 rounded-lg text-left text-xs"
+                        className="flex items-center gap-3 w-full text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/30 transition-all py-2.5 px-3 rounded-xl text-left text-[13px]"
                       >
-                        <LogOut className="w-3.5 h-3.5" />
-                        <span className="font-medium">Sign Out</span>
+                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-destructive/10 border border-destructive/20">
+                          <LogOut className="w-3.5 h-3.5" />
+                        </span>
+                        <span className="font-semibold">Sign Out</span>
                       </button>
-                    </div>
+                    </>
                   ) : (
-                    <div className="space-y-1.5 px-0.5">
-                      <Button 
+                    <div className="mt-4 space-y-2 px-1">
+                      <Button
                         onClick={() => { navigate("/auth?mode=login"); setMobileMenuOpen(false); }}
                         variant="outline"
-                        className="w-full h-8 rounded-lg border-muted/40 hover:bg-muted/30 text-xs"
+                        className="w-full h-10 rounded-xl border-primary/40 bg-white/5 hover:bg-primary/15 text-[13px] font-semibold"
                       >
                         Login
                       </Button>
-                      <Button 
+                      <Button
                         onClick={() => { navigate("/auth?mode=signup"); setMobileMenuOpen(false); }}
-                        className="w-full h-8 rounded-lg text-xs"
+                        className="w-full h-10 rounded-xl text-[13px] font-bold bg-gradient-to-r from-primary to-secondary shadow-lg shadow-primary/30 hover:shadow-primary/50"
                       >
                         Sign Up Free
                       </Button>
