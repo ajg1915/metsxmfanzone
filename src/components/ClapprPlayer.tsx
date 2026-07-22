@@ -144,9 +144,9 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const [retryKey, setRetryKey] = useState(0);
   const [usingBackup, setUsingBackup] = useState(false);
 
-  const primarySource = source || FALLBACK_SOURCE;
-  const hasBackup = !!source && source !== FALLBACK_SOURCE;
-  const effectiveSource = usingBackup && hasBackup ? FALLBACK_SOURCE : primarySource;
+  const primarySource = source || PRIMARY_DEFAULT;
+  const hasBackup = primarySource !== BACKUP_SOURCE;
+  const effectiveSource = usingBackup && hasBackup ? BACKUP_SOURCE : primarySource;
 
   const handleUnmute = useCallback(() => {
     try {
