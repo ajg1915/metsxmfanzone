@@ -297,7 +297,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white gap-3 p-4 text-center">
           <AlertCircle className="w-10 h-10 text-destructive" />
           <p className="text-sm font-medium">Stream unavailable</p>
-          <p className="text-xs text-white/70">The broadcast couldn't be loaded. Please try again.</p>
+          <p className="text-xs text-white/70">Stream goes live 30 minutes before game time</p>
           <button
             onClick={handleRetry}
             className="mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
