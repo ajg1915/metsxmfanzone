@@ -78,8 +78,8 @@ export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPla
   if (!stream) {
     return (
       <div className="mb-8 text-center py-12 rounded-lg border border-border bg-card">
-        <p className="text-muted-foreground">No live stream available at the moment.</p>
-        <p className="text-sm text-muted-foreground mt-2">Check back later for live content.</p>
+        <p className="text-muted-foreground">Stream unavailable</p>
+        <p className="text-sm text-muted-foreground mt-2">Stream will be available 30 minutes before game time.</p>
       </div>
     );
   }
