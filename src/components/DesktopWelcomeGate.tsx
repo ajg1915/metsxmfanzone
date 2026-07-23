@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Monitor, Smartphone, Home, LogIn, X } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { Monitor, Smartphone, Tablet, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/metsxmfanzone-logo.png";
 
-const STORAGE_KEY = "desktop_welcome_gate_dismissed";
+const OPT_IN_KEY = "desktop_opt_in";
 export const WELCOME_GATE_SETTING_KEY = "desktop_welcome_gate";
 
 export type GateConfig = {
@@ -21,25 +21,25 @@ export type GateConfig = {
 
 export const GATE_DEFAULTS: GateConfig = {
   enabled: true,
-  title: "Best viewed on mobile",
+  title: "Mobile & Tablet Only",
   subtitle:
-    "MetsXMFanZone is optimized for the mobile experience. For the best experience, please open this site on your phone.",
-  note: "Prefer to continue on desktop? Choose an option below.",
-  primaryLabel: "Continue to Home",
-  primaryUrl: "/",
-  secondaryLabel: "Login",
-  secondaryUrl: "/auth",
+    "MetsXMFanZone is now optimized exclusively for mobile and tablet devices. For the best experience, please open this site on your phone or tablet.",
+  note: "Desktop is no longer officially supported, but you can continue anyway.",
+  primaryLabel: "Copy Site Link",
+  primaryUrl: "",
+  secondaryLabel: "Continue on Desktop",
+  secondaryUrl: "",
 };
 
 /**
- * Desktop welcome gate shown on the homepage for all viewers (>=1024px).
- * Content is configured by admins in /admin/welcome-screen.
+ * Desktop block gate. Site is now mobile/tablet-first (<1024px).
+ * Desktop users (>=1024px) see a blocking screen with an option to continue anyway.
  */
 export const DesktopWelcomeGate = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [cfg, setCfg] = useState<GateConfig>(GATE_DEFAULTS);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -55,50 +55,45 @@ export const DesktopWelcomeGate = () => {
   }, []);
 
   useEffect(() => {
-    if (location.pathname !== "/") return;
     if (typeof window === "undefined") return;
     if (!cfg.enabled) return;
     const forcePreview = window.location.search.includes("preview_gate=1");
-    if (!forcePreview && sessionStorage.getItem(STORAGE_KEY) === "1") return;
+    // Persistent opt-in — once user chooses desktop, don't nag again
+    if (!forcePreview && localStorage.getItem(OPT_IN_KEY) === "1") return;
     const host = window.location.hostname;
     const isLovablePreview =
       host.includes("id-preview--") ||
       host.endsWith(".lovableproject.com") ||
       window.location.search.includes("__lovable_token=");
     if (!forcePreview && isLovablePreview) return;
+    // Allow tablets (<1024px). Only block true desktop.
     if (!forcePreview && window.innerWidth < 1024) return;
     if (window.location.search.includes("tv=true")) return;
+    // Don't block admin routes
+    if (!forcePreview && location.pathname.startsWith("/admin")) return;
     setShow(true);
-
   }, [location.pathname, cfg.enabled]);
 
-  const dismiss = () => {
-    sessionStorage.setItem(STORAGE_KEY, "1");
+  const continueOnDesktop = () => {
+    localStorage.setItem(OPT_IN_KEY, "1");
     setShow(false);
   };
 
-  const go = (url: string) => {
-    dismiss();
-    if (url.startsWith("http")) {
-      window.location.href = url;
-    } else {
-      navigate(url);
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.origin);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* noop */
     }
   };
 
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="relative w-full max-w-lg rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/20 p-8">
-        <button
-          onClick={dismiss}
-          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
+      <div className="relative w-full max-w-lg rounded-2xl border border-primary/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/20 p-8">
         <div className="flex justify-center mb-4">
           <img
             src={logo}
@@ -108,11 +103,14 @@ export const DesktopWelcomeGate = () => {
         </div>
 
         <div className="flex items-center justify-center gap-3 mb-6">
-          <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20">
+          <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/30">
             <Smartphone className="w-5 h-5 text-primary" />
           </div>
-          <div className="text-xl text-muted-foreground">+</div>
-          <div className="p-2.5 rounded-xl bg-muted/40 border border-border">
+          <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/30">
+            <Tablet className="w-5 h-5 text-primary" />
+          </div>
+          <div className="text-xl text-muted-foreground">/</div>
+          <div className="p-2.5 rounded-xl bg-muted/40 border border-border opacity-50">
             <Monitor className="w-5 h-5 text-muted-foreground" />
           </div>
         </div>
@@ -130,15 +128,24 @@ export const DesktopWelcomeGate = () => {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Button onClick={() => go(cfg.primaryUrl)} variant="outline" className="w-full">
-            <Home className="w-4 h-4 mr-2" />
-            {cfg.primaryLabel}
+          <Button onClick={copyLink} variant="outline" className="w-full">
+            {copied ? (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4 mr-2" />
+                {cfg.primaryLabel}
+              </>
+            )}
           </Button>
           <Button
-            onClick={() => go(cfg.secondaryUrl)}
+            onClick={continueOnDesktop}
             className="w-full bg-primary hover:bg-primary/90"
           >
-            <LogIn className="w-4 h-4 mr-2" />
+            <Monitor className="w-4 h-4 mr-2" />
             {cfg.secondaryLabel}
           </Button>
         </div>
