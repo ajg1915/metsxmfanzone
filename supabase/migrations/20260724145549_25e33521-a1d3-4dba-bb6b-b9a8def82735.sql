@@ -1,0 +1,1 @@
+UPDATE public.live_streams SET stream_url = 'https://gpuserver3.tier1streams.com/MSG/index.m3u8' WHERE id = 'a5088510-47a9-4c28-b4ab-bdedace4cc61';
