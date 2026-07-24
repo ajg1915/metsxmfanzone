@@ -77,6 +77,7 @@ const MLBNetwork = lazyWithRetry(() => import("./pages/MLBNetwork"), "page-mlb-n
 const ESPNNetwork = lazyWithRetry(() => import("./pages/ESPNNetwork"), "page-espn-network");
 const PIX11Network = lazyWithRetry(() => import("./pages/PIX11Network"), "page-pix11-network");
 const MSGNetwork = lazyWithRetry(() => import("./pages/MSGNetwork"), "page-msg-network");
+const MSGPlus = lazyWithRetry(() => import("./pages/MSGPlus"), "page-msg-plus");
 const LiveStream = lazyWithRetry(() => import("./pages/LiveStream"), "page-live-stream");
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "page-not-found");
 const Blog = lazyWithRetry(() => import("./pages/Blog"), "page-blog");
@@ -439,6 +440,7 @@ const AppContent = () => {
             <Route path="/espn-network" element={<ESPNNetwork />} />
             <Route path="/pix11-network" element={<PIX11Network />} />
             <Route path="/msg-network" element={<MSGNetwork />} />
+            <Route path="/msg-plus" element={<MSGPlus />} />
             <Route path="/live/:streamId" element={<LiveStream />} />
             <Route path="/matchup/astros" element={<MetsVsAstros />} />
             <Route path="/matchup/braves" element={<MetsVsBraves />} />
