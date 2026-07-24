@@ -30,11 +30,20 @@ const LiveStream = () => {
   useEffect(() => {
     if (!streamId) return;
     const fetchStream = async () => {
-      const { data } = await supabase
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const query = supabase
         .from("live_streams")
         .select("id, title, description, thumbnail_url, status, assigned_pages")
-        .eq("id", streamId)
-        .maybeSingle();
+        .eq("published", true);
+
+      const { data } = UUID_RE.test(streamId)
+        ? await query.eq("id", streamId).maybeSingle()
+        : await query
+            .contains("assigned_pages", [streamId])
+            .order("status", { ascending: false }) // 'live' > 'scheduled' > 'ended'
+            .limit(1)
+            .maybeSingle();
+
       setStream(data as StreamInfo | null);
       setLoading(false);
     };
@@ -79,7 +88,8 @@ const LiveStream = () => {
     );
   }
 
-  const pageName = `stream-${stream.id}`;
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const pageName = streamId && !UUID_RE.test(streamId) ? streamId : `stream-${stream.id}`;
   const isLive = stream.status === "live";
 
   return (
