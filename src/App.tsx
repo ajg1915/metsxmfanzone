@@ -77,6 +77,7 @@ const MLBNetwork = lazyWithRetry(() => import("./pages/MLBNetwork"), "page-mlb-n
 const ESPNNetwork = lazyWithRetry(() => import("./pages/ESPNNetwork"), "page-espn-network");
 const PIX11Network = lazyWithRetry(() => import("./pages/PIX11Network"), "page-pix11-network");
 const MSGNetwork = lazyWithRetry(() => import("./pages/MSGNetwork"), "page-msg-network");
+const MSGPlus = lazyWithRetry(() => import("./pages/MSGPlus"), "page-msg-plus");
 const LiveStream = lazyWithRetry(() => import("./pages/LiveStream"), "page-live-stream");
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "page-not-found");
 const Blog = lazyWithRetry(() => import("./pages/Blog"), "page-blog");
