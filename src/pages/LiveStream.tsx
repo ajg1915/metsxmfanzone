@@ -88,7 +88,8 @@ const LiveStream = () => {
     );
   }
 
-  const pageName = `stream-${stream.id}`;
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const pageName = streamId && !UUID_RE.test(streamId) ? streamId : `stream-${stream.id}`;
   const isLive = stream.status === "live";
 
   return (
