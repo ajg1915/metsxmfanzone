@@ -78,8 +78,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     initializeAuth();
 
+    // Safety timeout: never leave the app stuck on a loading screen if
+    // Supabase token refresh hangs due to a network failure.
+    const safetyTimer = setTimeout(() => {
+      if (isMounted && loading) {
+        console.warn("Auth init timed out — forcing loading=false");
+        setLoading(false);
+      }
+    }, 4000);
+
     return () => {
       isMounted = false;
+      clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
   }, []);
