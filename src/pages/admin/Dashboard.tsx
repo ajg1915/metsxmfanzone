@@ -65,7 +65,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [adminUserId, setAdminUserId] = useState<string | null>(null);
   const [stats, setStats] = useState({
-    totalUsers: 0,
+    activeUsers: 0,
     totalBlogs: 0,
     activeStreams: 0,
     totalStreams: 0,
@@ -77,8 +77,13 @@ export default function AdminDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setAdminUserId(user.id);
 
-      const [usersResult, streamsResult, blogsResult, storiesResult] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }),
+      const nowIso = new Date().toISOString();
+      const [activeResult, streamsResult, blogsResult, storiesResult] = await Promise.all([
+        supabase
+          .from("subscriptions")
+          .select("user_id")
+          .eq("status", "active")
+          .or(`end_date.is.null,end_date.gt.${nowIso}`),
         supabase.from("live_streams").select("status"),
         supabase.from("blog_posts").select("*", { count: "exact", head: true }),
         supabase.from("stories").select("*", { count: "exact", head: true }),
@@ -86,15 +91,17 @@ export default function AdminDashboard() {
 
       const activeStreams = streamsResult.data?.filter(s => s.status === "live").length || 0;
       const totalStreams = streamsResult.data?.length || 0;
+      const activeUsers = new Set((activeResult.data || []).map((s: any) => s.user_id)).size;
 
       setStats({
-        totalUsers: usersResult.count || 0,
+        activeUsers,
         totalBlogs: blogsResult.count || 0,
         activeStreams,
         totalStreams,
         totalStories: storiesResult.count || 0,
       });
     };
+
 
     fetchStats();
   }, []);
@@ -140,7 +147,7 @@ export default function AdminDashboard() {
       description: "Users, roles & subscription plans",
       icon: UserCog,
       url: "/admin/user-management",
-      stat: `${stats.totalUsers} Users`,
+      stat: `${stats.activeUsers} Active`,
     },
     {
       title: "Newsletter",
@@ -214,7 +221,7 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Users", value: stats.totalUsers, icon: Users, accent: "text-[#FF5910]", sub: "All registered fans" },
+          { label: "Active Accounts", value: stats.activeUsers, icon: Users, accent: "text-[#FF5910]", sub: "Active memberships" },
           { label: "Blog Posts", value: stats.totalBlogs, icon: FileText, accent: "text-[#22c55e]", sub: "Published articles" },
           { label: "Stories", value: stats.totalStories, icon: Sparkles, accent: "text-[#FF5910]", sub: "Active stories" },
           { label: "Live Streams", value: `${stats.activeStreams}/${stats.totalStreams}`, icon: Radio, accent: "text-[#FF5910]", sub: stats.activeStreams > 0 ? "Live now" : "Standby" },
