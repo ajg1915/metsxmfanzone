@@ -170,6 +170,8 @@ export async function cancelPaypalAndDeleteAccount(
     }
   }
 
+  await bestEffortUserDataCleanup(admin, userId);
+
   let delErrMsg: string | null = null;
   for (let attempt = 0; attempt < 2; attempt++) {
     const { error: delErr } = await admin.auth.admin.deleteUser(userId);
@@ -191,8 +193,6 @@ export async function cancelPaypalAndDeleteAccount(
       message: "PayPal billing was cancelled, but the account could not be removed automatically.",
     };
   }
-
-  await bestEffortUserDataCleanup(admin, userId);
 
   const [{ count: profileCount }, { count: subCount }] = await Promise.all([
     admin.from("profiles").select("id", { count: "exact", head: true }).eq("id", userId),
