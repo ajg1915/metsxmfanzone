@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Lock, Key, Fingerprint } from "lucide-react";
+import { AlertTriangle, RefreshCw, Shield, Lock, Key, Fingerprint } from "lucide-react";
 import { startAuthentication } from "@simplewebauthn/browser";
+import { withTimeout } from "@/utils/asyncTimeout";
 
 interface AdminPinVerificationProps {
   userId: string;
@@ -27,6 +28,7 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
   const [hasPasskeys, setHasPasskeys] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
   const [signedOut, setSignedOut] = useState(false);
+  const [pinCheckError, setPinCheckError] = useState(false);
 
   const { toast } = useToast();
 
@@ -58,11 +60,15 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
 
   const checkPasskeys = async () => {
     try {
-      const { data } = await supabase
-        .from("user_passkeys")
-        .select("id")
-        .eq("user_id", userId)
-        .limit(1);
+      const { data } = await withTimeout(
+        supabase
+          .from("user_passkeys")
+          .select("id")
+          .eq("user_id", userId)
+          .limit(1),
+        5000,
+        "Passkey check timed out"
+      );
       setHasPasskeys(!!data && data.length > 0);
     } catch {
       setHasPasskeys(false);
@@ -124,23 +130,33 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
       }
       setSignedOut(false);
 
-      const response = await supabase.functions.invoke('admin-pin-verify', {
-        body: { action: 'check' }
-      });
+      const response = await withTimeout(
+        supabase.functions.invoke('admin-pin-verify', {
+          body: { action: 'check' }
+        }),
+        7000,
+        "Admin PIN check timed out"
+      );
 
       if (response.error) {
         console.error("Error checking PIN:", response.error);
-        const { data } = await supabase
-          .from("admin_verification_codes")
-          .select("id")
-          .eq("user_id", userId)
-          .maybeSingle();
+        const { data } = await withTimeout(
+          supabase
+            .from("admin_verification_codes")
+            .select("id")
+            .eq("user_id", userId)
+            .maybeSingle(),
+          5000,
+          "Fallback PIN check timed out"
+        );
         setIsSetupMode(!data);
       } else {
         setIsSetupMode(!response.data.hasPin);
       }
+      setPinCheckError(false);
     } catch (err) {
       console.error("Error:", err);
+      setPinCheckError(true);
     } finally {
       setLoading(false);
     }
@@ -183,9 +199,13 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
 
     setVerifying(true);
     try {
-      const response = await supabase.functions.invoke('admin-pin-verify', {
-        body: { action: 'setup', pin }
-      });
+      const response = await withTimeout(
+        supabase.functions.invoke('admin-pin-verify', {
+          body: { action: 'setup', pin }
+        }),
+        10000,
+        "Admin PIN setup timed out"
+      );
 
       if (response.error) throw response.error;
       if (response.data.error) throw new Error(response.data.error);
@@ -224,9 +244,13 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
 
     setVerifying(true);
     try {
-      const response = await supabase.functions.invoke('admin-pin-verify', {
-        body: { action: 'verify', pin }
-      });
+      const response = await withTimeout(
+        supabase.functions.invoke('admin-pin-verify', {
+          body: { action: 'verify', pin }
+        }),
+        10000,
+        "Admin PIN verification timed out"
+      );
 
       if (response.error) throw response.error;
 
@@ -320,8 +344,46 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md bg-card/90 backdrop-blur-xl">
+          <CardContent className="flex flex-col items-center gap-3 py-8 text-center">
+            <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Loading secure PIN</p>
+              <p className="text-xs text-muted-foreground">Checking your admin session...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (pinCheckError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <CardTitle className="text-xl">PIN Check Failed</CardTitle>
+            <CardDescription>
+              The secure PIN check did not finish. Refresh the session or sign in again to continue.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full" onClick={() => { setLoading(true); setPinCheckError(false); checkExistingPin(); }}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+            <Button variant="outline" className="w-full" onClick={handleResetSession}>
+              Clear Session & Sign In Again
+            </Button>
+            <Button variant="ghost" className="w-full" onClick={onCancel}>
+              Go Back
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -354,6 +416,9 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
   }
 
   const isLockedOut = lockoutUntil && lockoutUntil > new Date();
+  const remainingLockoutMinutes = lockoutUntil
+    ? Math.ceil((lockoutUntil.getTime() - Date.now()) / 60000)
+    : 0;
 
 
   return (
@@ -409,7 +474,7 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
               <p className="text-destructive font-medium">Account Temporarily Locked</p>
               <p className="text-sm text-muted-foreground mt-2">
                 Too many failed attempts. Please wait{" "}
-                {Math.ceil((lockoutUntil!.getTime() - Date.now()) / 60000)} minutes.
+                {remainingLockoutMinutes} minutes.
               </p>
               <Button
                 variant="link"

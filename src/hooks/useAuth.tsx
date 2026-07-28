@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { isTimeoutError, withTimeout } from "@/utils/asyncTimeout";
 
 interface AuthContextType {
   user: User | null;
@@ -19,12 +20,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
 
+    const clearLocalAuthStorage = () => {
+      try {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith("sb-") || key === "supabase.auth.token") {
+            localStorage.removeItem(key);
+          }
+        });
+        sessionStorage.removeItem("admin_verified");
+        sessionStorage.removeItem("admin_verified_at");
+        sessionStorage.removeItem("admin_user_id");
+        sessionStorage.removeItem("admin_session_token");
+        sessionStorage.removeItem("admin_device_fingerprint");
+      } catch {
+        // Storage may be unavailable in private browsing; ignore cleanup errors.
+      }
+    };
+
     const clearCorruptedSession = async () => {
       try {
         await supabase.auth.signOut({ scope: "local" });
       } catch {
         // Ignore cleanup errors; we still reset local state below
       }
+
+      clearLocalAuthStorage();
 
       if (isMounted) {
         setSession(null);
@@ -55,7 +75,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
-        const { data: { session: existingSession }, error } = await supabase.auth.getSession();
+        const { data: { session: existingSession }, error } = await withTimeout(
+          supabase.auth.getSession(),
+          4500,
+          "Auth session check timed out"
+        );
         if (!isMounted) return;
 
         if (error) {
@@ -72,6 +96,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(existingSession?.user ?? null);
       } catch (err) {
         console.error("Unexpected auth init error:", err);
+        const message = err instanceof Error ? err.message.toLowerCase() : "";
+        if (isTimeoutError(err) || message.includes("failed to fetch") || message.includes("refresh token")) {
+          await clearCorruptedSession();
+        }
       } finally {
         initialized = true;
         clearTimeout(safetyTimer);
@@ -84,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth();
 
     // Safety timeout: never leave the app stuck on a loading screen if
-    // Supabase token refresh hangs due to a network failure. A hung refresh
+    // the auth token refresh hangs due to a network failure. A hung refresh
     // means the stored session is unusable, so clear it locally — otherwise
     // the client keeps retrying a dead refresh token and every signed-in
     // screen (admin PIN included) stays locked out.
@@ -93,7 +121,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.warn("Auth init timed out — clearing local session");
       await clearCorruptedSession();
       if (isMounted) setLoading(false);
-    }, 8000);
+    }, 6000);
 
 
 
@@ -110,6 +138,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear local state first for immediate UI feedback
       setSession(null);
       setUser(null);
+      try {
+        sessionStorage.removeItem("admin_verified");
+        sessionStorage.removeItem("admin_verified_at");
+        sessionStorage.removeItem("admin_user_id");
+        sessionStorage.removeItem("admin_session_token");
+        sessionStorage.removeItem("admin_device_fingerprint");
+      } catch {
+        // Ignore storage cleanup errors.
+      }
 
       const { error } = await supabase.auth.signOut({ scope: "local" });
 

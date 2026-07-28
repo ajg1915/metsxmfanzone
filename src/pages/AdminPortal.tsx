@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateDeviceFingerprint, getDeviceName } from "@/utils/deviceFingerprint";
 import { trackFailedLogin, trackSuspiciousActivity } from "@/utils/securityAlerts";
 import { useDevice } from "@/hooks/use-device";
+import { withTimeout } from "@/utils/asyncTimeout";
 
 export default function AdminPortal() {
   const navigate = useNavigate();
@@ -25,6 +26,15 @@ export default function AdminPortal() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
+  const [connectionIssue, setConnectionIssue] = useState("");
+
+  const clearStoredAdminSession = () => {
+    sessionStorage.removeItem("admin_verified");
+    sessionStorage.removeItem("admin_verified_at");
+    sessionStorage.removeItem("admin_user_id");
+    sessionStorage.removeItem("admin_session_token");
+    sessionStorage.removeItem("admin_device_fingerprint");
+  };
 
   const handleForgotPin = async () => {
     if (!forgotEmail.trim()) {
@@ -33,9 +43,13 @@ export default function AdminPortal() {
     }
     setForgotLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("admin-pin-login", {
-        body: { action: "request-pin-reset", email: forgotEmail.trim() },
-      });
+      const { data, error } = await withTimeout(
+        supabase.functions.invoke("admin-pin-login", {
+          body: { action: "request-pin-reset", email: forgotEmail.trim() },
+        }),
+        10000,
+        "PIN reset request timed out"
+      );
       if (error) throw error;
       setForgotSent(true);
       toast({
@@ -61,14 +75,22 @@ export default function AdminPortal() {
 
   const checkLockoutStatus = async (fingerprint: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke('admin-pin-login', {
-        body: { action: 'check-lockout', deviceFingerprint: fingerprint }
-      });
+      const { data, error } = await withTimeout(
+        supabase.functions.invoke('admin-pin-login', {
+          body: { action: 'check-lockout', deviceFingerprint: fingerprint }
+        }),
+        6500,
+        "Admin lockout check timed out"
+      );
       if (error) throw error;
       setIsLocked(data.locked);
       setAttemptsRemaining(data.attemptsRemaining);
+      setConnectionIssue("");
     } catch (err) {
       console.error('Error checking lockout:', err);
+      setConnectionIssue("Secure connection was slow, but you can still try your PIN.");
+      setIsLocked(false);
+      setAttemptsRemaining(5);
     } finally {
       setCheckingLockout(false);
     }
@@ -77,11 +99,16 @@ export default function AdminPortal() {
   const handleLogin = useCallback(async () => {
     if (pin.length < 6 || loading) return;
     setLoading(true);
+    setConnectionIssue("");
     try {
       const deviceName = getDeviceName();
-      const { data, error } = await supabase.functions.invoke('admin-pin-login', {
-        body: { action: 'login', pin, deviceFingerprint, deviceName }
-      });
+      const { data, error } = await withTimeout(
+        supabase.functions.invoke('admin-pin-login', {
+          body: { action: 'login', pin, deviceFingerprint, deviceName }
+        }),
+        12000,
+        "Admin PIN login timed out"
+      );
 
       if (error) {
         // Read the actual response body from the FunctionsHttpError
@@ -129,6 +156,7 @@ export default function AdminPortal() {
       }
 
       if (data.success) {
+        clearStoredAdminSession();
         sessionStorage.setItem("admin_verified", "true");
         sessionStorage.setItem("admin_verified_at", new Date().toISOString());
         sessionStorage.setItem("admin_user_id", data.userId);
@@ -160,6 +188,7 @@ export default function AdminPortal() {
       }
     } catch (err) {
       console.error('Login error:', err);
+      setConnectionIssue("Login did not complete. Refresh the secure session and try again.");
       toast({ title: "Error", description: "Failed to authenticate. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
@@ -226,6 +255,12 @@ export default function AdminPortal() {
               </div>
             ) : (
               <>
+                {connectionIssue && (
+                  <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-center text-[11px] text-destructive">
+                    {connectionIssue}
+                  </div>
+                )}
+
                 {/* Device badge */}
                 <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
                   <Fingerprint className="w-3 h-3" />
@@ -275,6 +310,20 @@ export default function AdminPortal() {
                     </span>
                   )}
                 </Button>
+
+                {connectionIssue && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      clearStoredAdminSession();
+                      window.location.reload();
+                    }}
+                    className="w-full h-9 text-xs rounded-xl"
+                  >
+                    Refresh Secure Login
+                  </Button>
+                )}
 
                 {/* Security info */}
                 <div className="bg-muted/30 rounded-xl p-3 text-[10px] text-muted-foreground space-y-1">
