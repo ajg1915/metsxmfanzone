@@ -221,7 +221,7 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Users", value: stats.totalUsers, icon: Users, accent: "text-[#FF5910]", sub: "All registered fans" },
+          { label: "Active Accounts", value: stats.activeUsers, icon: Users, accent: "text-[#FF5910]", sub: "Active memberships" },
           { label: "Blog Posts", value: stats.totalBlogs, icon: FileText, accent: "text-[#22c55e]", sub: "Published articles" },
           { label: "Stories", value: stats.totalStories, icon: Sparkles, accent: "text-[#FF5910]", sub: "Active stories" },
           { label: "Live Streams", value: `${stats.activeStreams}/${stats.totalStreams}`, icon: Radio, accent: "text-[#FF5910]", sub: stats.activeStreams > 0 ? "Live now" : "Standby" },
