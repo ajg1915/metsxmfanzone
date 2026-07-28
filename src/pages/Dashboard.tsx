@@ -45,39 +45,53 @@ const Dashboard = () => {
     );
     if (!confirmed) return;
     setCancelling(true);
+
+    const recordResult = (result: Record<string, unknown>) => {
+      try {
+        sessionStorage.setItem(
+          CANCELLATION_RESULT_KEY,
+          JSON.stringify({ ...result, at: new Date().toISOString() })
+        );
+      } catch (_) { /* storage unavailable */ }
+    };
+
     try {
       const { data, error } = await supabase.functions.invoke("cancel-subscription", { body: {} });
       if (error || (data as any)?.error) {
         throw new Error((data as any)?.error || error?.message || "Failed to cancel");
       }
+
+      const accountDeleted = Boolean((data as any)?.accountDeleted);
       setSubscriptionStatus("cancelled");
       setSubscriptionDialogOpen(false);
-
-      if ((data as any)?.accountDeleted) {
-        toast({
-          title: "Membership Cancelled",
-          description: "Your PayPal billing was stopped and your account has been deleted.",
-        });
-        await supabase.auth.signOut();
-        navigate("/");
-        return;
-      }
-
-      toast({
-        title: "Billing Cancelled",
-        description:
-          (data as any)?.message || "Your PayPal billing has been stopped.",
+      recordResult({
+        paypalConfirmed: true,
+        accountDeleted,
+        message: (data as any)?.message,
       });
+
+      if (accountDeleted) {
+        await supabase.auth.signOut();
+      }
+      navigate("/dashboard/cancellation-status");
     } catch (e: any) {
+      recordResult({
+        paypalConfirmed: false,
+        accountDeleted: false,
+        error: e?.message || "Failed to cancel",
+      });
+      setSubscriptionDialogOpen(false);
       toast({
         title: "Cancellation failed",
         description: e?.message || "Please try again or contact support.",
         variant: "destructive",
       });
+      navigate("/dashboard/cancellation-status");
     } finally {
       setCancelling(false);
     }
   };
+
 
 
   useEffect(() => {
