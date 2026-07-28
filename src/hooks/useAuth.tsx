@@ -50,6 +50,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     // THEN perform the initial session check (controls loading)
+    let initialized = false;
+    let safetyTimer: ReturnType<typeof setTimeout>;
+
     const initializeAuth = async () => {
       try {
         const { data: { session: existingSession }, error } = await supabase.auth.getSession();
@@ -70,6 +73,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (err) {
         console.error("Unexpected auth init error:", err);
       } finally {
+        initialized = true;
+        clearTimeout(safetyTimer);
         if (isMounted) {
           setLoading(false);
         }
@@ -83,12 +88,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // means the stored session is unusable, so clear it locally — otherwise
     // the client keeps retrying a dead refresh token and every signed-in
     // screen (admin PIN included) stays locked out.
-    const safetyTimer = setTimeout(async () => {
-      if (!isMounted) return;
+    safetyTimer = setTimeout(async () => {
+      if (!isMounted || initialized) return;
       console.warn("Auth init timed out — clearing local session");
       await clearCorruptedSession();
       if (isMounted) setLoading(false);
-    }, 4000);
+    }, 8000);
+
+
 
 
     return () => {
