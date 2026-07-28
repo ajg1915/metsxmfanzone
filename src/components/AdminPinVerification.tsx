@@ -26,6 +26,8 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
   const [lockoutUntil, setLockoutUntil] = useState<Date | null>(null);
   const [hasPasskeys, setHasPasskeys] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
+  const [signedOut, setSignedOut] = useState(false);
+
   const { toast } = useToast();
 
   const MAX_ATTEMPTS = 5;
