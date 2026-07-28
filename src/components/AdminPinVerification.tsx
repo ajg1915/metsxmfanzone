@@ -116,9 +116,11 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        setSignedOut(true);
         setLoading(false);
         return;
       }
+      setSignedOut(false);
 
       const response = await supabase.functions.invoke('admin-pin-verify', {
         body: { action: 'check' }
@@ -141,6 +143,22 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
       setLoading(false);
     }
   };
+
+  // Escape hatch: wipes the local lockout counters and the (possibly broken)
+  // Supabase session so a stuck admin can sign in cleanly again.
+  const handleResetSession = async () => {
+    sessionStorage.removeItem("admin_attempts");
+    sessionStorage.removeItem("admin_lockout");
+    sessionStorage.removeItem("admin_verified");
+    sessionStorage.removeItem("admin_verified_at");
+    setAttempts(0);
+    setLockoutUntil(null);
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch { /* already signed out */ }
+    window.location.href = "/auth?mode=login";
+  };
+
 
   const handleSetupPin = async () => {
     if (pin.length < 6) {
