@@ -65,7 +65,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [adminUserId, setAdminUserId] = useState<string | null>(null);
   const [stats, setStats] = useState({
-    totalUsers: 0,
+    activeUsers: 0,
     totalBlogs: 0,
     activeStreams: 0,
     totalStreams: 0,
@@ -77,8 +77,13 @@ export default function AdminDashboard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) setAdminUserId(user.id);
 
-      const [usersResult, streamsResult, blogsResult, storiesResult] = await Promise.all([
-        supabase.from("profiles").select("*", { count: "exact", head: true }),
+      const nowIso = new Date().toISOString();
+      const [activeResult, streamsResult, blogsResult, storiesResult] = await Promise.all([
+        supabase
+          .from("subscriptions")
+          .select("user_id")
+          .eq("status", "active")
+          .or(`end_date.is.null,end_date.gt.${nowIso}`),
         supabase.from("live_streams").select("status"),
         supabase.from("blog_posts").select("*", { count: "exact", head: true }),
         supabase.from("stories").select("*", { count: "exact", head: true }),
@@ -86,15 +91,17 @@ export default function AdminDashboard() {
 
       const activeStreams = streamsResult.data?.filter(s => s.status === "live").length || 0;
       const totalStreams = streamsResult.data?.length || 0;
+      const activeUsers = new Set((activeResult.data || []).map((s: any) => s.user_id)).size;
 
       setStats({
-        totalUsers: usersResult.count || 0,
+        activeUsers,
         totalBlogs: blogsResult.count || 0,
         activeStreams,
         totalStreams,
         totalStories: storiesResult.count || 0,
       });
     };
+
 
     fetchStats();
   }, []);
