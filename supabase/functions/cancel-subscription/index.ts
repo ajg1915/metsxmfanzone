@@ -95,24 +95,27 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // Every subscription row that could still bill this user — not just the newest one.
+    // EVERY subscription row for this user — regardless of status. A row marked
+    // "cancelled" locally can still have a live PayPal agreement billing the card.
     const { data: subs, error: subErr } = await admin
       .from("subscriptions")
       .select("id, paypal_subscription_id, status, end_date")
-      .eq("user_id", user.id)
-      .in("status", ["active", "pending", "suspended", "past_due"]);
+      .eq("user_id", user.id);
 
     if (subErr) return json({ error: subErr.message }, 500);
-    if (!subs || subs.length === 0) return json({ error: "No active subscription found" }, 404);
 
     const PAYPAL_CLIENT_ID = Deno.env.get("PAYPAL_CLIENT_ID")!;
     const PAYPAL_SECRET = Deno.env.get("PAYPAL_SECRET")!;
     const PAYPAL_API = Deno.env.get("PAYPAL_BASE_URL") || "https://api-m.paypal.com";
 
-    const failures: string[] = [];
-    const paypalIds = subs
-      .map((s) => s.paypal_subscription_id)
-      .filter((id): id is string => Boolean(id));
+    let failureCount = 0;
+    const paypalIds = Array.from(
+      new Set(
+        (subs || [])
+          .map((s) => s.paypal_subscription_id)
+          .filter((id): id is string => Boolean(id)),
+      ),
+    );
 
     if (paypalIds.length > 0) {
       let token: string;
@@ -128,12 +131,12 @@ Deno.serve(async (req) => {
 
       for (const id of paypalIds) {
         const ok = await cancelPayPalSubscription(PAYPAL_API, token, id, reason);
-        if (!ok) failures.push("[REDACTED]");
+        if (!ok) failureCount++;
       }
     }
 
-    // Never mark the account cancelled locally while PayPal can still charge it.
-    if (failures.length > 0) {
+    // Never delete the account while PayPal can still charge it.
+    if (failureCount > 0) {
       return json(
         {
           error:
@@ -144,42 +147,67 @@ Deno.serve(async (req) => {
     }
 
     const nowIso = new Date().toISOString();
-    const { error: updErr } = await admin
-      .from("subscriptions")
-      .update({
-        status: "cancelled",
-        cancellation_status: "cancelled",
-        cancellation_requested_at: nowIso,
-        end_date: nowIso,
-        updated_at: nowIso,
-      })
-      .in("id", subs.map((s) => s.id));
 
-    if (updErr) return json({ error: updErr.message }, 500);
+    if (subs && subs.length > 0) {
+      await admin
+        .from("subscriptions")
+        .update({
+          status: "cancelled",
+          cancellation_status: "cancelled",
+          cancellation_requested_at: nowIso,
+          end_date: nowIso,
+          updated_at: nowIso,
+        })
+        .in("id", subs.map((s) => s.id));
 
-    for (const s of subs) {
-      await admin.from("subscription_activity").insert({
-        subscription_id: s.id,
-        user_id: user.id,
-        action: "cancelled_by_user",
-        details: { reason, account_deleted: true },
-        performed_by: user.id,
-      });
+      for (const s of subs) {
+        await admin.from("subscription_activity").insert({
+          subscription_id: s.id,
+          user_id: user.id,
+          action: "cancelled_by_user",
+          details: { reason, account_deleted: true },
+          performed_by: user.id,
+        });
+      }
     }
 
     // Full removal from the database, as required when a member cancels.
-    const { error: delErr } = await admin.auth.admin.deleteUser(user.id);
-    if (delErr) {
-      console.error("Account deletion failed:", delErr.message);
+    // Retry once — a transient failure must not leave a live account behind.
+    let delErrMsg: string | null = null;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const { error: delErr } = await admin.auth.admin.deleteUser(user.id);
+      if (!delErr) {
+        delErrMsg = null;
+        break;
+      }
+      delErrMsg = delErr.message;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+
+    if (delErrMsg) {
+      console.error("Account deletion failed:", delErrMsg);
       return json({
         success: true,
+        paypalCancelled: true,
         accountDeleted: false,
         message:
           "Your PayPal billing was cancelled, but we could not remove your account automatically. Please contact support.",
       });
     }
 
-    return json({ success: true, accountDeleted: true });
+    // Confirm the cascade actually cleared the member's data.
+    const [{ count: profileCount }, { count: subCount }] = await Promise.all([
+      admin.from("profiles").select("id", { count: "exact", head: true }).eq("id", user.id),
+      admin.from("subscriptions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+    ]);
+
+    if ((profileCount || 0) > 0 || (subCount || 0) > 0) {
+      await admin.from("subscriptions").delete().eq("user_id", user.id);
+      await admin.from("profiles").delete().eq("id", user.id);
+    }
+
+    return json({ success: true, paypalCancelled: true, accountDeleted: true });
+
   } catch (e) {
     console.error("cancel-subscription error:", (e as Error).message);
     return json({ error: "Internal server error" }, 500);
