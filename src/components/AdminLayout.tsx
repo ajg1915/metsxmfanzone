@@ -6,11 +6,12 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Home, RefreshCw, Search } from "lucide-react";
+import { AlertTriangle, Home, LogIn, RefreshCw, Search } from "lucide-react";
 import { AdminPinVerification } from "@/components/AdminPinVerification";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import { NotificationsBell } from "@/components/admin/NotificationsBell";
+import { withTimeout } from "@/utils/asyncTimeout";
 
 function AdminHeader({ navigate }: { navigate: (path: string | number) => void }) {
   return (
@@ -61,7 +62,7 @@ function AdminHeader({ navigate }: { navigate: (path: string | number) => void }
 }
 
 export function AdminLayout() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -69,6 +70,31 @@ export function AdminLayout() {
   const [needsPinVerification, setNeedsPinVerification] = useState(false);
   const [pinVerified, setPinVerified] = useState(false);
   const [pinOnlyAuth, setPinOnlyAuth] = useState(false);
+  const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+
+  const clearAdminSession = () => {
+    sessionStorage.removeItem("admin_verified");
+    sessionStorage.removeItem("admin_verified_at");
+    sessionStorage.removeItem("admin_user_id");
+    sessionStorage.removeItem("admin_session_token");
+    sessionStorage.removeItem("admin_device_fingerprint");
+  };
+
+  const handleFreshAdminLogin = async () => {
+    clearAdminSession();
+    await signOut();
+    navigate("/admin-portal", { replace: true });
+  };
+
+  useEffect(() => {
+    if (!loading && !checking) {
+      setLoadingTimedOut(false);
+      return;
+    }
+
+    const timer = setTimeout(() => setLoadingTimedOut(true), 6500);
+    return () => clearTimeout(timer);
+  }, [loading, checking]);
 
   useEffect(() => {
     // Check if already verified this session
@@ -159,18 +185,23 @@ export function AdminLayout() {
       // Traditional auth flow
       if (!user) {
         // No user and no PIN auth - redirect to portal
-        navigate("/admin-portal");
+        setChecking(false);
+        navigate("/admin-portal", { replace: true });
         return;
       }
 
       // User exists - check admin role
       try {
-        const { data } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", user.id)
-          .eq("role", "admin")
-          .maybeSingle();
+        const { data } = await withTimeout(
+          supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id)
+            .eq("role", "admin")
+            .maybeSingle(),
+          7000,
+          "Admin role check timed out"
+        );
 
         if (!data) {
           toast({
@@ -190,7 +221,13 @@ export function AdminLayout() {
         }
       } catch (err) {
         console.error("Error checking admin role:", err);
-        navigate("/");
+        toast({
+          title: "Admin check failed",
+          description: "Please start a fresh admin login session.",
+          variant: "destructive",
+        });
+        setChecking(false);
+        navigate("/admin-portal", { replace: true });
         return;
       }
       setChecking(false);
@@ -210,8 +247,36 @@ export function AdminLayout() {
 
   if (loading || checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="w-full max-w-sm rounded-2xl border border-border bg-card/90 p-5 text-center shadow-2xl backdrop-blur-xl">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            {loadingTimedOut ? (
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            ) : (
+              <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+            )}
+          </div>
+          <h1 className="text-base font-bold text-foreground">
+            {loadingTimedOut ? "Admin login needs a refresh" : "Checking admin access"}
+          </h1>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {loadingTimedOut
+              ? "Your saved login may be expired. Start a fresh secure admin login to continue."
+              : "Verifying your account and secure PIN session..."}
+          </p>
+          {loadingTimedOut && (
+            <div className="mt-4 grid gap-2">
+              <Button onClick={handleFreshAdminLogin} className="w-full">
+                <LogIn className="mr-2 h-4 w-4" />
+                Open Secure PIN Login
+              </Button>
+              <Button variant="outline" onClick={() => window.location.reload()} className="w-full">
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh Page
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     );
   }

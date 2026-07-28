@@ -10,13 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { Fingerprint } from "lucide-react";
+import { AlertTriangle, Fingerprint, RefreshCw } from "lucide-react";
 import AuthBackground from "@/components/AuthBackground";
 import authLogo from "@/assets/metsxmfanzone-logo-auth.png";
 import { trackFailedLogin } from "@/utils/securityAlerts";
 import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/browser";
 import AuthLoadingScreen from "@/components/auth/AuthLoadingScreen";
 import { Helmet } from "react-helmet-async";
+import { withTimeout } from "@/utils/asyncTimeout";
 
 
 
@@ -198,6 +199,7 @@ const Auth = () => {
   const [paymentMethod, setPaymentMethod] = useState<string>("paypal");
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [actionTakingTooLong, setActionTakingTooLong] = useState(false);
   
   // Remembered user state
   const [rememberedUser, setRememberedUser] = useState<RememberedUser | null>(null);
@@ -227,10 +229,47 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const clearStuckLoginState = useCallback(async () => {
+    try {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("sb-") || key === "supabase.auth.token") {
+          localStorage.removeItem(key);
+        }
+      });
+      sessionStorage.removeItem("admin_verified");
+      sessionStorage.removeItem("admin_verified_at");
+      sessionStorage.removeItem("admin_user_id");
+      sessionStorage.removeItem("admin_session_token");
+      sessionStorage.removeItem("admin_device_fingerprint");
+    } catch {
+      // Ignore storage errors.
+    }
+
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // Already signed out locally.
+    }
+
+    setLoading(false);
+    setActionTakingTooLong(false);
+    navigate("/auth?mode=login", { replace: true });
+  }, [navigate]);
+
   const clearPendingSignupPlan = useCallback(() => {
     localStorage.removeItem("pending_signup_plan");
     localStorage.removeItem("pending_signup_payment_method");
   }, []);
+
+  useEffect(() => {
+    if (!loading && !authLoading && !biometricLoading) {
+      setActionTakingTooLong(false);
+      return;
+    }
+
+    const timer = setTimeout(() => setActionTakingTooLong(true), 9000);
+    return () => clearTimeout(timer);
+  }, [authLoading, biometricLoading, loading]);
 
   const persistPendingPaidSignup = useCallback(() => {
     if (selectedPlan === "premium" || selectedPlan === "annual") {
@@ -283,9 +322,13 @@ const Auth = () => {
     
     try {
       // Step 1: Get login options from server
-      const optionsResponse = await supabase.functions.invoke("webauthn-login-options", {
-        body: { email: biometricEmail },
-      });
+      const optionsResponse = await withTimeout(
+        supabase.functions.invoke("webauthn-login-options", {
+          body: { email: biometricEmail },
+        }),
+        10000,
+        "Biometric options request timed out"
+      );
 
       if (optionsResponse.error) {
         throw new Error(optionsResponse.error.message || "Failed to get login options");
@@ -307,21 +350,25 @@ const Auth = () => {
       });
 
       // Step 3: Verify with server
-      const verifyResponse = await supabase.functions.invoke("webauthn-login-verify", {
-        body: {
-          credential: {
-            id: credential.id,
-            rawId: credential.rawId,
-            response: {
-              authenticatorData: credential.response.authenticatorData,
-              clientDataJSON: credential.response.clientDataJSON,
-              signature: credential.response.signature,
+      const verifyResponse = await withTimeout(
+        supabase.functions.invoke("webauthn-login-verify", {
+          body: {
+            credential: {
+              id: credential.id,
+              rawId: credential.rawId,
+              response: {
+                authenticatorData: credential.response.authenticatorData,
+                clientDataJSON: credential.response.clientDataJSON,
+                signature: credential.response.signature,
+              },
+              type: credential.type,
             },
-            type: credential.type,
+            email: biometricEmail,
           },
-          email: biometricEmail,
-        },
-      });
+        }),
+        12000,
+        "Biometric verification timed out"
+      );
 
       if (verifyResponse.error) {
         throw new Error(verifyResponse.error.message || "Authentication failed");
@@ -440,8 +487,11 @@ const Auth = () => {
         const provider = authUser.app_metadata?.provider;
 
         // Check if user has a subscription
-        const { data: subscriptions } = await supabase
-          .rpc("get_user_subscription_safe", { p_user_id: authUser.id });
+        const { data: subscriptions } = await withTimeout(
+          supabase.rpc("get_user_subscription_safe", { p_user_id: authUser.id }),
+          7000,
+          "Subscription redirect check timed out"
+        );
 
         const activePaidSubscription = subscriptions?.find(
           (s: any) =>
@@ -674,10 +724,14 @@ const Auth = () => {
       
 
       const signInAttempt = () =>
-        supabase.auth.signInWithPassword({
-          email: validated.email,
-          password: validated.password,
-        });
+        withTimeout(
+          supabase.auth.signInWithPassword({
+            email: validated.email,
+            password: validated.password,
+          }),
+          12000,
+          "Email login timed out"
+        );
 
       let { data, error } = await signInAttempt();
 
@@ -711,11 +765,15 @@ const Auth = () => {
 
       if (data.user) {
         // Check if email is verified in profiles table
-        const { data: profile, error: profileError } = await supabase
-          .from("profiles")
-          .select("email_verified")
-          .eq("id", data.user.id)
-          .maybeSingle();
+        const { data: profile, error: profileError } = await withTimeout(
+          supabase
+            .from("profiles")
+            .select("email_verified")
+            .eq("id", data.user.id)
+            .maybeSingle(),
+          8000,
+          "Profile check timed out"
+        );
 
         if (profileError) {
           console.error("Profile lookup error:", profileError);
@@ -798,7 +856,11 @@ const Auth = () => {
       toast({ title: "Wrong PIN", description: "Incorrect PIN.", variant: "destructive" }); setPinInput(""); return;
     }
     setLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await withTimeout(
+      supabase.auth.getSession(),
+      7000,
+      "Remembered session check timed out"
+    );
     if (session) { await completeAuthentication(session.user.id, false); }
     else { toast({ title: "Session expired", description: "Please sign in with your password.", variant: "destructive" }); setPinLoginMode(false); setIsRememberedLogin(false); }
     setLoading(false);
@@ -811,13 +873,21 @@ const Auth = () => {
     if (stored) { const d: RememberedUser = JSON.parse(stored); d.pin = pinInput; localStorage.setItem(REMEMBER_ME_KEY, JSON.stringify(d)); }
     toast({ title: "PIN saved!", description: "Use your PIN next time." });
     setShowPinSetup(false); setPinInput(""); setPinConfirm("");
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await withTimeout(
+      supabase.auth.getSession(),
+      7000,
+      "PIN setup session check timed out"
+    );
     if (session) await completeAuthentication(session.user.id, false);
   };
 
   const handleSkipPinSetup = async () => {
     setShowPinSetup(false); setPinInput(""); setPinConfirm("");
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await withTimeout(
+      supabase.auth.getSession(),
+      7000,
+      "PIN skip session check timed out"
+    );
     if (session) await completeAuthentication(session.user.id, false);
   };
 
@@ -850,10 +920,14 @@ const Auth = () => {
       });
       
       // Check user roles first for role-based redirect
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId);
+      const { data: roles } = await withTimeout(
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId),
+        8000,
+        "Role check timed out"
+      );
       
       // Check if user is admin
       const isAdmin = roles?.some(r => r.role === "admin");
@@ -870,8 +944,11 @@ const Auth = () => {
       }
       
       // Check subscription plan to determine redirect using safe function
-      const { data: subscriptions } = await supabase
-        .rpc("get_user_subscription_safe", { p_user_id: userId });
+      const { data: subscriptions } = await withTimeout(
+        supabase.rpc("get_user_subscription_safe", { p_user_id: userId }),
+        8000,
+        "Subscription check timed out"
+      );
       
       const subscription = subscriptions?.find(s => s.status === "active");
 
@@ -1165,6 +1242,21 @@ const Auth = () => {
             </div>
             <div className="mt-4">
           <form onSubmit={isResettingPassword ? handleUpdatePassword : isForgotPassword ? handleForgotPassword : isLogin ? handleLogin : handleSignup} className="space-y-4">
+            {actionTakingTooLong && (
+              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+                  <div className="space-y-2">
+                    <p className="font-medium">Login is taking too long.</p>
+                    <p className="text-destructive/80">Clear the expired local session, then sign in again.</p>
+                    <Button type="button" variant="outline" size="sm" onClick={clearStuckLoginState} className="h-8 text-xs">
+                      <RefreshCw className="mr-2 h-3 w-3" />
+                      Reset Login Session
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
             {!isLogin && !isForgotPassword && !isResettingPassword && (
               <>
                 <div className="bg-muted/50 border border-border rounded-md p-3 text-sm text-muted-foreground">
