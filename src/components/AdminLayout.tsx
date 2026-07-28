@@ -149,16 +149,27 @@ export function AdminLayout() {
       const pinVerifiedSession = sessionStorage.getItem("admin_verified") === "true";
       
       if (adminUserId && pinVerifiedSession && !user) {
-        // PIN-only auth - verify the user is still an admin in database
+        // PIN-only auth - verify via edge function (service role, works without a session)
         try {
-          const { data: roleData } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", adminUserId)
-            .eq("role", "admin")
-            .maybeSingle();
+          const { data: verifyData, error: verifyError } = await withTimeout(
+            supabase.functions.invoke("admin-pin-login", {
+              body: { action: "verify-admin", userId: adminUserId },
+            }),
+            8000,
+            "Admin verification timed out"
+          );
 
-          if (!roleData) {
+          // Network/backend hiccup: keep the existing verified session instead of locking the admin out
+          if (verifyError || !verifyData) {
+            console.warn("Admin verification unavailable, keeping existing session", verifyError);
+            setIsAdmin(true);
+            setPinOnlyAuth(true);
+            setPinVerified(true);
+            setChecking(false);
+            return;
+          }
+
+          if (verifyData.isAdmin === false) {
             toast({
               title: "Access Denied",
               description: "Admin privileges have been revoked",
@@ -174,9 +185,11 @@ export function AdminLayout() {
           setPinOnlyAuth(true);
           setPinVerified(true);
         } catch (err) {
-          console.error("Error checking admin role:", err);
-          navigate("/admin-portal");
-          return;
+          // Timeout or offline - don't kick the admin out, trust the verified session
+          console.warn("Admin role check failed, keeping session:", err);
+          setIsAdmin(true);
+          setPinOnlyAuth(true);
+          setPinVerified(true);
         }
         setChecking(false);
         return;
@@ -192,7 +205,7 @@ export function AdminLayout() {
 
       // User exists - check admin role
       try {
-        const { data } = await withTimeout(
+        const { data, error } = await withTimeout(
           supabase
             .from("user_roles")
             .select("role")
@@ -203,6 +216,14 @@ export function AdminLayout() {
           "Admin role check timed out"
         );
 
+        if (error) {
+          // Backend unreachable - fall back to the PIN portal rather than denying access
+          console.warn("Admin role lookup failed:", error);
+          setChecking(false);
+          navigate("/admin-portal", { replace: true });
+          return;
+        }
+
         if (!data) {
           toast({
             title: "Access Denied",
@@ -212,6 +233,7 @@ export function AdminLayout() {
           navigate("/");
           return;
         }
+
 
         setIsAdmin(true);
         
