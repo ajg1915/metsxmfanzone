@@ -418,7 +418,15 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
               >
                 Forgot PIN? Reset it
               </Button>
+              <Button
+                variant="outline"
+                onClick={handleResetSession}
+                className="w-full mt-2"
+              >
+                Clear Lockout & Sign In Again
+              </Button>
             </div>
+
           ) : (
             <>
               <div className="space-y-2">
