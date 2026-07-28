@@ -97,14 +97,18 @@ export default function AdminPortal() {
   };
 
   const handleLogin = useCallback(async () => {
-    if (pin.length < 6 || loading) return;
+    if (pin.length < 4 || loading) return;
     setLoading(true);
     setConnectionIssue("");
     try {
+      const activeFingerprint = deviceFingerprint || await generateDeviceFingerprint();
+      if (!deviceFingerprint) {
+        setDeviceFingerprint(activeFingerprint);
+      }
       const deviceName = getDeviceName();
       const { data, error } = await withTimeout(
         supabase.functions.invoke('admin-pin-login', {
-          body: { action: 'login', pin, deviceFingerprint, deviceName }
+          body: { action: 'login', pin, deviceFingerprint: activeFingerprint, deviceName }
         }),
         12000,
         "Admin PIN login timed out"
@@ -131,7 +135,7 @@ export default function AdminPortal() {
           if (errorBody.error === 'Invalid PIN' || errorBody.attemptsRemaining !== undefined) {
             const remaining = errorBody.attemptsRemaining ?? attemptsRemaining - 1;
             setAttemptsRemaining(remaining);
-            await trackFailedLogin('admin-portal', deviceFingerprint.substring(0, 16));
+            await trackFailedLogin('admin-portal', activeFingerprint.substring(0, 16));
             toast({ title: "Invalid PIN", description: `${remaining} attempts remaining`, variant: "destructive" });
             setPin("");
             return;
@@ -149,7 +153,7 @@ export default function AdminPortal() {
           return;
         }
         setAttemptsRemaining(data.attemptsRemaining ?? attemptsRemaining - 1);
-        await trackFailedLogin('admin-portal', deviceFingerprint.substring(0, 16));
+        await trackFailedLogin('admin-portal', activeFingerprint.substring(0, 16));
         toast({ title: "Invalid PIN", description: `${data.attemptsRemaining} attempts remaining`, variant: "destructive" });
         setPin("");
         return;
@@ -160,7 +164,7 @@ export default function AdminPortal() {
         sessionStorage.setItem("admin_verified", "true");
         sessionStorage.setItem("admin_verified_at", new Date().toISOString());
         sessionStorage.setItem("admin_user_id", data.userId);
-        sessionStorage.setItem("admin_device_fingerprint", deviceFingerprint);
+        sessionStorage.setItem("admin_device_fingerprint", activeFingerprint);
         setIsNewDevice(data.isNewDevice);
 
         if (data.verificationUrl) {
@@ -196,21 +200,9 @@ export default function AdminPortal() {
   }, [pin, deviceFingerprint, loading, navigate, toast, attemptsRemaining]);
 
   useEffect(() => {
-    if (pin.length >= 8 && !loading && !isLocked) {
-      handleLogin();
-    }
+    // PIN is submitted by button or Enter only. Auto-submit caused partial PINs
+    // to fire early on devices with saved/admin keypad input.
   }, [pin, loading, isLocked, handleLogin]);
-
-  if (checkingLockout) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground flex items-center gap-2">
-          <Shield className="w-4 h-4" />
-          <span className="text-sm">Initializing secure connection...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -264,7 +256,7 @@ export default function AdminPortal() {
                 {/* Device badge */}
                 <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
                   <Fingerprint className="w-3 h-3" />
-                  <span>Device verified</span>
+                  <span>{checkingLockout ? "Checking device status" : "Device verified"}</span>
                   <CheckCircle className="w-2.5 h-2.5 text-green-500" />
                 </div>
 
@@ -276,14 +268,14 @@ export default function AdminPortal() {
                     onChange={(e) => setPin(e.target.value)}
                     placeholder="Enter PIN"
                     className="text-center text-lg tracking-[0.3em] max-w-[180px] h-12 bg-muted/30 border-muted/50 rounded-xl focus:ring-2 focus:ring-secondary/50"
-                    maxLength={20}
+                    maxLength={8}
                     autoComplete="off"
                     disabled={loading}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && pin.length >= 6) handleLogin();
+                      if (e.key === "Enter" && pin.length >= 4) handleLogin();
                     }}
                   />
-                  <p className="text-[10px] text-muted-foreground">Minimum 6 characters</p>
+                  <p className="text-[10px] text-muted-foreground">Enter your 4–8 digit admin PIN</p>
                 </div>
 
                 {/* Attempts */}
@@ -295,7 +287,7 @@ export default function AdminPortal() {
                 {/* Submit */}
                 <Button
                   onClick={handleLogin}
-                  disabled={pin.length < 6 || loading}
+                  disabled={pin.length < 4 || loading}
                   className="w-full h-10 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90"
                 >
                   {loading ? (

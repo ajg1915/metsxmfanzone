@@ -148,8 +148,10 @@ export function AdminLayout() {
       const adminUserId = sessionStorage.getItem("admin_user_id");
       const pinVerifiedSession = sessionStorage.getItem("admin_verified") === "true";
       
-      if (adminUserId && pinVerifiedSession && !user) {
-        // PIN-only auth - verify via edge function (service role, works without a session)
+      if (adminUserId && pinVerifiedSession) {
+        // PIN portal auth - verify server-side first, even if a stale browser auth
+        // session exists. A stale non-admin user session must not override a valid
+        // PIN login for the real admin account.
         try {
           const { data: verifyData, error: verifyError } = await withTimeout(
             supabase.functions.invoke("admin-pin-login", {
@@ -184,12 +186,14 @@ export function AdminLayout() {
           setIsAdmin(true);
           setPinOnlyAuth(true);
           setPinVerified(true);
+          setNeedsPinVerification(false);
         } catch (err) {
           // Timeout or offline - don't kick the admin out, trust the verified session
           console.warn("Admin role check failed, keeping session:", err);
           setIsAdmin(true);
           setPinOnlyAuth(true);
           setPinVerified(true);
+          setNeedsPinVerification(false);
         }
         setChecking(false);
         return;
