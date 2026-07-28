@@ -93,6 +93,8 @@ const Podcast = lazyWithRetry(() => import("./pages/Podcast"), "page-podcast");
 const CommunityPodcast = lazyWithRetry(() => import("./pages/CommunityPodcast"), "page-community-podcast");
 const BusinessPartner = lazyWithRetry(() => import("./pages/BusinessPartner"), "page-business-partner");
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"), "page-dashboard");
+const CancellationStatus = lazyWithRetry(() => import("./pages/CancellationStatus"), "page-cancellation-status");
+
 const Feedback = lazyWithRetry(() => import("./pages/Feedback"), "page-feedback");
 const Sitemap = lazyWithRetry(() => import("./pages/SitemapRedirect"), "page-sitemap-redirect");
 const DynamicMatchup = lazyWithRetry(() => import("./pages/matchups/DynamicMatchup"), "page-dynamic-matchup");
@@ -320,6 +322,8 @@ const AppContent = () => {
             <Route path="/confirm-account" element={<ConfirmAccount />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/cancellation-status" element={<CancellationStatus />} />
+
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/og-blog/:slug" element={<OGBlogPost />} />
