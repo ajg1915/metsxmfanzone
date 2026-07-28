@@ -165,6 +165,10 @@ export default function MembersTab() {
       toast({ title: "No subscription", description: "Set a plan first to manage status.", variant: "destructive" });
       return;
     }
+    if (status === "cancelled") {
+      setPendingDelete(m);
+      return;
+    }
     setBusyId(m.user_id);
     try {
       const update: any = { status };
@@ -251,14 +255,17 @@ export default function MembersTab() {
   };
 
   const deleteAccount = async (m: MemberRow) => {
+    setBusyId(m.user_id);
     try {
       const r = await supabase.functions.invoke("delete-user-account", { body: { user_id: m.user_id } });
-      if (r.error) throw r.error;
-      toast({ title: "Account deleted" });
+      if (r.error || (r.data as any)?.error) throw new Error((r.data as any)?.error || r.error?.message || "Failed to delete account");
+      toast({ title: "Account deleted", description: "PayPal billing was cancelled first, then the member account was removed." });
       setPendingDelete(null);
       fetchMembers();
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -503,7 +510,7 @@ export default function MembersTab() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete account?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently removes <strong>{pendingDelete ? dispEmail(pendingDelete) : ""}</strong>, their subscription, and all related data. This cannot be undone.
+              This cancels every linked PayPal billing agreement first, then permanently removes <strong>{pendingDelete ? dispEmail(pendingDelete) : ""}</strong>, their subscription, and all related data. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

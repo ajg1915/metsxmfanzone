@@ -149,17 +149,16 @@ export default function SubscriptionsTab() {
     if (!selectedSubscription) return;
     setIsProcessing(true);
     try {
-      if (cancelType === "immediate") {
-        await supabase.from("subscriptions").update({ status: "cancelled", cancellation_status: null, end_date: new Date().toISOString() }).eq("id", selectedSubscription.id);
-      } else {
-        await supabase.from("subscriptions").update({ cancellation_status: "pending", cancellation_requested_at: new Date().toISOString() }).eq("id", selectedSubscription.id);
-      }
-      await supabase.from("subscription_activity").insert({
-        subscription_id: selectedSubscription.id, user_id: selectedSubscription.user_id,
-        action: cancelType === "immediate" ? "subscription_cancelled" : "cancellation_requested",
-        details: { type: cancelType }, performed_by: user?.id,
+      const { data, error } = await supabase.functions.invoke("delete-user-account", {
+        body: { user_id: selectedSubscription.user_id },
       });
-      toast({ title: "Success", description: cancelType === "immediate" ? "Cancelled immediately" : "Set to pending cancellation" });
+      if (error || (data as any)?.error) {
+        throw new Error((data as any)?.error || error?.message || "Failed to cancel and delete account");
+      }
+      toast({
+        title: "Account deleted",
+        description: "PayPal billing was cancelled first, then the member account was removed.",
+      });
       setShowCancelDialog(false);
       fetchSubscriptions();
       setShowDetailSheet(false);
@@ -378,11 +377,11 @@ export default function SubscriptionsTab() {
           <div className="space-y-4">
             <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
               <input type="radio" name="cancelType" value="pending" checked={cancelType === "pending"} onChange={() => setCancelType("pending")} />
-              <div><p className="font-medium">End of Billing Period</p><p className="text-sm text-muted-foreground">Access continues until period ends</p></div>
+              <div><p className="font-medium">Cancel and delete account</p><p className="text-sm text-muted-foreground">PayPal billing is stopped, then the member account is removed</p></div>
             </label>
             <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
               <input type="radio" name="cancelType" value="immediate" checked={cancelType === "immediate"} onChange={() => setCancelType("immediate")} />
-              <div><p className="font-medium">Immediately</p><p className="text-sm text-muted-foreground">Access ends now</p></div>
+              <div><p className="font-medium">Immediate removal</p><p className="text-sm text-muted-foreground">Same cleanup, no end-of-period access</p></div>
             </label>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setShowCancelDialog(false)}>Back</Button><Button variant="destructive" onClick={handleCancelSubscription} disabled={isProcessing}>{isProcessing ? "Cancelling..." : "Confirm Cancel"}</Button></DialogFooter>
