@@ -101,10 +101,14 @@ export default function AdminPortal() {
     setLoading(true);
     setConnectionIssue("");
     try {
+      const activeFingerprint = deviceFingerprint || await generateDeviceFingerprint();
+      if (!deviceFingerprint) {
+        setDeviceFingerprint(activeFingerprint);
+      }
       const deviceName = getDeviceName();
       const { data, error } = await withTimeout(
         supabase.functions.invoke('admin-pin-login', {
-          body: { action: 'login', pin, deviceFingerprint, deviceName }
+          body: { action: 'login', pin, deviceFingerprint: activeFingerprint, deviceName }
         }),
         12000,
         "Admin PIN login timed out"
@@ -131,7 +135,7 @@ export default function AdminPortal() {
           if (errorBody.error === 'Invalid PIN' || errorBody.attemptsRemaining !== undefined) {
             const remaining = errorBody.attemptsRemaining ?? attemptsRemaining - 1;
             setAttemptsRemaining(remaining);
-            await trackFailedLogin('admin-portal', deviceFingerprint.substring(0, 16));
+            await trackFailedLogin('admin-portal', activeFingerprint.substring(0, 16));
             toast({ title: "Invalid PIN", description: `${remaining} attempts remaining`, variant: "destructive" });
             setPin("");
             return;
@@ -149,7 +153,7 @@ export default function AdminPortal() {
           return;
         }
         setAttemptsRemaining(data.attemptsRemaining ?? attemptsRemaining - 1);
-        await trackFailedLogin('admin-portal', deviceFingerprint.substring(0, 16));
+        await trackFailedLogin('admin-portal', activeFingerprint.substring(0, 16));
         toast({ title: "Invalid PIN", description: `${data.attemptsRemaining} attempts remaining`, variant: "destructive" });
         setPin("");
         return;
@@ -160,7 +164,7 @@ export default function AdminPortal() {
         sessionStorage.setItem("admin_verified", "true");
         sessionStorage.setItem("admin_verified_at", new Date().toISOString());
         sessionStorage.setItem("admin_user_id", data.userId);
-        sessionStorage.setItem("admin_device_fingerprint", deviceFingerprint);
+        sessionStorage.setItem("admin_device_fingerprint", activeFingerprint);
         setIsNewDevice(data.isNewDevice);
 
         if (data.verificationUrl) {
@@ -199,17 +203,6 @@ export default function AdminPortal() {
     // PIN is submitted by button or Enter only. Auto-submit caused partial PINs
     // to fire early on devices with saved/admin keypad input.
   }, [pin, loading, isLocked, handleLogin]);
-
-  if (checkingLockout) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground flex items-center gap-2">
-          <Shield className="w-4 h-4" />
-          <span className="text-sm">Initializing secure connection...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -263,7 +256,7 @@ export default function AdminPortal() {
                 {/* Device badge */}
                 <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
                   <Fingerprint className="w-3 h-3" />
-                  <span>Device verified</span>
+                  <span>{checkingLockout ? "Checking device status" : "Device verified"}</span>
                   <CheckCircle className="w-2.5 h-2.5 text-green-500" />
                 </div>
 
