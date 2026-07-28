@@ -320,6 +320,8 @@ const AppContent = () => {
             <Route path="/confirm-account" element={<ConfirmAccount />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/cancellation-status" element={<CancellationStatus />} />
+
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/og-blog/:slug" element={<OGBlogPost />} />
