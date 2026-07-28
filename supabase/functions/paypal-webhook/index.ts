@@ -242,27 +242,54 @@ Deno.serve(async (req: Request) => {
         break;
       }
 
+      case 'BILLING.SUBSCRIPTION.EXPIRED':
       case 'BILLING.SUBSCRIPTION.CANCELLED': {
-        // Subscription cancelled
+        // Subscription cancelled (from PayPal or from our site)
         const subscriptionId = resource.id;
-        
-        console.log('Processing subscription cancellation:', subscriptionId);
 
-        const { error } = await supabase
+        console.log('Processing subscription cancellation: [REDACTED]');
+
+        const nowIso = new Date().toISOString();
+
+        const { data: cancelledRows, error } = await supabase
           .from('subscriptions')
           .update({
             status: 'cancelled',
-            updated_at: new Date().toISOString(),
+            cancellation_status: 'cancelled',
+            end_date: nowIso,
+            updated_at: nowIso,
           })
-          .eq('paypal_subscription_id', subscriptionId);
+          .eq('paypal_subscription_id', subscriptionId)
+          .select('id, user_id');
 
         if (error) {
           console.error('Error cancelling subscription:', error);
-        } else {
-          console.log('Subscription cancelled:', subscriptionId);
+          break;
+        }
+
+        // Cancelling ends the membership entirely — remove the account.
+        for (const row of cancelledRows || []) {
+          if (!row.user_id) continue;
+          try {
+            await supabase.from('subscription_activity').insert({
+              subscription_id: row.id,
+              user_id: row.user_id,
+              action: 'cancelled_via_paypal',
+              details: { source: 'paypal_webhook', account_deleted: true },
+              performed_by: null,
+            });
+          } catch (_) { /* activity log is best-effort */ }
+
+          const { error: delErr } = await supabase.auth.admin.deleteUser(row.user_id);
+          if (delErr) {
+            console.error('Account deletion after cancellation failed:', delErr.message);
+          } else {
+            console.log('Account removed after PayPal cancellation');
+          }
         }
         break;
       }
+
 
       case 'BILLING.SUBSCRIPTION.SUSPENDED': {
         // Subscription suspended (payment failure)

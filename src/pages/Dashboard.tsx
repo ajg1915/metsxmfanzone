@@ -41,7 +41,7 @@ const Dashboard = () => {
 
   const handleCancelSubscription = async () => {
     const confirmed = window.confirm(
-      "Are you sure you want to cancel your subscription? You'll keep access until the end of your current billing period."
+      "Cancel your membership? This stops all future PayPal charges immediately and permanently deletes your MetsXMFanZone account and data. This cannot be undone."
     );
     if (!confirmed) return;
     setCancelling(true);
@@ -50,12 +50,24 @@ const Dashboard = () => {
       if (error || (data as any)?.error) {
         throw new Error((data as any)?.error || error?.message || "Failed to cancel");
       }
-      toast({
-        title: "Subscription Cancelled",
-        description: "You'll continue to have access until the end of your billing period.",
-      });
       setSubscriptionStatus("cancelled");
       setSubscriptionDialogOpen(false);
+
+      if ((data as any)?.accountDeleted) {
+        toast({
+          title: "Membership Cancelled",
+          description: "Your PayPal billing was stopped and your account has been deleted.",
+        });
+        await supabase.auth.signOut();
+        navigate("/");
+        return;
+      }
+
+      toast({
+        title: "Billing Cancelled",
+        description:
+          (data as any)?.message || "Your PayPal billing has been stopped.",
+      });
     } catch (e: any) {
       toast({
         title: "Cancellation failed",
@@ -66,6 +78,7 @@ const Dashboard = () => {
       setCancelling(false);
     }
   };
+
 
   useEffect(() => {
     if (!loading && !user) {
@@ -431,8 +444,9 @@ const Dashboard = () => {
                                 : "Subscription Already Cancelled"}
                           </Button>
                           <p className="text-[11px] text-muted-foreground text-center pt-1">
-                            You'll keep access until the end of your billing period.
+                            Cancelling stops all future PayPal charges immediately and permanently deletes your account.
                           </p>
+
                         </div>
 
                       </div>
