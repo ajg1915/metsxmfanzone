@@ -179,10 +179,10 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
 
 
   const handleSetupPin = async () => {
-    if (pin.length < 6) {
+    if (pin.length < 4) {
       toast({
         title: "PIN too short",
-        description: "PIN must be at least 6 characters",
+        description: "PIN must be at least 4 digits",
         variant: "destructive",
       });
       return;
@@ -497,7 +497,7 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
               <div className="space-y-2">
                 <Label htmlFor="pin" className="flex items-center gap-2">
                   <Key className="h-4 w-4" />
-                  {isSetupMode ? "Create PIN (min 6 characters)" : "Enter PIN"}
+                  {isSetupMode ? "Create PIN (4–8 digits)" : "Enter PIN"}
                 </Label>
                 <Input
                   id="pin"
@@ -506,7 +506,7 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="••••••"
                   className="text-center text-lg tracking-widest"
-                  maxLength={20}
+                  maxLength={8}
                   autoComplete="off"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !isSetupMode) {
@@ -526,7 +526,7 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
                     onChange={(e) => setConfirmPin(e.target.value)}
                     placeholder="••••••"
                     className="text-center text-lg tracking-widest"
-                    maxLength={20}
+                  maxLength={8}
                     autoComplete="off"
                   />
                 </div>
@@ -556,7 +556,7 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
                 <Button
                   onClick={isSetupMode ? handleSetupPin : handleVerifyPin}
                   className="flex-1"
-                  disabled={verifying || pin.length < 6}
+                  disabled={verifying || pin.length < 4}
                 >
                   {verifying ? "Verifying..." : isSetupMode ? "Set PIN" : "Verify"}
                 </Button>

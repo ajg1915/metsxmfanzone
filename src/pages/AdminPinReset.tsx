@@ -59,8 +59,8 @@ export default function AdminPinReset() {
 
   const handleResetPin = async () => {
     if (!userId) return;
-    if (newPin.length < 6) {
-      toast({ title: "PIN too short", description: "Use at least 6 characters.", variant: "destructive" });
+    if (newPin.length < 4) {
+      toast({ title: "PIN too short", description: "Use at least 4 digits.", variant: "destructive" });
       return;
     }
     if (newPin !== confirmPin) {
@@ -144,14 +144,14 @@ export default function AdminPinReset() {
               <>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-[11px] text-muted-foreground">New PIN (min 6 chars)</label>
+                    <label className="text-[11px] text-muted-foreground">New PIN (4–8 digits)</label>
                     <Input
                       type="password"
                       value={newPin}
                       onChange={(e) => setNewPin(e.target.value)}
                       placeholder="Enter new PIN"
                       className="h-11 mt-1 bg-muted/30 border-muted/50 rounded-xl text-center tracking-[0.2em]"
-                      maxLength={20}
+                      maxLength={8}
                       autoComplete="new-password"
                     />
                   </div>
@@ -163,7 +163,7 @@ export default function AdminPinReset() {
                       onChange={(e) => setConfirmPin(e.target.value)}
                       placeholder="Re-enter PIN"
                       className="h-11 mt-1 bg-muted/30 border-muted/50 rounded-xl text-center tracking-[0.2em]"
-                      maxLength={20}
+                      maxLength={8}
                       autoComplete="new-password"
                       onKeyDown={(e) => { if (e.key === "Enter") handleResetPin(); }}
                     />
@@ -172,7 +172,7 @@ export default function AdminPinReset() {
 
                 <Button
                   onClick={handleResetPin}
-                  disabled={loading || newPin.length < 6 || confirmPin.length < 6}
+                  disabled={loading || newPin.length < 4 || confirmPin.length < 4}
                   className="w-full h-10 rounded-xl bg-primary hover:bg-primary/90 text-sm font-semibold"
                 >
                   {loading ? "Updating..." : (
