@@ -326,7 +326,35 @@ export function AdminPinVerification({ userId, onVerified, onCancel }: AdminPinV
     );
   }
 
+  if (signedOut) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+              <Lock className="h-6 w-6 text-destructive" />
+            </div>
+            <CardTitle className="text-xl">Session Expired</CardTitle>
+            <CardDescription>
+              Your login session is no longer valid, so the PIN screen can't verify you. Sign in
+              again to continue to the admin panel.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button className="w-full" onClick={handleResetSession}>
+              Sign In Again
+            </Button>
+            <Button variant="outline" className="w-full" onClick={onCancel}>
+              Go Back
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const isLockedOut = lockoutUntil && lockoutUntil > new Date();
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
