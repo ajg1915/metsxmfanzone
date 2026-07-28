@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cancelPaypalAndDeleteAccount } from "../_shared/account-cleanup.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,18 +69,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Delete the user from auth (cascades to profiles, roles, etc.)
-    const { error } = await adminClient.auth.admin.deleteUser(user_id);
+    const result = await cancelPaypalAndDeleteAccount(
+      adminClient,
+      user_id,
+      "Admin deleted member account",
+    );
 
-    if (error) {
-      console.error("Error deleting user:", error.message);
-      return new Response(JSON.stringify({ error: error.message }), {
-        status: 500,
+    if (!result.paypalConfirmed || !result.accountDeleted) {
+      console.error("Admin account deletion cleanup incomplete", { userId: "[REDACTED]" });
+      return new Response(JSON.stringify({ error: result.message || "Account cleanup incomplete" }), {
+        status: result.paypalConfirmed ? 500 : 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, ...result }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

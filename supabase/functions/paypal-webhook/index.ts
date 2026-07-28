@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { cancelPaypalAndDeleteAccount } from "../_shared/account-cleanup.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -267,24 +268,25 @@ Deno.serve(async (req: Request) => {
           break;
         }
 
-        // Cancelling ends the membership entirely — remove the account.
+        // Cancelling ends the membership entirely — remove the account and all related data.
         for (const row of cancelledRows || []) {
           if (!row.user_id) continue;
           try {
-            await supabase.from('subscription_activity').insert({
-              subscription_id: row.id,
-              user_id: row.user_id,
-              action: 'cancelled_via_paypal',
-              details: { source: 'paypal_webhook', account_deleted: true },
-              performed_by: null,
+            const cleanup = await cancelPaypalAndDeleteAccount(
+              supabase,
+              row.user_id,
+              'PayPal cancellation webhook received',
+            );
+            console.log('PayPal webhook account cleanup completed', {
+              paypalConfirmed: cleanup.paypalConfirmed,
+              accountDeleted: cleanup.accountDeleted,
+              userId: '[REDACTED]',
             });
-          } catch (_) { /* activity log is best-effort */ }
-
-          const { error: delErr } = await supabase.auth.admin.deleteUser(row.user_id);
-          if (delErr) {
-            console.error('Account deletion after cancellation failed:', delErr.message);
-          } else {
-            console.log('Account removed after PayPal cancellation');
+          } catch (cleanupErr) {
+            console.error('Account cleanup after PayPal cancellation failed', {
+              userId: '[REDACTED]',
+              message: cleanupErr instanceof Error ? cleanupErr.message : 'Unknown cleanup error',
+            });
           }
         }
         break;

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cancelPaypalAndDeleteAccount } from "../_shared/account-cleanup.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,64 +12,6 @@ const json = (body: unknown, status = 200) =>
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-
-async function getPayPalAccessToken(api: string, id: string, secret: string) {
-  const res = await fetch(`${api}/v1/oauth2/token`, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${btoa(`${id}:${secret}`)}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: "grant_type=client_credentials",
-  });
-  if (!res.ok) throw new Error("PayPal authentication failed");
-  const data = await res.json();
-  return data.access_token as string;
-}
-
-// Cancels one PayPal billing subscription. Returns true when PayPal is
-// confirmed to no longer bill it (cancelled, already cancelled, or gone).
-async function cancelPayPalSubscription(
-  api: string,
-  token: string,
-  subscriptionId: string,
-  reason: string,
-): Promise<boolean> {
-  const getRes = await fetch(`${api}/v1/billing/subscriptions/${subscriptionId}`, {
-    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-  });
-
-  if (getRes.status === 404) return true; // not a real PayPal subscription anymore
-
-  if (!getRes.ok) {
-    console.error("PayPal lookup failed", getRes.status);
-    return false;
-  }
-
-  const sub = await getRes.json();
-  const status = String(sub.status || "").toUpperCase();
-
-  // Already terminal — nothing can bill anymore.
-  if (["CANCELLED", "EXPIRED"].includes(status)) return true;
-
-  const cancelRes = await fetch(
-    `${api}/v1/billing/subscriptions/${subscriptionId}/cancel`,
-    {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ reason }),
-    },
-  );
-
-  if (cancelRes.status === 204 || cancelRes.ok) return true;
-
-  const txt = await cancelRes.text();
-  // 422 UNPROCESSABLE with already-cancelled state counts as success
-  if (cancelRes.status === 422 && /CANCELL?ED|EXPIRED|INVALID_STATUS/i.test(txt)) return true;
-
-  console.error("PayPal cancel failed", cancelRes.status, txt.slice(0, 200));
-  return false;
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -95,118 +38,19 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
-    // EVERY subscription row for this user — regardless of status. A row marked
-    // "cancelled" locally can still have a live PayPal agreement billing the card.
-    const { data: subs, error: subErr } = await admin
-      .from("subscriptions")
-      .select("id, paypal_subscription_id, status, end_date")
-      .eq("user_id", user.id);
-
-    if (subErr) return json({ error: subErr.message }, 500);
-
-    const PAYPAL_CLIENT_ID = Deno.env.get("PAYPAL_CLIENT_ID")!;
-    const PAYPAL_SECRET = Deno.env.get("PAYPAL_SECRET")!;
-    const PAYPAL_API = Deno.env.get("PAYPAL_BASE_URL") || "https://api-m.paypal.com";
-
-    let failureCount = 0;
-    const paypalIds = Array.from(
-      new Set(
-        (subs || [])
-          .map((s) => s.paypal_subscription_id)
-          .filter((id): id is string => Boolean(id)),
-      ),
-    );
-
-    if (paypalIds.length > 0) {
-      let token: string;
-      try {
-        token = await getPayPalAccessToken(PAYPAL_API, PAYPAL_CLIENT_ID, PAYPAL_SECRET);
-      } catch (e) {
-        console.error("PayPal auth error:", (e as Error).message);
-        return json(
-          { error: "Could not reach PayPal to cancel billing. Please try again shortly." },
-          502,
-        );
-      }
-
-      for (const id of paypalIds) {
-        const ok = await cancelPayPalSubscription(PAYPAL_API, token, id, reason);
-        if (!ok) failureCount++;
-      }
-    }
-
-    // Never delete the account while PayPal can still charge it.
-    if (failureCount > 0) {
-      return json(
-        {
-          error:
-            "PayPal did not confirm the cancellation, so nothing was changed. Please try again or contact support.",
-        },
-        502,
-      );
-    }
-
-    const nowIso = new Date().toISOString();
-
-    if (subs && subs.length > 0) {
-      await admin
-        .from("subscriptions")
-        .update({
-          status: "cancelled",
-          cancellation_status: "cancelled",
-          cancellation_requested_at: nowIso,
-          end_date: nowIso,
-          updated_at: nowIso,
-        })
-        .in("id", subs.map((s) => s.id));
-
-      for (const s of subs) {
-        await admin.from("subscription_activity").insert({
-          subscription_id: s.id,
-          user_id: user.id,
-          action: "cancelled_by_user",
-          details: { reason, account_deleted: true },
-          performed_by: user.id,
-        });
-      }
-    }
-
-    // Full removal from the database, as required when a member cancels.
-    // Retry once — a transient failure must not leave a live account behind.
-    let delErrMsg: string | null = null;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const { error: delErr } = await admin.auth.admin.deleteUser(user.id);
-      if (!delErr) {
-        delErrMsg = null;
-        break;
-      }
-      delErrMsg = delErr.message;
-      await new Promise((r) => setTimeout(r, 500));
-    }
-
-    if (delErrMsg) {
-      console.error("Account deletion failed:", delErrMsg);
+    try {
+      const result = await cancelPaypalAndDeleteAccount(admin, user.id, reason);
+      if (!result.paypalConfirmed) return json({ error: result.message }, 502);
       return json({
-        success: true,
-        paypalCancelled: true,
-        accountDeleted: false,
-        message:
-          "Your PayPal billing was cancelled, but we could not remove your account automatically. Please contact support.",
+        success: result.paypalConfirmed && result.accountDeleted,
+        paypalCancelled: result.paypalConfirmed,
+        accountDeleted: result.accountDeleted,
+        message: result.message,
       });
+    } catch (e) {
+      console.error("Cancellation cleanup failed", { userId: "[REDACTED]" });
+      return json({ error: (e as Error).message || "Cancellation failed" }, 502);
     }
-
-    // Confirm the cascade actually cleared the member's data.
-    const [{ count: profileCount }, { count: subCount }] = await Promise.all([
-      admin.from("profiles").select("id", { count: "exact", head: true }).eq("id", user.id),
-      admin.from("subscriptions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
-    ]);
-
-    if ((profileCount || 0) > 0 || (subCount || 0) > 0) {
-      await admin.from("subscriptions").delete().eq("user_id", user.id);
-      await admin.from("profiles").delete().eq("id", user.id);
-    }
-
-    return json({ success: true, paypalCancelled: true, accountDeleted: true });
 
   } catch (e) {
     console.error("cancel-subscription error:", (e as Error).message);
