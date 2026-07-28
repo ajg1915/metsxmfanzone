@@ -163,7 +163,37 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Verify a PIN-only admin session is still valid (service role bypasses RLS)
+    if (action === 'verify-admin') {
+      const checkUserId = body.userId;
+      if (!checkUserId || typeof checkUserId !== 'string') {
+        return new Response(JSON.stringify({ error: 'userId is required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { data: roleRow, error: roleErr } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', checkUserId)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (roleErr) {
+        return new Response(JSON.stringify({ error: 'Verification unavailable' }), {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ isAdmin: !!roleRow }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     if (action === 'login') {
+
       if (!pin || pin.length < 6) {
         return new Response(JSON.stringify({ error: 'PIN must be at least 6 characters' }), {
           status: 400,
