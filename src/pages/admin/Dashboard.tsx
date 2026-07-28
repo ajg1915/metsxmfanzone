@@ -147,7 +147,7 @@ export default function AdminDashboard() {
       description: "Users, roles & subscription plans",
       icon: UserCog,
       url: "/admin/user-management",
-      stat: `${stats.totalUsers} Users`,
+      stat: `${stats.activeUsers} Active`,
     },
     {
       title: "Newsletter",
