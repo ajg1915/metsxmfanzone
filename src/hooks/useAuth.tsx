@@ -27,11 +27,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             localStorage.removeItem(key);
           }
         });
-        sessionStorage.removeItem("admin_verified");
-        sessionStorage.removeItem("admin_verified_at");
-        sessionStorage.removeItem("admin_user_id");
-        sessionStorage.removeItem("admin_session_token");
-        sessionStorage.removeItem("admin_device_fingerprint");
       } catch {
         // Storage may be unavailable in private browsing; ignore cleanup errors.
       }
