@@ -444,8 +444,9 @@ const Dashboard = () => {
                                 : "Subscription Already Cancelled"}
                           </Button>
                           <p className="text-[11px] text-muted-foreground text-center pt-1">
-                            You'll keep access until the end of your billing period.
+                            Cancelling stops all future PayPal charges immediately and permanently deletes your account.
                           </p>
+
                         </div>
 
                       </div>
