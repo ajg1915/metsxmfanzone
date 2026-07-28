@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cancelPaypalAndDeleteAccount } from "../_shared/account-cleanup.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -115,7 +116,7 @@ ${JSON.stringify(memberContext, null, 2)}
 RULES YOU MUST FOLLOW:
 1. Writers always get a FREE 1-year annual membership marked as "active" with payment_method "writer_comp"
 2. When activating a subscription, set status to "active" and calculate proper end_date (premium = 1 month, annual = 1 year from now)
-3. When deactivating/cancelling, set status to "cancelled" and end_date to now
+3. When cancelling or deleting a member account, cancel every linked PayPal agreement first, then delete the account
 4. Never delete the admin's own account (admin caller id: ${caller.id})
 5. Payment methods can be: helcim, paypal, square, cash, check, zelle, venmo, writer_comp, free, online
 6. Plan types: free, premium, annual
@@ -280,17 +281,30 @@ async function executeAction(client: any, action: any, adminId: string) {
 
     case "cancel_subscription": {
       if (action.subscription_id) {
-        await client.from("subscriptions").update({
-          status: "cancelled",
-          end_date: new Date().toISOString(),
-        }).eq("id", action.subscription_id);
+        const { data: sub } = await client
+          .from("subscriptions")
+          .select("user_id")
+          .eq("id", action.subscription_id)
+          .maybeSingle();
+        const result = await cancelPaypalAndDeleteAccount(
+          client,
+          sub?.user_id || action.user_id,
+          "Admin AI cancelled subscription",
+        );
+        if (!result.paypalConfirmed || !result.accountDeleted) {
+          throw new Error(result.message || "Cancellation cleanup failed");
+        }
       } else {
-        await client.from("subscriptions").update({
-          status: "cancelled",
-          end_date: new Date().toISOString(),
-        }).eq("user_id", action.user_id).eq("status", "active");
+        const result = await cancelPaypalAndDeleteAccount(
+          client,
+          action.user_id,
+          "Admin AI cancelled subscription",
+        );
+        if (!result.paypalConfirmed || !result.accountDeleted) {
+          throw new Error(result.message || "Cancellation cleanup failed");
+        }
       }
-      return { message: "Subscription cancelled" };
+      return { message: "PayPal billing cancelled and account deleted" };
     }
 
     case "extend_subscription": {
@@ -368,9 +382,11 @@ async function executeAction(client: any, action: any, adminId: string) {
     }
 
     case "delete_account": {
-      const { error } = await client.auth.admin.deleteUser(action.user_id);
-      if (error) throw error;
-      return { message: "Account deleted" };
+      const result = await cancelPaypalAndDeleteAccount(client, action.user_id, "Admin AI deleted account");
+      if (!result.paypalConfirmed || !result.accountDeleted) {
+        throw new Error(result.message || "Account cleanup failed");
+      }
+      return { message: "PayPal billing cancelled and account deleted" };
     }
 
     case "update_subscription": {
