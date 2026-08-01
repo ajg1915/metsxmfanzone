@@ -64,8 +64,10 @@ const NewsletterSection = () => {
           <p className="text-muted-foreground mb-4 sm:mb-5 md:mb-6 text-xs sm:text-sm max-w-md mx-auto">
             Get exclusive Mets content, game highlights, and breaking news delivered straight to your inbox.
           </p>
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 sm:gap-3 max-w-sm sm:max-w-md mx-auto">
+          <form onSubmit={handleSubmit} className="relative flex flex-col sm:flex-row gap-2 sm:gap-3 max-w-sm sm:max-w-md mx-auto">
+            <input {...honeypotProps} />
             <Input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required className="flex-1 h-9 sm:h-10 text-sm" />
+
             <Button type="submit" size="default" disabled={isLoading} className="h-9 sm:h-10 text-xs sm:text-sm px-4 sm:px-6">
               {isLoading ? "Subscribing..." : "Subscribe"}
             </Button>
