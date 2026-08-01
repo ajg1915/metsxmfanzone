@@ -21,18 +21,32 @@ const Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const guard = check();
+    if (!guard.ok) {
+      toast({
+        title: "Message not sent",
+        description: guard.reason,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulate API call
     setTimeout(() => {
+      markSubmitted();
       toast({
         title: "Message sent!",
         description: "We'll get back to you as soon as possible.",
       });
       setFormData({ name: "", email: "", subject: "", message: "" });
+      reset();
       setIsLoading(false);
     }, 1000);
   };
+
 
   return (
     <div className="min-h-screen bg-background">
