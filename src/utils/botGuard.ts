@@ -68,7 +68,6 @@ export const useBotGuard = (formKey: string) => {
       width: "1px",
       height: "1px",
       opacity: 0,
-providedPointerEvents: undefined,
     },
   };
 
