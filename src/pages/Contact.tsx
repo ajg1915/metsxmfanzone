@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, MapPin } from "lucide-react";
+import { useBotGuard } from "@/utils/botGuard";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -18,21 +19,36 @@ const Contact = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { check, markSubmitted, reset, honeypotProps } = useBotGuard("contact");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const guard = check();
+    if (!guard.ok) {
+      toast({
+        title: "Message not sent",
+        description: guard.reason,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     // Simulate API call
     setTimeout(() => {
+      markSubmitted();
       toast({
         title: "Message sent!",
         description: "We'll get back to you as soon as possible.",
       });
       setFormData({ name: "", email: "", subject: "", message: "" });
+      reset();
       setIsLoading(false);
     }, 1000);
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -81,7 +97,8 @@ const Contact = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form onSubmit={handleSubmit} className="relative space-y-4">
+                    <input {...honeypotProps} />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="name" className="text-xs sm:text-sm font-medium mb-2 block">
