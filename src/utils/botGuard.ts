@@ -13,7 +13,7 @@ import { useRef, useState } from "react";
 const MIN_FILL_MS = 2500;
 const THROTTLE_MS = 30_000;
 
-export type BotGuardResult = { ok: true } | { ok: false; reason: string };
+export type BotGuardResult = { ok: boolean; reason?: string };
 
 export const useBotGuard = (formKey: string) => {
   const mountedAt = useRef<number>(Date.now());
