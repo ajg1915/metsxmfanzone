@@ -143,6 +143,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const [needsTap, setNeedsTap] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [usingBackup, setUsingBackup] = useState(false);
+  const notifiedRef = useRef(false);
+
 
   const primarySource = source || PRIMARY_DEFAULT;
   const hasBackup = primarySource !== BACKUP_SOURCE;
