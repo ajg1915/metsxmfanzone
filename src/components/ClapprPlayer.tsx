@@ -2,6 +2,8 @@ import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Clappr from "@clappr/player";
 import { Loader2, AlertCircle, RotateCw, Volume2, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
+import { supabase } from "@/integrations/supabase/client";
+
 
 interface ClapprPlayerProps {
   pageTitle?: string;
