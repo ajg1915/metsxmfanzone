@@ -176,8 +176,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const handleRetry = useCallback(() => {
     setStatus("loading");
     setUsingBackup(false);
+    notifiedRef.current = false;
     setRetryKey((k) => k + 1);
   }, []);
+
 
   // Ask the backend to re-probe both feeds so admins get an alert in the portal.
   const notifyAdmins = useCallback(() => {
