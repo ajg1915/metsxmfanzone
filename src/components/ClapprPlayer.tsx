@@ -287,6 +287,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             onError: (err: any) => {
               if (destroyed) return;
               console.error("[ClapprPlayer] error:", err);
+              notifyAdmins();
               if (hasBackup && !usingBackup) {
                 console.warn("[ClapprPlayer] primary failed, switching to backup HLS");
                 setUsingBackup(true);
@@ -295,6 +296,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
                 setStatus("error");
               }
             },
+
           },
         });
 
