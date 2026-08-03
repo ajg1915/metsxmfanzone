@@ -319,7 +319,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       }
       playerRef.current = null;
     };
-  }, [effectiveSource, showChrome, pageTitle, retryKey]);
+  }, [effectiveSource, showChrome, pageTitle, retryKey, usingBackup, hasBackup, notifyAdmins]);
 
   return (
     <div className="relative w-full h-full aspect-video bg-black overflow-hidden">
