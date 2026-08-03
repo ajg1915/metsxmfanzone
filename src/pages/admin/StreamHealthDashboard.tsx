@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle, CheckCircle, Radio, RefreshCw, Bell, BellOff, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import StreamSourceStatusPanel from "@/components/admin/StreamSourceStatusPanel";
+
 import {
   Dialog,
   DialogContent,
