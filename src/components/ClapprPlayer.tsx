@@ -2,6 +2,8 @@ import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Clappr from "@clappr/player";
 import { Loader2, AlertCircle, RotateCw, Volume2, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
+import { supabase } from "@/integrations/supabase/client";
+
 
 interface ClapprPlayerProps {
   pageTitle?: string;
@@ -143,6 +145,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const [needsTap, setNeedsTap] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [usingBackup, setUsingBackup] = useState(false);
+  const notifiedRef = useRef(false);
+
 
   const primarySource = source || PRIMARY_DEFAULT;
   const hasBackup = primarySource !== BACKUP_SOURCE;
@@ -172,7 +176,16 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const handleRetry = useCallback(() => {
     setStatus("loading");
     setUsingBackup(false);
+    notifiedRef.current = false;
     setRetryKey((k) => k + 1);
+  }, []);
+
+
+  // Ask the backend to re-probe both feeds so admins get an alert in the portal.
+  const notifyAdmins = useCallback(() => {
+    if (notifiedRef.current) return;
+    notifiedRef.current = true;
+    supabase.functions.invoke("monitor-stream-sources").catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -185,12 +198,36 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     setNeedsUnmute(false);
     setNeedsTap(false);
 
+    const isPlayable = async (url: string) => {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return false;
+        const text = await res.text();
+        return text.includes("#EXTM3U") && text.includes("#EXTINF");
+      } catch {
+        return false;
+      }
+    };
+
     const init = async () => {
       if (destroyed || !containerRef.current) return;
+
+      // Preflight: if the primary feed isn't serving segments, go straight to backup.
+      if (!usingBackup && hasBackup) {
+        const ok = await isPlayable(effectiveSource);
+        if (destroyed) return;
+        if (!ok) {
+          console.warn("[ClapprPlayer] primary preflight failed, using backup feed");
+          notifyAdmins();
+          setUsingBackup(true);
+          return;
+        }
+      }
 
       (window as any).Clappr = Clappr;
 
       try {
+
         const player = new (Clappr as any).Player({
           parent: containerRef.current,
           source: effectiveSource,
@@ -252,6 +289,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             onError: (err: any) => {
               if (destroyed) return;
               console.error("[ClapprPlayer] error:", err);
+              notifyAdmins();
               if (hasBackup && !usingBackup) {
                 console.warn("[ClapprPlayer] primary failed, switching to backup HLS");
                 setUsingBackup(true);
@@ -260,6 +298,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
                 setStatus("error");
               }
             },
+
           },
         });
 
@@ -282,7 +321,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       }
       playerRef.current = null;
     };
-  }, [effectiveSource, showChrome, pageTitle, retryKey]);
+  }, [effectiveSource, showChrome, pageTitle, retryKey, usingBackup, hasBackup, notifyAdmins]);
 
   return (
     <div className="relative w-full h-full aspect-video bg-black overflow-hidden">

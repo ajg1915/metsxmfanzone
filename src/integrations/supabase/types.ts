@@ -3080,6 +3080,54 @@ export type Database = {
           },
         ]
       }
+      stream_source_status: {
+        Row: {
+          checked_at: string
+          consecutive_failures: number
+          created_at: string
+          id: string
+          is_up: boolean
+          label: string
+          last_down_at: string | null
+          last_error: string | null
+          last_ok_at: string | null
+          source_key: string
+          status_code: number | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          checked_at?: string
+          consecutive_failures?: number
+          created_at?: string
+          id?: string
+          is_up?: boolean
+          label: string
+          last_down_at?: string | null
+          last_error?: string | null
+          last_ok_at?: string | null
+          source_key: string
+          status_code?: number | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          checked_at?: string
+          consecutive_failures?: number
+          created_at?: string
+          id?: string
+          is_up?: boolean
+          label?: string
+          last_down_at?: string | null
+          last_error?: string | null
+          last_ok_at?: string | null
+          source_key?: string
+          status_code?: number | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       stream_views: {
         Row: {
           id: string

@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle, CheckCircle, Radio, RefreshCw, Bell, BellOff, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import StreamSourceStatusPanel from "@/components/admin/StreamSourceStatusPanel";
+
 import {
   Dialog,
   DialogContent,
@@ -231,7 +233,13 @@ export default function StreamHealthDashboard() {
         </div>
       </div>
 
+      {/* Live feed (primary/backup) health */}
+      <div className="mb-4">
+        <StreamSourceStatusPanel />
+      </div>
+
       {/* Summary Cards */}
+
       <div className="grid gap-2 sm:gap-3 grid-cols-2 sm:grid-cols-4 mb-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
