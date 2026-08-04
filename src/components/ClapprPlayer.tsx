@@ -183,6 +183,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
   useEffect(() => {
     if (!containerRef.current) return;
+    if (!effectiveSource) {
+      setStatus("error");
+      return;
+    }
 
     let destroyed = false;
     let cleanupIos: (() => void) | null = null;
