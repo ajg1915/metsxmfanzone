@@ -13,9 +13,6 @@ interface ClapprPlayerProps {
 }
 
 const PRIMARY_DEFAULT = "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
-// Backup: MetsXM HLS proxied over HTTPS via Lovable Cloud edge function
-const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-const BACKUP_SOURCE = `https://${PROJECT_ID}.supabase.co/functions/v1/hls-proxy/hls/metsxmfanzone.m3u8`;
 
 function loadChromecastPlugin(): Promise<any> {
   return new Promise((resolve) => {
@@ -144,13 +141,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const [needsUnmute, setNeedsUnmute] = useState(false);
   const [needsTap, setNeedsTap] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
-  const [usingBackup, setUsingBackup] = useState(false);
   const notifiedRef = useRef(false);
 
 
-  const primarySource = source || PRIMARY_DEFAULT;
-  const hasBackup = primarySource !== BACKUP_SOURCE;
-  const effectiveSource = usingBackup && hasBackup ? BACKUP_SOURCE : primarySource;
+  const effectiveSource = source || PRIMARY_DEFAULT;
 
   const handleUnmute = useCallback(() => {
     try {
@@ -175,7 +169,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
   const handleRetry = useCallback(() => {
     setStatus("loading");
-    setUsingBackup(false);
     notifiedRef.current = false;
     setRetryKey((k) => k + 1);
   }, []);
@@ -198,31 +191,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     setNeedsUnmute(false);
     setNeedsTap(false);
 
-    const isPlayable = async (url: string) => {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) return false;
-        const text = await res.text();
-        return text.includes("#EXTM3U") && text.includes("#EXTINF");
-      } catch {
-        return false;
-      }
-    };
-
     const init = async () => {
       if (destroyed || !containerRef.current) return;
-
-      // Preflight: if the primary feed isn't serving segments, go straight to backup.
-      if (!usingBackup && hasBackup) {
-        const ok = await isPlayable(effectiveSource);
-        if (destroyed) return;
-        if (!ok) {
-          console.warn("[ClapprPlayer] primary preflight failed, using backup feed");
-          notifyAdmins();
-          setUsingBackup(true);
-          return;
-        }
-      }
 
       (window as any).Clappr = Clappr;
 
@@ -290,13 +260,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
               if (destroyed) return;
               console.error("[ClapprPlayer] error:", err);
               notifyAdmins();
-              if (hasBackup && !usingBackup) {
-                console.warn("[ClapprPlayer] primary failed, switching to backup HLS");
-                setUsingBackup(true);
-                setStatus("loading");
-              } else {
-                setStatus("error");
-              }
+              setStatus("error");
             },
 
           },
@@ -321,7 +285,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       }
       playerRef.current = null;
     };
-  }, [effectiveSource, showChrome, pageTitle, retryKey, usingBackup, hasBackup, notifyAdmins]);
+  }, [effectiveSource, showChrome, pageTitle, retryKey, notifyAdmins]);
 
   return (
     <div className="relative w-full h-full aspect-video bg-black overflow-hidden">
@@ -373,11 +337,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         </button>
       )}
 
-      {usingBackup && status === "ready" && (
-        <div className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/90 text-black text-[10px] font-bold backdrop-blur-md">
-          BACKUP FEED
-        </div>
-      )}
     </div>
   );
 });
