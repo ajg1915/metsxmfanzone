@@ -210,6 +210,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     return () => {
       destroyed = true;
       if (autoplayTimer) window.clearTimeout(autoplayTimer);
+      if (retryTimer) window.clearTimeout(retryTimer);
       video.removeEventListener("playing", onPlaying);
       if (hlsRef.current) {
         try { hlsRef.current.destroy(); } catch {}
