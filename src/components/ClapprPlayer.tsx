@@ -199,8 +199,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         autoPlay
         muted
         playsInline
-        // @ts-expect-error - iOS specific attribute
-        webkit-playsinline="true"
+        {...{ "webkit-playsinline": "true" }}
         x-webkit-airplay="allow"
         crossOrigin={isIos() ? undefined : "anonymous"}
       />
