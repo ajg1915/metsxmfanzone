@@ -84,9 +84,14 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     );
 
     let index = 0;
+    let mediaRecoveries = 0;
+    let networkRetries = 0;
+    let retryTimer: number | undefined;
 
     const onPlaying = () => {
       if (destroyed) return;
+      mediaRecoveries = 0;
+      networkRetries = 0;
       setStatus("ready");
       setNeedsTap(false);
       setNeedsUnmute(video.muted);
@@ -110,6 +115,13 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       } else {
         notifyAdmins();
         setStatus("error");
+        // Live feeds come and go — keep trying quietly from the top.
+        index = 0;
+        retryTimer = window.setTimeout(() => {
+          if (destroyed) return;
+          setStatus("loading");
+          load();
+        }, 15000);
       }
     };
 
@@ -150,10 +162,11 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         liveDurationInfinity: true,
         highBufferWatchdogPeriod: 1,
         nudgeMaxRetry: 10,
-        manifestLoadingTimeOut: 8000,
-        manifestLoadingMaxRetry: 2,
-        levelLoadingTimeOut: 8000,
-        fragLoadingTimeOut: 12000,
+        manifestLoadingTimeOut: 10000,
+        manifestLoadingMaxRetry: 3,
+        levelLoadingTimeOut: 10000,
+        fragLoadingTimeOut: 20000,
+        fragLoadingMaxRetry: 6,
         startFragPrefetch: true,
       });
       hlsRef.current = hls;
@@ -167,13 +180,29 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       });
       hls.on(Hls.Events.ERROR, (_e, data) => {
         if (!data?.fatal || destroyed) return;
-        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-          try { hls.recoverMediaError(); return; } catch {}
+
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR && mediaRecoveries < 3) {
+          mediaRecoveries += 1;
+          try {
+            if (mediaRecoveries > 1) hls.swapAudioCodec();
+            hls.recoverMediaError();
+            return;
+          } catch {}
         }
+
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR && networkRetries < 3) {
+          networkRetries += 1;
+          try {
+            hls.startLoad();
+            return;
+          } catch {}
+        }
+
         console.error("[Player] fatal HLS error:", data.type, data.details);
         fail();
       });
     };
+
 
     video.addEventListener("playing", onPlaying);
     load();
