@@ -12,7 +12,7 @@ interface ClapprPlayerProps {
   showChrome?: boolean;
 }
 
-const PRIMARY_DEFAULT = "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
+
 
 function loadChromecastPlugin(): Promise<any> {
   return new Promise((resolve) => {
