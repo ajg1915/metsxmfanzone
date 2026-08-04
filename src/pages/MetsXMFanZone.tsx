@@ -66,15 +66,19 @@ const MetsXMFanZone = () => {
         .select('stream_url, status, display_order, created_at')
         .contains('assigned_pages', ['metsxmfanzone'])
         .eq('published', true)
-        .order('status', { ascending: true })
         .order('display_order', { ascending: true })
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (!cancelled && data?.stream_url) setStreamUrl(data.stream_url);
+        .limit(50);
+
+      if (cancelled || !data?.length) return;
+      // Prefer a live feed, then scheduled; never fall back to an ended stream.
+      const rank = (s: string) => (s === 'live' ? 0 : s === 'scheduled' ? 1 : 2);
+      const best = [...data].sort((a, b) => rank(a.status) - rank(b.status))[0];
+      if (best && best.status !== 'ended' && best.stream_url) setStreamUrl(best.stream_url);
     })();
     return () => { cancelled = true; };
   }, []);
+
 
 
   // Defer schedule fetch so stream player loads first
