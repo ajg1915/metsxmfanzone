@@ -55,6 +55,27 @@ const MetsXMFanZone = () => {
   const navigate = useNavigate();
   const [games, setGames] = useState<ScheduleGame[]>([]);
   const [gamesLoading, setGamesLoading] = useState(true);
+  const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
+
+  // Pull the M3U8 set in Admin → Live Streams (stream assigned to "MetsXMFanZone TV")
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('live_streams')
+        .select('stream_url, status, display_order, created_at')
+        .contains('assigned_pages', ['metsxmfanzone'])
+        .eq('published', true)
+        .order('status', { ascending: true })
+        .order('display_order', { ascending: true })
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!cancelled && data?.stream_url) setStreamUrl(data.stream_url);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
 
   // Defer schedule fetch so stream player loads first
   useEffect(() => {
