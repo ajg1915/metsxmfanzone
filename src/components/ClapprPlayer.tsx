@@ -144,7 +144,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const notifiedRef = useRef(false);
 
 
-  const effectiveSource = source || PRIMARY_DEFAULT;
+  const effectiveSource = source?.trim() || "";
 
   const handleUnmute = useCallback(() => {
     try {
