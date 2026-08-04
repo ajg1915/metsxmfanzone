@@ -12,7 +12,7 @@ interface ClapprPlayerProps {
   showChrome?: boolean;
 }
 
-const PRIMARY_DEFAULT = "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
+
 
 function loadChromecastPlugin(): Promise<any> {
   return new Promise((resolve) => {
@@ -144,7 +144,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const notifiedRef = useRef(false);
 
 
-  const effectiveSource = source || PRIMARY_DEFAULT;
+  const effectiveSource = source?.trim() || "";
 
   const handleUnmute = useCallback(() => {
     try {
@@ -183,6 +183,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
   useEffect(() => {
     if (!containerRef.current) return;
+    if (!effectiveSource) {
+      setStatus("error");
+      return;
+    }
 
     let destroyed = false;
     let cleanupIos: (() => void) | null = null;
