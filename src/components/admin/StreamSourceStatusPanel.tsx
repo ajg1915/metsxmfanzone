@@ -143,7 +143,7 @@ export default function StreamSourceStatusPanel() {
         )}
         {anyDown && (
           <p className="text-[11px] text-muted-foreground">
-            Viewers are automatically switched to the backup feed when the primary fails.
+            Update the stream m3u8 URL in Live Stream Management if a feed stays down.
           </p>
         )}
       </CardContent>
