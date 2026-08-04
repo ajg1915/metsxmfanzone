@@ -1,9 +1,9 @@
 import { memo, useRef, useEffect, useState, useCallback } from "react";
-import Clappr from "@clappr/player";
+import Hls from "hls.js";
 import { Loader2, AlertCircle, RotateCw, Volume2, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
 import { supabase } from "@/integrations/supabase/client";
-
+import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
 
 interface ClapprPlayerProps {
   pageTitle?: string;
@@ -12,159 +12,37 @@ interface ClapprPlayerProps {
   showChrome?: boolean;
 }
 
-
-
-function loadChromecastPlugin(): Promise<any> {
-  return new Promise((resolve) => {
-    if (typeof window === "undefined") {
-      resolve(null);
-      return;
-    }
-    if ((window as any).ChromecastPlugin) {
-      resolve((window as any).ChromecastPlugin);
-      return;
-    }
-    const script = document.createElement("script");
-    script.src =
-      "https://cdn.jsdelivr.net/npm/clappr-chromecast-plugin@0.1.1/dist/clappr-chromecast-plugin.min.js";
-    script.async = true;
-    script.onload = () => resolve((window as any).ChromecastPlugin || null);
-    script.onerror = () => resolve(null);
-    document.head.appendChild(script);
-  });
-}
-
 const isIos = () => {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
   return /iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && (navigator as any).maxTouchPoints > 1);
 };
 
-function setupIosPseudoFullscreen(container: HTMLElement): () => void {
-  if (!isIos()) return () => {};
-
-  let cancelled = false;
-  let video: HTMLVideoElement | null = null;
-  let observer: MutationObserver | null = null;
-
-  const fireFullscreenChange = () => {
-    try {
-      document.dispatchEvent(new Event("fullscreenchange"));
-      document.dispatchEvent(new Event("webkitfullscreenchange"));
-    } catch {
-      // ignore
-    }
-  };
-
-  const enterPseudo = () => {
-    container.classList.add("ios-pseudo-fullscreen");
-    document.body.style.overflow = "hidden";
-    (document as any).__iosPseudoFs = container;
-    try {
-      Object.defineProperty(document, "webkitFullscreenElement", {
-        configurable: true,
-        get: () => (document as any).__iosPseudoFs || null,
-      });
-    } catch {}
-    fireFullscreenChange();
-  };
-
-  const exitPseudo = () => {
-    container.classList.remove("ios-pseudo-fullscreen");
-    document.body.style.overflow = "";
-    (document as any).__iosPseudoFs = null;
-    fireFullscreenChange();
-  };
-
-  const attach = (v: HTMLVideoElement) => {
-    video = v;
-    v.setAttribute("playsinline", "true");
-    v.setAttribute("webkit-playsinline", "true");
-    (v as any).playsInline = true;
-
-    try {
-      (v as any).webkitEnterFullscreen = () => enterPseudo();
-      (v as any).webkitEnterFullScreen = () => enterPseudo();
-      (v as any).requestFullscreen = () => {
-        enterPseudo();
-        return Promise.resolve();
-      };
-    } catch {}
-
-    v.addEventListener("webkitbeginfullscreen", (e) => {
-      e.preventDefault?.();
-      try { (v as any).webkitExitFullscreen?.(); } catch {}
-      enterPseudo();
-    });
-  };
-
-  const findVideo = () => {
-    const v = container.querySelector("video") as HTMLVideoElement | null;
-    if (v && v !== video) attach(v);
-  };
-
-  findVideo();
-  observer = new MutationObserver(() => {
-    if (cancelled) return;
-    findVideo();
-  });
-  observer.observe(container, { childList: true, subtree: true });
-
-  const clickHandler = (e: Event) => {
-    const target = e.target as HTMLElement;
-    if (!target) return;
-    if (target.closest('[data-fullscreen], .fullscreen-icon, .icon-fullscreen, [aria-label*="ull" i]')) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (container.classList.contains("ios-pseudo-fullscreen")) exitPseudo();
-      else enterPseudo();
-    }
-  };
-  container.addEventListener("click", clickHandler, true);
-
-  return () => {
-    cancelled = true;
-    observer?.disconnect();
-    container.removeEventListener("click", clickHandler, true);
-    if (container.classList.contains("ios-pseudo-fullscreen")) exitPseudo();
-  };
-}
-
 export const ClapprPlayer = memo(function ClapprPlayer({
   source,
-  showChrome = true,
   pageTitle = "Live Stream",
 }: ClapprPlayerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const playerRef = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [needsUnmute, setNeedsUnmute] = useState(false);
   const [needsTap, setNeedsTap] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const notifiedRef = useRef(false);
 
-
   const effectiveSource = source?.trim() || "";
 
   const handleUnmute = useCallback(() => {
-    try {
-      const p = playerRef.current;
-      if (!p) return;
-      p.setVolume?.(100);
-      p.play?.();
-      setNeedsUnmute(false);
-    } catch {}
+    const v = videoRef.current;
+    if (!v) return;
+    v.muted = false;
+    v.volume = 1;
+    v.play().catch(() => {});
+    setNeedsUnmute(false);
   }, []);
 
   const handleTapPlay = useCallback(() => {
-    try {
-      const p = playerRef.current;
-      if (!p) return;
-      p.play?.();
-      const v = containerRef.current?.querySelector("video") as HTMLVideoElement | null;
-      v?.play?.().catch(() => {});
-      setNeedsTap(false);
-    } catch {}
+    videoRef.current?.play().then(() => setNeedsTap(false)).catch(() => {});
   }, []);
 
   const handleRetry = useCallback(() => {
@@ -173,8 +51,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     setRetryKey((k) => k + 1);
   }, []);
 
-
-  // Ask the backend to re-probe both feeds so admins get an alert in the portal.
+  // Ask the backend to re-probe the feed so admins get an alert in the portal.
   const notifyAdmins = useCallback(() => {
     if (notifiedRef.current) return;
     notifiedRef.current = true;
@@ -182,118 +59,150 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   }, []);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const video = videoRef.current;
+    if (!video) return;
     if (!effectiveSource) {
       setStatus("error");
       return;
     }
 
     let destroyed = false;
-    let cleanupIos: (() => void) | null = null;
-    let autoplayCheckTimer: number | undefined;
+    let autoplayTimer: number | undefined;
     setStatus("loading");
     setNeedsUnmute(false);
     setNeedsTap(false);
 
-    const init = async () => {
-      if (destroyed || !containerRef.current) return;
+    // Candidate URLs: HTTPS proxy first, then public CORS proxy, then raw.
+    const candidates = Array.from(
+      new Set(
+        [
+          toSecureStreamUrl(effectiveSource),
+          isInsecureUrl(effectiveSource) ? toCorsProxyUrl(effectiveSource) : "",
+          effectiveSource,
+        ].filter(Boolean)
+      )
+    );
 
-      (window as any).Clappr = Clappr;
+    let index = 0;
 
-      try {
+    const onPlaying = () => {
+      if (destroyed) return;
+      setStatus("ready");
+      setNeedsTap(false);
+      setNeedsUnmute(video.muted);
+    };
 
-        const player = new (Clappr as any).Player({
-          parent: containerRef.current,
-          source: effectiveSource,
-          width: "100%",
-          height: "100%",
-          autoPlay: true,
-          mute: true,
-          chromeless: false, // always show controls so users can access fullscreen/volume/cast
-          playInline: true,
-          playsinline: true,
-          hlsjsConfig: {
-            enableWorker: true,
-            lowLatencyMode: true,
-            backBufferLength: 10,
-            maxBufferLength: 8,
-            maxMaxBufferLength: 20,
-            maxBufferSize: 30 * 1000 * 1000,
-            liveSyncDurationCount: 2,
-            liveMaxLatencyDurationCount: 5,
-            liveDurationInfinity: true,
-            highBufferWatchdogPeriod: 1,
-            nudgeMaxRetry: 10,
-            manifestLoadingTimeOut: 8000,
-            manifestLoadingMaxRetry: 4,
-            levelLoadingTimeOut: 8000,
-            fragLoadingTimeOut: 12000,
-            startFragPrefetch: true,
-            progressive: true,
-          },
-          playback: {
-            preload: 'auto',
-            hlsMinimumDvrSize: 0,
-          } as any,
-          mediacontrol: { seekbar: "#E94560", buttons: "#E94560" },
-          events: {
-            onReady: () => {
-              if (destroyed) return;
-              setStatus("ready");
-              setNeedsUnmute(true);
-              // If autoplay is blocked, video stays paused — prompt a tap.
-              autoplayCheckTimer = window.setTimeout(() => {
-                if (destroyed) return;
-                const v = containerRef.current?.querySelector("video") as HTMLVideoElement | null;
-                if (v && v.paused) {
-                  v.play().catch(() => setNeedsTap(true));
-                  // Re-check shortly after
-                  window.setTimeout(() => {
-                    if (destroyed) return;
-                    if (v.paused) setNeedsTap(true);
-                  }, 800);
-                }
-              }, 1500);
-            },
-            onPlay: () => {
-              if (destroyed) return;
-              setStatus("ready");
-              setNeedsTap(false);
-            },
-            onError: (err: any) => {
-              if (destroyed) return;
-              console.error("[ClapprPlayer] error:", err);
-              notifyAdmins();
-              setStatus("error");
-            },
+    const tryAutoplay = () => {
+      video.muted = true;
+      video.play().catch(() => {
+        if (!destroyed) setNeedsTap(true);
+      });
+      autoplayTimer = window.setTimeout(() => {
+        if (!destroyed && video.paused) setNeedsTap(true);
+      }, 1500);
+    };
 
-          },
-        });
-
-        playerRef.current = player;
-        cleanupIos = setupIosPseudoFullscreen(containerRef.current!);
-      } catch (e) {
-        console.error("[ClapprPlayer] init failed:", e);
-        if (!destroyed) setStatus("error");
+    const fail = () => {
+      if (destroyed) return;
+      index += 1;
+      if (index < candidates.length) {
+        load();
+      } else {
+        notifyAdmins();
+        setStatus("error");
       }
     };
 
-    init();
+    const load = () => {
+      if (destroyed) return;
+      const url = candidates[index];
+
+      if (hlsRef.current) {
+        try { hlsRef.current.destroy(); } catch {}
+        hlsRef.current = null;
+      }
+
+      // Safari / iOS: native HLS support.
+      if (!Hls.isSupported() && video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = url;
+        video.addEventListener("loadedmetadata", () => {
+          if (!destroyed) setStatus("ready");
+        }, { once: true });
+        video.addEventListener("error", fail, { once: true });
+        tryAutoplay();
+        return;
+      }
+
+      if (!Hls.isSupported()) {
+        setStatus("error");
+        return;
+      }
+
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        backBufferLength: 10,
+        maxBufferLength: 8,
+        maxMaxBufferLength: 20,
+        maxBufferSize: 30 * 1000 * 1000,
+        liveSyncDurationCount: 2,
+        liveMaxLatencyDurationCount: 5,
+        liveDurationInfinity: true,
+        highBufferWatchdogPeriod: 1,
+        nudgeMaxRetry: 10,
+        manifestLoadingTimeOut: 8000,
+        manifestLoadingMaxRetry: 2,
+        levelLoadingTimeOut: 8000,
+        fragLoadingTimeOut: 12000,
+        startFragPrefetch: true,
+      });
+      hlsRef.current = hls;
+
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        if (destroyed) return;
+        setStatus("ready");
+        tryAutoplay();
+      });
+      hls.on(Hls.Events.ERROR, (_e, data) => {
+        if (!data?.fatal || destroyed) return;
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          try { hls.recoverMediaError(); return; } catch {}
+        }
+        console.error("[Player] fatal HLS error:", data.type, data.details);
+        fail();
+      });
+    };
+
+    video.addEventListener("playing", onPlaying);
+    load();
 
     return () => {
       destroyed = true;
-      if (autoplayCheckTimer) window.clearTimeout(autoplayCheckTimer);
-      if (cleanupIos) cleanupIos();
-      if (playerRef.current) {
-        try { playerRef.current.destroy(); } catch {}
+      if (autoplayTimer) window.clearTimeout(autoplayTimer);
+      video.removeEventListener("playing", onPlaying);
+      if (hlsRef.current) {
+        try { hlsRef.current.destroy(); } catch {}
+        hlsRef.current = null;
       }
-      playerRef.current = null;
+      try { video.removeAttribute("src"); video.load(); } catch {}
     };
-  }, [effectiveSource, showChrome, pageTitle, retryKey, notifyAdmins]);
+  }, [effectiveSource, retryKey, notifyAdmins]);
 
   return (
     <div className="relative w-full h-full aspect-video bg-black overflow-hidden">
-      <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+      <video
+        ref={videoRef}
+        className="absolute inset-0 w-full h-full object-contain bg-black"
+        controls
+        autoPlay
+        muted
+        playsInline
+        {...{ "webkit-playsinline": "true" }}
+        x-webkit-airplay="allow"
+        crossOrigin={isIos() ? undefined : "anonymous"}
+      />
       <CastButton source={effectiveSource} title={pageTitle} />
 
       {status === "loading" && (
@@ -320,7 +229,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       {status === "ready" && needsUnmute && (
         <button
           onClick={handleUnmute}
-          className="absolute bottom-3 left-3 z-20 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-colors"
+          className="absolute bottom-14 left-3 z-20 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-colors"
         >
           <Volume2 className="w-3.5 h-3.5" /> Tap to unmute
         </button>
@@ -340,7 +249,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           </p>
         </button>
       )}
-
     </div>
   );
 });
