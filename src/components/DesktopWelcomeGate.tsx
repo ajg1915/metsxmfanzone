@@ -61,16 +61,36 @@ export const DesktopWelcomeGate = () => {
     // Persistent opt-in — once user chooses desktop, don't nag again
     if (!forcePreview && localStorage.getItem(OPT_IN_KEY) === "1") return;
     const host = window.location.hostname;
+    const inIframe = (() => {
+      try {
+        return window.self !== window.top;
+      } catch {
+        return true;
+      }
+    })();
     const isLovablePreview =
+      inIframe ||
+      host === "localhost" ||
+      host === "127.0.0.1" ||
       host.includes("id-preview--") ||
       host.endsWith(".lovableproject.com") ||
+      host.endsWith(".lovable.app") ||
       window.location.search.includes("__lovable_token=");
     if (!forcePreview && isLovablePreview) return;
     // Allow tablets (<1024px). Only block true desktop.
     if (!forcePreview && window.innerWidth < 1024) return;
     if (window.location.search.includes("tv=true")) return;
-    // Don't block admin routes
-    if (!forcePreview && location.pathname.startsWith("/admin")) return;
+    // Never block auth or admin routes
+    const path = location.pathname;
+    if (
+      !forcePreview &&
+      (path.startsWith("/admin") ||
+        path.startsWith("/auth") ||
+        path.startsWith("/writer-auth") ||
+        path.startsWith("/reset-password"))
+    )
+      return;
+
     setShow(true);
   }, [location.pathname, cfg.enabled]);
 
