@@ -137,6 +137,7 @@ const MetsXMFanZone = () => {
                 {/* 16:9 Player */}
                 <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden border border-border/60 shadow-2xl shadow-primary/10 group">
                   <ClapprPlayer
+                    source={streamUrl}
                     pageTitle="MetsXMFanZone Live Stream"
                     pageDescription="Ultimate Destination Where the Fans Go"
                     showChrome={false}
