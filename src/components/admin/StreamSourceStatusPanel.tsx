@@ -90,7 +90,7 @@ export default function StreamSourceStatusPanel() {
             Live Feed Health
           </CardTitle>
           <CardDescription className="text-xs">
-            Primary and backup HLS feeds, checked automatically every 2 minutes.
+            HLS feeds, checked automatically every 2 minutes.
           </CardDescription>
         </div>
         <Button size="sm" variant="outline" onClick={runCheck} disabled={checking}>
