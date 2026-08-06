@@ -443,6 +443,7 @@ export default function MembersTab() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="free">Free</SelectItem>
+                          <SelectItem value="trial">Trial</SelectItem>
                           <SelectItem value="premium">Premium</SelectItem>
                           <SelectItem value="annual">Annual</SelectItem>
                         </SelectContent>
