@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Loader2, Trash2, Users, UserCheck, UserX, Lock, Unlock, Eye, EyeOff,
-  KeyRound, MoreHorizontal, CalendarPlus, DollarSign, ShieldPlus, Search, Filter, RefreshCw, Ban, Check,
+  KeyRound, MoreHorizontal, CalendarPlus, DollarSign, ShieldPlus, Search, Filter, RefreshCw, Ban, Check, Timer,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -39,7 +39,7 @@ interface MemberRow {
 }
 
 type StatusFilter = "all" | "active" | "pending" | "cancelled" | "none";
-type PlanFilter = "all" | "free" | "premium" | "annual";
+type PlanFilter = "all" | "free" | "trial" | "premium" | "annual";
 
 export default function MembersTab() {
   const { user } = useAuth();
@@ -54,6 +54,8 @@ export default function MembersTab() {
   const [planFilter, setPlanFilter] = useState<PlanFilter>("all");
   const [pendingDelete, setPendingDelete] = useState<MemberRow | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [customTarget, setCustomTarget] = useState<{ member: MemberRow; mode: "trial" | "extend" } | null>(null);
+  const [customDays, setCustomDays] = useState("14");
 
   useEffect(() => { fetchMembers(); }, []);
 
@@ -136,6 +138,8 @@ export default function MembersTab() {
   };
 
   const changePlan = async (m: MemberRow, plan: string) => {
+    // Trials are date-based — hand off so the end date is set correctly.
+    if (plan === "trial") return grantTrial({ ...m, plan_type: "free" }, 2);
     setBusyId(m.user_id);
     try {
       const end = new Date();
@@ -183,22 +187,63 @@ export default function MembersTab() {
   };
 
   const extend = async (m: MemberRow, days: number) => {
-    if (!m.subscription_id) {
-      toast({ title: "No subscription", description: "Set a plan first.", variant: "destructive" });
-      return;
-    }
+    // No subscription row yet? Fall back to granting a trial for that many days.
+    if (!m.subscription_id) return grantTrial(m, days);
     setBusyId(m.user_id);
     try {
-      const base = m.end_date ? new Date(m.end_date) : new Date();
+      // Extend from the current end date if it's still in the future, otherwise from today.
+      const current = m.end_date ? new Date(m.end_date) : null;
+      const base = current && current > new Date() ? current : new Date();
       base.setDate(base.getDate() + days);
       await supabase.from("subscriptions").update({ end_date: base.toISOString(), status: "active" }).eq("id", m.subscription_id);
-      await logActivity(m, "extended", { days });
-      toast({ title: "Extended", description: `+${days} days` });
+      await logActivity(m, "extended", { days, new_end_date: base.toISOString() });
+      toast({ title: "Extended", description: `+${days} days · ends ${base.toLocaleDateString()}` });
       fetchMembers();
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally { setBusyId(null); }
   };
+
+  const grantTrial = async (m: MemberRow, days: number) => {
+    setBusyId(m.user_id);
+    try {
+      const current = m.end_date ? new Date(m.end_date) : null;
+      const end = current && current > new Date() && m.plan_type === "trial" ? current : new Date();
+      end.setDate(end.getDate() + days);
+      const payload = {
+        plan_type: "trial",
+        status: "active",
+        amount: 0,
+        payment_method: "trial",
+        start_date: new Date().toISOString(),
+        end_date: end.toISOString(),
+      };
+      if (m.subscription_id) {
+        await supabase.from("subscriptions").update(payload).eq("id", m.subscription_id);
+      } else {
+        await supabase.from("subscriptions").insert({ user_id: m.user_id, ...payload });
+      }
+      await logActivity(m, "trial_granted", { days, ends: end.toISOString() });
+      toast({ title: "Trial granted", description: `${days}-day trial · ends ${end.toLocaleDateString()}` });
+      fetchMembers();
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally { setBusyId(null); }
+  };
+
+  const applyCustom = async () => {
+    if (!customTarget) return;
+    const days = parseInt(customDays, 10);
+    if (!days || days < 1 || days > 3650) {
+      toast({ title: "Invalid length", description: "Enter between 1 and 3650 days.", variant: "destructive" });
+      return;
+    }
+    const { member, mode } = customTarget;
+    setCustomTarget(null);
+    if (mode === "trial") await grantTrial(member, days);
+    else await extend(member, days);
+  };
+
 
   const markPaid = async (m: MemberRow) => {
     if (!m.subscription_id) {
@@ -346,6 +391,7 @@ export default function MembersTab() {
               <SelectContent>
                 <SelectItem value="all">All plans</SelectItem>
                 <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="trial">Trial</SelectItem>
                 <SelectItem value="premium">Premium</SelectItem>
                 <SelectItem value="annual">Annual</SelectItem>
               </SelectContent>
@@ -399,6 +445,7 @@ export default function MembersTab() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="free">Free</SelectItem>
+                          <SelectItem value="trial">Trial</SelectItem>
                           <SelectItem value="premium">Premium</SelectItem>
                           <SelectItem value="annual">Annual</SelectItem>
                         </SelectContent>
@@ -460,8 +507,27 @@ export default function MembersTab() {
                                 <DropdownMenuItem onClick={() => extend(m, 30)} className="text-xs">+ 30 days</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => extend(m, 90)} className="text-xs">+ 90 days</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => extend(m, 365)} className="text-xs">+ 1 year</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => { setCustomDays("30"); setCustomTarget({ member: m, mode: "extend" }); }} className="text-xs">
+                                  Custom…
+                                </DropdownMenuItem>
                               </DropdownMenuSubContent>
                             </DropdownMenuSub>
+
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger className="text-xs"><Timer className="w-3.5 h-3.5 mr-2" /> Grant / extend trial</DropdownMenuSubTrigger>
+                              <DropdownMenuSubContent className="bg-popover">
+                                <DropdownMenuItem onClick={() => grantTrial(m, 2)} className="text-xs">2-day trial</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => grantTrial(m, 7)} className="text-xs">7-day trial</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => grantTrial(m, 14)} className="text-xs">14-day trial</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => grantTrial(m, 30)} className="text-xs">30-day trial</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => { setCustomDays("14"); setCustomTarget({ member: m, mode: "trial" }); }} className="text-xs">
+                                  Custom…
+                                </DropdownMenuItem>
+                              </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+
 
                             <DropdownMenuSub>
                               <DropdownMenuSubTrigger className="text-xs"><ShieldPlus className="w-3.5 h-3.5 mr-2" /> Toggle role</DropdownMenuSubTrigger>
@@ -519,6 +585,36 @@ export default function MembersTab() {
               onClick={() => pendingDelete && deleteAccount(pendingDelete)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >Delete permanently</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!customTarget} onOpenChange={(o) => !o && setCustomTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {customTarget?.mode === "trial" ? "Grant trial access" : "Extend membership"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {customTarget?.mode === "trial"
+                ? "Sets this member to a trial plan ending after the number of days you choose."
+                : "Adds days to the current membership end date (or starts from today if it already expired)."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <label className="text-xs text-muted-foreground">Number of days</label>
+            <Input
+              type="number"
+              min={1}
+              max={3650}
+              value={customDays}
+              onChange={(e) => setCustomDays(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={applyCustom}>Apply</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
