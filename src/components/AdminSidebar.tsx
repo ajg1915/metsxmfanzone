@@ -71,6 +71,7 @@ const commerceItems = [
 
 const membersItems = [
   { title: "Members", url: "/admin/user-management", icon: UserCog },
+  { title: "Free Trials & Promos", url: "/admin/trials", icon: Gift },
   { title: "Writer Apps", url: "/admin/writer-applications", icon: PenLine },
 ];
 

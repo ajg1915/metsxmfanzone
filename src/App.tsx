@@ -59,6 +59,7 @@ const PodcastLiveStreamManagement = lazyWithRetry(() => import("./pages/admin/Po
 
 const LiveStreamManagement = lazyWithRetry(() => import("./pages/admin/LiveStreamManagement"), "page-admin-live-stream-management");
 const LiveNotificationManagement = lazyWithRetry(() => import("./pages/admin/LiveNotificationManagement"), "page-admin-live-notification-management");
+const TrialManagement = lazyWithRetry(() => import("./pages/admin/TrialManagement"), "page-admin-trial-management");
 const SubscriptionManagement = lazyWithRetry(() => import("./pages/admin/SubscriptionManagement"), "page-admin-subscription-management");
 const StoriesManagement = lazyWithRetry(() => import("./pages/admin/StoriesManagement"), "page-admin-stories-management");
 const TutorialManagement = lazyWithRetry(() => import("./pages/admin/TutorialManagement"), "page-admin-tutorial-management");
@@ -387,6 +388,7 @@ const AppContent = () => {
               <Route path="roles" element={<UserManagement />} />
               <Route path="user-management" element={<UserManagement />} />
               <Route path="subscriptions" element={<UserManagement />} />
+              <Route path="trials" element={<TrialManagement />} />
               <Route path="backgrounds" element={<BackgroundManagement />} />
               <Route path="activity" element={<ActivityDashboard />} />
               <Route path="writer-applications" element={<WriterApplications />} />
