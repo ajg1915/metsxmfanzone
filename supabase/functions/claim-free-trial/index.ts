@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
 
     const { data: existing } = await admin
       .from("subscriptions")
-      .select("id, plan_type, status, end_date")
+      .select("id, plan_type, status, end_date, notes")
       .eq("user_id", user.id);
 
     const rows = existing || [];
