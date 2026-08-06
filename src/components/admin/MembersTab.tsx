@@ -389,6 +389,7 @@ export default function MembersTab() {
               <SelectContent>
                 <SelectItem value="all">All plans</SelectItem>
                 <SelectItem value="free">Free</SelectItem>
+                <SelectItem value="trial">Trial</SelectItem>
                 <SelectItem value="premium">Premium</SelectItem>
                 <SelectItem value="annual">Annual</SelectItem>
               </SelectContent>
