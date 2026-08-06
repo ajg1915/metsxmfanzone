@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog,
@@ -11,23 +12,28 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Crown } from "lucide-react";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
 interface StreamTimeLimitProps {
   children: React.ReactNode;
 }
 
-const STREAM_TIME_LIMIT_MS = 10 * 60 * 1000; // 10 minutes for free users
+type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
+
 const STORAGE_KEY = "stream_viewing_start";
 
 const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [userPlan, setUserPlan] = useState<"free" | "premium" | "annual" | null>(null);
+  const { config, loading: configLoading } = useFreeTrialConfig();
+  const [userPlan, setUserPlan] = useState<PlanType | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+
+  const previewMinutes = Math.max(1, Number(config.streamPreviewMinutes) || 30);
+  const previewMs = previewMinutes * 60 * 1000;
+  const isPreviewPlan = userPlan === "free" || userPlan === "trial";
 
   // Redirect unauthenticated users to login
   useEffect(() => {
@@ -45,7 +51,7 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
       }
 
       try {
-        // Check if user is admin (admins get annual access automatically)
+        // Admins get unrestricted access
         const { data: roleData } = await supabase
           .from("user_roles")
           .select("role")
@@ -59,20 +65,19 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
           return;
         }
 
-        // Check subscription
         const { data: subData } = await supabase
           .from("subscriptions")
-          .select("plan_type")
+          .select("plan_type, end_date")
           .eq("user_id", user.id)
           .eq("status", "active")
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
 
-        const plan = (subData?.plan_type as "free" | "premium" | "annual") || "free";
+        const stillValid =
+          !subData?.end_date || new Date(subData.end_date) > new Date();
+        const plan = (stillValid ? (subData?.plan_type as PlanType) : "free") || "free";
         setUserPlan(plan);
-        
-        // Free users now get a 10-minute preview instead of immediate redirect
       } catch (error) {
         console.error("Error fetching plan:", error);
         setUserPlan("free");
@@ -86,11 +91,10 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
     }
   }, [user]);
 
-  // Start/check timer for free users - 10 minute preview
+  // Countdown for preview-tier viewers
   useEffect(() => {
-    if (loading || userPlan !== "free") return;
+    if (loading || configLoading || !isPreviewPlan) return;
 
-    // Get or set the start time
     let startTime = sessionStorage.getItem(STORAGE_KEY);
     if (!startTime) {
       startTime = Date.now().toString();
@@ -99,24 +103,20 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
 
     const checkTimeLimit = () => {
       const elapsed = Date.now() - parseInt(startTime!, 10);
-      const remaining = STREAM_TIME_LIMIT_MS - elapsed;
-      
+      const remaining = previewMs - elapsed;
+
       if (remaining <= 0) {
         setShowUpgradePrompt(true);
         setTimeRemaining(0);
       } else {
-        setTimeRemaining(Math.ceil(remaining / 1000)); // Convert to seconds
+        setTimeRemaining(Math.ceil(remaining / 1000));
       }
     };
 
-    // Check immediately
     checkTimeLimit();
-
-    // Check every second for accurate countdown
     const interval = setInterval(checkTimeLimit, 1000);
-
     return () => clearInterval(interval);
-  }, [loading, userPlan]);
+  }, [loading, configLoading, isPreviewPlan, previewMs]);
 
   const handleUpgrade = () => {
     sessionStorage.removeItem(STORAGE_KEY);
@@ -130,7 +130,6 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
     window.location.href = "/";
   };
 
-  // Show loading state while checking auth/subscription
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -142,31 +141,28 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
     );
   }
 
-  // If no user, don't render
   if (!user) {
     return null;
   }
 
-  // Format time remaining for display
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Free users get timed preview
-  if (userPlan === "free") {
+  // Free + trial members get a timed stream preview
+  if (isPreviewPlan) {
     return (
       <>
         {!showUpgradePrompt && (
           <>
-            {/* Timer overlay for free users */}
             {timeRemaining !== null && timeRemaining > 0 && (
               <div className="fixed top-20 right-4 z-50 bg-background/90 backdrop-blur-sm border border-primary rounded-lg px-4 py-2 shadow-lg">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                   <span className="text-sm font-medium text-foreground">
-                    Free Preview: {formatTime(timeRemaining)}
+                    Stream Preview: {formatTime(timeRemaining)}
                   </span>
                 </div>
               </div>
@@ -174,7 +170,7 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
             {children}
           </>
         )}
-        
+
         <AlertDialog open={showUpgradePrompt}>
           <AlertDialogContent className="max-w-md" onEscapeKeyDown={(e) => e.preventDefault()}>
             <AlertDialogHeader className="text-center">
@@ -182,14 +178,14 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
                 <img src={metsLogo} alt="MetsXM" className="w-14 h-14 object-contain" />
               </div>
               <AlertDialogTitle className="text-xl">
-                Your Free Preview Has Ended
+                Your Stream Preview Has Ended
               </AlertDialogTitle>
               <AlertDialogDescription className="text-center space-y-3">
                 <p>
-                  Thank you for watching! Your 10-minute free stream preview has ended.
+                  Thank you for watching! Your {previewMinutes}-minute stream preview has ended.
                 </p>
                 <p>
-                  Upgrade to Premium or Annual membership to enjoy unlimited streaming with no time limits.
+                  Upgrade to a paid membership to enjoy unlimited streaming with no time limits.
                 </p>
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -208,7 +204,7 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
     );
   }
 
-  // Premium and annual users get unlimited access
+  // Paid members get unlimited access
   return <>{children}</>;
 };
 
