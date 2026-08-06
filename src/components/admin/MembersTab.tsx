@@ -507,8 +507,27 @@ export default function MembersTab() {
                                 <DropdownMenuItem onClick={() => extend(m, 30)} className="text-xs">+ 30 days</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => extend(m, 90)} className="text-xs">+ 90 days</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => extend(m, 365)} className="text-xs">+ 1 year</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => { setCustomDays("30"); setCustomTarget({ member: m, mode: "extend" }); }} className="text-xs">
+                                  Custom…
+                                </DropdownMenuItem>
                               </DropdownMenuSubContent>
                             </DropdownMenuSub>
+
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger className="text-xs"><Timer className="w-3.5 h-3.5 mr-2" /> Grant / extend trial</DropdownMenuSubTrigger>
+                              <DropdownMenuSubContent className="bg-popover">
+                                <DropdownMenuItem onClick={() => grantTrial(m, 2)} className="text-xs">2-day trial</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => grantTrial(m, 7)} className="text-xs">7-day trial</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => grantTrial(m, 14)} className="text-xs">14-day trial</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => grantTrial(m, 30)} className="text-xs">30-day trial</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => { setCustomDays("14"); setCustomTarget({ member: m, mode: "trial" }); }} className="text-xs">
+                                  Custom…
+                                </DropdownMenuItem>
+                              </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+
 
                             <DropdownMenuSub>
                               <DropdownMenuSubTrigger className="text-xs"><ShieldPlus className="w-3.5 h-3.5 mr-2" /> Toggle role</DropdownMenuSubTrigger>
