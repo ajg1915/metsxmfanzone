@@ -54,6 +54,8 @@ export default function MembersTab() {
   const [planFilter, setPlanFilter] = useState<PlanFilter>("all");
   const [pendingDelete, setPendingDelete] = useState<MemberRow | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [customTarget, setCustomTarget] = useState<{ member: MemberRow; mode: "trial" | "extend" } | null>(null);
+  const [customDays, setCustomDays] = useState("14");
 
   useEffect(() => { fetchMembers(); }, []);
 
