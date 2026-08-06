@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { AdminLayout } from "@/components/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -87,14 +86,12 @@ const TrialManagement = () => {
 
   if (loading) {
     return (
-      <AdminLayout>
-        <p className="text-muted-foreground">Loading...</p>
-      </AdminLayout>
+      <p className="text-muted-foreground">Loading...</p>
     );
   }
 
   return (
-    <AdminLayout>
+    <>
       <div className="space-y-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -281,7 +278,7 @@ const TrialManagement = () => {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 
