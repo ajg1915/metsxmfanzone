@@ -495,7 +495,9 @@ const Auth = () => {
 
         const activePaidSubscription = subscriptions?.find(
           (s: any) =>
-            s.status === "active" && (s.plan_type === "premium" || s.plan_type === "annual")
+            s.status === "active" &&
+            ["trial", "weekly", "premium", "annual"].includes(s.plan_type) &&
+            (!s.end_date || new Date(s.end_date) > new Date())
         );
 
         if (!activePaidSubscription) {
@@ -952,7 +954,12 @@ const Auth = () => {
       
       const subscription = subscriptions?.find(s => s.status === "active");
 
-      if (subscription && (subscription.plan_type === "premium" || subscription.plan_type === "annual")) {
+      const hasValidAccess =
+        subscription &&
+        ["trial", "weekly", "premium", "annual"].includes(subscription.plan_type) &&
+        (!subscription.end_date || new Date(subscription.end_date) > new Date());
+
+      if (hasValidAccess) {
         clearPendingSignupPlan();
         navigate("/", { replace: true });
       } else {

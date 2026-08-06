@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { useAuth } from "./useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SubscriptionTier = "free" | "weekly" | "premium" | "annual";
+export type SubscriptionTier = "free" | "trial" | "weekly" | "premium" | "annual";
 
 export const useSubscription = () => {
   const { user, loading: authLoading } = useAuth();
   const [tier, setTier] = useState<SubscriptionTier>("free");
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [trialEndsAt, setTrialEndsAt] = useState<Date | null>(null);
+
 
   useEffect(() => {
     // Wait for auth to complete first
@@ -57,14 +59,17 @@ export const useSubscription = () => {
           // Check if subscription is still valid
           const endDate = data.end_date ? new Date(data.end_date) : null;
           const isActive = !endDate || endDate > new Date();
-          
+
           if (isActive) {
             setTier(data.plan_type as SubscriptionTier);
+            setTrialEndsAt(data.plan_type === "trial" ? endDate : null);
           } else {
             setTier("free");
+            setTrialEndsAt(null);
           }
         } else {
           setTier("free");
+          setTrialEndsAt(null);
         }
       } catch (error) {
         console.error("Error fetching subscription:", error);
@@ -85,12 +90,17 @@ export const useSubscription = () => {
   };
 
   const isPremium = isAdmin || tier === "weekly" || tier === "premium" || tier === "annual";
+  // Trial members can browse the whole site, but streams are preview-only
+  const isTrial = !isAdmin && tier === "trial";
 
   return {
     tier,
     loading,
     hasAccess,
     isPremium,
+    isTrial,
+    trialEndsAt,
     isAdmin,
   };
 };
+
