@@ -239,7 +239,41 @@ const Plans = () => {
               </p>
             </div>
 
+            {/* Free Trial / Promo Card */}
+            {trialAvailable && tier === "free" && (
+              <Card className="mb-8 border-primary/40 bg-card/90 backdrop-blur">
+                <CardContent className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Badge className="bg-primary text-primary-foreground">
+                        {activeWindow ? activeWindow.name || "Limited Time Offer" : "Free Trial"}
+                      </Badge>
+                    </div>
+                    <h2 className="text-lg sm:text-xl font-bold text-foreground">
+                      {trialDays}-day free {activeWindow && activeWindow.grantPlan !== "trial"
+                        ? `${activeWindow.grantPlan} membership`
+                        : "explorer pass"}
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {activeWindow && activeWindow.grantPlan !== "trial"
+                        ? "Full access to every stream and feature — no payment required."
+                        : `Explore the entire site free. Live streams are limited to a ${previewMinutes}-minute preview.`}
+                    </p>
+                  </div>
+                  <Button
+                    size="lg"
+                    onClick={handleClaimTrial}
+                    disabled={claimingTrial}
+                    className="w-full sm:w-auto"
+                  >
+                    {claimingTrial ? "Starting..." : "Start Free"}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Plans Grid */}
+
             <div className="grid md:grid-cols-3 gap-6 mb-16">
               {plans.map((plan) => (
                 <Card
