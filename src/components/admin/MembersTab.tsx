@@ -185,22 +185,63 @@ export default function MembersTab() {
   };
 
   const extend = async (m: MemberRow, days: number) => {
-    if (!m.subscription_id) {
-      toast({ title: "No subscription", description: "Set a plan first.", variant: "destructive" });
-      return;
-    }
+    // No subscription row yet? Fall back to granting a trial for that many days.
+    if (!m.subscription_id) return grantTrial(m, days);
     setBusyId(m.user_id);
     try {
-      const base = m.end_date ? new Date(m.end_date) : new Date();
+      // Extend from the current end date if it's still in the future, otherwise from today.
+      const current = m.end_date ? new Date(m.end_date) : null;
+      const base = current && current > new Date() ? current : new Date();
       base.setDate(base.getDate() + days);
       await supabase.from("subscriptions").update({ end_date: base.toISOString(), status: "active" }).eq("id", m.subscription_id);
-      await logActivity(m, "extended", { days });
-      toast({ title: "Extended", description: `+${days} days` });
+      await logActivity(m, "extended", { days, new_end_date: base.toISOString() });
+      toast({ title: "Extended", description: `+${days} days · ends ${base.toLocaleDateString()}` });
       fetchMembers();
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally { setBusyId(null); }
   };
+
+  const grantTrial = async (m: MemberRow, days: number) => {
+    setBusyId(m.user_id);
+    try {
+      const current = m.end_date ? new Date(m.end_date) : null;
+      const end = current && current > new Date() && m.plan_type === "trial" ? current : new Date();
+      end.setDate(end.getDate() + days);
+      const payload = {
+        plan_type: "trial",
+        status: "active",
+        amount: 0,
+        payment_method: "trial",
+        start_date: new Date().toISOString(),
+        end_date: end.toISOString(),
+      };
+      if (m.subscription_id) {
+        await supabase.from("subscriptions").update(payload).eq("id", m.subscription_id);
+      } else {
+        await supabase.from("subscriptions").insert({ user_id: m.user_id, ...payload });
+      }
+      await logActivity(m, "trial_granted", { days, ends: end.toISOString() });
+      toast({ title: "Trial granted", description: `${days}-day trial · ends ${end.toLocaleDateString()}` });
+      fetchMembers();
+    } catch (e: any) {
+      toast({ title: "Error", description: e.message, variant: "destructive" });
+    } finally { setBusyId(null); }
+  };
+
+  const applyCustom = async () => {
+    if (!customTarget) return;
+    const days = parseInt(customDays, 10);
+    if (!days || days < 1 || days > 3650) {
+      toast({ title: "Invalid length", description: "Enter between 1 and 3650 days.", variant: "destructive" });
+      return;
+    }
+    const { member, mode } = customTarget;
+    setCustomTarget(null);
+    if (mode === "trial") await grantTrial(member, days);
+    else await extend(member, days);
+  };
+
 
   const markPaid = async (m: MemberRow) => {
     if (!m.subscription_id) {
