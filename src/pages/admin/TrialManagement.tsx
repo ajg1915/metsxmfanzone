@@ -66,6 +66,7 @@ const TrialManagement = () => {
         {
           setting_key: FREE_TRIAL_SETTING_KEY,
           setting_value: config as unknown as never,
+          is_public: true,
         },
         { onConflict: "setting_key" }
       );
