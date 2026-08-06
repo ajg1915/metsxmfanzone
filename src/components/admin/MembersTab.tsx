@@ -138,6 +138,8 @@ export default function MembersTab() {
   };
 
   const changePlan = async (m: MemberRow, plan: string) => {
+    // Trials are date-based — hand off so the end date is set correctly.
+    if (plan === "trial") return grantTrial({ ...m, plan_type: "free" }, 2);
     setBusyId(m.user_id);
     try {
       const end = new Date();
