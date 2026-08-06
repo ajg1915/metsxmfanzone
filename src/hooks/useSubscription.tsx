@@ -2,13 +2,15 @@ import { useState, useEffect } from "react";
 import { useAuth } from "./useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SubscriptionTier = "free" | "weekly" | "premium" | "annual";
+export type SubscriptionTier = "free" | "trial" | "weekly" | "premium" | "annual";
 
 export const useSubscription = () => {
   const { user, loading: authLoading } = useAuth();
   const [tier, setTier] = useState<SubscriptionTier>("free");
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [trialEndsAt, setTrialEndsAt] = useState<Date | null>(null);
+
 
   useEffect(() => {
     // Wait for auth to complete first
