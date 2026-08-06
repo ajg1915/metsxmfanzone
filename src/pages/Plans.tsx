@@ -17,14 +17,47 @@ import {
 import CheckoutModal from "@/components/CheckoutModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Plans = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { tier, loading: subscriptionLoading } = useSubscription();
+  const { config: trialConfig, activeWindow } = useFreeTrialConfig();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [claimingTrial, setClaimingTrial] = useState(false);
+
+  const trialAvailable = trialConfig.enabled || !!activeWindow;
+  const trialDays = activeWindow ? activeWindow.grantDays : trialConfig.trialDays;
+  const previewMinutes = trialConfig.streamPreviewMinutes;
+
+  const handleClaimTrial = async () => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    setClaimingTrial(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("claim-free-trial", { body: {} });
+      if (error) throw error;
+      if ((data as any)?.error) {
+        toast.error((data as any).error);
+        return;
+      }
+      localStorage.removeItem("pending_signup_plan");
+      toast.success(`Your ${trialDays}-day free access is active!`);
+      window.location.href = "/";
+    } catch (e) {
+      toast.error("Could not start your free access. Please try again.");
+    } finally {
+      setClaimingTrial(false);
+    }
+  };
+
   
   // Check if user must select a plan (coming from signup)
   const pendingPlan = localStorage.getItem("pending_signup_plan");
