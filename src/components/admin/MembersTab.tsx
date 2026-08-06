@@ -588,6 +588,36 @@ export default function MembersTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!customTarget} onOpenChange={(o) => !o && setCustomTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {customTarget?.mode === "trial" ? "Grant trial access" : "Extend membership"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {customTarget?.mode === "trial"
+                ? "Sets this member to a trial plan ending after the number of days you choose."
+                : "Adds days to the current membership end date (or starts from today if it already expired)."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <label className="text-xs text-muted-foreground">Number of days</label>
+            <Input
+              type="number"
+              min={1}
+              max={3650}
+              value={customDays}
+              onChange={(e) => setCustomDays(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={applyCustom}>Apply</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
