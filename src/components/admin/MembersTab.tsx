@@ -39,7 +39,7 @@ interface MemberRow {
 }
 
 type StatusFilter = "all" | "active" | "pending" | "cancelled" | "none";
-type PlanFilter = "all" | "free" | "premium" | "annual";
+type PlanFilter = "all" | "free" | "trial" | "premium" | "annual";
 
 export default function MembersTab() {
   const { user } = useAuth();
