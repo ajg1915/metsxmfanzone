@@ -46,47 +46,115 @@ export default function MetsXMPlayer() {
   useEffect(() => {
     if (!streamUrl || !videoRef.current) return;
     const video = videoRef.current;
-    let cancelled = false;
+    let destroyed = false;
 
-    (async () => {
-      try {
-        if (video.canPlayType("application/vnd.apple.mpegurl")) {
-          video.src = streamUrl;
-          setStatus("ready");
-          return;
-        }
-        const Hls = await loadHls();
-        if (cancelled) return;
-        if (Hls.isSupported()) {
-          const hls = new Hls({ enableWorker: true, lowLatencyMode: true });
-          hlsRef.current = hls;
-          hls.loadSource(streamUrl);
-          hls.attachMedia(video);
-          hls.on(Hls.Events.MANIFEST_PARSED, () => setStatus("ready"));
-          hls.on(Hls.Events.ERROR, (_evt: any, data: any) => {
-            if (data?.fatal) {
-              setStatus("error");
-              setErrorMsg(data?.details || "Playback error");
-            }
-          });
-        } else {
-          setStatus("error");
-          setErrorMsg("HLS is not supported in this browser.");
-        }
-      } catch (e: any) {
+    // Try our HTTPS proxy first, then a public CORS proxy, then the raw URL.
+    const candidates = Array.from(
+      new Set(
+        [
+          toSecureStreamUrl(streamUrl),
+          isInsecureUrl(streamUrl) ? toCorsProxyUrl(streamUrl) : "",
+          streamUrl,
+        ].filter(Boolean)
+      )
+    );
+
+    let index = 0;
+    let mediaRecoveries = 0;
+    let networkRetries = 0;
+
+    const fail = (msg: string) => {
+      if (destroyed) return;
+      index += 1;
+      if (index < candidates.length) {
+        load();
+      } else {
         setStatus("error");
-        setErrorMsg(e?.message || "Failed to load player");
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
+        setErrorMsg(msg);
       }
     };
+
+    const load = () => {
+      if (destroyed) return;
+      const url = candidates[index];
+      setStatus("loading");
+
+      if (hlsRef.current) {
+        try { hlsRef.current.destroy(); } catch {}
+        hlsRef.current = null;
+      }
+
+      // Safari / iOS native HLS
+      if (!Hls.isSupported() && video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = url;
+        video.addEventListener("loadedmetadata", () => {
+          if (!destroyed) setStatus("ready");
+        }, { once: true });
+        video.addEventListener("error", () => fail("Playback error"), { once: true });
+        video.play().catch(() => {});
+        return;
+      }
+
+      if (!Hls.isSupported()) {
+        setStatus("error");
+        setErrorMsg("HLS is not supported in this browser.");
+        return;
+      }
+
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        liveDurationInfinity: true,
+        backBufferLength: 10,
+        manifestLoadingMaxRetry: 3,
+        fragLoadingMaxRetry: 6,
+      });
+      hlsRef.current = hls;
+      hls.loadSource(url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        if (destroyed) return;
+        mediaRecoveries = 0;
+        networkRetries = 0;
+        setStatus("ready");
+        video.play().catch(() => {});
+      });
+      hls.on(Hls.Events.ERROR, (_evt, data) => {
+        if (!data?.fatal || destroyed) return;
+
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR && mediaRecoveries < 3) {
+          mediaRecoveries += 1;
+          try {
+            if (mediaRecoveries > 1) hls.swapAudioCodec();
+            hls.recoverMediaError();
+            return;
+          } catch {}
+        }
+
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR && networkRetries < 3) {
+          networkRetries += 1;
+          try {
+            hls.startLoad();
+            return;
+          } catch {}
+        }
+
+        fail(data.details || "Playback error");
+      });
+    };
+
+    load();
+
+    return () => {
+      destroyed = true;
+      if (hlsRef.current) {
+        try { hlsRef.current.destroy(); } catch {}
+        hlsRef.current = null;
+      }
+      try { video.removeAttribute("src"); video.load(); } catch {}
+    };
   }, [streamUrl]);
+
 
   const play = () => videoRef.current?.play();
   const pause = () => videoRef.current?.pause();
