@@ -20,7 +20,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
-import { maskEmail, maskSensitiveField } from "@/utils/secureDataVault";
+import { maskEmail, maskSensitiveField, vaultAuthHeaders } from "@/utils/secureDataVault";
 
 interface MemberRow {
   user_id: string;
