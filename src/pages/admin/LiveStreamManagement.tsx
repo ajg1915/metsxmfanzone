@@ -91,13 +91,15 @@ interface LiveStream {
 
 const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'PIX11 Network', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
 
-function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect }: {
+function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree }: {
   stream: LiveStream;
   onEdit: (s: LiveStream) => void;
   onDelete: (id: string) => void;
   getStatusBadge: (status: string) => string;
   selected: boolean;
   onToggleSelect: (id: string) => void;
+  isFreeGame: boolean;
+  onToggleFree: (id: string, free: boolean) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: stream.id });
   const style = {
@@ -126,6 +128,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
             {stream.status.toUpperCase()}
           </Badge>
           {!stream.published && <Badge variant="outline">Draft</Badge>}
+          {isFreeGame && <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">FREE GAME</Badge>}
         </div>
         <CardTitle className="line-clamp-2 text-base">{stream.title}</CardTitle>
       </CardHeader>
@@ -134,6 +137,17 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
           <p>Assigned to: {stream.assigned_pages?.length > 0 ? stream.assigned_pages.map(p => PAGE_LABELS[p] || p).join(', ') : 'None'}</p>
           {stream.scheduled_start && <p>Starts: {new Date(stream.scheduled_start).toLocaleString()}</p>}
           <p>Viewers: {stream.viewers_count}</p>
+        </div>
+        <div className="flex items-center justify-between gap-2 mb-3 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
+          <Label htmlFor={`free-${stream.id}`} className="text-[11px] font-medium leading-tight">
+            Free for everyone
+            <span className="block text-[10px] font-normal text-muted-foreground">No login or membership needed</span>
+          </Label>
+          <Switch
+            id={`free-${stream.id}`}
+            checked={isFreeGame}
+            onCheckedChange={(v) => onToggleFree(stream.id, v)}
+          />
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => onEdit(stream)} className="flex-1 h-7 text-xs">
