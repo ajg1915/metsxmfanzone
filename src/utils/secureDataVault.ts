@@ -7,7 +7,7 @@ import { trackBulkExport } from "@/utils/securityAlerts";
  * Without this, supabase.functions.invoke() falls back to the anon key,
  * which the edge function correctly rejects with 401 Unauthorized.
  */
-async function vaultAuthHeaders(): Promise<Record<string, string>> {
+export async function vaultAuthHeaders(): Promise<Record<string, string>> {
   const { data } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (!token) {
