@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
+import { useFreeStreams } from "@/hooks/useFreeStreams";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog,
@@ -16,16 +17,22 @@ import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
 interface StreamTimeLimitProps {
   children: React.ReactNode;
+  /** Stream id, used to check if an admin marked this game as free for everyone */
+  streamId?: string | null;
+  /** Page key (e.g. "metsxmfanzone"), also checkable as a free stream */
+  pageKey?: string | null;
 }
 
 type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
 
 const STORAGE_KEY = "stream_viewing_start";
 
-const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
+const StreamTimeLimit = ({ children, streamId, pageKey }: StreamTimeLimitProps) => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { config, loading: configLoading } = useFreeTrialConfig();
+  const { isFree, loading: freeLoading } = useFreeStreams();
+  const freeForEveryone = !freeLoading && isFree(streamId, pageKey);
   const [userPlan, setUserPlan] = useState<PlanType | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -37,10 +44,11 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
 
   // Redirect unauthenticated users to login
   useEffect(() => {
+    if (freeForEveryone) return;
     if (!authLoading && !user) {
       navigate("/auth", { replace: true });
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, freeForEveryone]);
 
   // Fetch user's subscription plan
   useEffect(() => {
@@ -130,7 +138,12 @@ const StreamTimeLimit = ({ children }: StreamTimeLimitProps) => {
     window.location.href = "/";
   };
 
-  if (authLoading || loading) {
+  // Admin-selected free game: unrestricted for everyone, no login required
+  if (freeForEveryone) {
+    return <>{children}</>;
+  }
+
+  if (authLoading || loading || freeLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
