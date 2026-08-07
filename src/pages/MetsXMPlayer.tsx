@@ -1,36 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import Hls from "hls.js";
 import { supabase } from "@/integrations/supabase/client";
-
-declare global {
-  interface Window {
-    Hls: any;
-  }
-}
-
-const HLS_CDN = "https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js";
-
-function loadHls(): Promise<any> {
-  if (window.Hls) return Promise.resolve(window.Hls);
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${HLS_CDN}"]`);
-    if (existing) {
-      existing.addEventListener("load", () => resolve(window.Hls));
-      existing.addEventListener("error", reject);
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = HLS_CDN;
-    s.async = true;
-    s.onload = () => resolve(window.Hls);
-    s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
+import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
 
 // Proxied through Lovable Cloud so HTTPS pages can play the HTTP origin without mixed-content blocking.
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DEFAULT_STREAM_URL = `https://${PROJECT_ID}.supabase.co/functions/v1/hls-proxy/hls/metsxmfanzone.m3u8`;
+
 
 export default function MetsXMPlayer() {
   const [params] = useSearchParams();
