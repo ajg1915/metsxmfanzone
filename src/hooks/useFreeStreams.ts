@@ -54,6 +54,7 @@ export const useFreeStreams = () => {
         {
           setting_key: FREE_STREAMS_SETTING_KEY,
           setting_value: next as unknown as never,
+          is_public: true,
         },
         { onConflict: "setting_key" }
       );
