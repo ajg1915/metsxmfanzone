@@ -43,6 +43,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useFreeStreams } from "@/hooks/useFreeStreams";
 import { Trash2, Plus, Edit, Radio, Upload, X, Loader2, RotateCcw, GripVertical, Image, CheckSquare } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -164,6 +165,22 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
 
 export default function LiveStreamManagement() {
   const { toast } = useToast();
+  const freeStreams = useFreeStreams();
+
+  const handleToggleFree = async (id: string, free: boolean) => {
+    try {
+      await freeStreams.toggleStream(id, free);
+      toast({
+        title: free ? "Game set to free" : "Free access removed",
+        description: free
+          ? "Everyone can watch this game — no login or membership required."
+          : "This game is back to members-only access.",
+      });
+    } catch (err) {
+      console.error("Failed to update free game setting:", err);
+      toast({ title: "Update failed", variant: "destructive" });
+    }
+  };
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -989,6 +1006,8 @@ export default function LiveStreamManagement() {
                   getStatusBadge={getStatusBadge}
                   selected={selectedIds.has(stream.id)}
                   onToggleSelect={toggleSelect}
+                  isFreeGame={freeStreams.isFree(stream.id)}
+                  onToggleFree={handleToggleFree}
                 />
               ))}
             </div>
