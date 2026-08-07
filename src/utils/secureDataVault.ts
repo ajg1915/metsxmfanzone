@@ -1,6 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 import { trackBulkExport } from "@/utils/securityAlerts";
 
+
+/**
+ * Always attach the *user's* access token to vault calls.
+ * Without this, supabase.functions.invoke() falls back to the anon key,
+ * which the edge function correctly rejects with 401 Unauthorized.
+ */
+export async function vaultAuthHeaders(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) {
+    throw new Error('You must be signed in as an admin to access secure data.');
+  }
+  return { Authorization: `Bearer ${token}` };
+}
+
 type EncryptableDataType = 'activity_logs' | 'profiles' | 'business_ads' | 'newsletter_subscribers' | 'notification_subscriptions';
 
 /**
@@ -18,6 +33,7 @@ export async function encryptSensitiveData(
 ): Promise<Record<string, string> | null> {
   try {
     const { data: result, error } = await supabase.functions.invoke('secure-data-vault', {
+      headers: await vaultAuthHeaders(),
       body: {
         action: 'encrypt',
         dataType,
@@ -47,6 +63,7 @@ export async function decryptRecords(
 ): Promise<any[]> {
   try {
     const { data, error } = await supabase.functions.invoke('secure-data-vault', {
+      headers: await vaultAuthHeaders(),
       body: {
         action: 'decrypt',
         dataType,
@@ -80,6 +97,7 @@ export async function fetchDecryptedData(
 ): Promise<any[]> {
   try {
     const { data, error } = await supabase.functions.invoke('secure-data-vault', {
+      headers: await vaultAuthHeaders(),
       body: {
         action: 'fetch-decrypted',
         dataType,

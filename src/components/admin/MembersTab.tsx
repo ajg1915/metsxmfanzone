@@ -20,7 +20,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
-import { maskEmail, maskSensitiveField } from "@/utils/secureDataVault";
+import { maskEmail, maskSensitiveField, vaultAuthHeaders } from "@/utils/secureDataVault";
 
 interface MemberRow {
   user_id: string;
@@ -106,6 +106,7 @@ export default function MembersTab() {
     setDecrypting(true);
     try {
       const { data, error } = await supabase.functions.invoke("secure-data-vault", {
+        headers: await vaultAuthHeaders(),
         body: { action: "fetch-decrypted", dataType: "profiles", data: { limit: 500, offset: 0 } },
       });
       if (error) throw error;
