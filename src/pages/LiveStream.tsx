@@ -4,11 +4,10 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { StreamPlayer } from "@/components/StreamPlayer";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
-import LiveStreamChat from "@/components/LiveStreamChat";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Radio, Tv, Signal, Eye, Share2, Calendar, Users } from "lucide-react";
+import { Tv, Signal, Eye, Share2, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -40,7 +39,7 @@ const LiveStream = () => {
         ? await query.eq("id", streamId).maybeSingle()
         : await query
             .contains("assigned_pages", [streamId])
-            .order("status", { ascending: false }) // 'live' > 'scheduled' > 'ended'
+            .order("status", { ascending: false })
             .limit(1)
             .maybeSingle();
 
@@ -105,7 +104,6 @@ const LiveStream = () => {
         <Navigation />
 
         <main className="flex-1 pt-12">
-          {/* Ambient backdrop */}
           <div className="relative">
             {stream.thumbnail_url && (
               <div
@@ -117,8 +115,7 @@ const LiveStream = () => {
             )}
 
             <div className="container mx-auto px-4 py-6 sm:py-8 relative z-10">
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-                {/* Left column: Player + meta */}
+              <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-5">
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
@@ -133,7 +130,6 @@ const LiveStream = () => {
                     />
                   </motion.div>
 
-                  {/* Title + status bar */}
                   <motion.div
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -193,27 +189,6 @@ const LiveStream = () => {
                     </div>
                   </motion.div>
                 </div>
-
-                {/* Right column: Chat */}
-                <motion.aside
-                  initial={{ opacity: 0, x: 12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
-                  className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)]"
-                >
-                  <div className="px-4 py-3 border-b border-border/50 flex items-center justify-between bg-gradient-to-r from-primary/10 to-transparent">
-                    <div className="flex items-center gap-2">
-                      <Radio className="w-4 h-4 text-primary" />
-                      <h2 className="text-sm font-semibold text-foreground">Live Chat</h2>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                      Fan Zone
-                    </span>
-                  </div>
-                  <div className="h-[calc(100%-49px)] min-h-[400px]">
-                    <LiveStreamChat streamId={stream.id} streamTitle={stream.title} />
-                  </div>
-                </motion.aside>
               </div>
             </div>
           </div>

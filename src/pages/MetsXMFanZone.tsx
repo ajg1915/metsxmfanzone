@@ -162,7 +162,7 @@ const MetsXMFanZone = () => {
             <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
           </div>
 
-          {/* Player + Chat command-center grid */}
+          {/* Player + admin alerts command-center grid */}
           <div className="container mx-auto px-3 sm:px-4 pt-4 pb-8 relative z-10 max-w-[1400px]">
             <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px] gap-4 lg:gap-5">
               {/* Player + meta */}
