@@ -167,20 +167,31 @@ export default function AdminPortal() {
         sessionStorage.setItem("admin_device_fingerprint", activeFingerprint);
         setIsNewDevice(data.isNewDevice);
 
-        if (data.verificationUrl) {
-          try {
-            const url = new URL(data.verificationUrl);
-            const token = url.searchParams.get('token');
-            const type = url.searchParams.get('type') || 'magiclink';
-            if (token) {
-              const { error: verifyError } = await supabase.auth.verifyOtp({
-                token_hash: data.tokenHash,
-                type: type as 'magiclink'
-              });
-              if (verifyError) console.error('Session verification failed:', verifyError);
+        // Complete the browser auth session directly from the server-issued hash.
+        // Parsing the action-link URL is unreliable in embedded previews because
+        // auth links can use either query or hash parameters depending on config.
+        if (data.tokenHash) {
+          let sessionEstablished = false;
+
+          for (let attempt = 0; attempt < 2 && !sessionEstablished; attempt += 1) {
+            try {
+              const { data: verification, error: verifyError } = await withTimeout(
+                supabase.auth.verifyOtp({
+                  token_hash: data.tokenHash,
+                  type: "magiclink",
+                }),
+                10000,
+                "Admin session verification timed out"
+              );
+
+              if (verifyError) throw verifyError;
+              sessionEstablished = Boolean(verification.session);
+            } catch (err) {
+              console.warn(`Admin session verification attempt ${attempt + 1} failed`, err);
+              if (attempt === 0) {
+                await new Promise((resolve) => setTimeout(resolve, 500));
+              }
             }
-          } catch (err) {
-            console.error('Error establishing session:', err);
           }
         }
 
