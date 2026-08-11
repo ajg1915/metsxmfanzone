@@ -79,7 +79,6 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
   let href = `/live/${stream.id}`;
   if (pages.includes("mlb-network")) href = "/mlb-network";
   else if (pages.includes("espn-network")) href = "/espn-network";
-  else if (pages.includes("pix11-network")) href = "/pix11-network";
   else if (pages.includes("msg-network")) href = "/live/msg-network";
   return {
     id: stream.id,
