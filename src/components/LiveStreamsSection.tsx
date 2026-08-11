@@ -288,11 +288,11 @@ const LiveStreamsSection = () => {
       });
 
       // Exclude the 24/7 sports network streams — they live in Sports Network Streams
-      const excludedPages = ['mlb-network', 'sny-tv', 'sny.tv', 'msg-network', 'msg', 'espn-network', 'espn', 'pix11-network', 'pix11'];
+      const excludedPages = ['mlb-network', 'sny-tv', 'sny.tv', 'msg-network', 'msg', 'espn-network', 'espn'];
       const filtered = sorted.filter(s => {
         const title = s.title.toLowerCase();
         const isSportsNetwork24x7 =
-          (title.includes('mlb network') || title.includes('sny.tv') || title.includes('msg network') || title.includes('espn') || title.includes('pix11')) && title.includes('24/7');
+          (title.includes('mlb network') || title.includes('sny.tv') || title.includes('msg network') || title.includes('espn')) && title.includes('24/7');
 
         return !isSportsNetwork24x7 && !s.assigned_pages?.some(p => excludedPages.includes(p.toLowerCase()));
       });
