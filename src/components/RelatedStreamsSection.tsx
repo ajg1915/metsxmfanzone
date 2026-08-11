@@ -74,11 +74,6 @@ const isEspn24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) 
   return title.includes("espn") && title.includes("24/7") || stream.assigned_pages?.includes("espn-network");
 };
 
-const isPix1124x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
-  const title = stream.title.toLowerCase();
-  return title.includes("pix11") || !!stream.assigned_pages?.includes("pix11-network");
-};
-
 const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => {
   const pages = stream.assigned_pages || [];
   let href = `/live/${stream.id}`;
