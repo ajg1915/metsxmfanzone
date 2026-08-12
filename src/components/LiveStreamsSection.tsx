@@ -288,7 +288,7 @@ const LiveStreamsSection = () => {
       });
 
       // Exclude the 24/7 sports network streams — they live in Sports Network Streams
-      const excludedPages = ['mlb-network', 'sny-tv', 'sny.tv', 'msg-network', 'msg', 'espn-network', 'espn'];
+      const excludedPages = ['mlb-network', 'sny-tv', 'sny.tv', 'msg-network', 'msg', 'espn-network', 'espn', 'pix11-network', 'pix11'];
       const filtered = sorted.filter(s => {
         const title = s.title.toLowerCase();
         const isSportsNetwork24x7 =
