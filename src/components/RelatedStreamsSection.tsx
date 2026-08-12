@@ -52,6 +52,13 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     thumbnail: null,
     href: "/espn-network",
   },
+  {
+    id: "pix11-network",
+    title: "PIX11 24/7",
+    subtitle: "24/7 — PIX11 New York, local news, weather & Mets coverage",
+    thumbnail: null,
+    href: "/pix11-network",
+  },
 ];
 
 const isMlbNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
