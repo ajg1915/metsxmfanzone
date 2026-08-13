@@ -1,6 +1,6 @@
 import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Hls from "hls.js";
-import { Loader2, AlertCircle, RotateCw, Volume2, Play } from "lucide-react";
+import { Loader2, AlertCircle, RotateCw, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
 import { StreamControls } from "./player/StreamControls";
 
@@ -29,21 +29,11 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
   const hlsRef = useRef<Hls | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [needsUnmute, setNeedsUnmute] = useState(false);
   const [needsTap, setNeedsTap] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const notifiedRef = useRef(false);
 
   const effectiveSource = source?.trim() || "";
-
-  const handleUnmute = useCallback(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = false;
-    v.volume = 1;
-    v.play().catch(() => {});
-    setNeedsUnmute(false);
-  }, []);
 
   const handleTapPlay = useCallback(() => {
     videoRef.current?.play().then(() => setNeedsTap(false)).catch(() => {});
@@ -73,7 +63,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     let destroyed = false;
     let autoplayTimer: number | undefined;
     setStatus("loading");
-    setNeedsUnmute(false);
     setNeedsTap(false);
 
     // Candidate URLs: HTTPS proxy first, then public CORS proxy, then raw.
@@ -98,7 +87,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       networkRetries = 0;
       setStatus("ready");
       setNeedsTap(false);
-      setNeedsUnmute(video.muted);
     };
 
     const tryAutoplay = () => {
@@ -274,15 +262,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             <RotateCw className="w-3.5 h-3.5" /> Retry
           </button>
         </div>
-      )}
-
-      {status === "ready" && needsUnmute && (
-        <button
-          onClick={handleUnmute}
-          className="absolute bottom-14 left-3 z-20 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-colors"
-        >
-          <Volume2 className="w-3.5 h-3.5" /> Tap to unmute
-        </button>
       )}
 
       {status === "ready" && needsTap && (
