@@ -2,6 +2,8 @@ import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Loader2, AlertCircle, RotateCw, Volume2, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
+import { StreamControls } from "./player/StreamControls";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
 
