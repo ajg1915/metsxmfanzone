@@ -304,6 +304,7 @@ const AppContent = () => {
         <SweepstakesWheel />
         <DesktopWelcomeGate />
         <UpdatePrompt />
+        <EmbeddedChatWidget />
         
         <Suspense fallback={<PageLoader />}>
 
