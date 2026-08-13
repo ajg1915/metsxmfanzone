@@ -57,7 +57,7 @@ const SpringTrainingGamesSection = () => {
   const fetchStreams = async () => {
     try {
       const { data, error } = await supabase
-        .from("live_streams_public" as any)
+        .from("live_streams_public")
         .select("*")
         .eq("published", true)
         .in("status", ["live", "scheduled"])

@@ -31,7 +31,7 @@ const DashboardNotificationsInbox = () => {
 
     const [liveStreams, gameAlerts, stories, blogPosts] = await Promise.all([
       supabase
-        .from("live_streams_public" as any)
+        .from("live_streams_public")
         .select("id, title, status, updated_at")
         .in("status", ["live", "scheduled"])
         .eq("published", true)
