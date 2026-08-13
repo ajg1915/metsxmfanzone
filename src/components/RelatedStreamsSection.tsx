@@ -114,7 +114,7 @@ const RelatedStreamsSection = () => {
 
     const fetchNetworkStreams = async () => {
       const { data, error } = await supabase
-        .from("live_streams")
+        .from("live_streams_public" as any)
         .select("id, title, description, thumbnail_url, assigned_pages")
         .eq("published", true)
         .eq("status", "live")

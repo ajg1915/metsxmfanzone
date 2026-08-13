@@ -103,7 +103,7 @@ const WhatsNew = () => {
           .order("created_at", { ascending: false })
           .limit(5),
         supabase
-          .from("live_streams")
+          .from("live_streams_public" as any)
           .select("id, title, created_at")
           .eq("published", true)
           .gte("created_at", oneWeekAgo.toISOString())

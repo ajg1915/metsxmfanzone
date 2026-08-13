@@ -21,7 +21,7 @@ export const LiveStreamToast = () => {
     const timer = setTimeout(async () => {
       try {
         const { data: liveStreams } = await supabase
-          .from('live_streams')
+          .from("live_streams_public" as any)
           .select('id, title')
           .eq('status', 'live')
           .eq('published', true)
