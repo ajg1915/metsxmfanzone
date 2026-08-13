@@ -25,6 +25,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   pageTitle = "Live Stream",
 }: ClapprPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const hlsRef = useRef<Hls | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [needsUnmute, setNeedsUnmute] = useState(false);
