@@ -87,7 +87,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       networkRetries = 0;
       setStatus("ready");
       setNeedsTap(false);
-      setNeedsUnmute(video.muted);
     };
 
     const tryAutoplay = () => {
