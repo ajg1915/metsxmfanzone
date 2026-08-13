@@ -221,19 +221,35 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   }, [effectiveSource, retryKey, notifyAdmins]);
 
   return (
-    <div className="relative w-full h-full aspect-video bg-black overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full aspect-video bg-black overflow-hidden group">
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-contain bg-black"
-        controls
         autoPlay
         muted
         playsInline
+        onClick={() => {
+          const v = videoRef.current;
+          if (!v) return;
+          if (v.paused) v.play().catch(() => {});
+          else v.pause();
+        }}
         {...{ "webkit-playsinline": "true" }}
         x-webkit-airplay="allow"
         crossOrigin={isIos() ? undefined : "anonymous"}
       />
       <CastButton source={effectiveSource} title={pageTitle} />
+
+      {status === "ready" && (
+        <StreamControls
+          videoRef={videoRef}
+          hlsRef={hlsRef}
+          containerRef={containerRef}
+          onReload={handleRetry}
+          channelLabel={pageTitle}
+        />
+      )}
+
 
       {status === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white gap-2 pointer-events-none">
