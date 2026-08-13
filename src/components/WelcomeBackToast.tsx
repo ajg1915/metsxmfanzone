@@ -57,7 +57,7 @@ export const WelcomeBackToast = () => {
 
         // Fetch active or upcoming live streams
         const { data: liveStreams } = await supabase
-          .from('live_streams')
+          .from("live_streams_public" as any)
           .select('title, status')
           .eq('published', true)
           .in('status', ['live', 'scheduled'])

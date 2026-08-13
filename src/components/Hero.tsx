@@ -54,7 +54,7 @@ const Hero = () => {
   // Live check
   useEffect(() => {
     const check = async () => {
-      const { data } = await supabase.from('live_streams').select('id').eq('status', 'live').eq('published', true).limit(1);
+      const { data } = await supabase.from("live_streams_public" as any).select('id').eq('status', 'live').eq('published', true).limit(1);
       setIsLiveNow(data && data.length > 0);
     };
     check();

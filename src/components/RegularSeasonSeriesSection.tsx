@@ -53,7 +53,7 @@ const RegularSeasonSeriesSection = () => {
   const fetchGames = async () => {
     try {
       const { data, error } = await supabase
-        .from("live_streams")
+        .from("live_streams_public" as any)
         .select("*")
         .eq("published", true)
         .order("scheduled_start", { ascending: true, nullsFirst: false });
