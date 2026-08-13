@@ -2412,38 +2412,59 @@ export type Database = {
       }
       realtime_presence: {
         Row: {
+          city: string | null
+          country: string | null
           created_at: string
           current_page: string
+          device_type: string | null
+          entry_page: string | null
           id: string
           is_authenticated: boolean | null
           last_seen_at: string
           page_type: string | null
           referrer_source: string | null
+          referrer_url: string | null
+          region: string | null
           session_id: string
+          stream_title: string | null
           user_agent: string | null
           user_id: string | null
         }
         Insert: {
+          city?: string | null
+          country?: string | null
           created_at?: string
           current_page: string
+          device_type?: string | null
+          entry_page?: string | null
           id?: string
           is_authenticated?: boolean | null
           last_seen_at?: string
           page_type?: string | null
           referrer_source?: string | null
+          referrer_url?: string | null
+          region?: string | null
           session_id: string
+          stream_title?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
         Update: {
+          city?: string | null
+          country?: string | null
           created_at?: string
           current_page?: string
+          device_type?: string | null
+          entry_page?: string | null
           id?: string
           is_authenticated?: boolean | null
           last_seen_at?: string
           page_type?: string | null
           referrer_source?: string | null
+          referrer_url?: string | null
+          region?: string | null
           session_id?: string
+          stream_title?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -3901,6 +3922,45 @@ export type Database = {
           video_type?: string
           video_url?: string
           views?: number | null
+        }
+        Relationships: []
+      }
+      visitor_clicks: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          element_href: string | null
+          element_label: string | null
+          element_type: string | null
+          id: string
+          page_path: string
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          element_href?: string | null
+          element_label?: string | null
+          element_type?: string | null
+          id?: string
+          page_path: string
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          element_href?: string | null
+          element_label?: string | null
+          element_type?: string | null
+          id?: string
+          page_path?: string
+          session_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

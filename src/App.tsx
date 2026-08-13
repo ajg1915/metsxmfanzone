@@ -20,7 +20,6 @@ import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
 import { DesktopWelcomeGate } from "@/components/DesktopWelcomeGate";
 import { UpdatePrompt } from "@/components/UpdatePrompt";
-import { EmbeddedChatWidget } from "@/components/EmbeddedChatWidget";
 
 
 
@@ -304,7 +303,6 @@ const AppContent = () => {
         <SweepstakesWheel />
         <DesktopWelcomeGate />
         <UpdatePrompt />
-        <EmbeddedChatWidget />
         
         <Suspense fallback={<PageLoader />}>
 
