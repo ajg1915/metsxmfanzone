@@ -63,7 +63,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     let destroyed = false;
     let autoplayTimer: number | undefined;
     setStatus("loading");
-    setNeedsUnmute(false);
     setNeedsTap(false);
 
     // Candidate URLs: HTTPS proxy first, then public CORS proxy, then raw.
