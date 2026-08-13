@@ -352,7 +352,7 @@ const LiveStreamsSection = () => {
     }
 
     const { error } = await supabase
-      .from("live_streams_public" as any)
+      .from("live_streams")
       .update(updateData)
       .eq('id', streamId);
 
@@ -380,7 +380,7 @@ const LiveStreamsSection = () => {
     let hasError = false;
     for (let i = 0; i < reordered.length; i++) {
       const { error } = await supabase
-        .from("live_streams_public" as any)
+        .from("live_streams")
         .update({ display_order: i })
         .eq('id', reordered[i].id);
       if (error) {
