@@ -1423,13 +1423,6 @@ export type Database = {
             referencedRelation: "live_streams"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "live_stream_admin_updates_live_stream_id_fkey"
-            columns: ["live_stream_id"]
-            isOneToOne: false
-            referencedRelation: "live_streams_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       live_stream_chat: {
@@ -3038,13 +3031,6 @@ export type Database = {
             referencedRelation: "live_streams"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "stream_alerts_stream_id_fkey"
-            columns: ["stream_id"]
-            isOneToOne: false
-            referencedRelation: "live_streams_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       stream_health_reports: {
@@ -3090,13 +3076,6 @@ export type Database = {
             columns: ["stream_id"]
             isOneToOne: false
             referencedRelation: "live_streams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stream_health_reports_stream_id_fkey"
-            columns: ["stream_id"]
-            isOneToOne: false
-            referencedRelation: "live_streams_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3177,13 +3156,6 @@ export type Database = {
             columns: ["stream_id"]
             isOneToOne: false
             referencedRelation: "live_streams"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "stream_views_stream_id_fkey"
-            columns: ["stream_id"]
-            isOneToOne: false
-            referencedRelation: "live_streams_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4041,60 +4013,6 @@ export type Database = {
           id?: string | null
           location?: string | null
           rating?: number | null
-        }
-        Relationships: []
-      }
-      live_streams_public: {
-        Row: {
-          actual_end: string | null
-          actual_start: string | null
-          assigned_pages: string[] | null
-          created_at: string | null
-          description: string | null
-          display_order: number | null
-          id: string | null
-          published: boolean | null
-          scheduled_end: string | null
-          scheduled_start: string | null
-          status: string | null
-          thumbnail_url: string | null
-          title: string | null
-          updated_at: string | null
-          viewers_count: number | null
-        }
-        Insert: {
-          actual_end?: string | null
-          actual_start?: string | null
-          assigned_pages?: string[] | null
-          created_at?: string | null
-          description?: string | null
-          display_order?: number | null
-          id?: string | null
-          published?: boolean | null
-          scheduled_end?: string | null
-          scheduled_start?: string | null
-          status?: string | null
-          thumbnail_url?: string | null
-          title?: string | null
-          updated_at?: string | null
-          viewers_count?: number | null
-        }
-        Update: {
-          actual_end?: string | null
-          actual_start?: string | null
-          assigned_pages?: string[] | null
-          created_at?: string | null
-          description?: string | null
-          display_order?: number | null
-          id?: string | null
-          published?: boolean | null
-          scheduled_end?: string | null
-          scheduled_start?: string | null
-          status?: string | null
-          thumbnail_url?: string | null
-          title?: string | null
-          updated_at?: string | null
-          viewers_count?: number | null
         }
         Relationships: []
       }

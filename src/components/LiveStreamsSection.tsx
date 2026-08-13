@@ -200,7 +200,7 @@ const LiveStreamsSection = () => {
       let changed = false;
 
       const { data: toGoLive } = await supabase
-        .from("live_streams_public")
+        .from("live_streams")
         .select("id, title")
         .eq("status", "scheduled")
         .eq("published", true)
@@ -210,7 +210,7 @@ const LiveStreamsSection = () => {
       if (toGoLive && toGoLive.length > 0) {
         for (const stream of toGoLive) {
           await supabase
-            .from("live_streams_public")
+            .from("live_streams")
             .update({ status: "live", actual_start: now })
             .eq("id", stream.id);
         }
@@ -218,7 +218,7 @@ const LiveStreamsSection = () => {
       }
 
       const { data: toEnd } = await supabase
-        .from("live_streams_public")
+        .from("live_streams")
         .select("id")
         .eq("status", "live")
         .lte("scheduled_end", now)
@@ -227,7 +227,7 @@ const LiveStreamsSection = () => {
       if (toEnd && toEnd.length > 0) {
         for (const stream of toEnd) {
           await supabase
-            .from("live_streams_public")
+            .from("live_streams")
             .update({ status: "ended", actual_end: now })
             .eq("id", stream.id);
         }
@@ -264,7 +264,7 @@ const LiveStreamsSection = () => {
   const fetchStreams = async () => {
     try {
       let query = supabase
-        .from("live_streams_public")
+        .from("live_streams")
         .select("*")
         .eq("published", true)
         .order("scheduled_start", { ascending: true, nullsFirst: false })
@@ -352,7 +352,7 @@ const LiveStreamsSection = () => {
     }
 
     const { error } = await supabase
-      .from("live_streams")
+      .from('live_streams')
       .update(updateData)
       .eq('id', streamId);
 
@@ -380,7 +380,7 @@ const LiveStreamsSection = () => {
     let hasError = false;
     for (let i = 0; i < reordered.length; i++) {
       const { error } = await supabase
-        .from("live_streams")
+        .from('live_streams')
         .update({ display_order: i })
         .eq('id', reordered[i].id);
       if (error) {

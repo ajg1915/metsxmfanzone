@@ -48,7 +48,7 @@ const ReplayGamesSection = () => {
   const fetchStreams = async () => {
     try {
       const { data, error } = await supabase
-        .from("live_streams_public")
+        .from("live_streams")
         .select("*")
         .eq("published", true)
         .contains("assigned_pages", ["replay-games"])
