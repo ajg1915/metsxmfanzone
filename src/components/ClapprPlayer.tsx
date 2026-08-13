@@ -264,6 +264,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         </div>
       )}
 
+      {status === "ready" && needsTap && (
         <button
           onClick={handleTapPlay}
           className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-black/70 backdrop-blur-sm text-white transition-colors hover:bg-black/80"
