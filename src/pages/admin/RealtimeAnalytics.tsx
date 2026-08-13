@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, Eye, Radio, MessageSquare, FileText, Globe, Monitor, Smartphone, RefreshCw, TrendingUp, Search, Share2, Link2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import LiveVisitorsMonitor from "@/components/admin/LiveVisitorsMonitor";
 
 interface PresenceData {
   id: string;
@@ -198,6 +199,8 @@ export default function RealtimeAnalytics() {
           Refresh
         </Button>
       </div>
+
+      <LiveVisitorsMonitor />
 
       {/* Summary Cards */}
       <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-4 mb-4">
