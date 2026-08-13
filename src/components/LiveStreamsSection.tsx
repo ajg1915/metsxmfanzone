@@ -200,7 +200,7 @@ const LiveStreamsSection = () => {
       let changed = false;
 
       const { data: toGoLive } = await supabase
-        .from("live_streams_public" as any)
+        .from("live_streams_public")
         .select("id, title")
         .eq("status", "scheduled")
         .eq("published", true)
@@ -210,7 +210,7 @@ const LiveStreamsSection = () => {
       if (toGoLive && toGoLive.length > 0) {
         for (const stream of toGoLive) {
           await supabase
-            .from("live_streams_public" as any)
+            .from("live_streams_public")
             .update({ status: "live", actual_start: now })
             .eq("id", stream.id);
         }
@@ -218,7 +218,7 @@ const LiveStreamsSection = () => {
       }
 
       const { data: toEnd } = await supabase
-        .from("live_streams_public" as any)
+        .from("live_streams_public")
         .select("id")
         .eq("status", "live")
         .lte("scheduled_end", now)
@@ -227,7 +227,7 @@ const LiveStreamsSection = () => {
       if (toEnd && toEnd.length > 0) {
         for (const stream of toEnd) {
           await supabase
-            .from("live_streams_public" as any)
+            .from("live_streams_public")
             .update({ status: "ended", actual_end: now })
             .eq("id", stream.id);
         }
@@ -264,7 +264,7 @@ const LiveStreamsSection = () => {
   const fetchStreams = async () => {
     try {
       let query = supabase
-        .from("live_streams_public" as any)
+        .from("live_streams_public")
         .select("*")
         .eq("published", true)
         .order("scheduled_start", { ascending: true, nullsFirst: false })
