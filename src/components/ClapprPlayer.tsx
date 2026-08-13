@@ -29,21 +29,11 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
   const hlsRef = useRef<Hls | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [needsUnmute, setNeedsUnmute] = useState(false);
   const [needsTap, setNeedsTap] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const notifiedRef = useRef(false);
 
   const effectiveSource = source?.trim() || "";
-
-  const handleUnmute = useCallback(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = false;
-    v.volume = 1;
-    v.play().catch(() => {});
-    setNeedsUnmute(false);
-  }, []);
 
   const handleTapPlay = useCallback(() => {
     videoRef.current?.play().then(() => setNeedsTap(false)).catch(() => {});
