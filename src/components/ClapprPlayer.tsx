@@ -264,16 +264,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         </div>
       )}
 
-      {status === "ready" && needsUnmute && (
-        <button
-          onClick={handleUnmute}
-          className="absolute bottom-14 left-3 z-20 inline-flex items-center gap-2 px-3 py-2 rounded-full bg-black/70 hover:bg-black/90 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-colors"
-        >
-          <Volume2 className="w-3.5 h-3.5" /> Tap to unmute
-        </button>
-      )}
-
-      {status === "ready" && needsTap && (
         <button
           onClick={handleTapPlay}
           className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-black/70 backdrop-blur-sm text-white transition-colors hover:bg-black/80"
