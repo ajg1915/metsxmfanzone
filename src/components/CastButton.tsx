@@ -151,7 +151,7 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
       onClick={handleCast}
       aria-label={connected ? "Casting (stop)" : "Cast to TV"}
       title={connected ? "Casting — tap to stop" : "Cast to TV"}
-      className={`absolute top-3 right-3 z-30 inline-flex items-center gap-1.5 px-3 py-2 rounded-full backdrop-blur-md border text-xs font-semibold transition-colors ${
+      className={`absolute top-3 left-3 z-30 inline-flex items-center gap-1.5 px-3 py-2 rounded-full backdrop-blur-md border text-xs font-semibold transition-colors ${
         connected
           ? "bg-primary text-primary-foreground border-primary/40"
           : "bg-black/70 hover:bg-black/90 text-white border-white/20"
