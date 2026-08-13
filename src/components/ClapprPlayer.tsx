@@ -2,6 +2,8 @@ import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Loader2, AlertCircle, RotateCw, Volume2, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
+import { StreamControls } from "./player/StreamControls";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
 
@@ -23,6 +25,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   pageTitle = "Live Stream",
 }: ClapprPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const hlsRef = useRef<Hls | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [needsUnmute, setNeedsUnmute] = useState(false);
@@ -221,19 +225,35 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   }, [effectiveSource, retryKey, notifyAdmins]);
 
   return (
-    <div className="relative w-full h-full aspect-video bg-black overflow-hidden">
+    <div ref={containerRef} className="relative w-full h-full aspect-video bg-black overflow-hidden group">
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-contain bg-black"
-        controls
         autoPlay
         muted
         playsInline
+        onClick={() => {
+          const v = videoRef.current;
+          if (!v) return;
+          if (v.paused) v.play().catch(() => {});
+          else v.pause();
+        }}
         {...{ "webkit-playsinline": "true" }}
         x-webkit-airplay="allow"
         crossOrigin={isIos() ? undefined : "anonymous"}
       />
       <CastButton source={effectiveSource} title={pageTitle} />
+
+      {status === "ready" && (
+        <StreamControls
+          videoRef={videoRef}
+          hlsRef={hlsRef}
+          containerRef={containerRef}
+          onReload={handleRetry}
+          channelLabel={pageTitle}
+        />
+      )}
+
 
       {status === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white gap-2 pointer-events-none">
