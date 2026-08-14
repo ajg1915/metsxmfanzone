@@ -763,7 +763,66 @@ export default function LiveStreamManagement() {
                 <p className="text-xs text-muted-foreground mt-1">
                   Enter the HLS stream URL ending in .m3u8
                 </p>
+
+                <div className="mt-3 rounded-md border border-border/60 bg-muted/30 p-3 space-y-2">
+                  <Label className="text-xs">Saved M3U8 links</Label>
+                  {urlLibrary.urls.length > 0 ? (
+                    <Select
+                      value={urlLibrary.urls.find(u => u.url === formData.stream_url)?.id || ""}
+                      onValueChange={(id) => {
+                        const entry = urlLibrary.urls.find(u => u.id === id);
+                        if (entry) setFormData({ ...formData, stream_url: entry.url });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select a saved link" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {urlLibrary.urls.map(u => (
+                          <SelectItem key={u.id} value={u.id} className="text-xs">
+                            {u.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">No saved links yet — add one below.</p>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Input
+                      value={newUrlLabel}
+                      onChange={(e) => setNewUrlLabel(e.target.value)}
+                      placeholder="Label (e.g. Backup feed)"
+                      className="h-8 text-xs"
+                    />
+                    <Button type="button" size="sm" variant="outline" className="h-8 text-xs whitespace-nowrap" onClick={handleSaveUrlToLibrary}>
+                      Save link
+                    </Button>
+                  </div>
+
+                  {urlLibrary.urls.length > 0 && (
+                    <div className="space-y-1 pt-1">
+                      {urlLibrary.urls.map(u => (
+                        <div key={u.id} className="flex items-center gap-2 text-[11px]">
+                          <span className="font-medium">{u.label}</span>
+                          <span className="text-muted-foreground truncate flex-1">{u.url}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => urlLibrary.removeUrl(u.id)}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
+
 
               <div>
                 <Label>Thumbnail</Label>
