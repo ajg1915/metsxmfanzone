@@ -44,6 +44,8 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useFreeStreams } from "@/hooks/useFreeStreams";
+import { useStreamUrlLibrary, type StreamUrlEntry } from "@/hooks/useStreamUrlLibrary";
+
 import { Trash2, Plus, Edit, Radio, Upload, X, Loader2, RotateCcw, GripVertical, Image, CheckSquare } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
