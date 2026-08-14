@@ -88,9 +88,9 @@ export const TikTokLiveToggle = () => {
   };
 
   return (
-    <Card className="border-red-500/30">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+    <Card className="min-w-0 max-w-full overflow-hidden border-red-500/30">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="flex flex-wrap items-center gap-2">
           <Radio className="w-5 h-5 text-red-500" />
           TikTok Live
           {status?.is_live && (
@@ -104,7 +104,7 @@ export const TikTokLiveToggle = () => {
           Toggle on when you start streaming on TikTok. Shows a live banner on the Radio Network page and sends push notifications to all members.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="min-w-0 space-y-4 p-4 pt-0 sm:p-6 sm:pt-0">
         <div className="space-y-2">
           <Label htmlFor="tt-username">TikTok Username</Label>
           <Input
@@ -126,19 +126,19 @@ export const TikTokLiveToggle = () => {
           />
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t">
-          <div className="flex items-center gap-3">
+        <div className="flex min-w-0 flex-col gap-3 border-t pt-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
             <Switch
               checked={!!status?.is_live}
               onCheckedChange={updateStatus}
               disabled={saving || loading}
             />
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-medium">
                 {status?.is_live ? "Currently Live" : "Not Live"}
               </p>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <Bell className="w-3 h-3" />
+              <p className="flex min-w-0 items-start gap-1 text-xs leading-tight text-muted-foreground">
+                <Bell className="mt-0.5 h-3 w-3 shrink-0" />
                 Toggling on sends a push notification
               </p>
             </div>
@@ -148,6 +148,7 @@ export const TikTokLiveToggle = () => {
             size="sm"
             onClick={saveDetails}
             disabled={saving || loading}
+            className="w-full sm:w-auto"
           >
             Save Details
           </Button>

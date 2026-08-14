@@ -115,7 +115,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
   };
 
   return (
-    <Card ref={setNodeRef} style={style} className={`relative transition-colors ${selected ? 'ring-2 ring-primary' : ''}`}>
+    <Card ref={setNodeRef} style={style} className={`relative min-w-0 max-w-full overflow-hidden transition-colors ${selected ? 'ring-2 ring-primary' : ''}`}>
       <div className="absolute top-2 right-2 z-10">
         <Checkbox checked={selected} onCheckedChange={() => onToggleSelect(stream.id)} />
       </div>
@@ -128,7 +128,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
             <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover" />
           </div>
         )}
-        <div className="flex items-center gap-1.5 mb-2">
+        <div className="flex flex-wrap items-center gap-1.5 mb-2">
           <Badge className={getStatusBadge(stream.status)}>
             {stream.status === 'live' && <Radio className="w-3 h-3 mr-1" />}
             {stream.status.toUpperCase()}
@@ -669,24 +669,24 @@ export default function LiveStreamManagement() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-2 py-3 space-y-4">
+    <div className="mx-auto w-full min-w-0 max-w-7xl space-y-4 overflow-x-hidden py-3">
       <TikTokLiveToggle />
-      <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
+      <div className="mb-4 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-lg font-bold">Live Stream Management</h1>
-        <div className="flex items-center gap-2">
+        <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
           {streams.length > 0 && (
-            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={selectAll}>
+            <Button size="sm" variant="outline" className="h-8 min-w-0 px-2 text-xs" onClick={selectAll}>
               <CheckSquare className="w-3.5 h-3.5 mr-1" />
               {selectedIds.size === streams.length ? "Deselect All" : "Select All"}
             </Button>
           )}
           {selectedIds.size > 0 && (
             <>
-              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => setBulkEditOpen(true)}>
+              <Button size="sm" variant="outline" className="h-8 min-w-0 px-2 text-xs" onClick={() => setBulkEditOpen(true)}>
                 <Edit className="w-3.5 h-3.5 mr-1" />
                 Bulk Edit ({selectedIds.size})
               </Button>
-              <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={handleBulkDelete}>
+              <Button size="sm" variant="destructive" className="h-8 min-w-0 px-2 text-xs" onClick={handleBulkDelete}>
                 <Trash2 className="w-3.5 h-3.5 mr-1" />
                 Delete ({selectedIds.size})
               </Button>
@@ -695,7 +695,7 @@ export default function LiveStreamManagement() {
           <Button
             size="sm"
             variant="outline"
-            className="h-8"
+            className="h-8 min-w-0 px-2 text-xs"
             onClick={async () => {
               toast({ title: "Scraping...", description: "Fetching replay games from mlblive.net. This may take a minute." });
               try {
@@ -717,12 +717,12 @@ export default function LiveStreamManagement() {
           </Button>
           <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
             <DialogTrigger asChild>
-              <Button size="sm" className="h-8">
+              <Button size="sm" className="h-8 min-w-0 px-2 text-xs">
                 <Plus className="w-3.5 h-3.5 mr-1.5" />
                 Add Live Stream
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-h-[90dvh] w-[calc(100vw-1rem)] max-w-2xl overflow-x-hidden overflow-y-auto p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle>{editingStream ? "Edit Live Stream" : "Add New Live Stream"}</DialogTitle>
               <DialogDescription>
@@ -845,7 +845,7 @@ export default function LiveStreamManagement() {
                       </Button>
                     </div>
                   )}
-                  <div className="flex gap-2">
+                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -961,7 +961,7 @@ export default function LiveStreamManagement() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="status">Status *</Label>
                   <Select
@@ -1018,7 +1018,7 @@ export default function LiveStreamManagement() {
                       ));
                     })()}
                   </div>
-                  <div className="flex items-center gap-2 mt-3">
+                  <div className="flex min-w-0 flex-col gap-2 mt-3 sm:flex-row sm:items-center">
                     <Input
                       id="custom-page-input"
                       placeholder="Add custom page (e.g. yes-network)"
@@ -1055,7 +1055,7 @@ export default function LiveStreamManagement() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="scheduled_start">Start Time</Label>
                   <Input
@@ -1111,7 +1111,7 @@ export default function LiveStreamManagement() {
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={streams.map(s => s.id)} strategy={rectSortingStrategy}>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {streams.map((stream) => (
                 <SortableStreamCard
                   key={stream.id}
