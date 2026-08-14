@@ -180,6 +180,26 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
           </div>
         )}
 
+        <div className="mb-3 space-y-1 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
+          <Label className="text-[11px] font-medium">Watch page</Label>
+          <Select
+            value={getWatchPage(stream.assigned_pages)}
+            onValueChange={(v) => onSelectWatchPage(stream.id, v)}
+          >
+            <SelectTrigger className="h-7 text-[11px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {WATCH_PAGE_OPTIONS.map(o => (
+                <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground">Where viewers land when they click this event.</p>
+        </div>
+
+
+
         <div className="flex items-center justify-between gap-2 mb-3 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
           <Label htmlFor={`free-${stream.id}`} className="text-[11px] font-medium leading-tight">
             Free for everyone
