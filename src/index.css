@@ -918,9 +918,11 @@ All colors MUST be HSL.
    TV MODE STYLES — scale-to-fit approach
    ======================================== */
 
-.tv-mode {
-  /* Override fluid base for TV: fixed comfortable size */
-  font-size: 18px;
+@media (min-width: 1024px) {
+  .tv-mode {
+    /* Override fluid base for TV: fixed comfortable size */
+    font-size: 18px;
+  }
 }
 
 /* Fit-to-screen: constrain the body so nothing overflows */
