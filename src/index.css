@@ -806,6 +806,13 @@ All colors MUST be HSL.
     [class*="overflow-x-scroll"]::-webkit-scrollbar {
       display: none;
     }
+
+    /* iOS zooms the whole viewport when a focused form control is below 16px. */
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
 
   /* Mobile touch-friendly tap targets */

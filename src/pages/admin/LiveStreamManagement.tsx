@@ -789,14 +789,14 @@ export default function LiveStreamManagement() {
                     <p className="text-[11px] text-muted-foreground">No saved links yet — add one below.</p>
                   )}
 
-                  <div className="flex gap-2">
+                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
                     <Input
                       value={newUrlLabel}
                       onChange={(e) => setNewUrlLabel(e.target.value)}
                       placeholder="Label (e.g. Backup feed)"
-                      className="h-8 text-xs"
+                      className="h-8 min-w-0 text-xs"
                     />
-                    <Button type="button" size="sm" variant="outline" className="h-8 text-xs whitespace-nowrap" onClick={handleSaveUrlToLibrary}>
+                    <Button type="button" size="sm" variant="outline" className="h-8 w-full text-xs whitespace-nowrap sm:w-auto" onClick={handleSaveUrlToLibrary}>
                       Save link
                     </Button>
                   </div>
@@ -804,9 +804,9 @@ export default function LiveStreamManagement() {
                   {urlLibrary.urls.length > 0 && (
                     <div className="space-y-1 pt-1">
                       {urlLibrary.urls.map(u => (
-                        <div key={u.id} className="flex items-center gap-2 text-[11px]">
-                          <span className="font-medium">{u.label}</span>
-                          <span className="text-muted-foreground truncate flex-1">{u.url}</span>
+                        <div key={u.id} className="flex min-w-0 items-center gap-2 text-[11px]">
+                          <span className="max-w-[35%] shrink-0 truncate font-medium">{u.label}</span>
+                          <span className="min-w-0 flex-1 truncate text-muted-foreground">{u.url}</span>
                           <Button
                             type="button"
                             variant="ghost"
