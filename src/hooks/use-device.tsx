@@ -80,10 +80,12 @@ export function useDevice() {
       // TV detection priority: URL param > stored preference > user agent > screen size
       // Use both innerWidth and screen.width since TV browsers may scale the viewport
       const isLargeScreen = width >= TV_BREAKPOINT || screenWidth >= TV_BREAKPOINT;
-      const isTV = isTVParam || 
+      const isSmallViewport = width < TABLET_BREAKPOINT;
+      const isTV = !isSmallViewport && (
+                   isTVParam || 
                    storedPreference === true || 
                    isTVUserAgent || 
-                   (isLargeScreen && storedPreference !== false);
+                   (isLargeScreen && storedPreference !== false));
       
       setIsTVDetected(isTV);
       
