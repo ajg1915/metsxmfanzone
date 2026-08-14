@@ -94,7 +94,19 @@ interface LiveStream {
 
 const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'PIX11 Network', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
 
-function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, savedUrls, onSelectSource }: {
+const WATCH_PAGE_OPTIONS = [
+  { value: 'own', label: 'Own stream page (/live/…)' },
+  { value: 'metsxmfanzone', label: 'MetsXMFanZone TV' },
+  { value: 'pix11-network', label: 'PIX11 Network' },
+];
+
+const getWatchPage = (pages: string[] | null | undefined) => {
+  if (pages?.includes('metsxmfanzone')) return 'metsxmfanzone';
+  if (pages?.includes('pix11-network')) return 'pix11-network';
+  return 'own';
+};
+
+function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, savedUrls, onSelectSource, onSelectWatchPage }: {
   stream: LiveStream;
   onEdit: (s: LiveStream) => void;
   onDelete: (id: string) => void;
@@ -105,6 +117,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
   onToggleFree: (id: string, free: boolean) => void;
   savedUrls: StreamUrlEntry[];
   onSelectSource: (id: string, url: string) => void;
+  onSelectWatchPage: (id: string, page: string) => void;
 }) {
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: stream.id });
@@ -167,6 +180,26 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
           </div>
         )}
 
+        <div className="mb-3 space-y-1 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
+          <Label className="text-[11px] font-medium">Watch page</Label>
+          <Select
+            value={getWatchPage(stream.assigned_pages)}
+            onValueChange={(v) => onSelectWatchPage(stream.id, v)}
+          >
+            <SelectTrigger className="h-7 text-[11px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {WATCH_PAGE_OPTIONS.map(o => (
+                <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground">Where viewers land when they click this event.</p>
+        </div>
+
+
+
         <div className="flex items-center justify-between gap-2 mb-3 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
           <Label htmlFor={`free-${stream.id}`} className="text-[11px] font-medium leading-tight">
             Free for everyone
@@ -205,6 +238,23 @@ export default function LiveStreamManagement() {
     }
     setStreams(prev => prev.map(s => (s.id === id ? { ...s, stream_url: url } : s)));
     toast({ title: "Stream source updated", description: url });
+  };
+
+  const handleSelectWatchPage = async (id: string, page: string) => {
+    const stream = streams.find(s => s.id === id);
+    if (!stream) return;
+    const destinations = ['metsxmfanzone', 'pix11-network'];
+    const kept = (stream.assigned_pages || []).filter(p => !destinations.includes(p));
+    const next = page === 'own' ? kept : [...kept, page];
+    if (!next.includes('live')) next.push('live');
+
+    const { error } = await supabase.from("live_streams").update({ assigned_pages: next }).eq("id", id);
+    if (error) {
+      toast({ title: "Failed to update watch page", variant: "destructive" });
+      return;
+    }
+    setStreams(prev => prev.map(s => (s.id === id ? { ...s, assigned_pages: next } : s)));
+    toast({ title: "Watch page updated", description: WATCH_PAGE_OPTIONS.find(o => o.value === page)?.label });
   };
 
   const handleSaveUrlToLibrary = async () => {
@@ -1128,6 +1178,8 @@ export default function LiveStreamManagement() {
                   onToggleFree={handleToggleFree}
                   savedUrls={urlLibrary.urls}
                   onSelectSource={handleSelectSource}
+                  onSelectWatchPage={handleSelectWatchPage}
+
 
                 />
               ))}
