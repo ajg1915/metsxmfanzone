@@ -27,6 +27,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+// Virtual card id prefix for the MetsXMFanZone TV entry shown alongside a game event
+const TV_CARD_PREFIX = "mxfz-tv:";
+
 interface LiveStream {
   id: string;
   title: string;
@@ -303,11 +306,22 @@ const LiveStreamsSection = () => {
 
         return !isSportsNetwork24x7 && !s.assigned_pages?.some(p => excludedPages.includes(p.toLowerCase()));
       });
+      // When a live event is assigned to MetsXMFanZone TV, show BOTH the
+      // MetsXMFanZone TV card and the game event card in Live Streams.
+      const withTvCards: LiveStream[] = [];
+      filtered.forEach((s) => {
+        const onFanzone = s.assigned_pages?.includes('metsxmfanzone');
+        if (onFanzone && s.status === 'live') {
+          withTvCards.push({
+            ...s,
+            id: `${TV_CARD_PREFIX}${s.id}`,
+            title: 'MetsXMFanZone TV — Live Now',
+          } as LiveStream);
+        }
+        withTvCards.push(s as LiveStream);
+      });
 
-
-
-
-      setStreams(filtered as LiveStream[]);
+      setStreams(withTvCards);
     } catch (error) {
       console.error("Error fetching streams:", error);
     } finally {
@@ -320,14 +334,14 @@ const LiveStreamsSection = () => {
   const isProStream = (_stream: LiveStream) => true;
 
   const getStreamPageUrl = (stream: LiveStream) => {
+    if (stream.id.startsWith(TV_CARD_PREFIX)) return '/metsxmfanzone';
     const networkPages = (stream.assigned_pages || []).filter(page => page !== 'live' && page !== 'guide');
-    // Admin-selected watch page wins (MetsXMFanZone or PIX11)
-    if (networkPages.includes('metsxmfanzone')) return '/metsxmfanzone';
     if (networkPages.includes('pix11-network')) return '/pix11-network';
     if (networkPages.includes('mlb-network')) return '/mlb-network';
     if (networkPages.includes('espn-network')) return '/espn-network';
     return `/live/${stream.id}`;
   };
+
 
 
   const handleStreamClick = (stream: LiveStream) => {
@@ -434,7 +448,9 @@ const LiveStreamsSection = () => {
   }
 
   // Non-admins: hide if no streams
-  const visibleStreams = isAdmin && adminMode ? streams : streams.filter(s => s.status === 'live');
+  const visibleStreams = isAdmin && adminMode
+    ? streams.filter(s => !s.id.startsWith(TV_CARD_PREFIX))
+    : streams.filter(s => s.status === 'live');
   if (visibleStreams.length === 0 && !isAdmin) return null;
 
   return (
