@@ -448,7 +448,9 @@ const LiveStreamsSection = () => {
   }
 
   // Non-admins: hide if no streams
-  const visibleStreams = isAdmin && adminMode ? streams : streams.filter(s => s.status === 'live');
+  const visibleStreams = isAdmin && adminMode
+    ? streams.filter(s => !s.id.startsWith(TV_CARD_PREFIX))
+    : streams.filter(s => s.status === 'live');
   if (visibleStreams.length === 0 && !isAdmin) return null;
 
   return (
