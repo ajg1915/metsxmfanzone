@@ -171,6 +171,34 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
 export default function LiveStreamManagement() {
   const { toast } = useToast();
   const freeStreams = useFreeStreams();
+  const urlLibrary = useStreamUrlLibrary();
+  const [newUrlLabel, setNewUrlLabel] = useState("");
+
+  const handleSelectSource = async (id: string, url: string) => {
+    const { error } = await supabase.from("live_streams").update({ stream_url: url }).eq("id", id);
+    if (error) {
+      toast({ title: "Failed to set stream source", variant: "destructive" });
+      return;
+    }
+    setStreams(prev => prev.map(s => (s.id === id ? { ...s, stream_url: url } : s)));
+    toast({ title: "Stream source updated", description: url });
+  };
+
+  const handleSaveUrlToLibrary = async () => {
+    const url = formData.stream_url.trim();
+    if (!url) {
+      toast({ title: "Enter a stream URL first", variant: "destructive" });
+      return;
+    }
+    try {
+      await urlLibrary.addUrl(newUrlLabel || formData.title, url);
+      setNewUrlLabel("");
+      toast({ title: "Saved to link library" });
+    } catch (e) {
+      toast({ title: "Could not save link", variant: "destructive" });
+    }
+  };
+
 
   const handleToggleFree = async (id: string, free: boolean) => {
     try {
