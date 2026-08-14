@@ -144,6 +144,29 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
           {stream.scheduled_start && <p>Starts: {new Date(stream.scheduled_start).toLocaleString()}</p>}
           <p>Viewers: {stream.viewers_count}</p>
         </div>
+        {savedUrls.length > 0 && (
+          <div className="mb-3 space-y-1 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
+            <Label className="text-[11px] font-medium">Live source (M3U8)</Label>
+            <Select
+              value={savedUrls.find(u => u.url === stream.stream_url)?.id || ""}
+              onValueChange={(id) => {
+                const entry = savedUrls.find(u => u.id === id);
+                if (entry) onSelectSource(stream.id, entry.url);
+              }}
+            >
+              <SelectTrigger className="h-7 text-[11px]">
+                <SelectValue placeholder="Select a saved link" />
+              </SelectTrigger>
+              <SelectContent>
+                {savedUrls.map(u => (
+                  <SelectItem key={u.id} value={u.id} className="text-xs">{u.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground truncate">{stream.stream_url || "No URL set"}</p>
+          </div>
+        )}
+
         <div className="flex items-center justify-between gap-2 mb-3 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
           <Label htmlFor={`free-${stream.id}`} className="text-[11px] font-medium leading-tight">
             Free for everyone
