@@ -287,15 +287,23 @@ const LiveStreamsSection = () => {
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
 
-      // Exclude the 24/7 sports network streams — they live in Sports Network Streams
+      // Exclude the 24/7 sports network channels — they live in Sports Network Streams.
+      // Actual game broadcasts (e.g. "Mets Vs Nationals 8/14/26") stay here even when
+      // they're assigned to a network page.
       const excludedPages = ['mlb-network', 'sny-tv', 'sny.tv', 'msg-network', 'msg', 'espn-network', 'espn', 'pix11-network', 'pix11'];
+      const isGameBroadcast = (title: string) =>
+        /\b(mets|nym)\b\s*(vs\.?|@|at)\s+/i.test(title) || /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(title);
+
       const filtered = sorted.filter(s => {
         const title = s.title.toLowerCase();
+        if (isGameBroadcast(s.title)) return true;
+
         const isSportsNetwork24x7 =
           (title.includes('mlb network') || title.includes('sny.tv') || title.includes('msg network') || title.includes('espn')) && title.includes('24/7');
 
         return !isSportsNetwork24x7 && !s.assigned_pages?.some(p => excludedPages.includes(p.toLowerCase()));
       });
+
 
 
 
