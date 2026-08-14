@@ -1013,6 +1013,9 @@ export default function LiveStreamManagement() {
                   onToggleSelect={toggleSelect}
                   isFreeGame={freeStreams.isFree(stream.id)}
                   onToggleFree={handleToggleFree}
+                  savedUrls={urlLibrary.urls}
+                  onSelectSource={handleSelectSource}
+
                 />
               ))}
             </div>
