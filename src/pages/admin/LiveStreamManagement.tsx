@@ -240,6 +240,23 @@ export default function LiveStreamManagement() {
     toast({ title: "Stream source updated", description: url });
   };
 
+  const handleSelectWatchPage = async (id: string, page: string) => {
+    const stream = streams.find(s => s.id === id);
+    if (!stream) return;
+    const destinations = ['metsxmfanzone', 'pix11-network'];
+    const kept = (stream.assigned_pages || []).filter(p => !destinations.includes(p));
+    const next = page === 'own' ? kept : [...kept, page];
+    if (!next.includes('live')) next.push('live');
+
+    const { error } = await supabase.from("live_streams").update({ assigned_pages: next }).eq("id", id);
+    if (error) {
+      toast({ title: "Failed to update watch page", variant: "destructive" });
+      return;
+    }
+    setStreams(prev => prev.map(s => (s.id === id ? { ...s, assigned_pages: next } : s)));
+    toast({ title: "Watch page updated", description: WATCH_PAGE_OPTIONS.find(o => o.value === page)?.label });
+  };
+
   const handleSaveUrlToLibrary = async () => {
     const url = formData.stream_url.trim();
     if (!url) {
