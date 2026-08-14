@@ -722,35 +722,37 @@ export default function LiveStreamManagement() {
                 Add Live Stream
               </Button>
             </DialogTrigger>
-          <DialogContent className="max-h-[90dvh] w-[calc(100vw-1rem)] max-w-2xl overflow-x-hidden overflow-y-auto p-4 sm:p-6">
-            <DialogHeader>
+          <DialogContent className="min-w-0 max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl overflow-x-hidden overflow-y-auto p-4 sm:max-h-[90dvh] sm:p-6">
+            <DialogHeader className="min-w-0 pr-7 text-left">
               <DialogTitle>{editingStream ? "Edit Live Stream" : "Add New Live Stream"}</DialogTitle>
               <DialogDescription>
                 {editingStream ? "Update stream details" : "Schedule a new live stream"}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+            <form onSubmit={handleSubmit} className="min-w-0 max-w-full space-y-4 [&>div]:min-w-0 [&_input]:min-w-0 [&_input]:max-w-full [&_textarea]:min-w-0 [&_textarea]:max-w-full">
+              <div className="min-w-0">
                 <Label htmlFor="title">Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
+                  className="w-full min-w-0 max-w-full"
                 />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
+                  className="w-full min-w-0 max-w-full"
                 />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <Label htmlFor="stream_url">Stream URL (M3U8) *</Label>
                 <Input
                   id="stream_url"
@@ -759,12 +761,13 @@ export default function LiveStreamManagement() {
                   onChange={(e) => setFormData({ ...formData, stream_url: e.target.value })}
                   placeholder="https://example.com/stream/playlist.m3u8"
                   required
+                  className="w-full min-w-0 max-w-full"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Enter the HLS stream URL ending in .m3u8
                 </p>
 
-                <div className="mt-3 rounded-md border border-border/60 bg-muted/30 p-3 space-y-2">
+                <div className="mt-3 min-w-0 max-w-full space-y-2 overflow-hidden rounded-md border border-border/60 bg-muted/30 p-3">
                   <Label className="text-xs">Saved M3U8 links</Label>
                   {urlLibrary.urls.length > 0 ? (
                     <Select
@@ -774,7 +777,7 @@ export default function LiveStreamManagement() {
                         if (entry) setFormData({ ...formData, stream_url: entry.url });
                       }}
                     >
-                      <SelectTrigger className="h-8 text-xs">
+                      <SelectTrigger className="h-8 w-full min-w-0 max-w-full text-xs">
                         <SelectValue placeholder="Select a saved link" />
                       </SelectTrigger>
                       <SelectContent>
@@ -802,10 +805,10 @@ export default function LiveStreamManagement() {
                   </div>
 
                   {urlLibrary.urls.length > 0 && (
-                    <div className="space-y-1 pt-1">
+                    <div className="min-w-0 max-w-full space-y-1 overflow-hidden pt-1">
                       {urlLibrary.urls.map(u => (
-                        <div key={u.id} className="flex min-w-0 items-center gap-2 text-[11px]">
-                          <span className="max-w-[35%] shrink-0 truncate font-medium">{u.label}</span>
+                        <div key={u.id} className="grid min-w-0 max-w-full grid-cols-[minmax(0,35%)_minmax(0,1fr)_1.5rem] items-center gap-2 overflow-hidden text-[11px]">
+                          <span className="min-w-0 truncate font-medium">{u.label}</span>
                           <span className="min-w-0 flex-1 truncate text-muted-foreground">{u.url}</span>
                           <Button
                             type="button"
@@ -824,7 +827,7 @@ export default function LiveStreamManagement() {
               </div>
 
 
-              <div>
+              <div className="min-w-0">
                 <Label>Thumbnail</Label>
                 <div className="space-y-3 mt-2">
                   {formData.thumbnail_url && (
