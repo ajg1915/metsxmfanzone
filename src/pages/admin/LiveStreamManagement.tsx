@@ -92,7 +92,7 @@ interface LiveStream {
 
 const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'PIX11 Network', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
 
-function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree }: {
+function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, savedUrls, onSelectSource }: {
   stream: LiveStream;
   onEdit: (s: LiveStream) => void;
   onDelete: (id: string) => void;
@@ -101,7 +101,10 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
   onToggleSelect: (id: string) => void;
   isFreeGame: boolean;
   onToggleFree: (id: string, free: boolean) => void;
+  savedUrls: StreamUrlEntry[];
+  onSelectSource: (id: string, url: string) => void;
 }) {
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: stream.id });
   const style = {
     transform: CSS.Transform.toString(transform),
