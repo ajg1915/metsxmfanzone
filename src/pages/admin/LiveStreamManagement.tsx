@@ -44,6 +44,8 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useFreeStreams } from "@/hooks/useFreeStreams";
+import { useStreamUrlLibrary, type StreamUrlEntry } from "@/hooks/useStreamUrlLibrary";
+
 import { Trash2, Plus, Edit, Radio, Upload, X, Loader2, RotateCcw, GripVertical, Image, CheckSquare } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -142,6 +144,29 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
           {stream.scheduled_start && <p>Starts: {new Date(stream.scheduled_start).toLocaleString()}</p>}
           <p>Viewers: {stream.viewers_count}</p>
         </div>
+        {savedUrls.length > 0 && (
+          <div className="mb-3 space-y-1 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
+            <Label className="text-[11px] font-medium">Live source (M3U8)</Label>
+            <Select
+              value={savedUrls.find(u => u.url === stream.stream_url)?.id || ""}
+              onValueChange={(id) => {
+                const entry = savedUrls.find(u => u.id === id);
+                if (entry) onSelectSource(stream.id, entry.url);
+              }}
+            >
+              <SelectTrigger className="h-7 text-[11px]">
+                <SelectValue placeholder="Select a saved link" />
+              </SelectTrigger>
+              <SelectContent>
+                {savedUrls.map(u => (
+                  <SelectItem key={u.id} value={u.id} className="text-xs">{u.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground truncate">{stream.stream_url || "No URL set"}</p>
+          </div>
+        )}
+
         <div className="flex items-center justify-between gap-2 mb-3 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
           <Label htmlFor={`free-${stream.id}`} className="text-[11px] font-medium leading-tight">
             Free for everyone
@@ -169,6 +194,34 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
 export default function LiveStreamManagement() {
   const { toast } = useToast();
   const freeStreams = useFreeStreams();
+  const urlLibrary = useStreamUrlLibrary();
+  const [newUrlLabel, setNewUrlLabel] = useState("");
+
+  const handleSelectSource = async (id: string, url: string) => {
+    const { error } = await supabase.from("live_streams").update({ stream_url: url }).eq("id", id);
+    if (error) {
+      toast({ title: "Failed to set stream source", variant: "destructive" });
+      return;
+    }
+    setStreams(prev => prev.map(s => (s.id === id ? { ...s, stream_url: url } : s)));
+    toast({ title: "Stream source updated", description: url });
+  };
+
+  const handleSaveUrlToLibrary = async () => {
+    const url = formData.stream_url.trim();
+    if (!url) {
+      toast({ title: "Enter a stream URL first", variant: "destructive" });
+      return;
+    }
+    try {
+      await urlLibrary.addUrl(newUrlLabel || formData.title, url);
+      setNewUrlLabel("");
+      toast({ title: "Saved to link library" });
+    } catch (e) {
+      toast({ title: "Could not save link", variant: "destructive" });
+    }
+  };
+
 
   const handleToggleFree = async (id: string, free: boolean) => {
     try {
@@ -710,7 +763,66 @@ export default function LiveStreamManagement() {
                 <p className="text-xs text-muted-foreground mt-1">
                   Enter the HLS stream URL ending in .m3u8
                 </p>
+
+                <div className="mt-3 rounded-md border border-border/60 bg-muted/30 p-3 space-y-2">
+                  <Label className="text-xs">Saved M3U8 links</Label>
+                  {urlLibrary.urls.length > 0 ? (
+                    <Select
+                      value={urlLibrary.urls.find(u => u.url === formData.stream_url)?.id || ""}
+                      onValueChange={(id) => {
+                        const entry = urlLibrary.urls.find(u => u.id === id);
+                        if (entry) setFormData({ ...formData, stream_url: entry.url });
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue placeholder="Select a saved link" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {urlLibrary.urls.map(u => (
+                          <SelectItem key={u.id} value={u.id} className="text-xs">
+                            {u.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground">No saved links yet — add one below.</p>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Input
+                      value={newUrlLabel}
+                      onChange={(e) => setNewUrlLabel(e.target.value)}
+                      placeholder="Label (e.g. Backup feed)"
+                      className="h-8 text-xs"
+                    />
+                    <Button type="button" size="sm" variant="outline" className="h-8 text-xs whitespace-nowrap" onClick={handleSaveUrlToLibrary}>
+                      Save link
+                    </Button>
+                  </div>
+
+                  {urlLibrary.urls.length > 0 && (
+                    <div className="space-y-1 pt-1">
+                      {urlLibrary.urls.map(u => (
+                        <div key={u.id} className="flex items-center gap-2 text-[11px]">
+                          <span className="font-medium">{u.label}</span>
+                          <span className="text-muted-foreground truncate flex-1">{u.url}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => urlLibrary.removeUrl(u.id)}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
+
 
               <div>
                 <Label>Thumbnail</Label>
@@ -1011,6 +1123,9 @@ export default function LiveStreamManagement() {
                   onToggleSelect={toggleSelect}
                   isFreeGame={freeStreams.isFree(stream.id)}
                   onToggleFree={handleToggleFree}
+                  savedUrls={urlLibrary.urls}
+                  onSelectSource={handleSelectSource}
+
                 />
               ))}
             </div>
