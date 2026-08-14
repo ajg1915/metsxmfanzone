@@ -27,6 +27,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+// Virtual card id prefix for the MetsXMFanZone TV entry shown alongside a game event
+const TV_CARD_PREFIX = "mxfz-tv:";
+
 interface LiveStream {
   id: string;
   title: string;
