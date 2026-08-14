@@ -320,14 +320,12 @@ const LiveStreamsSection = () => {
   const isProStream = (_stream: LiveStream) => true;
 
   const getStreamPageUrl = (stream: LiveStream) => {
-    const isGame = /\b(mets|nym)\b\s*(vs\.?|@|at)\s+/i.test(stream.title) || /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(stream.title);
     const networkPages = (stream.assigned_pages || []).filter(page => page !== 'live' && page !== 'guide');
+    // Admin-selected watch page wins (MetsXMFanZone or PIX11)
     if (networkPages.includes('metsxmfanzone')) return '/metsxmfanzone';
-    // Game broadcasts always get their own player page, even if tagged to a network
-    if (isGame) return `/live/${stream.id}`;
+    if (networkPages.includes('pix11-network')) return '/pix11-network';
     if (networkPages.includes('mlb-network')) return '/mlb-network';
     if (networkPages.includes('espn-network')) return '/espn-network';
-    if (networkPages.includes('pix11-network')) return '/pix11-network';
     return `/live/${stream.id}`;
   };
 
