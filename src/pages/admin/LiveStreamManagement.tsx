@@ -1178,6 +1178,8 @@ export default function LiveStreamManagement() {
                   onToggleFree={handleToggleFree}
                   savedUrls={urlLibrary.urls}
                   onSelectSource={handleSelectSource}
+                  onSelectWatchPage={handleSelectWatchPage}
+
 
                 />
               ))}
