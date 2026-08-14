@@ -61,30 +61,40 @@ const FALLBACK_STREAMS: RelatedStream[] = [
   },
 ];
 
+// Actual game broadcasts should never fill a 24/7 network card
+const isGameBroadcast = (title: string) =>
+  /\b(mets|nym)\b\s*(vs\.?|@|at)\s+/i.test(title) || /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(title);
+
 const isMlbNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
   return title.includes("mlb network") && title.includes("24/7") || stream.assigned_pages?.includes("mlb-network");
 };
 
 const isSnyTv24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
   return title.includes("sny.tv") && title.includes("24/7") || stream.assigned_pages?.includes("sny-tv");
 };
 
 const isMsgNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
   return title.includes("msg network") && title.includes("24/7") || stream.assigned_pages?.includes("msg-network");
 };
 
 const isEspn24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
   return title.includes("espn") && title.includes("24/7") || stream.assigned_pages?.includes("espn-network");
 };
 
 const isPix1124x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
   return title.includes("pix11") || title.includes("pix 11") || stream.assigned_pages?.includes("pix11-network");
 };
+
 
 const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => {
   const pages = stream.assigned_pages || [];
