@@ -71,7 +71,7 @@ export function ExitIntentPopup() {
   const handleCTA = () => {
     setIsOpen(false);
     if (message.cta === "Watch Now") {
-      navigate('/live');
+      navigate('/metsxmfanzone');
     } else if (message.cta === "Stay Connected") {
       // Scroll to newsletter section on homepage
       navigate('/');
