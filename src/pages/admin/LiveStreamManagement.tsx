@@ -44,7 +44,6 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useFreeStreams } from "@/hooks/useFreeStreams";
-import { useStreamUrlLibrary, type StreamUrlEntry } from "@/hooks/useStreamUrlLibrary";
 
 import { Trash2, Plus, Edit, Radio, Upload, X, Loader2, RotateCcw, GripVertical, Image, CheckSquare } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -106,7 +105,7 @@ const getWatchPage = (pages: string[] | null | undefined) => {
   return 'own';
 };
 
-function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, savedUrls, onSelectSource, onSelectWatchPage }: {
+function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, onSelectWatchPage }: {
   stream: LiveStream;
   onEdit: (s: LiveStream) => void;
   onDelete: (id: string) => void;
@@ -115,8 +114,6 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
   onToggleSelect: (id: string) => void;
   isFreeGame: boolean;
   onToggleFree: (id: string, free: boolean) => void;
-  savedUrls: StreamUrlEntry[];
-  onSelectSource: (id: string, url: string) => void;
   onSelectWatchPage: (id: string, page: string) => void;
 }) {
 
@@ -157,29 +154,6 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
           {stream.scheduled_start && <p>Starts: {new Date(stream.scheduled_start).toLocaleString()}</p>}
           <p>Viewers: {stream.viewers_count}</p>
         </div>
-        {savedUrls.length > 0 && (
-          <div className="mb-3 space-y-1 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
-            <Label className="text-[11px] font-medium">Live source (M3U8)</Label>
-            <Select
-              value={savedUrls.find(u => u.url === stream.stream_url)?.id || ""}
-              onValueChange={(id) => {
-                const entry = savedUrls.find(u => u.id === id);
-                if (entry) onSelectSource(stream.id, entry.url);
-              }}
-            >
-              <SelectTrigger className="h-7 text-[11px]">
-                <SelectValue placeholder="Select a saved link" />
-              </SelectTrigger>
-              <SelectContent>
-                {savedUrls.map(u => (
-                  <SelectItem key={u.id} value={u.id} className="text-xs">{u.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <p className="text-[10px] text-muted-foreground truncate">{stream.stream_url || "No URL set"}</p>
-          </div>
-        )}
-
         <div className="mb-3 space-y-1 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
           <Label className="text-[11px] font-medium">Watch page</Label>
           <Select
@@ -227,18 +201,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
 export default function LiveStreamManagement() {
   const { toast } = useToast();
   const freeStreams = useFreeStreams();
-  const urlLibrary = useStreamUrlLibrary();
-  const [newUrlLabel, setNewUrlLabel] = useState("");
 
-  const handleSelectSource = async (id: string, url: string) => {
-    const { error } = await supabase.from("live_streams").update({ stream_url: url }).eq("id", id);
-    if (error) {
-      toast({ title: "Failed to set stream source", variant: "destructive" });
-      return;
-    }
-    setStreams(prev => prev.map(s => (s.id === id ? { ...s, stream_url: url } : s)));
-    toast({ title: "Stream source updated", description: url });
-  };
 
   const handleSelectWatchPage = async (id: string, page: string) => {
     const stream = streams.find(s => s.id === id);
@@ -257,20 +220,6 @@ export default function LiveStreamManagement() {
     toast({ title: "Watch page updated", description: WATCH_PAGE_OPTIONS.find(o => o.value === page)?.label });
   };
 
-  const handleSaveUrlToLibrary = async () => {
-    const url = formData.stream_url.trim();
-    if (!url) {
-      toast({ title: "Enter a stream URL first", variant: "destructive" });
-      return;
-    }
-    try {
-      await urlLibrary.addUrl(newUrlLabel || formData.title, url);
-      setNewUrlLabel("");
-      toast({ title: "Saved to link library" });
-    } catch (e) {
-      toast({ title: "Could not save link", variant: "destructive" });
-    }
-  };
 
 
   const handleToggleFree = async (id: string, free: boolean) => {
@@ -817,63 +766,6 @@ export default function LiveStreamManagement() {
                   Enter the HLS stream URL ending in .m3u8
                 </p>
 
-                <div className="mt-3 min-w-0 max-w-full space-y-2 overflow-hidden rounded-md border border-border/60 bg-muted/30 p-3">
-                  <Label className="text-xs">Saved M3U8 links</Label>
-                  {urlLibrary.urls.length > 0 ? (
-                    <Select
-                      value={urlLibrary.urls.find(u => u.url === formData.stream_url)?.id || ""}
-                      onValueChange={(id) => {
-                        const entry = urlLibrary.urls.find(u => u.id === id);
-                        if (entry) setFormData({ ...formData, stream_url: entry.url });
-                      }}
-                    >
-                      <SelectTrigger className="h-8 w-full min-w-0 max-w-full text-xs">
-                        <SelectValue placeholder="Select a saved link" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {urlLibrary.urls.map(u => (
-                          <SelectItem key={u.id} value={u.id} className="text-xs">
-                            {u.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="text-[11px] text-muted-foreground">No saved links yet — add one below.</p>
-                  )}
-
-                  <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
-                    <Input
-                      value={newUrlLabel}
-                      onChange={(e) => setNewUrlLabel(e.target.value)}
-                      placeholder="Label (e.g. Backup feed)"
-                      className="h-8 min-w-0 text-xs"
-                    />
-                    <Button type="button" size="sm" variant="outline" className="h-8 w-full text-xs whitespace-nowrap sm:w-auto" onClick={handleSaveUrlToLibrary}>
-                      Save link
-                    </Button>
-                  </div>
-
-                  {urlLibrary.urls.length > 0 && (
-                    <div className="min-w-0 max-w-full space-y-1 overflow-hidden pt-1">
-                      {urlLibrary.urls.map(u => (
-                        <div key={u.id} className="grid min-w-0 max-w-full grid-cols-[minmax(0,35%)_minmax(0,1fr)_1.5rem] items-center gap-2 overflow-hidden text-[11px]">
-                          <span className="min-w-0 truncate font-medium">{u.label}</span>
-                          <span className="min-w-0 flex-1 truncate text-muted-foreground">{u.url}</span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => urlLibrary.removeUrl(u.id)}
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
 
 
@@ -1176,8 +1068,6 @@ export default function LiveStreamManagement() {
                   onToggleSelect={toggleSelect}
                   isFreeGame={freeStreams.isFree(stream.id)}
                   onToggleFree={handleToggleFree}
-                  savedUrls={urlLibrary.urls}
-                  onSelectSource={handleSelectSource}
                   onSelectWatchPage={handleSelectWatchPage}
 
 
