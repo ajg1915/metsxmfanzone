@@ -51,66 +51,15 @@ interface ScheduleGame {
   venue: string;
 }
 
+// MetsXMFanZone Live always plays this feed.
+const METSXM_STREAM_URL = "https://metsxmfanzone.metsxmfanzone.com/hls/metsxmfanzone.m3u8";
+
 const MetsXMFanZone = () => {
   const navigate = useNavigate();
   const [games, setGames] = useState<ScheduleGame[]>([]);
   const [gamesLoading, setGamesLoading] = useState(true);
-  const [streamUrl, setStreamUrl] = useState<string | undefined>(undefined);
+  const streamUrl = METSXM_STREAM_URL;
 
-  // Pull the M3U8 set in Admin → Live Streams (stream assigned to "MetsXMFanZone TV")
-  useEffect(() => {
-    let cancelled = false;
-    let attempt = 0;
-    let timer: number | undefined;
-
-    const load = async () => {
-      const { data, error } = await supabase
-        .from('live_streams')
-        .select('stream_url, status, display_order, created_at')
-        .contains('assigned_pages', ['metsxmfanzone'])
-        .eq('published', true)
-        .order('display_order', { ascending: true })
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (cancelled) return;
-
-      if (error || !data?.length) {
-        // Network hiccup or nothing published yet — retry with backoff.
-        attempt += 1;
-        if (attempt <= 5) {
-          timer = window.setTimeout(load, Math.min(1000 * 2 ** attempt, 15000));
-        }
-        return;
-      }
-
-      // Prefer a live feed, then scheduled; never fall back to an ended stream.
-      const rank = (s: string) => (s === 'live' ? 0 : s === 'scheduled' ? 1 : 2);
-      const best = [...data].sort((a, b) => rank(a.status) - rank(b.status))[0];
-      if (best && best.status !== 'ended' && best.stream_url) {
-        setStreamUrl(best.stream_url);
-      } else {
-        setStreamUrl(undefined);
-      }
-    };
-
-    load();
-
-    // Pick up admin changes (status flip to live / new m3u8) without a reload.
-    const channel = supabase
-      .channel('metsxm-stream-source')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'live_streams' }, () => {
-        attempt = 0;
-        load();
-      })
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      if (timer) window.clearTimeout(timer);
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
 
 
