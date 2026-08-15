@@ -273,8 +273,10 @@ const LiveStreamsSection = () => {
         .order("scheduled_start", { ascending: true, nullsFirst: false })
         .limit(100);
 
-      // Non-admins only see live streams
-      if (!isAdmin) {
+      // The public homepage always loads the live-only feed. Admins fetch the
+      // full catalog only after explicitly opening edit mode; otherwise the
+      // first 100 historical games can overwrite today's live cards.
+      if (!(isAdmin && adminMode)) {
         query = query.eq("status", "live");
       }
 
