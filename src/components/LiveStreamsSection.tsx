@@ -263,19 +263,20 @@ const LiveStreamsSection = () => {
 
   const fetchStreams = async () => {
     try {
-      // Signed-out visitors read from the public view (artwork, titles, schedule)
-      // which excludes playback URLs, so the Live Now row is always visible.
-      const source = user ? "live_streams" : "live_streams_public";
-
+      // The homepage only needs public display metadata. Always use the safe
+      // view so signed-in members and guests see the exact same Live Now row;
+      // playback URLs remain available only on the protected player pages.
       let query = (supabase as any)
-        .from(source)
+        .from("live_streams_public")
         .select("*")
         .eq("published", true)
         .order("scheduled_start", { ascending: true, nullsFirst: false })
         .limit(100);
 
-      // Non-admins only see live streams
-      if (!isAdmin) {
+      // The public homepage always loads the live-only feed. Admins fetch the
+      // full catalog only after explicitly opening edit mode; otherwise the
+      // first 100 historical games can overwrite today's live cards.
+      if (!(isAdmin && adminMode)) {
         query = query.eq("status", "live");
       }
 
