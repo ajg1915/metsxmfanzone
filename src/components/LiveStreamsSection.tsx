@@ -27,9 +27,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// Virtual card id prefix for the MetsXMFanZone TV entry shown alongside a game event
-const TV_CARD_PREFIX = "mxfz-tv:";
-
 interface LiveStream {
   id: string;
   title: string;
@@ -82,7 +79,7 @@ const SortableStreamCard = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex-shrink-0 w-[240px] sm:w-[280px] md:w-[320px] lg:w-[380px] cursor-pointer group relative"
+      className="min-w-0 w-full sm:flex-shrink-0 sm:w-[280px] md:w-[320px] lg:w-[380px] cursor-pointer group relative"
     >
       {adminMode && (
         <div
@@ -329,8 +326,8 @@ const LiveStreamsSection = () => {
   const isProStream = (_stream: LiveStream) => true;
 
   const getStreamPageUrl = (stream: LiveStream) => {
-    if (stream.id.startsWith(TV_CARD_PREFIX)) return '/metsxmfanzone';
     const networkPages = (stream.assigned_pages || []).filter(page => page !== 'live' && page !== 'guide');
+    if (networkPages.includes('metsxmfanzone')) return '/metsxmfanzone';
     if (networkPages.includes('pix11-network')) return '/pix11-network';
     if (networkPages.includes('mlb-network')) return '/mlb-network';
     if (networkPages.includes('espn-network')) return '/espn-network';
@@ -444,7 +441,7 @@ const LiveStreamsSection = () => {
 
   // Non-admins: hide if no streams
   const visibleStreams = isAdmin && adminMode
-    ? streams.filter(s => !s.id.startsWith(TV_CARD_PREFIX))
+    ? streams
     : streams.filter(s => s.status === 'live');
   if (visibleStreams.length === 0 && !isAdmin) return null;
 
@@ -504,10 +501,10 @@ const LiveStreamsSection = () => {
               <div
                 id="streams-scroll"
                 onScroll={handleScroll}
-                className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-4 sm:px-6 lg:px-8"
+                className="grid grid-cols-2 gap-2 px-3 sm:flex sm:gap-3 sm:overflow-x-auto sm:scroll-smooth sm:px-6 lg:px-8 scrollbar-hide"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                <div className="flex-shrink-0 w-0 lg:w-[calc((100vw-1280px)/2)]" />
+                <div className="hidden lg:block flex-shrink-0 w-[calc((100vw-1280px)/2)]" />
 
                 {visibleStreams.map((stream) => (
                   <SortableStreamCard
@@ -523,7 +520,7 @@ const LiveStreamsSection = () => {
                   />
                 ))}
 
-                <div className="flex-shrink-0 w-0 lg:w-[calc((100vw-1280px)/2)]" />
+                <div className="hidden lg:block flex-shrink-0 w-[calc((100vw-1280px)/2)]" />
               </div>
             </SortableContext>
           </DndContext>
