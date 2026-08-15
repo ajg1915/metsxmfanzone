@@ -48,12 +48,14 @@ const RegularSeasonSeriesSection = () => {
 
   useEffect(() => {
     fetchGames();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const fetchGames = async () => {
     try {
-      const { data, error } = await supabase
-        .from("live_streams")
+      // Signed-out visitors read the public view (no playback URLs) so artwork stays visible.
+      const { data, error } = await (supabase as any)
+        .from(user ? "live_streams" : "live_streams_public")
         .select("*")
         .eq("published", true)
         .order("scheduled_start", { ascending: true, nullsFirst: false });
