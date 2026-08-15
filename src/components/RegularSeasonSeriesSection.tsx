@@ -48,7 +48,8 @@ const RegularSeasonSeriesSection = () => {
 
   useEffect(() => {
     fetchGames();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const fetchGames = async () => {
     try {
