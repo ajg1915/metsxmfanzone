@@ -263,12 +263,11 @@ const LiveStreamsSection = () => {
 
   const fetchStreams = async () => {
     try {
-      // Signed-out visitors read from the public view (artwork, titles, schedule)
-      // which excludes playback URLs, so the Live Now row is always visible.
-      const source = user ? "live_streams" : "live_streams_public";
-
+      // The homepage only needs public display metadata. Always use the safe
+      // view so signed-in members and guests see the exact same Live Now row;
+      // playback URLs remain available only on the protected player pages.
       let query = (supabase as any)
-        .from(source)
+        .from("live_streams_public")
         .select("*")
         .eq("published", true)
         .order("scheduled_start", { ascending: true, nullsFirst: false })
