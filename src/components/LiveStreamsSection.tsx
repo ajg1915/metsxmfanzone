@@ -262,7 +262,7 @@ const LiveStreamsSection = () => {
       clearInterval(interval);
       supabase.removeChannel(channel); 
     };
-  }, [adminMode]);
+  }, [adminMode, user, isAdmin]);
 
   const fetchStreams = async () => {
     try {
