@@ -306,22 +306,8 @@ const LiveStreamsSection = () => {
 
         return !isSportsNetwork24x7 && !s.assigned_pages?.some(p => excludedPages.includes(p.toLowerCase()));
       });
-      // When a live event is assigned to MetsXMFanZone TV, show BOTH the
-      // MetsXMFanZone TV card and the game event card in Live Streams.
-      const withTvCards: LiveStream[] = [];
-      filtered.forEach((s) => {
-        const onFanzone = s.assigned_pages?.includes('metsxmfanzone');
-        if (onFanzone && s.status === 'live') {
-          withTvCards.push({
-            ...s,
-            id: `${TV_CARD_PREFIX}${s.id}`,
-            title: 'MetsXMFanZone TV — Live Now',
-          } as LiveStream);
-        }
-        withTvCards.push(s as LiveStream);
-      });
+      setStreams(filtered as LiveStream[]);
 
-      setStreams(withTvCards);
     } catch (error) {
       console.error("Error fetching streams:", error);
     } finally {
