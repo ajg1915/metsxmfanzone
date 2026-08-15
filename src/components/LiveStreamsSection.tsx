@@ -266,8 +266,12 @@ const LiveStreamsSection = () => {
 
   const fetchStreams = async () => {
     try {
-      let query = supabase
-        .from("live_streams")
+      // Signed-out visitors read from the public view (artwork, titles, schedule)
+      // which excludes playback URLs, so the Live Now row is always visible.
+      const source = user ? "live_streams" : "live_streams_public";
+
+      let query = (supabase as any)
+        .from(source)
         .select("*")
         .eq("published", true)
         .order("scheduled_start", { ascending: true, nullsFirst: false })
