@@ -275,7 +275,7 @@ const LiveStreamsSection = () => {
         .select("*")
         .eq("published", true)
         .order("scheduled_start", { ascending: true, nullsFirst: false })
-        .limit(20);
+        .limit(100);
 
       // Non-admins only see live streams
       if (!isAdmin) {
@@ -286,13 +286,18 @@ const LiveStreamsSection = () => {
       if (error) throw error;
 
       const sorted = (data || []).sort((a, b) => {
-        // Primary: sort by scheduled_start date ascending
+        // Live streams always come first
+        const aLive = a.status === 'live' ? 0 : 1;
+        const bLive = b.status === 'live' ? 0 : 1;
+        if (aLive !== bLive) return aLive - bLive;
+        // Then by scheduled_start date ascending
         const aDate = a.scheduled_start ? new Date(a.scheduled_start).getTime() : Infinity;
         const bDate = b.scheduled_start ? new Date(b.scheduled_start).getTime() : Infinity;
         if (aDate !== bDate) return aDate - bDate;
-        // Secondary: by created_at descending
+        // Finally by created_at descending
         return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       });
+
 
       // Exclude the 24/7 sports network channels — they live in Sports Network Streams.
       // Actual game broadcasts (e.g. "Mets Vs Nationals 8/14/26") stay here even when
