@@ -97,10 +97,11 @@ const isEspn24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) 
   return title.includes("espn") && title.includes("24/7") || stream.assigned_pages?.includes("espn-network");
 };
 
-const isPix1124x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+const isMetsXM2 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
   if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
-  return title.includes("pix11") || title.includes("pix 11") || stream.assigned_pages?.includes("pix11-network");
+  return title.includes("metsxmfanzone") && (title.includes("2") || title.includes("stream 2"))
+    || !!stream.assigned_pages?.includes("metsxmfanzone-2");
 };
 
 
@@ -111,6 +112,7 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
   else if (pages.includes("espn-network")) href = "/espn-network";
   else if (pages.includes("pix11-network")) href = "/pix11-network";
   else if (pages.includes("msg-network")) href = "/live/msg-network";
+  else if (pages.includes("metsxmfanzone-2")) href = "/live/metsxmfanzone-2";
   return {
     id: stream.id,
     title: stream.title,
@@ -120,6 +122,7 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
     assignedPages: pages,
   };
 };
+
 
 
 
