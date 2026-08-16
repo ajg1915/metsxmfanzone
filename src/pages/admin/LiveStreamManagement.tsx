@@ -91,7 +91,7 @@ interface LiveStream {
   display_order: number;
 }
 
-const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'PIX11 Network', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
+const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'metsxmfanzone-2': 'MetsXMFanZone Stream 2 24/7 (Sports Network Streams)', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'PIX11 Network', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
 
 const WATCH_PAGE_OPTIONS = [
   { value: 'own', label: 'Own stream page (/live/…)' },
