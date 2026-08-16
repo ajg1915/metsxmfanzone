@@ -59,7 +59,15 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     thumbnail: null,
     href: "/pix11-network",
   },
+  {
+    id: "metsxmfanzone-2",
+    title: "MetsXMFanZone Stream 2",
+    subtitle: "24/7 — MetsXMFanZone second channel, fan shows & extra coverage",
+    thumbnail: null,
+    href: "/live/metsxmfanzone-2",
+  },
 ];
+
 
 // Actual game broadcasts should never fill a 24/7 network card
 const isGameBroadcast = (title: string) =>
@@ -92,7 +100,14 @@ const isEspn24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) 
 const isPix1124x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
   if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
-  return title.includes("pix11") || title.includes("pix 11") || stream.assigned_pages?.includes("pix11-network");
+  return title.includes("pix11") || title.includes("pix 11") || !!stream.assigned_pages?.includes("pix11-network");
+};
+
+const isMetsXM2 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
+  if (isGameBroadcast(stream.title)) return false;
+  const title = stream.title.toLowerCase();
+  return title.includes("metsxmfanzone") && (title.includes("2") || title.includes("stream 2"))
+    || !!stream.assigned_pages?.includes("metsxmfanzone-2");
 };
 
 
@@ -103,6 +118,7 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
   else if (pages.includes("espn-network")) href = "/espn-network";
   else if (pages.includes("pix11-network")) href = "/pix11-network";
   else if (pages.includes("msg-network")) href = "/live/msg-network";
+  else if (pages.includes("metsxmfanzone-2")) href = "/live/metsxmfanzone-2";
   return {
     id: stream.id,
     title: stream.title,
@@ -112,6 +128,7 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
     assignedPages: pages,
   };
 };
+
 
 
 
@@ -160,6 +177,7 @@ const RelatedStreamsSection = () => {
     const msgStream = networkStreams.find(isMsgNetwork24x7);
     const espnStream = networkStreams.find(isEspn24x7);
     const pixStream = networkStreams.find(isPix1124x7);
+    const xm2Stream = networkStreams.find(isMetsXM2);
 
     return [
       mlbStream ? streamToCard(mlbStream, FALLBACK_STREAMS[0]) : FALLBACK_STREAMS[0],
@@ -167,6 +185,7 @@ const RelatedStreamsSection = () => {
       msgStream ? streamToCard(msgStream, FALLBACK_STREAMS[2]) : FALLBACK_STREAMS[2],
       espnStream ? streamToCard(espnStream, FALLBACK_STREAMS[3]) : FALLBACK_STREAMS[3],
       pixStream ? streamToCard(pixStream, FALLBACK_STREAMS[4]) : FALLBACK_STREAMS[4],
+      xm2Stream ? streamToCard(xm2Stream, FALLBACK_STREAMS[5]) : FALLBACK_STREAMS[5],
     ];
   }, [networkStreams]);
 
@@ -189,11 +208,11 @@ const RelatedStreamsSection = () => {
             </h2>
           </div>
           <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-            24/7 · MLB · SNY · MSG · ESPN · PIX11
+            24/7 · MLB · SNY · MSG · ESPN · PIX11 · XM2
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
 
 
           {streams.map((s) => (
