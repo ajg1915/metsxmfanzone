@@ -208,7 +208,7 @@ export default function LiveStreamManagement() {
   const handleSelectWatchPage = async (id: string, page: string) => {
     const stream = streams.find(s => s.id === id);
     if (!stream) return;
-    const destinations = ['metsxmfanzone', 'pix11-network'];
+    const destinations = ['metsxmfanzone', 'metsxmfanzone-2', 'pix11-network'];
     const kept = (stream.assigned_pages || []).filter(p => !destinations.includes(p));
     const next = page === 'own' ? kept : [...kept, page];
     if (!next.includes('live')) next.push('live');
