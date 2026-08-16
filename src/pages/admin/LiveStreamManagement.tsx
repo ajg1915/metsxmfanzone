@@ -91,16 +91,18 @@ interface LiveStream {
   display_order: number;
 }
 
-const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'PIX11 Network', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
+const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'metsxmfanzone-2': 'MetsXMFanZone Stream 2 24/7 (Sports Network Streams)', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'PIX11 Network', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
 
 const WATCH_PAGE_OPTIONS = [
   { value: 'own', label: 'Own stream page (/live/…)' },
   { value: 'metsxmfanzone', label: 'MetsXMFanZone TV' },
+  { value: 'metsxmfanzone-2', label: 'MetsXMFanZone Stream 2 24/7' },
   { value: 'pix11-network', label: 'PIX11 Network' },
 ];
 
 const getWatchPage = (pages: string[] | null | undefined) => {
   if (pages?.includes('metsxmfanzone')) return 'metsxmfanzone';
+  if (pages?.includes('metsxmfanzone-2')) return 'metsxmfanzone-2';
   if (pages?.includes('pix11-network')) return 'pix11-network';
   return 'own';
 };
@@ -206,7 +208,7 @@ export default function LiveStreamManagement() {
   const handleSelectWatchPage = async (id: string, page: string) => {
     const stream = streams.find(s => s.id === id);
     if (!stream) return;
-    const destinations = ['metsxmfanzone', 'pix11-network'];
+    const destinations = ['metsxmfanzone', 'metsxmfanzone-2', 'pix11-network'];
     const kept = (stream.assigned_pages || []).filter(p => !destinations.includes(p));
     const next = page === 'own' ? kept : [...kept, page];
     if (!next.includes('live')) next.push('live');
@@ -930,7 +932,7 @@ export default function LiveStreamManagement() {
                   <Label htmlFor="assigned_pages">Assign to Pages *</Label>
                   <div className="space-y-2 mt-2">
                     {(() => {
-                      const defaultPages = ['guide', 'live', 'metsxmfanzone', 'mlb-network', 'sny-tv', 'msg-network', 'espn-network', 'pix11-network', 'regular-season-games', 'replay-games'];
+                      const defaultPages = ['guide', 'live', 'metsxmfanzone', 'metsxmfanzone-2', 'mlb-network', 'sny-tv', 'msg-network', 'espn-network', 'pix11-network', 'regular-season-games', 'replay-games'];
                       const customPages = formData.assigned_pages.filter(p => !defaultPages.includes(p));
                       const allPages = [...defaultPages, ...customPages];
                       return allPages.map((page) => (
