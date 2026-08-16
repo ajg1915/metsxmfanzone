@@ -59,7 +59,15 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     thumbnail: null,
     href: "/pix11-network",
   },
+  {
+    id: "metsxmfanzone-2",
+    title: "MetsXMFanZone Stream 2",
+    subtitle: "24/7 — MetsXMFanZone second channel, fan shows & extra coverage",
+    thumbnail: null,
+    href: "/live/metsxmfanzone-2",
+  },
 ];
+
 
 // Actual game broadcasts should never fill a 24/7 network card
 const isGameBroadcast = (title: string) =>
