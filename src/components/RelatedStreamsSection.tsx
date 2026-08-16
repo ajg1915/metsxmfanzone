@@ -177,6 +177,7 @@ const RelatedStreamsSection = () => {
     const msgStream = networkStreams.find(isMsgNetwork24x7);
     const espnStream = networkStreams.find(isEspn24x7);
     const pixStream = networkStreams.find(isPix1124x7);
+    const xm2Stream = networkStreams.find(isMetsXM2);
 
     return [
       mlbStream ? streamToCard(mlbStream, FALLBACK_STREAMS[0]) : FALLBACK_STREAMS[0],
@@ -184,6 +185,7 @@ const RelatedStreamsSection = () => {
       msgStream ? streamToCard(msgStream, FALLBACK_STREAMS[2]) : FALLBACK_STREAMS[2],
       espnStream ? streamToCard(espnStream, FALLBACK_STREAMS[3]) : FALLBACK_STREAMS[3],
       pixStream ? streamToCard(pixStream, FALLBACK_STREAMS[4]) : FALLBACK_STREAMS[4],
+      xm2Stream ? streamToCard(xm2Stream, FALLBACK_STREAMS[5]) : FALLBACK_STREAMS[5],
     ];
   }, [networkStreams]);
 
