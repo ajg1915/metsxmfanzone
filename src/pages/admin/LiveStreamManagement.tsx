@@ -96,11 +96,13 @@ const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live P
 const WATCH_PAGE_OPTIONS = [
   { value: 'own', label: 'Own stream page (/live/…)' },
   { value: 'metsxmfanzone', label: 'MetsXMFanZone TV' },
+  { value: 'metsxmfanzone-2', label: 'MetsXMFanZone Stream 2 24/7' },
   { value: 'pix11-network', label: 'PIX11 Network' },
 ];
 
 const getWatchPage = (pages: string[] | null | undefined) => {
   if (pages?.includes('metsxmfanzone')) return 'metsxmfanzone';
+  if (pages?.includes('metsxmfanzone-2')) return 'metsxmfanzone-2';
   if (pages?.includes('pix11-network')) return 'pix11-network';
   return 'own';
 };
