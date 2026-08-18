@@ -249,14 +249,15 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
 
   return (
     <div
-      className={`absolute top-3 left-3 z-30 inline-flex items-center gap-1.5 px-3 py-2 rounded-full backdrop-blur-md border text-xs font-semibold overflow-hidden transition-colors ${
+      className={`absolute top-3 right-3 z-30 inline-flex items-center gap-1.5 px-3 h-9 rounded-full backdrop-blur-md border text-[11px] font-bold overflow-hidden transition-transform active:scale-95 ${
         connected
           ? "bg-primary text-primary-foreground border-primary/40"
-          : "bg-black/70 hover:bg-black/90 text-white border-white/20"
+          : "bg-black/40 hover:bg-black/60 text-white border-white/20"
       }`}
       style={{ maxWidth: 120, maxHeight: 36 }}
     >
-      <Cast className="w-3.5 h-3.5" />
+      <Cast className="w-4 h-4" />
+
       {connected ? "Casting" : "Cast"}
       {/* Click surface. The Google launcher element is clipped to this badge so
           its default (very large) icon can never cover the video. */}

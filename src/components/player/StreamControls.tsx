@@ -205,12 +205,7 @@ export function StreamControls({
         </div>
       )}
 
-      <div className="bg-gradient-to-t from-black/90 via-black/60 to-transparent px-2 pb-2 pt-8 sm:px-4 sm:pb-3">
-        {/* Live rail */}
-        <div className="mx-1 mb-1.5 h-1 rounded-full bg-white/25 overflow-hidden">
-          <div className="h-full w-full rounded-full bg-sky-400" />
-        </div>
-
+      <div className="bg-gradient-to-t from-black via-black/70 to-transparent px-3 pb-3 pt-10 sm:px-4 sm:pb-4">
         <div className="flex items-center gap-0.5 sm:gap-1">
           <button onClick={togglePlay} className={iconBtn} aria-label={playing ? "Pause" : "Play"}>
             {playing ? <Pause className="w-6 h-6" fill="currentColor" /> : <Play className="w-6 h-6" fill="currentColor" />}
@@ -233,7 +228,7 @@ export function StreamControls({
               onChange={(e) => changeVolume(Number(e.target.value))}
               aria-label="Volume"
               className={cn(
-                "h-1 accent-sky-400 cursor-pointer transition-all",
+                "h-1 accent-primary cursor-pointer transition-all",
                 showVolume ? "w-16 sm:w-20 opacity-100 mr-1" : "w-0 opacity-0 pointer-events-none"
               )}
             />
@@ -241,42 +236,60 @@ export function StreamControls({
 
           <button
             onClick={jumpToLive}
-            className="ml-1 inline-flex items-center gap-1.5 px-2 py-1 rounded text-[11px] sm:text-xs font-bold tracking-widest text-white/90 hover:text-white hover:bg-white/10 transition-colors"
+            className="ml-1 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-white/90 hover:text-white hover:bg-white/10 transition-colors"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            LIVE
+            <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+            Live
           </button>
-
-          {channelLabel && (
-            <span className="hidden sm:inline ml-1 text-[11px] font-semibold text-white/60 truncate max-w-[180px]">
-              {channelLabel}
-            </span>
-          )}
 
           <div className="flex-1" />
 
           <button onClick={() => onReload?.()} className={iconBtn} aria-label="Reload stream">
-            <RotateCw className="w-6 h-6" />
+            <RotateCw className="w-5 h-5" />
           </button>
           <button
             onClick={() => { setShowStats((s) => !s); setShowSettings(false); }}
             className={cn(iconBtn, showStats && "bg-white/10 text-white")}
             aria-label="Stream stats"
           >
-            <BarChart3 className="w-6 h-6" />
+            <BarChart3 className="w-5 h-5" />
           </button>
           <button
             onClick={() => { setShowSettings((s) => !s); setShowStats(false); }}
             className={cn(iconBtn, showSettings && "bg-white/10 text-white")}
             aria-label="Settings"
           >
-            <Settings className="w-6 h-6" />
+            <Settings className="w-5 h-5" />
           </button>
           <button onClick={toggleFullscreen} className={iconBtn} aria-label="Fullscreen">
             {fullscreen ? <Minimize className="w-6 h-6" /> : <Maximize className="w-6 h-6" />}
           </button>
         </div>
+
+        {/* Broadcast metadata */}
+        {channelLabel && (
+          <div className="mt-1 mb-2 px-1 min-w-0">
+            <h2 className="text-sm sm:text-base font-extrabold tracking-tight text-white truncate">
+              {channelLabel}
+            </h2>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[10px] font-bold text-primary px-1.5 py-0.5 rounded bg-primary/10">
+                {stats.resolution !== "—" ? stats.resolution.split("×")[1] + "p" : "HD"}
+              </span>
+              <span className="text-[10px] uppercase font-bold tracking-widest text-white/50 truncate">
+                MetsXMFanZone Broadcast
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Live rail */}
+        <div className="relative mx-1 h-1 rounded-full bg-white/20 overflow-hidden">
+          <div className="absolute inset-y-0 left-0 w-[85%] bg-primary" />
+          <div className="absolute inset-y-0 right-0 w-[15%] bg-white/40" />
+        </div>
       </div>
+
     </div>
   );
 }
