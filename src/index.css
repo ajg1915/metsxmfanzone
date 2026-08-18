@@ -1243,3 +1243,18 @@ All colors MUST be HSL.
 :where(.glass, .glass-strong, .glass-card) {
   border-color: hsl(var(--mets-orange) / 0.45) !important;
 }
+
+/* Google Cast launcher: keep it clipped to its badge, never overlay the video */
+google-cast-launcher,
+.cast-launcher-overlay {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  opacity: 0 !important;
+  cursor: pointer;
+  --connected-color: transparent;
+  --disconnected-color: transparent;
+}
