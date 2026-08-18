@@ -231,13 +231,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         crossOrigin={isIos() ? undefined : "anonymous"}
       />
 
-      {/* Broadcast LIVE tally */}
-      {status === "ready" && (
-        <div className="absolute top-3 left-3 z-30 inline-flex items-center gap-1.5 h-9 px-3 rounded-full bg-destructive text-destructive-foreground text-[10px] font-black uppercase tracking-widest shadow-lg pointer-events-none">
-          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-          Live
-        </div>
-      )}
 
       <CastButton source={effectiveSource} title={pageTitle} />
 
