@@ -249,30 +249,36 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
 
   return (
     <div
-      className={`absolute top-3 left-3 z-30 inline-flex items-center gap-1.5 px-3 py-2 rounded-full backdrop-blur-md border text-xs font-semibold transition-colors ${
+      className={`absolute top-3 left-3 z-30 inline-flex items-center gap-1.5 px-3 py-2 rounded-full backdrop-blur-md border text-xs font-semibold overflow-hidden transition-colors ${
         connected
           ? "bg-primary text-primary-foreground border-primary/40"
           : "bg-black/70 hover:bg-black/90 text-white border-white/20"
       }`}
+      style={{ maxWidth: 120, maxHeight: 36 }}
     >
       <Cast className="w-3.5 h-3.5" />
       {connected ? "Casting" : "Cast"}
-      {ready && !connected && window.self === window.top ? (
-        <google-cast-launcher
-          aria-label="Cast to TV"
-          title="Cast to TV"
-          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-        />
-      ) : (
-        <button
-          type="button"
-          onClick={handleCast}
-          aria-label={connected ? "Stop casting" : "Cast to TV"}
-          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-        />
-      )}
+      {/* Click surface. The Google launcher element is clipped to this badge so
+          its default (very large) icon can never cover the video. */}
+      <span className="absolute inset-0 overflow-hidden rounded-full">
+        {ready && !connected && window.self === window.top ? (
+          <google-cast-launcher
+            aria-label="Cast to TV"
+            title="Cast to TV"
+            className="cast-launcher-overlay"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={handleCast}
+            aria-label={connected ? "Stop casting" : "Cast to TV"}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+        )}
+      </span>
     </div>
   );
 }
+
 
 export default CastButton;
