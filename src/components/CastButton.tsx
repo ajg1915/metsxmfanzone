@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import type { DetailedHTMLProps, HTMLAttributes } from "react";
 import { Cast } from "lucide-react";
 
 declare global {
@@ -6,6 +7,11 @@ declare global {
     __onGCastApiAvailable?: (isAvailable: boolean) => void;
     cast?: any;
     chrome?: any;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      "google-cast-launcher": DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
+    }
   }
 }
 
