@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import type { DetailedHTMLProps, HTMLAttributes } from "react";
 import { Cast } from "lucide-react";
 
 declare global {
@@ -6,6 +7,11 @@ declare global {
     __onGCastApiAvailable?: (isAvailable: boolean) => void;
     cast?: any;
     chrome?: any;
+  }
+  namespace JSX {
+    interface IntrinsicElements {
+      "google-cast-launcher": DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>;
+    }
   }
 }
 
@@ -77,6 +83,7 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
   const [ready, setReady] = useState(false);
   const [connected, setConnected] = useState(false);
   const contextRef = useRef<any>(null);
+  const loadedSourceRef = useRef("");
 
   // Show the button when casting is plausible even before the SDK reports in:
   // inside an iframe (preview/embeds) or when the browser exposes Remote Playback.
@@ -114,6 +121,42 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
         setConnected(String(event.castState) === "CONNECTED");
       };
 
+      const loadCurrentStream = async () => {
+        const session = context.getCurrentSession();
+        if (!session || !source || loadedSourceRef.current === source) return;
+
+        const contentType = source.includes(".m3u8")
+          ? "application/x-mpegURL"
+          : source.includes(".mpd")
+          ? "application/dash+xml"
+          : "video/mp4";
+        const mediaInfo = new window.chrome.cast.media.MediaInfo(source, contentType);
+        mediaInfo.streamType = window.chrome.cast.media.StreamType.LIVE;
+        mediaInfo.metadata = new window.chrome.cast.media.GenericMediaMetadata();
+        mediaInfo.metadata.title = title || "Live Stream";
+        if (poster) mediaInfo.metadata.images = [{ url: poster }];
+
+        try {
+          await session.loadMedia(new window.chrome.cast.media.LoadRequest(mediaInfo));
+          loadedSourceRef.current = source;
+        } catch (error: any) {
+          const code = typeof error === "string" ? error : error?.code || error?.message;
+          console.warn("[Cast] media load failed:", code);
+        }
+      };
+
+      const onSessionStateChanged = (event: any) => {
+        const state = String(event.sessionState);
+        if (state === "SESSION_STARTED" || state === "SESSION_RESUMED") {
+          setConnected(true);
+          void loadCurrentStream();
+        }
+        if (state === "SESSION_ENDED") {
+          loadedSourceRef.current = "";
+          setConnected(false);
+        }
+      };
+
       try {
         setConnected(String(context.getCastState()) === "CONNECTED");
       } catch {}
@@ -121,6 +164,10 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
       context.addEventListener(
         window.cast.framework.CastContextEventType.CAST_STATE_CHANGED,
         onStateChanged
+      );
+      context.addEventListener(
+        window.cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+        onSessionStateChanged
       );
       // Show the button whenever the SDK works — Chrome opens its own device
       // picker on click, so hiding on NO_DEVICES_AVAILABLE just looks "blocked".
@@ -132,6 +179,10 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
             window.cast.framework.CastContextEventType.CAST_STATE_CHANGED,
             onStateChanged
           );
+          context.removeEventListener(
+            window.cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+            onSessionStateChanged
+          );
         } catch {}
       };
     });
@@ -140,7 +191,7 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
       cancelled = true;
       cleanup?.();
     };
-  }, []);
+  }, [source, title, poster]);
 
   const handleCast = useCallback(async () => {
     // Cast is blocked inside iframes (Lovable preview / embeds) — open the real site.
@@ -179,28 +230,9 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
         return;
       }
 
+      // The transparent Google launcher over the button normally handles this.
+      // Keep requestSession as a fallback for browsers that omit the launcher.
       await context.requestSession();
-
-      const session = context.getCurrentSession();
-      if (!session) return;
-
-      const contentType = source.includes(".m3u8")
-        ? "application/x-mpegURL"
-        : source.includes(".mpd")
-        ? "application/dash+xml"
-        : "video/mp4";
-
-      const mediaInfo = new window.chrome.cast.media.MediaInfo(
-        source,
-        contentType
-      );
-      mediaInfo.streamType = window.chrome.cast.media.StreamType.LIVE;
-      mediaInfo.metadata = new window.chrome.cast.media.GenericMediaMetadata();
-      mediaInfo.metadata.title = title || "Live Stream";
-      if (poster) mediaInfo.metadata.images = [{ url: poster }];
-
-      const request = new window.chrome.cast.media.LoadRequest(mediaInfo);
-      await session.loadMedia(request);
     } catch (e: any) {
       const code = typeof e === "string" ? e : e?.code || e?.message;
       console.warn("[Cast] cast failed:", code);
@@ -210,16 +242,13 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
         await remotePrompt();
       }
     }
-  }, [source, title, poster, connected]);
+  }, [connected]);
 
   if (!ready && !castSupported) return null;
 
 
   return (
-    <button
-      onClick={handleCast}
-      aria-label={connected ? "Casting (stop)" : "Cast to TV"}
-      title={connected ? "Casting — tap to stop" : "Cast to TV"}
+    <div
       className={`absolute top-3 left-3 z-30 inline-flex items-center gap-1.5 px-3 py-2 rounded-full backdrop-blur-md border text-xs font-semibold transition-colors ${
         connected
           ? "bg-primary text-primary-foreground border-primary/40"
@@ -228,7 +257,21 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
     >
       <Cast className="w-3.5 h-3.5" />
       {connected ? "Casting" : "Cast"}
-    </button>
+      {ready && !connected && window.self === window.top ? (
+        <google-cast-launcher
+          aria-label="Cast to TV"
+          title="Cast to TV"
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={handleCast}
+          aria-label={connected ? "Stop casting" : "Cast to TV"}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        />
+      )}
+    </div>
   );
 }
 
