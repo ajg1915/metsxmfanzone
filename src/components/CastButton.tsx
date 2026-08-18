@@ -78,6 +78,15 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
   const [connected, setConnected] = useState(false);
   const contextRef = useRef<any>(null);
 
+  // Show the button when casting is plausible even before the SDK reports in:
+  // inside an iframe (preview/embeds) or when the browser exposes Remote Playback.
+  const castSupported =
+    typeof window !== "undefined" &&
+    (window.self !== window.top ||
+      typeof (document.createElement("video") as any).remote?.prompt ===
+        "function");
+
+
   useEffect(() => {
     let cancelled = false;
     let cleanup: (() => void) | undefined;
