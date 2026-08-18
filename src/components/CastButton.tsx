@@ -18,49 +18,72 @@ interface CastButtonProps {
 const CAST_FRAMEWORK_SRC =
   "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
 
-let frameworkLoading: Promise<boolean> | null = null;
+let frameworkReady: Promise<boolean> | null = null;
 
+function frameworkAvailable() {
+  return !!(window.cast?.framework && window.chrome?.cast?.media);
+}
+
+/**
+ * Resolves once the Cast SDK is usable.
+ * The SDK is also loaded from index.html, so it may already have fired its
+ * global callback before this component mounts — polling is the only reliable
+ * way to detect that case (assigning __onGCastApiAvailable too late = never fires).
+ */
 function loadCastFramework(): Promise<boolean> {
   if (typeof window === "undefined") return Promise.resolve(false);
-  if (frameworkLoading) return frameworkLoading;
+  if (frameworkReady) return frameworkReady;
 
-  frameworkLoading = new Promise((resolve) => {
-    // Already loaded
-    if (window.cast?.framework) {
+  frameworkReady = new Promise((resolve) => {
+    if (frameworkAvailable()) {
       resolve(true);
       return;
     }
 
-    // Set the callback BEFORE the script loads
+    // Chain (don't clobber) any existing callback.
+    const prev = window.__onGCastApiAvailable;
     window.__onGCastApiAvailable = (isAvailable: boolean) => {
-      resolve(!!isAvailable && !!window.cast?.framework);
+      try {
+        prev?.(isAvailable);
+      } catch {}
+      if (isAvailable && frameworkAvailable()) resolve(true);
     };
 
-    const existing = document.querySelector(
-      `script[src="${CAST_FRAMEWORK_SRC}"]`
-    );
-    if (existing) return;
+    if (!document.querySelector(`script[src="${CAST_FRAMEWORK_SRC}"]`)) {
+      const s = document.createElement("script");
+      s.src = CAST_FRAMEWORK_SRC;
+      s.async = true;
+      document.head.appendChild(s);
+    }
 
-    const s = document.createElement("script");
-    s.src = CAST_FRAMEWORK_SRC;
-    s.async = true;
-    s.onerror = () => resolve(false);
-    document.head.appendChild(s);
+    // Poll as the primary detection mechanism (~15s).
+    let tries = 0;
+    const timer = window.setInterval(() => {
+      tries += 1;
+      if (frameworkAvailable()) {
+        window.clearInterval(timer);
+        resolve(true);
+      } else if (tries > 60) {
+        window.clearInterval(timer);
+        resolve(false);
+      }
+    }, 250);
   });
 
-  return frameworkLoading;
+  return frameworkReady;
 }
 
 export function CastButton({ source, title, poster }: CastButtonProps) {
-  const [available, setAvailable] = useState(false);
+  const [ready, setReady] = useState(false);
   const [connected, setConnected] = useState(false);
   const contextRef = useRef<any>(null);
 
   useEffect(() => {
     let cancelled = false;
+    let cleanup: (() => void) | undefined;
 
     loadCastFramework().then((ok) => {
-      if (cancelled || !ok || !window.cast?.framework) return;
+      if (cancelled || !ok) return;
 
       const context = window.cast.framework.CastContext.getInstance();
       contextRef.current = context;
@@ -69,36 +92,36 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
         context.setOptions({
           receiverApplicationId:
             window.chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-          autoJoinPolicy:
-            window.chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+          autoJoinPolicy: window.chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+          // Keep the session alive if the user navigates within the app.
+          resumeSavedSession: true,
         });
       } catch (e) {
         console.warn("[Cast] setOptions failed:", e);
-        return;
       }
 
-      const onAvailability = (event: any) => {
+      const onStateChanged = (event: any) => {
         if (cancelled) return;
-        // CastState: NO_DEVICES_AVAILABLE | NOT_CONNECTED | CONNECTING | CONNECTED
-        const state = event.castState;
-        setAvailable(state !== "NO_DEVICES_AVAILABLE");
-        setConnected(state === "CONNECTED");
+        setConnected(String(event.castState) === "CONNECTED");
       };
 
-      const initialState = context.getCastState();
-      setAvailable(initialState !== "NO_DEVICES_AVAILABLE");
-      setConnected(initialState === "CONNECTED");
+      try {
+        setConnected(String(context.getCastState()) === "CONNECTED");
+      } catch {}
 
       context.addEventListener(
         window.cast.framework.CastContextEventType.CAST_STATE_CHANGED,
-        onAvailability
+        onStateChanged
       );
+      // Show the button whenever the SDK works — Chrome opens its own device
+      // picker on click, so hiding on NO_DEVICES_AVAILABLE just looks "blocked".
+      setReady(true);
 
-      return () => {
+      cleanup = () => {
         try {
           context.removeEventListener(
             window.cast.framework.CastContextEventType.CAST_STATE_CHANGED,
-            onAvailability
+            onStateChanged
           );
         } catch {}
       };
@@ -106,6 +129,7 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
 
     return () => {
       cancelled = true;
+      cleanup?.();
     };
   }, []);
 
@@ -114,10 +138,13 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
     if (!context || !window.chrome?.cast) return;
 
     try {
-      // Request a session if not connected
-      if (!connected) {
-        await context.requestSession();
+      if (connected) {
+        context.endCurrentSession(true);
+        setConnected(false);
+        return;
       }
+
+      await context.requestSession();
 
       const session = context.getCurrentSession();
       if (!session) return;
@@ -144,7 +171,7 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
     }
   }, [source, title, poster, connected]);
 
-  if (!available) return null;
+  if (!ready) return null;
 
   return (
     <button
