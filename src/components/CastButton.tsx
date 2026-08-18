@@ -257,7 +257,7 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
     >
       <Cast className="w-3.5 h-3.5" />
       {connected ? "Casting" : "Cast"}
-      {ready && !connected ? (
+      {ready && !connected && window.self === window.top ? (
         <google-cast-launcher
           aria-label="Cast to TV"
           title="Cast to TV"
