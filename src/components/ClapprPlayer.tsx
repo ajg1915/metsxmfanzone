@@ -213,7 +213,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   }, [effectiveSource, retryKey, notifyAdmins]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full aspect-video bg-black overflow-hidden group">
+    <div ref={containerRef} className="relative w-full h-full aspect-video bg-black overflow-hidden rounded-2xl border border-white/10 shadow-2xl group">
       <video
         ref={videoRef}
         className="absolute inset-0 w-full h-full object-contain bg-black"
@@ -230,7 +230,17 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         x-webkit-airplay="allow"
         crossOrigin={isIos() ? undefined : "anonymous"}
       />
+
+      {/* Broadcast LIVE tally */}
+      {status === "ready" && (
+        <div className="absolute top-3 left-3 z-30 inline-flex items-center gap-1.5 h-9 px-3 rounded-full bg-destructive text-destructive-foreground text-[10px] font-black uppercase tracking-widest shadow-lg pointer-events-none">
+          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+          Live
+        </div>
+      )}
+
       <CastButton source={effectiveSource} title={pageTitle} />
+
 
       {status === "ready" && (
         <StreamControls
