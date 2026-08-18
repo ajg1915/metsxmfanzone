@@ -134,8 +134,34 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
   }, []);
 
   const handleCast = useCallback(async () => {
+    // Cast is blocked inside iframes (Lovable preview / embeds) — open the real site.
+    const inIframe = window.self !== window.top;
+    if (inIframe) {
+      window.open(window.location.href, "_blank", "noopener");
+      return;
+    }
+
     const context = contextRef.current;
-    if (!context || !window.chrome?.cast) return;
+
+    // Fallback: Remote Playback API (Android Chrome / Edge) shows the system
+    // device picker even when the Cast framework finds no receivers itself.
+    const remotePrompt = async () => {
+      const video = document.querySelector("video") as any;
+      if (video?.remote?.prompt) {
+        try {
+          await video.remote.prompt();
+          return true;
+        } catch {
+          return false;
+        }
+      }
+      return false;
+    };
+
+    if (!context || !window.chrome?.cast) {
+      await remotePrompt();
+      return;
+    }
 
     try {
       if (connected) {
@@ -166,12 +192,19 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
 
       const request = new window.chrome.cast.media.LoadRequest(mediaInfo);
       await session.loadMedia(request);
-    } catch (e) {
-      console.warn("[Cast] cast failed:", e);
+    } catch (e: any) {
+      const code = typeof e === "string" ? e : e?.code || e?.message;
+      console.warn("[Cast] cast failed:", code);
+      // "cancel" also fires when the picker had nothing to show — try the
+      // browser's native remote playback picker before giving up.
+      if (code === "cancel" || code === "receiver_unavailable") {
+        await remotePrompt();
+      }
     }
   }, [source, title, poster, connected]);
 
-  if (!ready) return null;
+  if (!ready && !castSupported) return null;
+
 
   return (
     <button
