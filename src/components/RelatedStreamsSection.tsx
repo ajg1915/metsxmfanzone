@@ -4,6 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Radio, Play, ChevronRight, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import channelMlb from "@/assets/channel-mlb.jpg";
+import channelSny from "@/assets/channel-sny.jpg";
+import channelMsg from "@/assets/channel-msg.jpg";
+import channelEspn from "@/assets/channel-espn.jpg";
+import channelPix11 from "@/assets/channel-pix11.jpg";
+import channelXm2 from "@/assets/channel-xm2.jpg";
 
 interface RelatedStream {
   id: string;
