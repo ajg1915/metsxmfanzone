@@ -9,6 +9,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    fs: {
+      // Never serve env files, keys or certs over the dev/preview server
+      deny: [".env", ".env.*", "*.pem", "*.crt", "*.key"],
+    },
   },
   build: {
     // Optimize chunk splitting for better caching

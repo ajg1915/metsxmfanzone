@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files (never commit or expose)
+.env.local
+.env.*.local
+.env.backup
+.env.production
+*.pem
