@@ -22,6 +22,7 @@ interface Poll {
 
 interface PollVote {
   option_index: number;
+  vote_count: number;
 }
 
 const PollManagement = () => {
@@ -61,12 +62,12 @@ const PollManagement = () => {
       // Fetch vote counts for each poll
       for (const poll of parsedPolls) {
         const { data: votes } = await supabase
-          .from("poll_votes")
-          .select("option_index")
+          .from("poll_vote_counts" as any)
+          .select("option_index, vote_count")
           .eq("poll_id", poll.id);
 
         if (votes) {
-          setPollResults((prev) => ({ ...prev, [poll.id]: votes }));
+          setPollResults((prev) => ({ ...prev, [poll.id]: votes as unknown as PollVote[] }));
         }
       }
     } catch (error) {
@@ -209,11 +210,11 @@ const PollManagement = () => {
 
   const getVoteCount = (pollId: string, optionIndex: number) => {
     const votes = pollResults[pollId] || [];
-    return votes.filter((v) => v.option_index === optionIndex).length;
+    return Number(votes.find((v) => v.option_index === optionIndex)?.vote_count ?? 0);
   };
 
   const getTotalVotes = (pollId: string) => {
-    return (pollResults[pollId] || []).length;
+    return (pollResults[pollId] || []).reduce((total, vote) => total + Number(vote.vote_count || 0), 0);
   };
 
   if (loading) {

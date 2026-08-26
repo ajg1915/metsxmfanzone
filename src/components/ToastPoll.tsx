@@ -14,6 +14,7 @@ interface Poll {
 
 interface PollVote {
   option_index: number;
+  vote_count: number;
 }
 
 const ToastPoll = () => {
@@ -89,12 +90,12 @@ const ToastPoll = () => {
 
   const fetchVotes = async (pollId: string) => {
     const { data } = await supabase
-      .from("poll_votes")
-      .select("option_index")
+      .from("poll_vote_counts" as any)
+      .select("option_index, vote_count")
       .eq("poll_id", pollId);
 
     if (data) {
-      setVotes(data);
+      setVotes(data as unknown as PollVote[]);
     }
   };
 
@@ -140,9 +141,10 @@ const ToastPoll = () => {
   };
 
   const getVotePercentage = (optionIndex: number) => {
-    if (votes.length === 0) return 0;
-    const optionVotes = votes.filter((v) => v.option_index === optionIndex).length;
-    return (optionVotes / votes.length) * 100;
+    const totalVotes = votes.reduce((sum, vote) => sum + Number(vote.vote_count || 0), 0);
+    if (totalVotes === 0) return 0;
+    const optionVotes = votes.find((v) => v.option_index === optionIndex)?.vote_count ?? 0;
+    return (Number(optionVotes) / totalVotes) * 100;
   };
 
   if (!poll || !visible || dismissed || !isAuthenticated) return null;
