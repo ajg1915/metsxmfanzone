@@ -18,6 +18,7 @@ import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/br
 import AuthLoadingScreen from "@/components/auth/AuthLoadingScreen";
 import { Helmet } from "react-helmet-async";
 import { withTimeout } from "@/utils/asyncTimeout";
+import { isStaleBuildAuthError, recoverFromStaleBuild } from "@/utils/staleBuildRecovery";
 
 
 
@@ -749,6 +750,25 @@ const Auth = () => {
         // Track failed login attempt for security alerts
         trackFailedLogin(validated.email);
         
+        // "Invalid API key" means this browser is running an outdated cached
+        // copy of the app. Purge caches/service workers and reload so the
+        // current build (with the current backend key) is used.
+        if (isStaleBuildAuthError(error.message)) {
+          toast({
+            title: "Updating app",
+            description: "Refreshing to the latest version — please sign in again in a moment.",
+          });
+          const recovered = await recoverFromStaleBuild();
+          if (!recovered) {
+            toast({
+              title: "Login failed",
+              description: "Please fully close and reopen the app, then try again.",
+              variant: "destructive",
+            });
+          }
+          return;
+        }
+
         if (error.message.includes("Invalid login credentials")) {
           toast({
             title: "Login failed",
