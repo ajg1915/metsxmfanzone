@@ -9,6 +9,21 @@ const corsHeaders = {
   'X-Frame-Options': 'DENY',
 };
 
+// Infers our internal plan name from the PayPal subscription resource.
+function derivePlanType(resource: any): 'weekly' | 'premium' | 'annual' {
+  const interval: string | undefined =
+    resource?.billing_info?.cycle_executions?.[0]?.tenure_type &&
+    resource?.plan?.billing_cycles?.[0]?.frequency?.interval_unit;
+  const raw = `${resource?.plan_id ?? ''} ${interval ?? ''} ${resource?.plan?.name ?? ''}`.toLowerCase();
+  const amount = Number(resource?.billing_info?.last_payment?.amount?.value ?? 0);
+
+  if (raw.includes('year') || raw.includes('annual') || amount >= 100) return 'annual';
+  if (raw.includes('week') || (amount > 0 && amount < 6)) return 'weekly';
+  return 'premium';
+}
+
+
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
