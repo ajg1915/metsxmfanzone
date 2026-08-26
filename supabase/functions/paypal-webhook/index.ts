@@ -203,19 +203,69 @@ Deno.serve(async (req: Request) => {
       case 'BILLING.SUBSCRIPTION.ACTIVATED': {
         // Subscription created or activated
         const subscriptionId = resource.id;
-        
-        console.log('Processing subscription activation:', subscriptionId);
 
-        const { data: subscription, error: fetchError } = await supabase
+        console.log('Processing subscription activation: [REDACTED]');
+
+        const { data: existing } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('paypal_subscription_id', subscriptionId)
-          .single();
+          .maybeSingle();
 
-        if (!fetchError && subscription) {
+        let subscription = existing;
+
+        // Back-fill: the subscriber signed up directly on PayPal (no row created by our app).
+        if (!subscription) {
+          const email: string | undefined =
+            resource?.subscriber?.email_address || resource?.payer?.email_address;
+          const planType = derivePlanType(resource);
+
+          if (!email) {
+            console.warn('Cannot back-fill subscription: no subscriber email on webhook resource');
+            break;
+          }
+
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .ilike('email', email)
+            .maybeSingle();
+
+          if (!profile?.id) {
+            console.warn('Cannot back-fill subscription: no matching member account for subscriber');
+            break;
+          }
+
+          const { data: inserted, error: insertError } = await supabase
+            .from('subscriptions')
+            .insert({
+              user_id: profile.id,
+              plan_type: planType,
+              status: 'pending',
+              paypal_subscription_id: subscriptionId,
+              paypal_plan_id: resource?.plan_id ?? null,
+              amount: Number(
+                resource?.billing_info?.last_payment?.amount?.value ??
+                  (planType === 'annual' ? 129.99 : planType === 'weekly' ? 3.99 : 9.99),
+              ),
+              currency: resource?.billing_info?.last_payment?.amount?.currency_code || 'USD',
+              notes: 'Back-filled from PayPal webhook',
+            })
+            .select('*')
+            .maybeSingle();
+
+          if (insertError) {
+            console.error('Error back-filling subscription:', insertError.message);
+            break;
+          }
+          subscription = inserted;
+          console.log('Back-filled missing subscription record');
+        }
+
+        if (subscription) {
           const startDate = new Date();
-          let endDate = new Date();
-          
+          const endDate = new Date();
+
           if (subscription.plan_type === 'annual') {
             endDate.setFullYear(endDate.getFullYear() + 1);
           } else if (subscription.plan_type === 'weekly') {
@@ -235,13 +285,14 @@ Deno.serve(async (req: Request) => {
             .eq('id', subscription.id);
 
           if (updateError) {
-            console.error('Error activating subscription:', updateError);
+            console.error('Error activating subscription:', updateError.message);
           } else {
-            console.log('Subscription activated:', subscription.id);
+            console.log('Subscription activated');
           }
         }
         break;
       }
+
 
       case 'BILLING.SUBSCRIPTION.EXPIRED':
       case 'BILLING.SUBSCRIPTION.CANCELLED': {
