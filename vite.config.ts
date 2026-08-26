@@ -1,11 +1,31 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 
+// Some build environments pass env values with surrounding quotes still attached
+// (e.g. VITE_SUPABASE_URL='"https://..."'). Vite only strips quotes when reading
+// .env files, not when the value comes from process.env, which produced an
+// invalid "apikey" on requests. Normalize the values before they are inlined.
+const stripQuotes = (value?: string) =>
+  (value ?? "").trim().replace(/^['"]+/, "").replace(/['"]+$/, "");
+
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), "");
+  const sanitizedEnv = Object.fromEntries(
+    ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PROJECT_ID"]
+      .map((key) => [
+        `import.meta.env.${key}`,
+        JSON.stringify(stripQuotes(process.env[key] ?? env[key])),
+      ])
+      .filter(([, value]) => value !== '""'),
+  );
+
+  return {
+  define: sanitizedEnv,
+
   server: {
     host: "::",
     port: 8080,
