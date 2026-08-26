@@ -145,16 +145,25 @@ Deno.serve(async (req: Request) => {
         console.log('Processing payment completion for order: [REDACTED]');
 
         // Find subscription by PayPal order ID or subscription ID
-        const { data: subscription, error: fetchError } = await supabase
+        const { data: matches, error: fetchError } = await supabase
           .from('subscriptions')
           .select('*')
           .or(`paypal_order_id.eq.${orderId},paypal_subscription_id.eq.${orderId}`)
-          .single();
+          .order('created_at', { ascending: false })
+          .limit(1);
 
         if (fetchError) {
-          console.error('Error fetching subscription:', fetchError);
+          console.error('Error fetching subscription:', fetchError.message);
           break;
         }
+
+        const subscription = matches?.[0];
+        if (!subscription) {
+          console.warn('No membership record matched this payment; awaiting subscription event');
+          break;
+        }
+
+
 
         if (subscription) {
           // Calculate end date based on plan type
