@@ -41,37 +41,28 @@ const TestimonialsSection = () => {
 
   const fetchTestimonials = async () => {
     try {
+      // Only non-identifying columns are readable by the app; submitter
+      // identity (user_id) stays restricted at the database level.
       const { data: feedbacks, error } = await supabase
         .from("feedbacks")
-        .select("id, content, rating, location, display_name, created_at, user_id")
+        .select("id, content, rating, location, display_name, created_at")
         .order("created_at", { ascending: false })
         .limit(8);
 
       if (error) throw error;
 
-      if (feedbacks && feedbacks.length > 0) {
-        // Fetch profiles using the profiles table directly
-        const userIds = [...new Set(feedbacks.map(f => f.user_id))];
-        const { data: profiles } = await supabase
-          .from("profiles")
-          .select("id, full_name, avatar_url")
-          .in("id", userIds);
-
-        const testimonialsWithProfiles = feedbacks.map(feedback => ({
-          ...feedback,
-          profile: profiles?.find(p => p.id === feedback.user_id) || null
-        }));
-
-        setTestimonials(testimonialsWithProfiles);
-      } else {
-        setTestimonials([]);
-      }
+      setTestimonials((feedbacks || []).map((feedback) => ({
+        ...feedback,
+        user_id: "",
+        profile: null,
+      })) as Testimonial[]);
     } catch (error) {
       console.error("Error fetching testimonials:", error);
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchTestimonials();
