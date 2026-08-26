@@ -21,7 +21,8 @@ interface Feedback {
   content: string;
   rating: number | null;
   created_at: string;
-  user_id: string;
+  display_name?: string | null;
+  location?: string | null;
 }
 
 const FeedbackManagement = () => {
