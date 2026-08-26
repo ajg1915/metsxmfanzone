@@ -18,6 +18,7 @@ import { browserSupportsWebAuthn, startAuthentication } from "@simplewebauthn/br
 import AuthLoadingScreen from "@/components/auth/AuthLoadingScreen";
 import { Helmet } from "react-helmet-async";
 import { withTimeout } from "@/utils/asyncTimeout";
+import { isStaleBuildAuthError, recoverFromStaleBuild } from "@/utils/staleBuildRecovery";
 
 
 
