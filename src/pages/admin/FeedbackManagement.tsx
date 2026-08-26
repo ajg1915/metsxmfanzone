@@ -34,7 +34,7 @@ const FeedbackManagement = () => {
     try {
       const { data, error } = await supabase
         .from("feedbacks")
-        .select("*")
+        .select("id, content, rating, created_at, display_name, location")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
