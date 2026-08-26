@@ -3343,6 +3343,7 @@ export type Database = {
           amount: number | null
           cancellation_requested_at: string | null
           cancellation_status: string | null
+          cancelled_at: string | null
           created_at: string | null
           currency: string | null
           end_date: string | null
@@ -3354,6 +3355,7 @@ export type Database = {
           notes: string | null
           payment_method: string | null
           paypal_order_id: string | null
+          paypal_plan_id: string | null
           paypal_subscription_id: string | null
           plan_type: string
           start_date: string | null
@@ -3366,6 +3368,7 @@ export type Database = {
           amount?: number | null
           cancellation_requested_at?: string | null
           cancellation_status?: string | null
+          cancelled_at?: string | null
           created_at?: string | null
           currency?: string | null
           end_date?: string | null
@@ -3377,6 +3380,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           paypal_order_id?: string | null
+          paypal_plan_id?: string | null
           paypal_subscription_id?: string | null
           plan_type: string
           start_date?: string | null
@@ -3389,6 +3393,7 @@ export type Database = {
           amount?: number | null
           cancellation_requested_at?: string | null
           cancellation_status?: string | null
+          cancelled_at?: string | null
           created_at?: string | null
           currency?: string | null
           end_date?: string | null
@@ -3400,6 +3405,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           paypal_order_id?: string | null
+          paypal_plan_id?: string | null
           paypal_subscription_id?: string | null
           plan_type?: string
           start_date?: string | null
