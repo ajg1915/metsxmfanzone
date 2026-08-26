@@ -2121,6 +2121,35 @@ export type Database = {
         }
         Relationships: []
       }
+      poll_vote_counts: {
+        Row: {
+          option_index: number
+          poll_id: string
+          updated_at: string
+          vote_count: number
+        }
+        Insert: {
+          option_index: number
+          poll_id: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Update: {
+          option_index?: number
+          poll_id?: string
+          updated_at?: string
+          vote_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_vote_counts_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       poll_votes: {
         Row: {
           created_at: string

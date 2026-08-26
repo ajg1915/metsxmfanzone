@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Podcast files are publicly accessible" ON storage.objects;
