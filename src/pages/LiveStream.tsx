@@ -43,7 +43,26 @@ const LiveStream = () => {
             .limit(1)
             .maybeSingle();
 
-      setStream(data as StreamInfo | null);
+      if (data) {
+        setStream(data as StreamInfo | null);
+        setLoading(false);
+        return;
+      }
+
+      // Logged-out visitors can't read the restricted table: use the public view
+      const publicQuery = supabase
+        .from("live_streams_public")
+        .select("id, title, description, thumbnail_url, status, assigned_pages");
+
+      const { data: publicData } = UUID_RE.test(streamId)
+        ? await publicQuery.eq("id", streamId).maybeSingle()
+        : await publicQuery
+            .contains("assigned_pages", [streamId])
+            .order("status", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+      setStream(publicData as StreamInfo | null);
       setLoading(false);
     };
     fetchStream();
