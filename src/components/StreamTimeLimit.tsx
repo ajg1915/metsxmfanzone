@@ -132,8 +132,11 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
 
     if (user) {
       fetchPlan();
+    } else if (!authLoading) {
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
+
 
   // Countdown for preview-tier viewers
   useEffect(() => {
