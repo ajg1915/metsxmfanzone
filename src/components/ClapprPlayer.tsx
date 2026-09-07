@@ -14,6 +14,11 @@ interface ClapprPlayerProps {
   showChrome?: boolean;
 }
 
+const isMobile = (() => {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPad|iPhone|iPod|Mobile/i.test(navigator.userAgent || "");
+})();
+
 const isIos = () => {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
@@ -142,23 +147,27 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         return;
       }
 
+      // Phones (especially Android) stall badly with ultra-low-latency buffers,
+      // so give mobile a deeper, more forgiving buffer.
       const hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: true,
-        backBufferLength: 10,
-        maxBufferLength: 8,
-        maxMaxBufferLength: 20,
-        maxBufferSize: 30 * 1000 * 1000,
-        liveSyncDurationCount: 2,
-        liveMaxLatencyDurationCount: 5,
+        lowLatencyMode: false,
+        backBufferLength: isMobile ? 30 : 10,
+        maxBufferLength: isMobile ? 30 : 12,
+        maxMaxBufferLength: isMobile ? 60 : 30,
+        maxBufferSize: 60 * 1000 * 1000,
+        maxBufferHole: 0.5,
+        liveSyncDurationCount: isMobile ? 4 : 3,
+        liveMaxLatencyDurationCount: isMobile ? 12 : 8,
         liveDurationInfinity: true,
-        highBufferWatchdogPeriod: 1,
-        nudgeMaxRetry: 10,
-        manifestLoadingTimeOut: 10000,
-        manifestLoadingMaxRetry: 3,
-        levelLoadingTimeOut: 10000,
-        fragLoadingTimeOut: 20000,
-        fragLoadingMaxRetry: 6,
+        highBufferWatchdogPeriod: 2,
+        nudgeMaxRetry: 20,
+        manifestLoadingTimeOut: 20000,
+        manifestLoadingMaxRetry: 6,
+        levelLoadingTimeOut: 20000,
+        levelLoadingMaxRetry: 6,
+        fragLoadingTimeOut: 30000,
+        fragLoadingMaxRetry: 10,
         startFragPrefetch: true,
       });
       hlsRef.current = hls;
@@ -171,7 +180,19 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         tryAutoplay();
       });
       hls.on(Hls.Events.ERROR, (_e, data) => {
-        if (!data?.fatal || destroyed) return;
+        if (destroyed) return;
+
+        // Non-fatal buffer stalls are common on mobile networks — nudge past them.
+        if (!data?.fatal) {
+          if (data?.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+            try {
+              const live = hls.liveSyncPosition;
+              if (typeof live === "number" && live > 0) video.currentTime = live;
+              video.play().catch(() => {});
+            } catch {}
+          }
+          return;
+        }
 
         if (data.type === Hls.ErrorTypes.MEDIA_ERROR && mediaRecoveries < 3) {
           mediaRecoveries += 1;
