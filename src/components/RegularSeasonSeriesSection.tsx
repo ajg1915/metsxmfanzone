@@ -42,6 +42,8 @@ const RegularSeasonSeriesSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { tier, isAdmin } = useSubscription();
+  const { config: trialConfig } = useFreeTrialConfig();
+  const guestPreviewOn = !user && trialConfig.guestPreviewEnabled !== false;
   const [seriesGroups, setSeriesGroups] = useState<SeriesGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollPosition, setScrollPosition] = useState(0);
