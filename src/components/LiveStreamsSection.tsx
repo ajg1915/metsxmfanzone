@@ -342,6 +342,9 @@ const LiveStreamsSection = () => {
   const isProStream = (_stream: LiveStream) => true;
 
   const getStreamPageUrl = (stream: LiveStream) => {
+    // Games marked free for everyone always use their own watch page,
+    // which is not gated behind sign in.
+    if (isFree(stream.id)) return `/live/${stream.id}`;
     const networkPages = (stream.assigned_pages || []).filter(page => page !== 'live' && page !== 'guide');
     if (networkPages.includes('metsxmfanzone')) return '/metsxmfanzone';
     if (networkPages.includes('metsxmfanzone-2')) return '/live/metsxmfanzone-2';
@@ -358,7 +361,11 @@ const LiveStreamsSection = () => {
       navigate(getStreamPageUrl(stream));
       return;
     }
-    // All streams now require premium or admin access
+
+    if (isFree(stream.id)) {
+      navigate(getStreamPageUrl(stream));
+      return;
+    }
 
     if (stream.assigned_pages?.includes('metsxmfanzone')) {
       if (!user) navigate("/auth");
