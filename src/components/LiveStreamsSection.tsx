@@ -190,6 +190,10 @@ const LiveStreamsSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { tier, isAdmin, loading: subscriptionLoading } = useSubscription();
+  const { config: trialConfig } = useFreeTrialConfig();
+  const guestPreviewOn = !user && trialConfig.guestPreviewEnabled !== false;
+  const isGuestPreviewStream = (s: LiveStream) =>
+    guestPreviewOn && !s.assigned_pages?.includes("metsxmfanzone");
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
