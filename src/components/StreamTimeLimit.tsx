@@ -182,7 +182,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     return <>{children}</>;
   }
 
-  if (authLoading || loading || freeLoading) {
+  if (authLoading || loading || freeLoading || configLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">

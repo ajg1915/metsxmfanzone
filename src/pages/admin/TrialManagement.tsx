@@ -155,6 +155,44 @@ const TrialManagement = () => {
         </Card>
 
         <Card className="bg-card/90 backdrop-blur">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Free Access for Visitors (Scheduled Games)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <Label className="text-sm">Allow free watching without an account</Label>
+                <p className="text-xs text-muted-foreground">
+                  Applies to scheduled game streams only. MetsXMFanZone Live always requires sign in.
+                </p>
+              </div>
+              <Switch
+                checked={config.guestPreviewEnabled !== false}
+                onCheckedChange={(v) => setConfig((c) => ({ ...c, guestPreviewEnabled: v }))}
+              />
+            </div>
+            <div className="space-y-1.5 max-w-xs">
+              <Label className="text-xs">Free watching time (minutes)</Label>
+              <Input
+                type="number"
+                min={1}
+                max={240}
+                value={config.guestPreviewMinutes ?? 30}
+                onChange={(e) =>
+                  setConfig((c) => ({
+                    ...c,
+                    guestPreviewMinutes: Number(e.target.value) || 1,
+                  }))
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                After this countdown, viewers must sign up and log in to keep watching.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/90 backdrop-blur">
           <CardHeader className="pb-3 flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">Promotional Windows</CardTitle>
             <Button
