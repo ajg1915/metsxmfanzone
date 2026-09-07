@@ -196,7 +196,7 @@ const LiveStreamsSection = () => {
   const { isFree } = useFreeStreams();
   const guestPreviewOn = !user && trialConfig.guestPreviewEnabled !== false;
   const isGuestPreviewStream = (s: LiveStream) =>
-    isFree(s.id) || (guestPreviewOn && !s.assigned_pages?.includes("metsxmfanzone"));
+    guestPreviewOn && !isFree(s.id) && !s.assigned_pages?.includes("metsxmfanzone");
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);

@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 
 const ESPNNetwork = () => {
   return (
-    <StreamTimeLimit>
+    <StreamTimeLimit pageKey="espn-network" allowGuestPreview>
     <div className="min-h-screen bg-background flex flex-col">
       <SEOHead
         title="ESPN Network Live - Watch ESPN Baseball Coverage | MetsXMFanZone"

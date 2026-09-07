@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 
 const MLBNetwork = () => {
   return (
-    <StreamTimeLimit>
+    <StreamTimeLimit pageKey="mlb-network" allowGuestPreview>
     <div className="min-h-screen bg-background flex flex-col">
       <SEOHead
         title="MLB Network Live - Watch Baseball Games & Analysis | MetsXMFanZone"

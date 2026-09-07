@@ -131,7 +131,14 @@ const RegularSeasonSeriesSection = () => {
     }
   };
 
-  const handleSeriesClick = () => {
+  const handleSeriesClick = (group: SeriesGroup) => {
+    const previewStream = group.streams.find((stream) => stream.status === "live");
+
+    if (!user && guestPreviewOn && previewStream) {
+      navigate(`/live/${previewStream.id}`);
+      return;
+    }
+
     if (!user) {
       navigate("/auth");
       return;
@@ -231,7 +238,7 @@ const RegularSeasonSeriesSection = () => {
           {seriesGroups.map((group) => (
             <div
               key={group.opponent}
-              onClick={handleSeriesClick}
+              onClick={() => handleSeriesClick(group)}
               className="flex-shrink-0 w-[240px] sm:w-[280px] md:w-[320px] lg:w-[380px] cursor-pointer group/card relative"
             >
               <div
@@ -262,7 +269,7 @@ const RegularSeasonSeriesSection = () => {
                   </div>
 
                   <div className="absolute top-2 right-2 flex items-center gap-1.5">
-                    {guestPreviewOn ? (
+                    {guestPreviewOn && group.hasLive ? (
                       <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
                         FREE PREVIEW
                       </Badge>
