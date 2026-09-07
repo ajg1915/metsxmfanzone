@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getTodayET } from "@/lib/utils";
+import { getTodayET } from "@/utils/dateUtils";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import { Sparkles, Lock, ArrowRight } from "lucide-react";
