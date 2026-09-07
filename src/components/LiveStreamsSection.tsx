@@ -363,7 +363,7 @@ const LiveStreamsSection = () => {
       else navigate(getStreamPageUrl(stream));
       return;
     }
-    if (isAdmin || tier === "premium" || tier === "annual") {
+    if (isAdmin || tier === "premium" || tier === "annual" || isGuestPreviewStream(stream)) {
       navigate(getStreamPageUrl(stream));
     } else {
       navigate("/pricing");
