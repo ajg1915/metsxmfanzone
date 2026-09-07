@@ -21,13 +21,16 @@ interface StreamTimeLimitProps {
   streamId?: string | null;
   /** Page key (e.g. "metsxmfanzone"), also checkable as a free stream */
   pageKey?: string | null;
+  /** Scheduled games: let logged-out visitors watch for a limited window first */
+  allowGuestPreview?: boolean;
 }
 
 type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
 
 const STORAGE_KEY = "stream_viewing_start";
+const GUEST_STORAGE_KEY = "guest_stream_preview_start";
 
-const StreamTimeLimit = ({ children, streamId, pageKey }: StreamTimeLimitProps) => {
+const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false }: StreamTimeLimitProps) => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { config, loading: configLoading } = useFreeTrialConfig();
@@ -37,6 +40,12 @@ const StreamTimeLimit = ({ children, streamId, pageKey }: StreamTimeLimitProps) 
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [guestRemaining, setGuestRemaining] = useState<number | null>(null);
+  const [guestExpired, setGuestExpired] = useState(false);
+
+  const guestPreviewEnabled =
+    allowGuestPreview && !configLoading && config.guestPreviewEnabled !== false;
+  const guestMinutes = Math.max(1, Number(config.guestPreviewMinutes) || 30);
 
   const previewMinutes = Math.max(1, Number(config.streamPreviewMinutes) || 30);
   const previewMs = previewMinutes * 60 * 1000;
@@ -45,10 +54,37 @@ const StreamTimeLimit = ({ children, streamId, pageKey }: StreamTimeLimitProps) 
   // Redirect unauthenticated users to login
   useEffect(() => {
     if (freeForEveryone) return;
-    if (!authLoading && !user) {
+    if (configLoading) return;
+    if (!authLoading && !user && !guestPreviewEnabled) {
       navigate("/auth", { replace: true });
     }
-  }, [user, authLoading, navigate, freeForEveryone]);
+  }, [user, authLoading, navigate, freeForEveryone, guestPreviewEnabled, configLoading]);
+
+  // Countdown for logged-out visitors on scheduled games
+  useEffect(() => {
+    if (user || !guestPreviewEnabled || freeForEveryone) return;
+
+    let start = localStorage.getItem(GUEST_STORAGE_KEY);
+    if (!start) {
+      start = Date.now().toString();
+      localStorage.setItem(GUEST_STORAGE_KEY, start);
+    }
+    const limitMs = guestMinutes * 60 * 1000;
+
+    const tick = () => {
+      const remaining = limitMs - (Date.now() - parseInt(start!, 10));
+      if (remaining <= 0) {
+        setGuestRemaining(0);
+        setGuestExpired(true);
+      } else {
+        setGuestRemaining(Math.ceil(remaining / 1000));
+      }
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [user, guestPreviewEnabled, guestMinutes, freeForEveryone]);
 
   // Fetch user's subscription plan
   useEffect(() => {
@@ -154,15 +190,60 @@ const StreamTimeLimit = ({ children, streamId, pageKey }: StreamTimeLimitProps) 
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
+
+  // Logged-out visitors on scheduled games: timed free preview, then must sign up
+  if (!user) {
+    if (!guestPreviewEnabled) return null;
+
+    return (
+      <>
+        {!guestExpired && (
+          <>
+            {guestRemaining !== null && guestRemaining > 0 && (
+              <div className="fixed top-20 right-4 z-50 bg-background/90 backdrop-blur-sm border border-primary rounded-lg px-4 py-2 shadow-lg">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                  <span className="text-sm font-medium text-foreground">
+                    Free Preview: {formatTime(guestRemaining)}
+                  </span>
+                </div>
+              </div>
+            )}
+            {children}
+          </>
+        )}
+
+        <AlertDialog open={guestExpired}>
+          <AlertDialogContent className="max-w-md" onEscapeKeyDown={(e) => e.preventDefault()}>
+            <AlertDialogHeader className="text-center">
+              <div className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center">
+                <img src={metsLogo} alt="MetsXM" className="w-14 h-14 object-contain" />
+              </div>
+              <AlertDialogTitle className="text-xl">
+                Your {guestMinutes}-Minute Free Preview Has Ended
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-center">
+                Create a free account or log in to keep watching the game.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
+              <Button onClick={() => navigate("/auth")} className="w-full">
+                Sign Up / Log In
+              </Button>
+              <Button variant="outline" onClick={handleGoHome} className="w-full">
+                Return Home
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
+    );
+  }
 
   // Free + trial members get a timed stream preview
   if (isPreviewPlan) {
