@@ -224,6 +224,13 @@ const Index = () => {
           </Suspense>
         </LazySection>
 
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <PredictionsSection />
+          </Suspense>
+        </LazySection>
+
+
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
