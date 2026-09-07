@@ -49,6 +49,7 @@ const SortableStreamCard = ({
   onToggleLive,
   isSpringTraining,
   isProStream,
+  guestPreview = false,
 }: {
   stream: LiveStream;
   isAdmin: boolean;
@@ -58,6 +59,7 @@ const SortableStreamCard = ({
   onToggleLive: (id: string, currentStatus: string) => void;
   isSpringTraining: boolean;
   isProStream: boolean;
+  guestPreview?: boolean;
 }) => {
   const {
     attributes,
