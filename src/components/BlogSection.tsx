@@ -2,57 +2,43 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
-import { Clock, ArrowRight, Sparkles, ExternalLink } from "lucide-react";
+import { Clock, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import logo from "@/assets/metsxmfanzone-logo.png";
 
-interface NewsItem {
+interface BlogPost {
+  id: string;
   title: string;
-  link: string;
-  description: string;
-  pubDate: string;
-  creator?: string;
-  image?: string;
+  slug: string;
+  excerpt: string | null;
+  featured_image_url: string | null;
+  category: string | null;
+  published_at: string | null;
+  created_at: string;
 }
-
-const CACHE_KEY = "sny_mets_news_v1";
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 
 const BlogSection = () => {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState<NewsItem[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     const load = async () => {
-      // Try local cache (daily fetch)
       try {
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const { ts, items } = JSON.parse(cached);
-          if (Date.now() - ts < CACHE_TTL_MS && Array.isArray(items) && items.length) {
-            setPosts(items);
-            setLoading(false);
-            return;
-          }
-        }
-      } catch {}
+        const { data, error } = await supabase
+          .from("blog_posts")
+          .select("id, title, slug, excerpt, featured_image_url, category, published_at, created_at")
+          .eq("published", true)
+          .order("published_at", { ascending: false })
+          .limit(6);
 
-      try {
-        const { data, error } = await supabase.functions.invoke("fetch-sny-news");
         if (error) throw error;
-        const items: NewsItem[] = data?.items ?? [];
-        if (!cancelled) {
-          setPosts(items);
-          try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), items }));
-          } catch {}
-        }
+        if (!cancelled) setPosts((data || []) as BlogPost[]);
       } catch (err) {
-        console.error("Error fetching SNY news:", err);
+        console.error("Error fetching blog posts:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -67,7 +53,8 @@ const BlogSection = () => {
   const highlightPost = posts[0];
   const otherPosts = posts.slice(1, 6);
 
-  const getTimeAgo = (date: string) => {
+  const getTimeAgo = (date: string | null) => {
+    if (!date) return "";
     const now = new Date();
     const postDate = new Date(date);
     const diffInHours = Math.floor((now.getTime() - postDate.getTime()) / (1000 * 60 * 60));
@@ -79,9 +66,9 @@ const BlogSection = () => {
     return postDate.toLocaleDateString();
   };
 
-  const openExternal = (url: string) => {
-    if (!url) return;
-    window.open(url, "_blank", "noopener,noreferrer");
+  const openPost = (slug: string) => {
+    if (!slug) return;
+    navigate(`/blog/${slug}`);
   };
 
   if (loading) {
@@ -90,7 +77,7 @@ const BlogSection = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            Loading latest Mets news...
+            Loading latest articles...
           </div>
         </div>
       </section>
@@ -120,7 +107,7 @@ const BlogSection = () => {
               <h2 className="text-sm sm:text-xl md:text-2xl font-bold text-foreground leading-tight">
                 Latest Mets News
               </h2>
-              <p className="text-[10px] sm:text-sm text-muted-foreground">Powered by SNY</p>
+              <p className="text-[10px] sm:text-sm text-muted-foreground">From the MetsXMFanZone blog</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -136,7 +123,7 @@ const BlogSection = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => openExternal("https://sny.tv/teams/mets")}
+              onClick={() => navigate("/blog")}
               className="group glass-card border-border/30 hover:border-primary/50 transition-all duration-300 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
             >
               View All
@@ -145,24 +132,24 @@ const BlogSection = () => {
           </div>
         </motion.div>
 
-        {/* Featured Highlight Post */}
+        {/* Featured Post */}
         {highlightPost && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
-            onClick={() => openExternal(highlightPost.link)}
+            onClick={() => openPost(highlightPost.slug)}
             className="cursor-pointer group glass-card hover-lift glow-blue rounded-xl overflow-hidden mb-4"
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && openExternal(highlightPost.link)}
+            onKeyDown={(e) => e.key === "Enter" && openPost(highlightPost.slug)}
           >
             <article className="flex flex-col sm:flex-row">
               <div className="relative w-full sm:w-2/5 overflow-hidden bg-black flex items-center justify-center">
-                {highlightPost.image ? (
+                {highlightPost.featured_image_url ? (
                   <img
-                    src={highlightPost.image}
+                    src={highlightPost.featured_image_url}
                     alt={highlightPost.title}
                     className="w-full h-auto max-h-[480px] object-contain group-hover:scale-105 transition-transform duration-500"
                   />
@@ -179,9 +166,11 @@ const BlogSection = () => {
                   </Badge>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-3 sm:hidden">
-                  <Badge className="text-[10px] px-1.5 py-0 mb-1.5 bg-white/20 text-white border-0 backdrop-blur-sm">
-                    SNY
-                  </Badge>
+                  {highlightPost.category && (
+                    <Badge className="text-[10px] px-1.5 py-0 mb-1.5 bg-white/20 text-white border-0 backdrop-blur-sm">
+                      {highlightPost.category}
+                    </Badge>
+                  )}
                   <h3 className="text-base font-bold text-white line-clamp-2 drop-shadow-lg">
                     {highlightPost.title}
                   </h3>
@@ -189,24 +178,26 @@ const BlogSection = () => {
               </div>
 
               <div className="hidden sm:flex flex-1 p-4 sm:p-5 flex-col justify-center">
-                <Badge className="w-fit text-xs px-2 py-0.5 mb-2 bg-muted text-muted-foreground border-0">
-                  SNY {highlightPost.creator ? `• ${highlightPost.creator}` : ""}
-                </Badge>
+                {highlightPost.category && (
+                  <Badge className="w-fit text-xs px-2 py-0.5 mb-2 bg-muted text-muted-foreground border-0">
+                    {highlightPost.category}
+                  </Badge>
+                )}
                 <h3 className="text-lg sm:text-xl font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
                   {highlightPost.title}
                 </h3>
-                {highlightPost.description && (
+                {highlightPost.excerpt && (
                   <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                    {highlightPost.description}
+                    {highlightPost.excerpt}
                   </p>
                 )}
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
-                    {getTimeAgo(highlightPost.pubDate)}
+                    {getTimeAgo(highlightPost.published_at || highlightPost.created_at)}
                   </span>
                   <span className="flex items-center gap-1 text-primary">
-                    Read on SNY <ExternalLink className="w-3 h-3" />
+                    Read article <ArrowRight className="w-3 h-3" />
                   </span>
                 </div>
               </div>
@@ -214,10 +205,10 @@ const BlogSection = () => {
               <div className="flex sm:hidden items-center justify-between p-3 border-t border-border/20">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Clock className="w-3 h-3" />
-                  <span>{getTimeAgo(highlightPost.pubDate)}</span>
+                  <span>{getTimeAgo(highlightPost.published_at || highlightPost.created_at)}</span>
                 </div>
                 <span className="text-xs text-primary font-medium flex items-center gap-1">
-                  SNY <ExternalLink className="w-3 h-3" />
+                  Read <ArrowRight className="w-3 h-3" />
                 </span>
               </div>
             </article>
@@ -228,22 +219,22 @@ const BlogSection = () => {
         <div className="space-y-2">
           {otherPosts.map((post, index) => (
             <motion.div
-              key={post.link || index}
+              key={post.id}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              onClick={() => openExternal(post.link)}
+              onClick={() => openPost(post.slug)}
               className="cursor-pointer group glass-card hover-lift glow-blue rounded-lg overflow-hidden"
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && openExternal(post.link)}
+              onKeyDown={(e) => e.key === "Enter" && openPost(post.slug)}
             >
               <article className="flex gap-3 p-2.5">
                 <div className="relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-card">
-                  {post.image ? (
+                  {post.featured_image_url ? (
                     <img
-                      src={post.image}
+                      src={post.featured_image_url}
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
@@ -256,9 +247,11 @@ const BlogSection = () => {
 
                 <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
                   <div>
-                    <Badge className="text-[10px] px-1.5 py-0 mb-1 bg-muted text-muted-foreground border-0">
-                      SNY{post.creator ? ` • ${post.creator}` : ""}
-                    </Badge>
+                    {post.category && (
+                      <Badge className="text-[10px] px-1.5 py-0 mb-1 bg-muted text-muted-foreground border-0">
+                        {post.category}
+                      </Badge>
+                    )}
                     <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
                       {post.title}
                     </h3>
@@ -266,7 +259,7 @@ const BlogSection = () => {
 
                   <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1">
                     <Clock className="w-3 h-3" />
-                    <span>{getTimeAgo(post.pubDate)}</span>
+                    <span>{getTimeAgo(post.published_at || post.created_at)}</span>
                   </div>
                 </div>
               </article>
