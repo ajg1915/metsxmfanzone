@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 
 const PIX11Network = () => {
   return (
-    <StreamTimeLimit>
+    <StreamTimeLimit pageKey="pix11-network" allowGuestPreview>
     <div className="min-h-screen bg-background flex flex-col">
       <SEOHead
         title="PIX11 Live Stream - Watch PIX11 New York Live | MetsXMFanZone"

@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 
 const MSGPlus = () => {
   return (
-    <StreamTimeLimit>
+    <StreamTimeLimit pageKey="msg-plus" allowGuestPreview>
       <div className="min-h-screen bg-background flex flex-col">
         <SEOHead
           title="MSG Plus Live - Watch Mets Baseball Coverage | MetsXMFanZone"

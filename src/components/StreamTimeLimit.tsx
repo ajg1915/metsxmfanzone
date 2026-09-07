@@ -71,8 +71,9 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     }
     const limitMs = guestMinutes * 60 * 1000;
 
+    const previewStartedAt = Number.parseInt(start, 10);
     const tick = () => {
-      const remaining = limitMs - (Date.now() - parseInt(start!, 10));
+      const remaining = limitMs - (Date.now() - previewStartedAt);
       if (remaining <= 0) {
         setGuestRemaining(0);
         setGuestExpired(true);
@@ -148,8 +149,9 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
       sessionStorage.setItem(STORAGE_KEY, startTime);
     }
 
+    const previewStartedAt = Number.parseInt(startTime, 10);
     const checkTimeLimit = () => {
-      const elapsed = Date.now() - parseInt(startTime!, 10);
+       const elapsed = Date.now() - previewStartedAt;
       const remaining = previewMs - elapsed;
 
       if (remaining <= 0) {
