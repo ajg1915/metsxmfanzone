@@ -122,8 +122,14 @@ const SortableStreamCard = ({
           )}
 
           <div className="absolute top-2 right-2 flex items-center gap-1.5">
-            {isProStream && !isAdmin && tier !== "premium" && tier !== "annual" && (
-              <PremiumBadge size="sm" />
+            {guestPreview ? (
+              <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
+                FREE PREVIEW
+              </Badge>
+            ) : (
+              isProStream && !isAdmin && tier !== "premium" && tier !== "annual" && (
+                <PremiumBadge size="sm" />
+              )
             )}
             {isSpringTraining && !isAdmin && tier !== "premium" && tier !== "annual" && (
               <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
