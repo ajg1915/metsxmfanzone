@@ -1,4 +1,4 @@
-import { MessageSquarePlus, Share2, Tv, PenLine, BookOpen, Mic, Lock, Bell, CalendarDays } from "lucide-react";
+import { MessageSquarePlus, Tv, BookOpen, Mic, Lock, CalendarDays } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,7 +6,6 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
-import NotificationsPanel from "@/components/NotificationsPanel";
 import { Button } from "@/components/ui/button";
 
 type NavItem = {

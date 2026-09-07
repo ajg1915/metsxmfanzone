@@ -168,9 +168,15 @@ const Hero = () => {
                 </div>
 
                 {/* Title — broadcast wordmark on mobile */}
-                <h1 className="mx-wordmark mb-1.5 max-w-xl font-display uppercase leading-[0.9] text-foreground drop-shadow-lg sm:mb-2">
-                  {slide.title}
-                </h1>
+                {index === 0 ? (
+                  <h1 className="mx-wordmark mb-1.5 max-w-xl font-display uppercase leading-[0.9] text-foreground drop-shadow-lg sm:mb-2">
+                    {slide.title}
+                  </h1>
+                ) : (
+                  <h2 className="mx-wordmark mb-1.5 max-w-xl font-display uppercase leading-[0.9] text-foreground drop-shadow-lg sm:mb-2">
+                    {slide.title}
+                  </h2>
+                )}
 
                 {/* Description */}
                 <p className="mb-3 max-w-md line-clamp-2 text-xs leading-relaxed text-foreground/75 sm:mb-4 sm:text-sm sm:line-clamp-3">
