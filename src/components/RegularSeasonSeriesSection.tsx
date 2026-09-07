@@ -262,8 +262,14 @@ const RegularSeasonSeriesSection = () => {
                   </div>
 
                   <div className="absolute top-2 right-2 flex items-center gap-1.5">
-                    {!isAdmin && tier !== "premium" && tier !== "annual" && (
-                      <PremiumBadge size="sm" />
+                    {guestPreviewOn ? (
+                      <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
+                        FREE PREVIEW
+                      </Badge>
+                    ) : (
+                      !isAdmin && tier !== "premium" && tier !== "annual" && (
+                        <PremiumBadge size="sm" />
+                      )
                     )}
                     {group.hasLive ? (
                       <Badge className="text-[10px] sm:text-xs px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-red-600/90 text-white shadow-lg shadow-red-600/50">
