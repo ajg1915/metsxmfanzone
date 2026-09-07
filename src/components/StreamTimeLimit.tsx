@@ -60,9 +60,10 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     }
   }, [user, authLoading, navigate, freeForEveryone, guestPreviewEnabled, configLoading]);
 
-  // Countdown for logged-out visitors on scheduled games
+  // Countdown for every logged-out free preview, including streams an admin
+  // explicitly selected as free to watch.
   useEffect(() => {
-    if (user || !guestPreviewEnabled || freeForEveryone) return;
+    if (user || !guestPreviewEnabled) return;
 
     let start = localStorage.getItem(GUEST_STORAGE_KEY);
     if (!start) {
@@ -85,7 +86,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [user, guestPreviewEnabled, guestMinutes, freeForEveryone]);
+  }, [user, guestPreviewEnabled, guestMinutes]);
 
   // Fetch user's subscription plan
   useEffect(() => {
@@ -179,11 +180,6 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     window.location.href = "/";
   };
 
-  // Admin-selected free game: unrestricted for everyone, no login required
-  if (freeForEveryone) {
-    return <>{children}</>;
-  }
-
   if (authLoading || loading || freeLoading || configLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -248,6 +244,11 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
         </AlertDialog>
       </>
     );
+  }
+
+  // Admin-selected free games remain unrestricted for signed-in viewers.
+  if (freeForEveryone) {
+    return <>{children}</>;
   }
 
   // Free + trial members get a timed stream preview
