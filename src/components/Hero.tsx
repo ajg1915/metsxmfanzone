@@ -107,21 +107,20 @@ const Hero = () => {
   };
 
   return (
-    <section className="group/hero relative h-[clamp(280px,50vw,580px)] overflow-hidden bg-black">
+    <section className="group/hero home-hero-shell relative pt-16 sm:pt-20">
       <AdminEditBadge to="/admin/hero" label="Edit Hero" />
-      <div ref={emblaRef} className="overflow-hidden absolute inset-0">
-        <div className="flex h-full">
+      <div ref={emblaRef} className="home-feed-shell overflow-hidden">
+        <div className="flex">
           {slidesToShow.map((slide, index) => (
             <div
               key={index}
-              className="flex-[0_0_100%] min-w-0 absolute inset-0"
+              className="relative flex-[0_0_100%] min-w-0 aspect-[16/10] sm:aspect-[16/8] lg:aspect-[16/7] overflow-hidden rounded-md border border-border/40 bg-card shadow-elevation-high"
               style={{
                 opacity: selectedIndex === index ? 1 : 0,
                 zIndex: selectedIndex === index ? 10 : 0,
                 pointerEvents: selectedIndex === index ? "auto" : "none",
               }}
             >
-              {/* Full-bleed background media (image, gif, or video) */}
               {(() => {
                 const url = slide.image || "";
                 const isVideo = /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
@@ -147,35 +146,40 @@ const Hero = () => {
                 );
               })()}
 
-              {/* Netflix-style gradient: bottom fade + left vignette */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/25 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/25 to-transparent" />
 
               {/* Content overlay — bottom-left like Netflix */}
               <div
-                className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8 lg:p-12 pb-12 sm:pb-14 md:pb-16"
+                className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8"
               >
                 {/* Logo + tag */}
                 <div className="flex items-center gap-2 mb-2 sm:mb-3">
                   <img src={logo} alt="MetsXMFanZone" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
-                  <span className="mx-eyebrow !text-primary/95">
+                  <span className="mx-eyebrow text-primary">
                     {slide.tag}
                   </span>
                   {isLiveNow && (
-                    <span className="ml-1 inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-sm bg-destructive/90 text-[9px] font-black uppercase tracking-widest text-white">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                    <span className="ml-1 inline-flex items-center gap-1.5 rounded-sm bg-destructive/90 px-1.5 py-0.5 text-[9px] font-black uppercase text-destructive-foreground">
+                      <span className="w-1.5 h-1.5 rounded-full bg-destructive-foreground animate-pulse" />
                       Live
                     </span>
                   )}
                 </div>
 
                 {/* Title — broadcast wordmark on mobile */}
-                <h1 className="mx-wordmark sm:not-italic font-black text-foreground mb-1.5 sm:mb-2 max-w-xl leading-[0.95] sm:leading-[1.1] uppercase tracking-tight drop-shadow-lg" style={{ color: 'white' }}>
-                  {slide.title}
-                </h1>
+                {index === 0 ? (
+                  <h1 className="mx-wordmark mb-1.5 max-w-xl font-display uppercase leading-[0.9] text-foreground drop-shadow-lg sm:mb-2">
+                    {slide.title}
+                  </h1>
+                ) : (
+                  <h2 className="mx-wordmark mb-1.5 max-w-xl font-display uppercase leading-[0.9] text-foreground drop-shadow-lg sm:mb-2">
+                    {slide.title}
+                  </h2>
+                )}
 
                 {/* Description */}
-                <p className="text-[clamp(0.7rem,1.5vw,0.875rem)] text-foreground/75 mb-3 sm:mb-4 max-w-md leading-relaxed line-clamp-2 sm:line-clamp-3" style={{ color: 'rgba(255,255,255,0.78)' }}>
+                <p className="mb-3 max-w-md line-clamp-2 text-xs leading-relaxed text-foreground/75 sm:mb-4 sm:text-sm sm:line-clamp-3">
                   {slide.description}
                 </p>
 
@@ -186,7 +190,7 @@ const Hero = () => {
                       {isLiveNow && <div className="absolute -inset-1 rounded-lg bg-destructive/40 blur-lg" />}
                       <Button
                         onClick={() => handleNav("/metsxmfanzone")}
-                        className={`relative gap-1.5 bg-white text-black hover:bg-white/90 font-bold px-4 sm:px-6 h-8 sm:h-9 md:h-10 text-xs sm:text-sm rounded-sm ${isLiveNow ? "ring-2 ring-destructive/50" : ""}`}
+                        className={`relative h-9 gap-1.5 rounded-sm px-4 text-xs font-bold sm:px-6 sm:text-sm ${isLiveNow ? "ring-2 ring-destructive/50" : ""}`}
                       >
                         <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
                         {isLiveNow ? "Watch Live" : "Watch"}
@@ -195,9 +199,9 @@ const Hero = () => {
                   )}
                   {slide.link_url && slide.link_text && (
                     <Button
-                      onClick={() => handleNav(slide.link_url!)}
+                      onClick={() => slide.link_url && handleNav(slide.link_url)}
                       variant="outline"
-                      className="gap-1.5 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/40 h-8 sm:h-9 md:h-10 text-xs sm:text-sm px-3 sm:px-5 rounded-sm"
+                      className="h-9 gap-1.5 rounded-sm border-foreground/20 bg-foreground/10 px-3 text-xs text-foreground hover:bg-foreground/20 sm:px-5 sm:text-sm"
                     >
                       <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       {slide.link_text}
@@ -210,7 +214,7 @@ const Hero = () => {
                       className={`gap-1.5 h-8 sm:h-9 md:h-10 text-xs sm:text-sm px-3 sm:px-5 rounded-sm ${
                         permission === "granted" && isSubscribed
                           ? "bg-primary/20 border-primary/40 text-primary hover:bg-primary/30"
-                          : "bg-white/10 border-white/20 text-white hover:bg-white/20 hover:border-white/40"
+                          : "bg-foreground/10 border-foreground/20 text-foreground hover:bg-foreground/20 hover:border-foreground/40"
                       }`}
                     >
                       {permission === "granted" && isSubscribed ? (
@@ -226,9 +230,9 @@ const Hero = () => {
                 {/* Signup banner */}
                 {!user && (
                   <div className="mt-3 sm:mt-4">
-                    <button onClick={() => navigate("/auth")} className="text-[10px] sm:text-xs text-white/60 hover:text-white/80">
-                      ⚡ <span className="text-primary font-semibold">FREE Spring Training</span> access · Regular season <span className="text-primary font-semibold">$9.99/mo</span>
-                    </button>
+                    <Button onClick={() => navigate("/auth")} variant="link" className="h-auto p-0 text-[10px] text-foreground/60 hover:text-foreground/80 sm:text-xs">
+                      Join MetsXMFanZone · Plans from $9.99/mo
+                    </Button>
                   </div>
                 )}
               </div>
@@ -239,13 +243,18 @@ const Hero = () => {
 
 
       {/* Slide indicators */}
-      <div className="absolute bottom-2 sm:bottom-3 left-0 right-0 z-20 flex justify-center gap-1 sm:gap-1.5">
+      <div className="relative z-20 mt-3 flex justify-center gap-1 sm:gap-1.5">
         {slidesToShow.map((_, i) => (
-          <button
+          <Button
             key={i}
+            variant="ghost"
+            size="icon"
+            aria-label={`Show story ${i + 1}`}
             onClick={() => emblaApi?.scrollTo(i)}
-            className={`h-[3px] rounded-full ${selectedIndex === i ? "w-5 sm:w-7 bg-white" : "w-1.5 sm:w-2 bg-white/30 hover:bg-white/50"}`}
-          />
+            className={`h-5 min-w-0 rounded-sm p-0 hover:bg-transparent ${selectedIndex === i ? "w-7" : "w-3"}`}
+          >
+            <span className={`h-[3px] w-full rounded-full ${selectedIndex === i ? "bg-foreground" : "bg-foreground/30"}`} />
+          </Button>
         ))}
       </div>
 

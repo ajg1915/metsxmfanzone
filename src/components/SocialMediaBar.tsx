@@ -1,4 +1,4 @@
-import { MessageSquarePlus, Share2, Tv, PenLine, BookOpen, Mic, Lock, Bell, CalendarDays } from "lucide-react";
+import { MessageSquarePlus, Tv, BookOpen, Mic, Lock, CalendarDays } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,7 +6,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
-import NotificationsPanel from "@/components/NotificationsPanel";
+import { Button } from "@/components/ui/button";
 
 type NavItem = {
   label: string;
@@ -73,16 +73,16 @@ const SocialMediaBar = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background/90 backdrop-blur-md border-t border-border/40">
-      <div className="flex items-center justify-around py-2 px-4">
+    <div className="pointer-events-none fixed bottom-0 left-0 right-0 z-50 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
+      <div className="pointer-events-auto mx-auto flex max-w-md items-center justify-around rounded-lg border border-border/40 bg-card/95 px-2 py-2 shadow-elevation-high backdrop-blur-xl">
         {navItems.map((item) => {
           const showProLock = item.requiresPremium && !isPremium && !isAdmin;
           
           const buttonInner = (
             <>
               {showProLock && (
-                <span className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center">
-                  <Lock className="w-1.5 h-1.5 text-white" />
+                <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary">
+                  <Lock className="w-1.5 h-1.5 text-primary-foreground" />
                 </span>
               )}
               {item.label === "Home" ? (
@@ -100,20 +100,21 @@ const SocialMediaBar = () => {
               ) : (
                 <img src={metsLogo} alt={item.label} className="h-7 w-7 object-contain" />
               )}
-              <span className={`text-[10px] font-medium ${item.label === "Watch Live" ? "animate-pulse drop-shadow-[0_0_4px_rgba(255,69,0,0.7)]" : ""}`} style={item.label === "Watch Live" ? { color: "#ff4500" } : undefined}>{item.label}</span>
+              <span className={`text-[10px] font-semibold ${item.label === "Watch Live" ? "text-primary" : ""}`}>{item.label}</span>
             </>
           );
 
 
 
           return (
-            <button
+            <Button
               key={item.label}
+              variant="ghost"
               onClick={() => handleClick(item)}
-              className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-primary transition-colors relative"
+              className={`relative h-auto min-w-0 flex-col gap-0.5 rounded-sm px-2 py-1 text-muted-foreground hover:bg-secondary/20 hover:text-foreground ${item.label === "Home" ? "text-primary" : ""}`}
             >
               {buttonInner}
-            </button>
+            </Button>
           );
         })}
       </div>
