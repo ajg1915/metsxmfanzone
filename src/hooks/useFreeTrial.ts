@@ -18,6 +18,9 @@ export type FreeTrialConfig = {
   enabled: boolean;
   trialDays: number;
   streamPreviewMinutes: number;
+  /** Let logged-out visitors watch scheduled games for a limited time */
+  guestPreviewEnabled: boolean;
+  guestPreviewMinutes: number;
   windows: TrialWindow[];
 };
 
@@ -25,6 +28,8 @@ export const DEFAULT_FREE_TRIAL_CONFIG: FreeTrialConfig = {
   enabled: true,
   trialDays: 2,
   streamPreviewMinutes: 30,
+  guestPreviewEnabled: true,
+  guestPreviewMinutes: 30,
   windows: [],
 };
 

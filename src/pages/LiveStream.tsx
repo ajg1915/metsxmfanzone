@@ -92,7 +92,7 @@ const LiveStream = () => {
   const isLive = stream.status === "live";
 
   return (
-    <StreamTimeLimit streamId={stream.id} pageKey={pageName}>
+    <StreamTimeLimit streamId={stream.id} pageKey={pageName} allowGuestPreview>
       <div className="min-h-screen bg-background flex flex-col">
         <SEOHead
           title={`${stream.title} - Live Stream | MetsXMFanZone`}
