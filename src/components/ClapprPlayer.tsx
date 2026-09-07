@@ -14,6 +14,11 @@ interface ClapprPlayerProps {
   showChrome?: boolean;
 }
 
+const isMobile = (() => {
+  if (typeof navigator === "undefined") return false;
+  return /Android|iPad|iPhone|iPod|Mobile/i.test(navigator.userAgent || "");
+})();
+
 const isIos = () => {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
