@@ -2,7 +2,7 @@ import { Suspense, useState } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
-import HomeQuickLinks from "@/components/HomeQuickLinks";
+
 
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
