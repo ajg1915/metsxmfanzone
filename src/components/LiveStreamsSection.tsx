@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
+import { useFreeStreams } from "@/hooks/useFreeStreams";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { Badge } from "@/components/ui/badge";
@@ -192,9 +193,10 @@ const LiveStreamsSection = () => {
   const { user } = useAuth();
   const { tier, isAdmin, loading: subscriptionLoading } = useSubscription();
   const { config: trialConfig } = useFreeTrialConfig();
+  const { isFree } = useFreeStreams();
   const guestPreviewOn = !user && trialConfig.guestPreviewEnabled !== false;
   const isGuestPreviewStream = (s: LiveStream) =>
-    guestPreviewOn && !s.assigned_pages?.includes("metsxmfanzone");
+    isFree(s.id) || (guestPreviewOn && !s.assigned_pages?.includes("metsxmfanzone"));
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
@@ -340,6 +342,9 @@ const LiveStreamsSection = () => {
   const isProStream = (_stream: LiveStream) => true;
 
   const getStreamPageUrl = (stream: LiveStream) => {
+    // Games marked free for everyone always use their own watch page,
+    // which is not gated behind sign in.
+    if (isFree(stream.id)) return `/live/${stream.id}`;
     const networkPages = (stream.assigned_pages || []).filter(page => page !== 'live' && page !== 'guide');
     if (networkPages.includes('metsxmfanzone')) return '/metsxmfanzone';
     if (networkPages.includes('metsxmfanzone-2')) return '/live/metsxmfanzone-2';
@@ -356,7 +361,11 @@ const LiveStreamsSection = () => {
       navigate(getStreamPageUrl(stream));
       return;
     }
-    // All streams now require premium or admin access
+
+    if (isFree(stream.id)) {
+      navigate(getStreamPageUrl(stream));
+      return;
+    }
 
     if (stream.assigned_pages?.includes('metsxmfanzone')) {
       if (!user) navigate("/auth");

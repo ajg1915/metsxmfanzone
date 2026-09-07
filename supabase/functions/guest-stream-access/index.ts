@@ -25,31 +25,45 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (BLOCKED_PAGES.includes(pageKey.toLowerCase())) {
-      return new Response(JSON.stringify({ error: "Sign in required" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       { auth: { persistSession: false } }
     );
 
-    // Guest preview must be enabled by the admin
-    const { data: settings } = await supabase
+    const { data: settingsRows } = await supabase
       .from("site_settings")
-      .select("setting_value")
-      .eq("setting_key", "free_trial_config")
-      .maybeSingle();
+      .select("setting_key, setting_value")
+      .in("setting_key", ["free_trial_config", "free_streams"]);
 
-    const config = (settings?.setting_value ?? {}) as Record<string, unknown>;
+    const rows = settingsRows ?? [];
+    const config = (rows.find((r) => r.setting_key === "free_trial_config")?.setting_value ??
+      {}) as Record<string, unknown>;
+    const freeCfg = (rows.find((r) => r.setting_key === "free_streams")?.setting_value ??
+      {}) as { ids?: string[]; pages?: string[] };
+    const freeIds = Array.isArray(freeCfg.ids) ? freeCfg.ids.map(String) : [];
+    const freePages = Array.isArray(freeCfg.pages) ? freeCfg.pages.map(String) : [];
+
     const enabled = config.guestPreviewEnabled !== false;
     const minutes = Math.max(1, Math.min(240, Number(config.guestPreviewMinutes) || 30));
 
-    if (!enabled) {
+    const uuidMatch = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const idFromPage = pageKey.match(/^stream-(.+)$/)?.[1];
+    const targetId = streamId || (idFromPage && uuidMatch.test(idFromPage) ? idFromPage : "");
+
+    // Games an admin marked "free for everyone" bypass sign-in and preview gating
+    const isFreeGame =
+      (!!targetId && freeIds.includes(targetId)) ||
+      (!!pageKey && freePages.includes(pageKey));
+
+    if (!isFreeGame && BLOCKED_PAGES.includes(pageKey.toLowerCase())) {
+      return new Response(JSON.stringify({ error: "Sign in required" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (!isFreeGame && !enabled) {
       return new Response(JSON.stringify({ error: "Preview disabled" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -59,12 +73,9 @@ Deno.serve(async (req) => {
     let query = supabase
       .from("live_streams")
       .select("id, title, description, thumbnail_url, status, stream_url, assigned_pages")
-      .eq("published", true)
-      .eq("status", "live");
+      .eq("published", true);
 
-    const uuidMatch = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const idFromPage = pageKey.match(/^stream-(.+)$/)?.[1];
-    const targetId = streamId || (idFromPage && uuidMatch.test(idFromPage) ? idFromPage : "");
+    if (!isFreeGame) query = query.eq("status", "live");
 
     if (targetId) {
       if (!uuidMatch.test(targetId)) {
@@ -92,7 +103,11 @@ Deno.serve(async (req) => {
     }
 
     const pages: string[] = Array.isArray(stream.assigned_pages) ? stream.assigned_pages : [];
-    if (pages.some((p) => BLOCKED_PAGES.includes(String(p).toLowerCase()))) {
+    if (
+      !isFreeGame &&
+      !freeIds.includes(String(stream.id)) &&
+      pages.some((p) => BLOCKED_PAGES.includes(String(p).toLowerCase()))
+    ) {
       return new Response(JSON.stringify({ error: "Sign in required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
