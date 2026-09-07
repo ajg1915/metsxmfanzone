@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700;800;900&family=Oswald:wght@600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,28 +8,27 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Midnight Indigo — modern refresh (Mets orange retained as primary accent) */
-    --background: 240 47% 6%;           /* #0a0a1a */
-    --foreground: 0 0% 98%;
+    /* Stadium Night */
+    --background: 211 63% 7%;
+    --foreground: 210 20% 97%;
 
-    --card: 240 44% 14%;                /* #141432 */
+    --card: 212 57% 11%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 240 44% 12%;
+    --popover: 212 57% 9%;
     --popover-foreground: 0 0% 98%;
 
     /* Mets Orange — primary accent (kept for brand identity) */
     --primary: 16 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    /* Electric Indigo — secondary accent */
-    --secondary: 243 75% 59%;           /* #4f46e5 */
+    --secondary: 211 83% 25%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 51% 23%;               /* #1e1e5a */
-    --muted-foreground: 240 20% 78%;
+    --muted: 211 45% 18%;
+    --muted-foreground: 211 16% 67%;
 
-    --accent: 243 75% 59%;              /* indigo accent */
+    --accent: 211 83% 25%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -43,23 +40,23 @@ All colors MUST be HSL.
     --ring: 16 100% 50%;
     --input-foreground: 0 0% 100%;
 
-    --radius: 1rem;
+    --radius: 0.5rem;
 
     /* Legacy Mets tokens (retained for existing components) */
-    --mets-blue: 243 75% 59%;
-    --mets-blue-light: 243 80% 70%;
-    --mets-blue-dark: 240 51% 23%;
+    --mets-blue: 211 83% 25%;
+    --mets-blue-light: 211 64% 48%;
+    --mets-blue-dark: 211 63% 7%;
     --mets-orange: 16 100% 50%;
     --mets-orange-light: 16 100% 60%;
 
     /* Glass morphism — indigo tinted */
-    --glass-bg: 240 44% 14% / 0.7;
+    --glass-bg: 212 57% 11% / 0.82;
     --glass-border: 16 100% 50% / 0.35;
     --glass-blur: 22px;
     --glass-highlight: 16 100% 50% / 0.12;
 
     /* Depth & Shadow tokens */
-    --shadow-color: 240 60% 4%;
+    --shadow-color: 211 70% 3%;
     --shadow-elevation-low:
       0 1px 2px hsl(var(--shadow-color) / 0.35),
       0 2px 6px hsl(var(--shadow-color) / 0.25);
@@ -84,7 +81,7 @@ All colors MUST be HSL.
     --glow-orange: 0 0 60px hsl(16 100% 50% / 0.3);
     --glow-subtle: 0 0 120px hsl(243 60% 40% / 0.22);
 
-    --sidebar-background: 240 47% 8%;
+    --sidebar-background: 211 63% 7%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 16 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
@@ -153,19 +150,15 @@ All colors MUST be HSL.
     min-height: 100dvh;
     font-family: 'Barlow', system-ui, -apple-system, sans-serif;
     font-weight: 500;
-    letter-spacing: 0.005em;
-    /* Midnight Indigo ambient glow */
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, hsl(243 75% 40% / 0.28), transparent),
-      radial-gradient(ellipse 60% 40% at 85% 100%, hsl(16 100% 50% / 0.09), transparent),
-      radial-gradient(ellipse 50% 35% at 10% 85%, hsl(240 51% 30% / 0.25), transparent);
+    letter-spacing: 0;
+    background-image: linear-gradient(180deg, hsl(var(--background)), hsl(211 63% 5%));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, .font-display {
     font-family: 'Bebas Neue', 'Barlow', system-ui, sans-serif;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     font-weight: 400;
   }
 
@@ -234,6 +227,55 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  .home-feed-shell {
+    width: min(100% - 1.5rem, 72rem);
+    margin-inline: auto;
+  }
+
+  .home-hero-shell {
+    padding-inline: 0;
+  }
+
+  .home-quick-icon {
+    display: flex;
+    width: 3rem;
+    height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid hsl(var(--border) / 0.35);
+    border-radius: var(--radius);
+    background: hsl(var(--card) / 0.82);
+    color: hsl(var(--muted-foreground));
+    transition: color 180ms ease, border-color 180ms ease, background 180ms ease;
+  }
+
+  .group:hover .home-quick-icon {
+    border-color: hsl(var(--primary) / 0.65);
+    color: hsl(var(--foreground));
+  }
+
+  .home-quick-icon-active {
+    border-color: hsl(var(--secondary) / 0.7);
+    background: hsl(var(--secondary) / 0.28);
+    color: hsl(var(--mets-blue-light));
+  }
+
+  .homepage-broadcast-feed > section,
+  .homepage-broadcast-feed > div {
+    position: relative;
+  }
+
+  @media (max-width: 639px) {
+    .homepage-broadcast-feed {
+      padding-bottom: 5.5rem;
+    }
+
+    .homepage-broadcast-feed section:not(.home-hero-shell) {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+  }
+
   /* ========================================
      RESPONSIVE CONTAINER UTILITIES
      ======================================== */
