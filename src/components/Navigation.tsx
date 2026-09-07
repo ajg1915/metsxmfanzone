@@ -239,7 +239,7 @@ const Navigation = () => {
       <UpgradePrompt open={showUpgradePrompt} onOpenChange={setShowUpgradePrompt} />
       <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
         <div className="container mx-auto px-3 sm:px-4">
-        <div className="flex items-center justify-between h-12">
+        <div className="flex h-14 items-center justify-between sm:h-16">
           <div className="flex items-center gap-2">
             {!isHomePage && (
               <Button
@@ -255,11 +255,12 @@ const Navigation = () => {
               <img 
                 src={logo} 
                 alt="MetsXMFanZone Logo" 
-                className="h-8 w-auto"
+                className="h-9 w-auto"
               />
-              <div className="text-xs font-semibold">
-                <span className="text-foreground">MetsXMFanZone</span>
-                <span className="text-primary">.com</span>
+              <div className="font-display text-xl uppercase leading-none sm:text-2xl">
+                <span className="text-secondary">Mets</span>
+                <span className="text-primary">XM</span>
+                <span className="text-foreground">FanZone</span>
               </div>
             </div>
           </div>
@@ -532,8 +533,8 @@ const Navigation = () => {
             {/* Modern Mobile Menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden h-8 w-8 rounded-lg bg-muted/50 hover:bg-muted border border-muted/50 transition-all">
-                  <Menu className="w-4 h-4 text-primary" />
+                <Button variant="ghost" size="icon" aria-label="Open menu" className="h-9 w-9 rounded-sm border border-border/40 bg-card/70 transition-colors hover:bg-secondary/20 md:hidden">
+                  <Menu className="w-5 h-5 text-foreground" />
                 </Button>
               </SheetTrigger>
               <SheetContent
