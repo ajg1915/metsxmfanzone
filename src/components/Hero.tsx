@@ -239,11 +239,16 @@ const Hero = () => {
       {/* Slide indicators */}
       <div className="relative z-20 mt-3 flex justify-center gap-1 sm:gap-1.5">
         {slidesToShow.map((_, i) => (
-          <button
+          <Button
             key={i}
+            variant="ghost"
+            size="icon"
+            aria-label={`Show story ${i + 1}`}
             onClick={() => emblaApi?.scrollTo(i)}
-            className={`h-[3px] rounded-full ${selectedIndex === i ? "w-5 sm:w-7 bg-white" : "w-1.5 sm:w-2 bg-white/30 hover:bg-white/50"}`}
-          />
+            className={`h-5 min-w-0 rounded-sm p-0 hover:bg-transparent ${selectedIndex === i ? "w-7" : "w-3"}`}
+          >
+            <span className={`h-[3px] w-full rounded-full ${selectedIndex === i ? "bg-foreground" : "bg-foreground/30"}`} />
+          </Button>
         ))}
       </div>
 
