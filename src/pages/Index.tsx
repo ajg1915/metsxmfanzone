@@ -20,7 +20,6 @@ const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedSt
 
 const SpringTrainingGamesSection = lazyWithRetry(() => import("@/components/SpringTrainingGamesSection"), "home-spring-training-games-section");
 const GameHighlightsSection = lazyWithRetry(() => import("@/components/GameHighlightsSection"), "home-game-highlights-section");
-const PredictionsSection = lazyWithRetry(() => import("@/components/PredictionsSection"), "home-predictions-section");
 const ReplayGamesSection = lazyWithRetry(() => import("@/components/ReplayGamesSection"), "home-replay-games-section");
 const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerOfTheMonthSection"), "home-player-of-the-month-section");
 const PlayersToWatch = lazyWithRetry(() => import("@/components/PlayersToWatch"), "home-players-to-watch");
@@ -224,11 +223,6 @@ const Index = () => {
           </Suspense>
         </LazySection>
 
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <PredictionsSection />
-          </Suspense>
-        </LazySection>
 
 
 
