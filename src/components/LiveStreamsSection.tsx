@@ -532,6 +532,7 @@ const LiveStreamsSection = () => {
                     onToggleLive={handleToggleLive}
                     isSpringTraining={isSpringTrainingStream(stream)}
                     isProStream={isProStream(stream)}
+                    guestPreview={isGuestPreviewStream(stream)}
                   />
                 ))}
 
