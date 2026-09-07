@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +50,7 @@ const SortableStreamCard = ({
   onToggleLive,
   isSpringTraining,
   isProStream,
+  guestPreview = false,
 }: {
   stream: LiveStream;
   isAdmin: boolean;
@@ -58,6 +60,7 @@ const SortableStreamCard = ({
   onToggleLive: (id: string, currentStatus: string) => void;
   isSpringTraining: boolean;
   isProStream: boolean;
+  guestPreview?: boolean;
 }) => {
   const {
     attributes,
@@ -120,8 +123,14 @@ const SortableStreamCard = ({
           )}
 
           <div className="absolute top-2 right-2 flex items-center gap-1.5">
-            {isProStream && !isAdmin && tier !== "premium" && tier !== "annual" && (
-              <PremiumBadge size="sm" />
+            {guestPreview ? (
+              <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
+                FREE PREVIEW
+              </Badge>
+            ) : (
+              isProStream && !isAdmin && tier !== "premium" && tier !== "annual" && (
+                <PremiumBadge size="sm" />
+              )
             )}
             {isSpringTraining && !isAdmin && tier !== "premium" && tier !== "annual" && (
               <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
@@ -182,6 +191,10 @@ const LiveStreamsSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { tier, isAdmin, loading: subscriptionLoading } = useSubscription();
+  const { config: trialConfig } = useFreeTrialConfig();
+  const guestPreviewOn = !user && trialConfig.guestPreviewEnabled !== false;
+  const isGuestPreviewStream = (s: LiveStream) =>
+    guestPreviewOn && !s.assigned_pages?.includes("metsxmfanzone");
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
@@ -350,7 +363,7 @@ const LiveStreamsSection = () => {
       else navigate(getStreamPageUrl(stream));
       return;
     }
-    if (isAdmin || tier === "premium" || tier === "annual") {
+    if (isAdmin || tier === "premium" || tier === "annual" || isGuestPreviewStream(stream)) {
       navigate(getStreamPageUrl(stream));
     } else {
       navigate("/pricing");
@@ -519,6 +532,7 @@ const LiveStreamsSection = () => {
                     onToggleLive={handleToggleLive}
                     isSpringTraining={isSpringTrainingStream(stream)}
                     isProStream={isProStream(stream)}
+                    guestPreview={isGuestPreviewStream(stream)}
                   />
                 ))}
 
