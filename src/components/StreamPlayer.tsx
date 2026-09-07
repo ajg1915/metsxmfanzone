@@ -42,6 +42,26 @@ export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPla
 
   const fetchStream = async () => {
     try {
+      // Signed-out visitors cannot read the protected stream URL directly.
+      // Ask the server first so admin-selected free games can play immediately.
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        const { data: guest, error: guestError } = await supabase.functions.invoke("guest-stream-access", {
+          body: { pageKey: pageName },
+        });
+
+        if (guest?.stream?.stream_url) {
+          setStream(guest.stream as LiveStream);
+          return;
+        }
+
+        if (guestError) {
+          console.warn("Free preview is unavailable");
+        }
+        setStream(null);
+        return;
+      }
+
       const streamIdMatch = pageName.match(/^stream-(.+)$/);
       let query = supabase
         .from("live_streams")
@@ -65,18 +85,6 @@ export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPla
       if (data) {
         setStream(data as LiveStream | null);
         return;
-      }
-
-      // Logged-out visitors: ask the server for a time-limited free preview
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        const { data: guest } = await supabase.functions.invoke("guest-stream-access", {
-          body: { pageKey: pageName },
-        });
-        if (guest?.stream?.stream_url) {
-          setStream(guest.stream as LiveStream);
-          return;
-        }
       }
 
       setStream(null);
