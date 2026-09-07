@@ -61,7 +61,25 @@ export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPla
         .maybeSingle();
 
       if (error) throw error;
-      setStream(data as LiveStream | null);
+
+      if (data) {
+        setStream(data as LiveStream | null);
+        return;
+      }
+
+      // Logged-out visitors: ask the server for a time-limited free preview
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        const { data: guest } = await supabase.functions.invoke("guest-stream-access", {
+          body: { pageKey: pageName },
+        });
+        if (guest?.stream?.stream_url) {
+          setStream(guest.stream as LiveStream);
+          return;
+        }
+      }
+
+      setStream(null);
     } catch (error) {
       console.error("Error fetching stream:", error);
     } finally {
