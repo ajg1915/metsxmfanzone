@@ -2,7 +2,7 @@ import { Suspense, useState } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
-import HomeQuickLinks from "@/components/HomeQuickLinks";
+
 
 import Footer from "@/components/Footer";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -180,7 +180,6 @@ const Index = () => {
       <main className="relative z-10 homepage-broadcast-feed">
         <Hero />
 
-        <HomeQuickLinks />
 
         {/* Above-the-fold: mount immediately */}
         <Suspense fallback={<SectionSkeleton height="h-16" />}>
