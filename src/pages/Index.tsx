@@ -180,7 +180,6 @@ const Index = () => {
       <main className="relative z-10 homepage-broadcast-feed">
         <Hero />
 
-        <HomeQuickLinks />
 
         {/* Above-the-fold: mount immediately */}
         <Suspense fallback={<SectionSkeleton height="h-16" />}>
