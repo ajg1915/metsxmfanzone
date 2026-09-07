@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ChevronRight, ChevronLeft, Radio, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
