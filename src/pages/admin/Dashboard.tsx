@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, FileText, Activity, Radio, HelpCircle, ArrowRight, UserCog, Eye, HeartPulse, Mail, Search, CreditCard, Globe, Sparkles, Settings, Video, Mic, ClipboardList, Loader2, RefreshCw } from "lucide-react";
+import { Users, FileText, Activity, Radio, HelpCircle, ArrowRight, UserCog, Eye, HeartPulse, Mail, Search, CreditCard, Globe, Sparkles, Settings, Video, Mic, ClipboardList, Loader2, RefreshCw, Bell } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -55,6 +55,39 @@ function ManualFetchButton({ label, icon, functionName, successMessage, onCredit
     <Button variant="outline" size="sm" className="gap-2" onClick={handleFetch} disabled={loading}>
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : icon}
       {label}
+    </Button>
+  );
+}
+
+function TestPushButton() {
+  const [loading, setLoading] = useState(false);
+  const handleSend = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-fcm-notification", {
+        body: {
+          title: "MetsXMFanZone test alert",
+          body: "If you can see this, notifications are working.",
+          path: "/",
+          latestOnly: true,
+        },
+      });
+      if (error) throw error;
+      if (!data?.sent) {
+        toast.error("No alert sent", { description: data?.message || "No registered device found yet." });
+        return;
+      }
+      toast.success("Test alert sent to the latest device");
+    } catch (err: any) {
+      toast.error("Test alert failed", { description: err?.message || "Unknown error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <Button variant="outline" size="sm" className="gap-2" onClick={handleSend} disabled={loading}>
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+      Test Push
     </Button>
   );
 }
@@ -251,6 +284,7 @@ export default function AdminDashboard() {
           <ManualFetchButton label="Highlights" icon={<Video className="h-3.5 w-3.5" />} functionName="fetch-mets-highlights" successMessage="Highlights fetched!" />
           <ManualFetchButton label="Schedule" icon={<RefreshCw className="h-3.5 w-3.5" />} functionName="fetch-mets-schedule" successMessage="Schedule fetched!" />
           <ManualFetchButton label="Predictions" icon={<Sparkles className="h-3.5 w-3.5" />} functionName="generate-daily-predictions" successMessage="Predictions generated!" onCreditsExhausted={() => navigate("/admin/predictions")} />
+          <TestPushButton />
         </div>
       </div>
 

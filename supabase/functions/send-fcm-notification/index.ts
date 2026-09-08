@@ -10,6 +10,7 @@ const BodySchema = z.object({
   path: z.string().max(500).optional(),
   userId: z.string().uuid().optional(),
   topic: z.string().min(1).max(100).optional(),
+  latestOnly: z.boolean().optional(),
 });
 
 Deno.serve(async (req) => {
@@ -52,7 +53,7 @@ Deno.serve(async (req) => {
     if (!parsed.success) {
       return json({ error: parsed.error.flatten().fieldErrors }, 400);
     }
-    const { title, body, path, userId, topic } = parsed.data;
+    const { title, body, path, userId, topic, latestOnly } = parsed.data;
 
     const headers = {
       Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -84,8 +85,9 @@ Deno.serve(async (req) => {
     }
 
     // Token targets
-    let query = admin.from("fcm_tokens").select("token");
+    let query = admin.from("fcm_tokens").select("token").order("created_at", { ascending: false });
     if (userId) query = query.eq("user_id", userId);
+    if (latestOnly) query = query.limit(1);
     const { data: rows, error: tokensError } = await query;
     if (tokensError) return json({ error: tokensError.message }, 500);
 
