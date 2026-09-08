@@ -284,6 +284,7 @@ export default function AdminDashboard() {
           <ManualFetchButton label="Highlights" icon={<Video className="h-3.5 w-3.5" />} functionName="fetch-mets-highlights" successMessage="Highlights fetched!" />
           <ManualFetchButton label="Schedule" icon={<RefreshCw className="h-3.5 w-3.5" />} functionName="fetch-mets-schedule" successMessage="Schedule fetched!" />
           <ManualFetchButton label="Predictions" icon={<Sparkles className="h-3.5 w-3.5" />} functionName="generate-daily-predictions" successMessage="Predictions generated!" onCreditsExhausted={() => navigate("/admin/predictions")} />
+          <TestPushButton />
         </div>
       </div>
 
