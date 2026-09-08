@@ -106,12 +106,7 @@ export const useNotifications = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await (registration as any).pushManager.getSubscription();
-      
-      if (subscription) {
-        await subscription.unsubscribe();
-      }
+      await disablePush();
 
       await supabase.from("fcm_tokens").delete().eq("user_id", user.id);
 
