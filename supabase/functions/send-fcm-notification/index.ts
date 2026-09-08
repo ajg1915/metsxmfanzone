@@ -10,6 +10,7 @@ const BodySchema = z.object({
   path: z.string().max(500).optional(),
   userId: z.string().uuid().optional(),
   topic: z.string().min(1).max(100).optional(),
+  latestOnly: z.boolean().optional(),
 });
 
 Deno.serve(async (req) => {
