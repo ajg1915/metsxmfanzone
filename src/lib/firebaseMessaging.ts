@@ -2,11 +2,15 @@ import { initializeApp, getApps, getApp } from "firebase/app";
 import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging";
 
 // Public Firebase web config (safe to ship in client code).
+// These values come from the Firebase web app settings for MetsXMFanZone.
 const FALLBACK = {
   apiKey: "AIzaSyDyMirQ2w07ntuKUTcaZquuDQLTxvBG8QQ",
+  authDomain: "metsxmfanzone-e5abd.firebaseapp.com",
   projectId: "metsxmfanzone-e5abd",
-  appId: "", // set to the Firebase **Web** app id: 1:30387701485:web:xxxxxxxx
-  senderId: "30387701485",
+  storageBucket: "metsxmfanzone-e5abd.firebasestorage.app",
+  messagingSenderId: "30387701485",
+  appId: "1:30387701485:web:42cefe29addd3180872ee4",
+  measurementId: "G-V1VNZV7J63",
   vapidKey:
     "BDU-_e5zFy4oRtVYQECn0Ni3TntvarTZkzy8YFTBoruvphBYWHbZPp4QiV5nhUZG4C8w2rVEJ1qOgcNjP0VRiAM",
 };
@@ -21,14 +25,26 @@ const vapidKey =
 export const firebaseConfig = {
   apiKey:
     (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_WEB_API_KEY as string | undefined) ||
+    (import.meta.env.GOOGLE_API_KEY as string | undefined) ||
     FALLBACK.apiKey,
+  authDomain:
+    (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_AUTH_DOMAIN as string | undefined) ||
+    FALLBACK.authDomain,
   projectId:
     (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_PROJECT_ID as string | undefined) ||
     FALLBACK.projectId,
+  storageBucket:
+    (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_STORAGE_BUCKET as string | undefined) ||
+    FALLBACK.storageBucket,
+  messagingSenderId:
+    (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_MESSAGING_SENDER_ID as string | undefined) ||
+    appId?.split(":")[1] ||
+    FALLBACK.messagingSenderId,
   appId,
-  messagingSenderId: appId?.split(":")[1] || FALLBACK.senderId,
+  measurementId:
+    (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_MEASUREMENT_ID as string | undefined) ||
+    FALLBACK.measurementId,
 };
-
 
 export type PushResult =
   | { status: "registered"; token: string }
