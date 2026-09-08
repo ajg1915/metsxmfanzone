@@ -1,29 +1,29 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { enablePush } from "@/lib/firebaseMessaging";
+import { enablePush, GLOBAL_INTEREST, userInterest } from "@/lib/pusherBeams";
 
-/** Registers this device with Firebase Cloud Messaging and stores the token. */
-async function registerFcmToken(userId: string) {
+/** Registers this device with Pusher Beams and stores the device id. */
+async function registerBeamsDevice(userId: string) {
   try {
-    const result = await enablePush();
+    const result = await enablePush([GLOBAL_INTEREST, userInterest(userId)]);
     if (result.status !== "registered") {
-      console.warn("[FCM] not registered:", result.status);
+      console.warn("[Beams] not registered:", result.status);
       return;
     }
     const { error } = await supabase.from("fcm_tokens").upsert(
       {
         user_id: userId,
-        token: result.token,
-        platform: "web",
+        token: result.deviceId,
+        platform: "beams-web",
         user_agent: navigator.userAgent,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "token" }
     );
-    if (error) console.error("[FCM] token save failed:", error);
+    if (error) console.error("[Beams] device save failed:", error);
   } catch (err) {
-    console.error("[FCM] registration error:", err);
+    console.error("[Beams] registration error:", err);
   }
 }
 
@@ -82,8 +82,8 @@ export const useNotifications = () => {
         return;
       }
 
-      // Register this device with Firebase Cloud Messaging
-      await registerFcmToken(user.id);
+      // Register this device with Pusher Beams
+      await registerBeamsDevice(user.id);
 
       // Always use the main "/" service worker for web push (it owns the push handler)
       const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
