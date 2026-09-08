@@ -13,7 +13,9 @@ export const useFirebaseMessaging = () => {
     setLoading(true);
     try {
       let deviceToken: string | null = null;
-      let platform = "web";
+      let platform = "beams-web";
+
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
 
       if (isNativeApp()) {
         const native = await enableNativePush();
