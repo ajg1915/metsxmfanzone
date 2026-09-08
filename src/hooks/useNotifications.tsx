@@ -1,6 +1,32 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { enablePush } from "@/lib/firebaseMessaging";
+
+/** Registers this device with Firebase Cloud Messaging and stores the token. */
+async function registerFcmToken(userId: string) {
+  try {
+    const result = await enablePush();
+    if (result.status !== "registered") {
+      console.warn("[FCM] not registered:", result.status);
+      return;
+    }
+    const { error } = await supabase.from("fcm_tokens").upsert(
+      {
+        user_id: userId,
+        token: result.token,
+        platform: "web",
+        user_agent: navigator.userAgent,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "token" }
+    );
+    if (error) console.error("[FCM] token save failed:", error);
+  } catch (err) {
+    console.error("[FCM] registration error:", err);
+  }
+}
+
 
 export const useNotifications = () => {
   const [permission, setPermission] = useState<NotificationPermission>("default");
@@ -56,8 +82,12 @@ export const useNotifications = () => {
         return;
       }
 
+      // Register this device with Firebase Cloud Messaging
+      await registerFcmToken(user.id);
+
       // Register service worker for push notifications
       const registration = await navigator.serviceWorker.ready;
+
 
       // Fetch VAPID public key from edge function (safe to expose - it's a public key)
       let vapidPublicKey: string | undefined;
@@ -170,12 +200,15 @@ export const useNotifications = () => {
         await subscription.unsubscribe();
       }
 
+      await supabase.from("fcm_tokens").delete().eq("user_id", user.id);
+
       const { error } = await supabase
         .from("notification_subscriptions")
         .delete()
         .eq("user_id", user.id);
 
       if (error) throw error;
+
 
       setIsSubscribed(false);
       toast({
