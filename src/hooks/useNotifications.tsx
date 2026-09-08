@@ -82,8 +82,12 @@ export const useNotifications = () => {
         return;
       }
 
+      // Register this device with Firebase Cloud Messaging
+      await registerFcmToken(user.id);
+
       // Register service worker for push notifications
       const registration = await navigator.serviceWorker.ready;
+
 
       // Fetch VAPID public key from edge function (safe to expose - it's a public key)
       let vapidPublicKey: string | undefined;
