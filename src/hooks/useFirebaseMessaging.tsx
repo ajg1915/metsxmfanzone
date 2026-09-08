@@ -53,7 +53,7 @@ export const useFirebaseMessaging = () => {
           });
           return false;
         }
-        deviceToken = result.token;
+        deviceToken = result.deviceId;
       }
 
       const { data: { user } } = await supabase.auth.getUser();
