@@ -2,7 +2,20 @@
  * Pusher Beams web push.
  * Replaces the previous Firebase Cloud Messaging setup.
  */
-const INSTANCE_ID = import.meta.env.VITE_PUSHER_BEAMS_INSTANCE_ID as string | undefined;
+import { supabase } from "@/integrations/supabase/client";
+
+let cachedInstanceId: string | null = (import.meta.env.VITE_PUSHER_BEAMS_INSTANCE_ID as string) || null;
+
+async function getInstanceId(): Promise<string | null> {
+  if (cachedInstanceId) return cachedInstanceId;
+  try {
+    const { data } = await supabase.functions.invoke("get-beams-instance");
+    cachedInstanceId = data?.instanceId ?? null;
+  } catch (err) {
+    console.error("[Beams] could not load instance id:", err);
+  }
+  return cachedInstanceId;
+}
 
 export const GLOBAL_INTEREST = "all-users";
 export const userInterest = (userId: string) => `user-${userId.replace(/[^a-zA-Z0-9_\-=@,.;]/g, "")}`;
@@ -13,12 +26,12 @@ export type BeamsResult =
 
 let clientPromise: Promise<any> | null = null;
 
-async function getClient() {
+async function getClient(instanceId: string) {
   if (!clientPromise) {
     clientPromise = (async () => {
       const { Client } = await import("@pusher/push-notifications-web");
       return new Client({
-        instanceId: INSTANCE_ID as string,
+        instanceId,
         serviceWorkerRegistration: await navigator.serviceWorker.register("/service-worker.js", {
           scope: "/",
         }),
@@ -30,14 +43,16 @@ async function getClient() {
 
 /** Ask for permission and register this browser with Pusher Beams. */
 export async function enablePush(interests: string[] = [GLOBAL_INTEREST]): Promise<BeamsResult> {
-  if (!INSTANCE_ID) return { status: "not-configured" };
   if (!("Notification" in window) || !("serviceWorker" in navigator) || !("PushManager" in window)) {
     return { status: "unsupported" };
   }
   if (window.top !== window.self) return { status: "open-in-new-tab" };
 
+  const instanceId = await getInstanceId();
+  if (!instanceId) return { status: "not-configured" };
+
   try {
-    const client = await getClient();
+    const client = await getClient(instanceId);
     await client.start();
 
     const permission =
@@ -58,9 +73,10 @@ export async function enablePush(interests: string[] = [GLOBAL_INTEREST]): Promi
 
 /** Stop receiving pushes on this browser. */
 export async function disablePush(): Promise<void> {
-  if (!INSTANCE_ID) return;
+  const instanceId = await getInstanceId();
+  if (!instanceId) return;
   try {
-    const client = await getClient();
+    const client = await getClient(instanceId);
     await client.stop();
   } catch (err) {
     console.error("[Beams] stop failed:", err);
