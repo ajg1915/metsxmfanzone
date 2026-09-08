@@ -85,8 +85,9 @@ Deno.serve(async (req) => {
     }
 
     // Token targets
-    let query = admin.from("fcm_tokens").select("token");
+    let query = admin.from("fcm_tokens").select("token").order("created_at", { ascending: false });
     if (userId) query = query.eq("user_id", userId);
+    if (latestOnly) query = query.limit(1);
     const { data: rows, error: tokensError } = await query;
     if (tokensError) return json({ error: tokensError.message }, 500);
 
