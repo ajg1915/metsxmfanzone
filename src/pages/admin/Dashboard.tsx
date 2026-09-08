@@ -59,6 +59,39 @@ function ManualFetchButton({ label, icon, functionName, successMessage, onCredit
   );
 }
 
+function TestPushButton() {
+  const [loading, setLoading] = useState(false);
+  const handleSend = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-fcm-notification", {
+        body: {
+          title: "MetsXMFanZone test alert",
+          body: "If you can see this, notifications are working.",
+          path: "/",
+          latestOnly: true,
+        },
+      });
+      if (error) throw error;
+      if (!data?.sent) {
+        toast.error("No alert sent", { description: data?.message || "No registered device found yet." });
+        return;
+      }
+      toast.success("Test alert sent to the latest device");
+    } catch (err: any) {
+      toast.error("Test alert failed", { description: err?.message || "Unknown error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <Button variant="outline" size="sm" className="gap-2" onClick={handleSend} disabled={loading}>
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
+      Test Push
+    </Button>
+  );
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
