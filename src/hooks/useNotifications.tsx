@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { enablePush, GLOBAL_INTEREST, userInterest } from "@/lib/pusherBeams";
+import { enablePush, disablePush, GLOBAL_INTEREST, userInterest } from "@/lib/pusherBeams";
 
 /** Registers this device with Pusher Beams and stores the device id. */
 async function registerBeamsDevice(userId: string) {
