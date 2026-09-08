@@ -200,12 +200,15 @@ export const useNotifications = () => {
         await subscription.unsubscribe();
       }
 
+      await supabase.from("fcm_tokens").delete().eq("user_id", user.id);
+
       const { error } = await supabase
         .from("notification_subscriptions")
         .delete()
         .eq("user_id", user.id);
 
       if (error) throw error;
+
 
       setIsSubscribed(false);
       toast({
