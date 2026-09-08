@@ -85,8 +85,9 @@ export const useNotifications = () => {
       // Register this device with Firebase Cloud Messaging
       await registerFcmToken(user.id);
 
-      // Register service worker for push notifications
-      const registration = await navigator.serviceWorker.ready;
+      // Always use the main "/" service worker for web push (it owns the push handler)
+      const registration = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+      await navigator.serviceWorker.ready;
 
 
       // Fetch VAPID public key from edge function (safe to expose - it's a public key)
