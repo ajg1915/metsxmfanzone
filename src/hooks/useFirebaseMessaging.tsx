@@ -99,6 +99,7 @@ export const useFirebaseMessaging = () => {
   }, [toast]);
 
   const unregister = useCallback(async () => {
+    await disablePush();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const query = supabase.from("fcm_tokens").delete().eq("user_id", user.id);
