@@ -1,15 +1,34 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getMessaging, getToken, isSupported, onMessage } from "firebase/messaging";
 
-const appId = import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_APP_ID as string | undefined;
-const vapidKey = import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_VAPID_KEY as string | undefined;
+// Public Firebase web config (safe to ship in client code).
+const FALLBACK = {
+  apiKey: "AIzaSyDyMirQ2w07ntuKUTcaZquuDQLTxvBG8QQ",
+  projectId: "metsxmfanzone-e5abd",
+  appId: "", // set to the Firebase **Web** app id: 1:30387701485:web:xxxxxxxx
+  senderId: "30387701485",
+  vapidKey:
+    "BDU-_e5zFy4oRtVYQECn0Ni3TntvarTZkzy8YFTBoruvphBYWHbZPp4QiV5nhUZG4C8w2rVEJ1qOgcNjP0VRiAM",
+};
+
+const appId =
+  (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_APP_ID as string | undefined) ||
+  FALLBACK.appId;
+const vapidKey =
+  (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_VAPID_KEY as string | undefined) ||
+  FALLBACK.vapidKey;
 
 export const firebaseConfig = {
-  apiKey: import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_WEB_API_KEY as string | undefined,
-  projectId: import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_PROJECT_ID as string | undefined,
+  apiKey:
+    (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_WEB_API_KEY as string | undefined) ||
+    FALLBACK.apiKey,
+  projectId:
+    (import.meta.env.VITE_LOVABLE_CONNECTOR_FIREBASE_MESSAGING_PROJECT_ID as string | undefined) ||
+    FALLBACK.projectId,
   appId,
-  messagingSenderId: appId?.split(":")[1] ?? "",
+  messagingSenderId: appId?.split(":")[1] || FALLBACK.senderId,
 };
+
 
 export type PushResult =
   | { status: "registered"; token: string }
