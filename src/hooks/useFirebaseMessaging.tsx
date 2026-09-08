@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { enablePush, onForegroundMessage } from "@/lib/firebaseMessaging";
+import { enableNativePush, isNativeApp } from "@/lib/nativePush";
 
 export const useFirebaseMessaging = () => {
   const [token, setToken] = useState<string | null>(null);
@@ -85,7 +86,7 @@ export const useFirebaseMessaging = () => {
       if (error) throw error;
 
 
-      setToken(result.token);
+      setToken(deviceToken);
       toast({
         title: "Notifications on",
         description: "You'll get alerts when we go live and when news drops.",
