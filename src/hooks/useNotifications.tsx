@@ -1,6 +1,32 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { enablePush } from "@/lib/firebaseMessaging";
+
+/** Registers this device with Firebase Cloud Messaging and stores the token. */
+async function registerFcmToken(userId: string) {
+  try {
+    const result = await enablePush();
+    if (result.status !== "registered") {
+      console.warn("[FCM] not registered:", result.status);
+      return;
+    }
+    const { error } = await supabase.from("fcm_tokens").upsert(
+      {
+        user_id: userId,
+        token: result.token,
+        platform: "web",
+        user_agent: navigator.userAgent,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "token" }
+    );
+    if (error) console.error("[FCM] token save failed:", error);
+  } catch (err) {
+    console.error("[FCM] registration error:", err);
+  }
+}
+
 
 export const useNotifications = () => {
   const [permission, setPermission] = useState<NotificationPermission>("default");
