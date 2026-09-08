@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { enablePush, onForegroundMessage } from "@/lib/firebaseMessaging";
+import { enablePush, disablePush, GLOBAL_INTEREST, userInterest } from "@/lib/pusherBeams";
 import { enableNativePush, isNativeApp } from "@/lib/nativePush";
 
 export const useFirebaseMessaging = () => {
@@ -9,22 +9,13 @@ export const useFirebaseMessaging = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Show foreground pushes as toasts
-  useEffect(() => {
-    let cleanup: (() => void) | undefined;
-    onForegroundMessage(({ title, body }) => {
-      toast({ title: title || "MetsXMFanZone", description: body });
-    }).then((unsub) => {
-      cleanup = unsub;
-    });
-    return () => cleanup?.();
-  }, [toast]);
-
   const register = useCallback(async () => {
     setLoading(true);
     try {
       let deviceToken: string | null = null;
-      let platform = "web";
+      let platform = "beams-web";
+
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
 
       if (isNativeApp()) {
         const native = await enableNativePush();
@@ -44,7 +35,9 @@ export const useFirebaseMessaging = () => {
         deviceToken = native.token;
         platform = native.platform;
       } else {
-        const result = await enablePush();
+        const result = await enablePush(
+          currentUser ? [GLOBAL_INTEREST, userInterest(currentUser.id)] : [GLOBAL_INTEREST]
+        );
 
         if (result.status !== "registered") {
           const messages: Record<string, string> = {
@@ -60,7 +53,7 @@ export const useFirebaseMessaging = () => {
           });
           return false;
         }
-        deviceToken = result.token;
+        deviceToken = result.deviceId;
       }
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -106,6 +99,7 @@ export const useFirebaseMessaging = () => {
   }, [toast]);
 
   const unregister = useCallback(async () => {
+    await disablePush();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const query = supabase.from("fcm_tokens").delete().eq("user_id", user.id);

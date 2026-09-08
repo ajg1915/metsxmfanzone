@@ -64,12 +64,11 @@ function TestPushButton() {
   const handleSend = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("send-fcm-notification", {
+      const { data, error } = await supabase.functions.invoke("send-beams-notification", {
         body: {
           title: "MetsXMFanZone test alert",
           body: "If you can see this, notifications are working.",
           path: "/",
-          latestOnly: true,
         },
       });
       if (error) throw error;
