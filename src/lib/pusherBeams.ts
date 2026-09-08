@@ -76,7 +76,7 @@ export async function disablePush(): Promise<void> {
   const instanceId = await getInstanceId();
   if (!instanceId) return;
   try {
-    const client = await getClient();
+    const client = await getClient(instanceId);
     await client.stop();
   } catch (err) {
     console.error("[Beams] stop failed:", err);
