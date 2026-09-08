@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     if (!parsed.success) {
       return json({ error: parsed.error.flatten().fieldErrors }, 400);
     }
-    const { title, body, path, userId, topic } = parsed.data;
+    const { title, body, path, userId, topic, latestOnly } = parsed.data;
 
     const headers = {
       Authorization: `Bearer ${LOVABLE_API_KEY}`,
