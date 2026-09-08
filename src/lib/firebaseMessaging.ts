@@ -75,8 +75,11 @@ export async function enablePush(): Promise<PushResult> {
   if (permission !== "granted") return { status: "denied" };
 
   const query = new URLSearchParams(firebaseConfig as Record<string, string>).toString();
+  // IMPORTANT: register on its own scope so it does not replace the main "/" service
+  // worker (sw.js), which handles standard web-push notifications.
   const serviceWorkerRegistration = await navigator.serviceWorker.register(
-    `/firebase-messaging-sw.js?${query}`
+    `/firebase-messaging-sw.js?${query}`,
+    { scope: "/firebase-cloud-messaging-push-scope" }
   );
   const messaging = getMessaging(getFirebaseApp());
   const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration });
