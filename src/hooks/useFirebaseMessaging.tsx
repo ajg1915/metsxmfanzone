@@ -1,24 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { enablePush, onForegroundMessage } from "@/lib/firebaseMessaging";
+import { useCallback, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { enablePush, disablePush, GLOBAL_INTEREST, userInterest } from "@/lib/pusherBeams";
 import { enableNativePush, isNativeApp } from "@/lib/nativePush";
 
 export const useFirebaseMessaging = () => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-
-  // Show foreground pushes as toasts
-  useEffect(() => {
-    let cleanup: (() => void) | undefined;
-    onForegroundMessage(({ title, body }) => {
-      toast({ title: title || "MetsXMFanZone", description: body });
-    }).then((unsub) => {
-      cleanup = unsub;
-    });
-    return () => cleanup?.();
-  }, [toast]);
 
   const register = useCallback(async () => {
     setLoading(true);
