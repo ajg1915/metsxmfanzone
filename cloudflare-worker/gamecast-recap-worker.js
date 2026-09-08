@@ -21,7 +21,7 @@
  *    crons = ["0 13 * * *"]   # 9:00 AM ET daily
  *
  *    [vars]
- *    SUPABASE_URL = "https://clwghkbtkofacsjeyrtk.supabase.co"
+ *    SUPABASE_URL = "https://rdmrxeplasttewtlfetc.supabase.co"
  *
  *  Then add secrets (NOT committed):
  *    wrangler secret put SUPABASE_SERVICE_ROLE_KEY

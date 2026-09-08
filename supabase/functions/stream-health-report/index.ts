@@ -132,7 +132,7 @@ async function sendMaintenanceEmails(supabase: any, issueType: string, alertMess
 
   const issueLabel = issueType.charAt(0).toUpperCase() + issueType.slice(1);
   const safeMessage = escapeHtml(alertMessage);
-  const logoUrl = 'https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/logo-192.png';
+  const logoUrl = 'https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png';
 
   const subject = `⚠️ MetsXMFanZone Stream Maintenance Notice`;
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>

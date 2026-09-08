@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
       .in("id", userIds);
 
     const profileMap = new Map((profiles || []).map((p) => [p.id, p]));
-    const logoUrl = "https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/logo-192.png";
+    const logoUrl = "https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png";
     const feedbackUrl = "https://metsxmfanzone.com/feedback";
 
     let sentCount = 0;

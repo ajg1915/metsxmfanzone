@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const logoUrl = "https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/logo-192.png";
+    const logoUrl = "https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png";
     const dashboardUrl = "https://metsxmfanzone.com/admin/subscriptions";
     const now = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
 

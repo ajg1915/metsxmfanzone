@@ -13,7 +13,7 @@
  * -----
  * 1. Cloudflare Dashboard → Workers & Pages → Create Worker → paste this file.
  * 2. Settings → Variables, add:
- *      SUPABASE_URL          = https://clwghkbtkofacsjeyrtk.supabase.co
+ *      SUPABASE_URL          = https://rdmrxeplasttewtlfetc.supabase.co
  *      SUPABASE_ANON_KEY     = <your anon key>      (encrypt recommended)
  *      SITE_URL              = https://metsxmfanzone.com   (optional)
  * 3. Settings → Triggers → Routes:

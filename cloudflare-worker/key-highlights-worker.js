@@ -23,7 +23,7 @@
  *    crons = ["30 13 * * *"]   # 9:30 AM ET daily (after recap worker)
  *
  *    [vars]
- *    SUPABASE_URL = "https://clwghkbtkofacsjeyrtk.supabase.co"
+ *    SUPABASE_URL = "https://rdmrxeplasttewtlfetc.supabase.co"
  *    LOOKBACK_DAYS = "3"
  *
  *  Secrets (do NOT commit):

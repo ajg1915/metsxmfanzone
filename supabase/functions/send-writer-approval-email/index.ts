@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     <tr><td align="center" style="padding: 20px;">
       <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 10px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.6; color: #333;">
         <tr><td bgcolor="#002D72" style="background: linear-gradient(135deg, #002D72 0%, #FF5910 100%); padding: 30px; text-align: center;">
-          <img src="https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/logo-192.png" alt="MetsXMFanZone" style="width: 85px; height: auto; margin-bottom: 8px; border-radius: 12px;" />
+          <img src="https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png" alt="MetsXMFanZone" style="width: 85px; height: auto; margin-bottom: 8px; border-radius: 12px;" />
           <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to the Writer Team!</h1>
         </td></tr>
         <tr><td bgcolor="#f9f9f9" style="background-color: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     <tr><td align="center" style="padding: 20px;">
       <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 10px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; line-height: 1.6; color: #333;">
         <tr><td bgcolor="#002D72" style="background-color: #002D72; padding: 30px; text-align: center;">
-          <img src="https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/logo-192.png" alt="MetsXMFanZone" style="width: 85px; height: auto; margin-bottom: 8px; border-radius: 12px;" />
+          <img src="https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png" alt="MetsXMFanZone" style="width: 85px; height: auto; margin-bottom: 8px; border-radius: 12px;" />
           <h1 style="color: white; margin: 0; font-size: 28px;">Application Update</h1>
         </td></tr>
         <tr><td bgcolor="#f9f9f9" style="background-color: #f9f9f9; padding: 30px; border: 1px solid #e0e0e0; border-top: none;">
