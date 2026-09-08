@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
     const safeAmount = escapeHtml(amount || "0.00");
     const safeDate = escapeHtml(transactionDate || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
     const safeOrderId = subscriptionId ? '****' + escapeHtml(subscriptionId.slice(-4)) : 'N/A';
-    const logoUrl = 'https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/logo-192.png';
+    const logoUrl = 'https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png';
 
     let emailContent = "";
     let subject = "";

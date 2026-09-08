@@ -84,7 +84,7 @@ Allow: /manifest.json
 
 # Sitemaps
 Sitemap: https://metsxmfanzone.com/sitemap.xml
-Sitemap: https://clwghkbtkofacsjeyrtk.supabase.co/functions/v1/dynamic-sitemap
+Sitemap: https://rdmrxeplasttewtlfetc.supabase.co/functions/v1/dynamic-sitemap
 
 # Host directive
 Host: https://metsxmfanzone.com

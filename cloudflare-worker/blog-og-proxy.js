@@ -45,7 +45,7 @@
  * ----------------------------------------------------------------------
  */
 
-const SUPABASE_PROJECT_REF = "clwghkbtkofacsjeyrtk";
+const SUPABASE_PROJECT_REF = "rdmrxeplasttewtlfetc";
 const EDGE_FUNCTION_URL = `https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/blog-og-meta`;
 
 const CRAWLER_UA_PATTERNS = [

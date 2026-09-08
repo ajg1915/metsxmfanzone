@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const STORAGE_BASE = 'https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/content_uploads/fanart';
+const STORAGE_BASE = 'https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/content_uploads/fanart';
 
 // Map opponents to specific fan art thumbnails
 const OPPONENT_THUMBNAILS: Record<string, string> = {

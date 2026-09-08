@@ -22,7 +22,7 @@ interface ReauthenticationEmailProps extends EmailStyleProps {
 
 export const ReauthenticationEmail = ({
   token,
-  logoUrl = 'https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/metsxmfanzone-logo.png',
+  logoUrl = 'https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/metsxmfanzone-logo.png',
   primaryColor = '#FF5910',
   cardBgColor = '#1a1a2e',
   bodyBgColor = '#0a0a0a',
