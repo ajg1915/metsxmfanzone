@@ -35,7 +35,9 @@ export const useFirebaseMessaging = () => {
         deviceToken = native.token;
         platform = native.platform;
       } else {
-        const result = await enablePush();
+        const result = await enablePush(
+          currentUser ? [GLOBAL_INTEREST, userInterest(currentUser.id)] : [GLOBAL_INTEREST]
+        );
 
         if (result.status !== "registered") {
           const messages: Record<string, string> = {
