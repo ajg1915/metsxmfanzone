@@ -2,7 +2,20 @@
  * Pusher Beams web push.
  * Replaces the previous Firebase Cloud Messaging setup.
  */
-const INSTANCE_ID = import.meta.env.VITE_PUSHER_BEAMS_INSTANCE_ID as string | undefined;
+import { supabase } from "@/integrations/supabase/client";
+
+let cachedInstanceId: string | null = (import.meta.env.VITE_PUSHER_BEAMS_INSTANCE_ID as string) || null;
+
+async function getInstanceId(): Promise<string | null> {
+  if (cachedInstanceId) return cachedInstanceId;
+  try {
+    const { data } = await supabase.functions.invoke("get-beams-instance");
+    cachedInstanceId = data?.instanceId ?? null;
+  } catch (err) {
+    console.error("[Beams] could not load instance id:", err);
+  }
+  return cachedInstanceId;
+}
 
 export const GLOBAL_INTEREST = "all-users";
 export const userInterest = (userId: string) => `user-${userId.replace(/[^a-zA-Z0-9_\-=@,.;]/g, "")}`;
