@@ -162,16 +162,16 @@ export default function AIAssistant() {
         </div>
       </div>
 
-      <Card className="flex-1 flex flex-col border-white/10 bg-white/[0.03] backdrop-blur-xl overflow-hidden">
-        <CardHeader className="pb-2 border-b border-white/5">
+      <Card className="flex-1 min-h-0 flex flex-col border-white/10 bg-white/[0.03] backdrop-blur-xl overflow-hidden">
+        <CardHeader className="pb-2 border-b border-white/5 shrink-0">
           <CardTitle className="text-sm flex items-center gap-2 text-slate-200">
             <Bot className="h-4 w-4 text-[#FF5910]" />
             MetsXMFanZone Assistant
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="flex-1 flex flex-col p-0">
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+        <CardContent className="flex-1 min-h-0 flex flex-col p-0">
+          <ScrollArea className="flex-1 min-h-0 p-4" ref={scrollRef}>
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 py-12">
                 <Bot className="h-12 w-12 mb-4 text-[#FF5910]/40" />
