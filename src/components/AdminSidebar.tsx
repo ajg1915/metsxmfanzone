@@ -3,7 +3,7 @@ import {
   MessageSquare, ChevronDown, Users, Mail, Palette,
   Megaphone, BookOpen, Trophy, UserCog, Send, Wallpaper, ShoppingBag,
   Activity, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
-  ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift
+  ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift, Bot
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
@@ -24,6 +24,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 const overviewItems = [
   { title: "Dashboard", url: "/admin", icon: Home },
+  { title: "AI Assistant", url: "/admin/ai-assistant", icon: Bot },
   { title: "Real-Time Stats", url: "/admin/realtime-analytics", icon: TrendingUp },
   { title: "Daily Reports", url: "/admin/daily-reports", icon: ClipboardList },
   { title: "Activity Logs", url: "/admin/activity", icon: Activity },
