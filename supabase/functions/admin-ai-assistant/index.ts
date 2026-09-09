@@ -214,7 +214,7 @@ Do not make up player transactions, injuries, or rumors unless they appear in th
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3.8-flash",
+        model: "google/gemini-2.5-flash-lite",
         messages: gatewayMessages,
         stream: true,
         max_tokens: 2000,
