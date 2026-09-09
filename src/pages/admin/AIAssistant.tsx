@@ -148,7 +148,7 @@ export default function AIAssistant() {
   };
 
   return (
-    <div className="w-full max-w-full h-[calc(100vh-7rem)] flex flex-col">
+    <div className="w-full max-w-full min-h-0 h-[calc(100dvh-8rem)] min-h-[500px] flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 rounded-lg bg-[#FF5910]/10 border border-[#FF5910]/20">
@@ -162,16 +162,16 @@ export default function AIAssistant() {
         </div>
       </div>
 
-      <Card className="flex-1 flex flex-col border-white/10 bg-white/[0.03] backdrop-blur-xl overflow-hidden">
-        <CardHeader className="pb-2 border-b border-white/5">
+      <Card className="flex-1 min-h-0 flex flex-col border-white/10 bg-white/[0.03] backdrop-blur-xl overflow-hidden">
+        <CardHeader className="pb-2 border-b border-white/5 shrink-0">
           <CardTitle className="text-sm flex items-center gap-2 text-slate-200">
             <Bot className="h-4 w-4 text-[#FF5910]" />
             MetsXMFanZone Assistant
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="flex-1 flex flex-col p-0">
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+        <CardContent className="flex-1 min-h-0 flex flex-col p-0">
+          <ScrollArea className="flex-1 min-h-0 p-4" ref={scrollRef}>
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center text-slate-500 py-12">
                 <Bot className="h-12 w-12 mb-4 text-[#FF5910]/40" />
@@ -217,7 +217,7 @@ export default function AIAssistant() {
 
           {/* Quick prompts */}
           {messages.length === 0 && (
-            <div className="px-4 pb-3">
+            <div className="px-4 pb-3 shrink-0">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {quickPrompts.map((qp) => (
                   <button
@@ -234,7 +234,7 @@ export default function AIAssistant() {
           )}
 
           {/* Input */}
-          <div className="p-4 border-t border-white/5">
+          <div className="p-4 border-t border-white/5 shrink-0">
             <div className="flex gap-2">
               <Input
                 placeholder="Ask the assistant anything..."
