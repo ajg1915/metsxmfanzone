@@ -217,7 +217,7 @@ export default function AIAssistant() {
 
           {/* Quick prompts */}
           {messages.length === 0 && (
-            <div className="px-4 pb-3">
+            <div className="px-4 pb-3 shrink-0">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {quickPrompts.map((qp) => (
                   <button
