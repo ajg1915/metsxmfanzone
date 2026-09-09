@@ -3,6 +3,7 @@
 // Stores result in public.game_recaps and returns { highlights: string[] }.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { generateCloudflareText } from "../_shared/cloudflareAi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,16 +20,8 @@ const PII =
 const safe = (s: string) => !PROFANITY.test(s) && !PII.test(s);
 
 async function generateWithAI(context: string): Promise<string[]> {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) return [];
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash-lite",
+  try {
+    const text = await generateCloudflareText({
       messages: [
         {
           role: "system",
@@ -37,22 +30,22 @@ async function generateWithAI(context: string): Promise<string[]> {
         },
         { role: "user", content: context },
       ],
-    }),
-  });
-  if (!res.ok) return [];
-  const json = await res.json();
-  const text: string = json.choices?.[0]?.message?.content ?? "";
-  try {
-    const cleaned = text.replace(/```json|```/g, "").trim();
-    const parsed = JSON.parse(cleaned);
-    const arr = Array.isArray(parsed.highlights) ? parsed.highlights : [];
-    return arr.map((s: unknown) => String(s).trim()).filter((s: string) => s && safe(s)).slice(0, 6);
+      temperature: 0.6,
+    });
+    try {
+      const cleaned = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(cleaned);
+      const arr = Array.isArray(parsed.highlights) ? parsed.highlights : [];
+      return arr.map((s: unknown) => String(s).trim()).filter((s: string) => s && safe(s)).slice(0, 6);
+    } catch {
+      return text
+        .split(/\n+/)
+        .map((l) => l.replace(/^[-*•\d.\s]+/, "").trim())
+        .filter((l) => l.length > 0 && safe(l))
+        .slice(0, 6);
+    }
   } catch {
-    return text
-      .split(/\n+/)
-      .map((l) => l.replace(/^[-*•\d.\s]+/, "").trim())
-      .filter((l) => l.length > 0 && safe(l))
-      .slice(0, 6);
+    return [];
   }
 }
 

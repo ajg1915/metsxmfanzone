@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { z } from "npm:zod@3.23.8";
+import { callCloudflareAi, transformCloudflareStreamToOpenAi, cloudflareAiErrorResponse } from "../_shared/cloudflareAi.ts";
 
 const MessageSchema = z.object({
   role: z.enum(["user", "assistant", "system"]),
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
+
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: false },
       global: { headers: { Authorization: `Bearer ${token}` } },
@@ -46,7 +47,7 @@ Deno.serve(async (req) => {
     const adminClient = createClient(supabaseUrl, serviceKey);
 
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Invalid or expired session" }), {
         status: 401,
@@ -79,24 +80,12 @@ Deno.serve(async (req) => {
       });
     }
     const { messages } = parsed.data;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          { 
-            role: "system", 
-            content: `You are a friendly and helpful AI assistant for MetsXMFanZone, a fan community for New York Mets baseball fans. 
+    const response = await callCloudflareAi({
+      messages: [
+        {
+          role: "system",
+          content: `You are a friendly and helpful AI assistant for MetsXMFanZone, a fan community for New York Mets baseball fans.
 
 Your role is to:
 - Help users navigate the website and its features
@@ -106,35 +95,18 @@ Your role is to:
 - Keep responses concise and helpful
 
 If you don't know something specific about the website, politely suggest the user contact support or check the help center.`
-          },
-          ...messages,
-        ],
-        stream: true,
-      }),
+        },
+        ...messages,
+      ],
+      stream: true,
+      temperature: 0.7,
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Too many requests. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Service temporarily unavailable." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "AI service error" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return cloudflareAiErrorResponse(response.status, "AI service error", corsHeaders);
     }
 
-    return new Response(response.body, {
+    return new Response(transformCloudflareStreamToOpenAi(response), {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {

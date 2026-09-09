@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { generateCloudflareText } from "../_shared/cloudflareAi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,14 +13,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    if (!lovableKey) {
-      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY not configured" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const { count = 3 } = await req.json().catch(() => ({ count: 3 }));
 
@@ -49,20 +43,8 @@ serve(async (req) => {
     const availableImages = (mediaFiles || []).map(f => f.file_url).filter(Boolean);
     console.log(`Found ${availableImages.length} images in media library`);
 
-    // 3. Generate slide content via Lovable AI
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          {
-            role: "system",
-            content: `You are MetsXMFanZone.com's marketing AI. Generate hero slide content designed to convert visitors into members. The brand is a Mets fan community platform with live streaming, podcasts, news, and community features. Pricing: Free Spring Training access, then $9.99/mo for premium. Tone: passionate, energetic, authentic NY Mets fan voice. Always use action-oriented CTAs.`
-          },
-          {
-            role: "user",
-            content: `Based on this current MetsXMFanZone content, generate exactly ${count} hero slides as JSON array. Each slide needs: title (max 6 words, bold/uppercase style), description (max 25 words, compelling), link_url (relevant page on the site), link_text (CTA text, max 3 words), show_watch_live (boolean, true if streaming related), is_for_members (boolean, false for conversion slides targeting non-members), image_index (integer, pick the best matching image index from the available media library images listed below).
+    // 3. Generate slide content via Cloudflare AI
+    const slidePrompt = `Based on this current MetsXMFanZone content, generate exactly ${count} hero slides as a JSON object with a "slides" array. Each slide needs: title (max 6 words, bold/uppercase style), description (max 25 words, compelling), link_url (relevant page on the site), link_text (CTA text, max 3 words), show_watch_live (boolean, true if streaming related), is_for_members (boolean, false for conversion slides targeting non-members), image_index (integer, pick the best matching image index from the available media library images listed below).
 
 Available media library images (pick by index):
 ${availableImages.map((url, i) => `${i}: ${url}`).join("\n") || "No images available"}
@@ -82,65 +64,33 @@ ${contentSummary.news || "No recent news"}
 
 Valid link_url values: /auth (signup), /pricing (plans), /metsxmfanzone (streams), /podcast (podcasts), /blog (blog), /community (community), /mets-roster (roster)
 
-Return ONLY a valid JSON array, no markdown.`
-          }
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "create_hero_slides",
-            description: "Create hero slides for the website",
-            parameters: {
-              type: "object",
-              properties: {
-                slides: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      title: { type: "string" },
-                      description: { type: "string" },
-                      link_url: { type: "string" },
-                      link_text: { type: "string" },
-                      show_watch_live: { type: "boolean" },
-                      is_for_members: { type: "boolean" },
-                      image_index: { type: "integer" },
-                    },
-                    required: ["title", "description", "link_url", "link_text", "show_watch_live", "is_for_members", "image_index"],
-                    additionalProperties: false,
-                  },
-                },
-              },
-              required: ["slides"],
-              additionalProperties: false,
-            },
-          },
-        }],
-        tool_choice: { type: "function", function: { name: "create_hero_slides" } },
-      }),
+Return ONLY a valid JSON object with a "slides" array, no markdown, no explanation.`;
+
+    const aiText = await generateCloudflareText({
+      messages: [
+        {
+          role: "system",
+          content: `You are MetsXMFanZone.com's marketing AI. Generate hero slide content designed to convert visitors into members. The brand is a Mets fan community platform with live streaming, podcasts, news, and community features. Pricing: Free Spring Training access, then $9.99/mo for premium. Tone: passionate, energetic, authentic NY Mets fan voice. Always use action-oriented CTAs. ALWAYS respond with ONLY valid JSON. No markdown, no explanation.`
+        },
+        { role: "user", content: slidePrompt },
+      ],
+      max_tokens: 2048,
     });
 
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error("AI error:", aiResponse.status, errText);
-      if (aiResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited, try again later" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+    const cleaned = aiText.replace(/^```json\s*|\s*```$/g, "").trim();
+    let slides: any[];
+    try {
+      const parsed = JSON.parse(cleaned);
+      slides = parsed.slides;
+    } catch (parseErr) {
+      const objectMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (objectMatch) {
+        const parsed = JSON.parse(objectMatch[0]);
+        slides = parsed.slides;
+      } else {
+        throw parseErr;
       }
-      if (aiResponse.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      throw new Error(`AI gateway error: ${aiResponse.status}`);
     }
-
-    const aiData = await aiResponse.json();
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No tool call in AI response");
-    
-    const { slides } = JSON.parse(toolCall.function.arguments);
     if (!slides?.length) throw new Error("No slides generated");
 
     console.log(`Generated ${slides.length} slide concepts`);

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { generateCloudflareText } from "../_shared/cloudflareAi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,9 +34,6 @@ async function fetchBoxScore(gamePk: number) {
 }
 
 async function generateRecapBody(context: any): Promise<{ title: string; summary: string; body: string }> {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
-
   const prompt = `You are a Mets beat writer for MetsXMFanZone. Write a sharp, fan-focused recap of last night's Mets game.
 
 GAME CONTEXT (JSON):
@@ -48,30 +46,25 @@ Output STRICT JSON with this exact shape (no markdown fences):
   "body": "<p>...</p> ...HTML body 350-500 words. Use <p>, <strong>, <h3> only. Cover key moments, standout players, pitching, and what's next."
 }`;
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash-lite",
+    const text = await generateCloudflareText({
       messages: [
-        { role: "system", content: "You write concise, accurate MLB recaps. Always return valid JSON." },
+        { role: "system", content: "You write concise, accurate MLB recaps. ALWAYS respond with ONLY a raw JSON object. No markdown, no explanation, no prose." },
         { role: "user", content: prompt },
       ],
-      response_format: { type: "json_object" },
-    }),
-  });
+      temperature: 0.7,
+      max_tokens: 2048,
+    });
 
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`AI gateway ${res.status}: ${t}`);
-  }
-  const ai = await res.json();
-  const content = ai.choices?.[0]?.message?.content ?? "{}";
-  const cleaned = content.replace(/^```json\s*|\s*```$/g, "").trim();
-  return JSON.parse(cleaned);
+    const cleaned = text.replace(/^```json\s*|\s*```$/g, "").trim() || "{}";
+    try {
+      return JSON.parse(cleaned);
+    } catch (parseErr) {
+      const objectMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (objectMatch) {
+        return JSON.parse(objectMatch[0]);
+      }
+      throw parseErr;
+    }
 }
 
 serve(async (req) => {

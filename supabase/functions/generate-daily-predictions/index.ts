@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { generateCloudflareText } from "../_shared/cloudflareAi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -129,7 +130,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     let forceStarPlayers: number[] = [];
@@ -173,8 +173,6 @@ serve(async (req) => {
     if (forceRegenerate && existingPredictions && existingPredictions.length > 0) {
       await supabase.from("daily_player_predictions").delete().eq("prediction_date", today);
     }
-
-    if (!lovableApiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
     const metsPlayers = await fetchMetsRoster();
     console.log(`Fetched ${metsPlayers.length} players from Mets roster`);
@@ -285,30 +283,13 @@ Respond with ONLY a valid JSON array (no markdown, no extra text):
     
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${lovableApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-2.5-flash-lite",
-            max_tokens: 4000,
-            messages: [
-              { role: "system", content: "You are Anthony, a Mets baseball analyst. Respond ONLY with a raw JSON array (no markdown, no code fences, no explanation). Be realistic with stat predictions." },
-              { role: "user", content: prompt }
-            ],
-          }),
+        const aiContent = await generateCloudflareText({
+          messages: [
+            { role: "system", content: "You are Anthony, a Mets baseball analyst. Respond ONLY with a raw JSON array (no markdown, no code fences, no explanation). Be realistic with stat predictions." },
+            { role: "user", content: prompt }
+          ],
+          max_tokens: 2048,
         });
-
-        if (!aiResponse.ok) {
-          if (aiResponse.status === 429) throw new Error("Rate limit exceeded. Please try again later.");
-          if (aiResponse.status === 402) throw new Error("AI credits depleted. Please add credits.");
-          throw new Error(`AI API error: ${aiResponse.status}`);
-        }
-
-        const aiData = await aiResponse.json();
-        const aiContent = aiData.choices?.[0]?.message?.content;
         if (!aiContent) throw new Error("No content in AI response");
 
         let cleanContent = aiContent.trim();
