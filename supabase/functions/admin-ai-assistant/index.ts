@@ -234,8 +234,7 @@ Do not make up player transactions, injuries, or rumors unless they appear in th
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const text = await aiRes.text();
-      return new Response(JSON.stringify({ error: "AI gateway error", details: text }), {
+      return new Response(JSON.stringify({ error: "AI gateway unavailable. Please try again shortly." }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
