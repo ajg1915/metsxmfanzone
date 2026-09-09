@@ -146,11 +146,26 @@ serve(async (req) => {
     }
 
     const messages = Array.isArray(body.messages) ? body.messages : [];
-    if (messages.length === 0) {
-      return new Response(JSON.stringify({ error: "messages required" }), {
+    if (messages.length === 0 || messages.length > 50) {
+      return new Response(JSON.stringify({ error: "Between 1 and 50 messages required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    const validRoles = new Set(["system", "user", "assistant"]);
+    for (const m of messages) {
+      if (
+        !m || typeof m !== "object" ||
+        !validRoles.has(m.role) ||
+        typeof m.content !== "string" ||
+        m.content.length > 8000
+      ) {
+        return new Response(JSON.stringify({ error: "Each message must have a valid role and content under 8000 characters" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     if (!lovableApiKey) {
