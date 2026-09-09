@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bot, Send, Loader2, FileText, Mic, Lightbulb, Baseball } from "lucide-react";
+import { Bot, Send, Loader2, FileText, Mic, Lightbulb, Activity } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
