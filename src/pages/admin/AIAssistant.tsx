@@ -30,7 +30,7 @@ const quickPrompts = [
   },
   {
     label: "Live Stats",
-    icon: Baseball,
+    icon: Activity,
     prompt: "What are the latest Mets live game stats and standings?",
   },
 ];
