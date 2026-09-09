@@ -148,7 +148,7 @@ export default function AIAssistant() {
   };
 
   return (
-    <div className="w-full max-w-full h-[calc(100vh-7rem)] flex flex-col">
+    <div className="w-full max-w-full min-h-0 h-[calc(100dvh-8rem)] min-h-[500px] flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <div className="p-2 rounded-lg bg-[#FF5910]/10 border border-[#FF5910]/20">
