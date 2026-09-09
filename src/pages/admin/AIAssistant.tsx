@@ -234,7 +234,7 @@ export default function AIAssistant() {
           )}
 
           {/* Input */}
-          <div className="p-4 border-t border-white/5">
+          <div className="p-4 border-t border-white/5 shrink-0">
             <div className="flex gap-2">
               <Input
                 placeholder="Ask the assistant anything..."
