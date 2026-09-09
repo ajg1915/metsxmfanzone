@@ -176,6 +176,7 @@ const MetsVsRedSox = lazyWithRetry(() => import("./pages/matchups/MetsVsRedSox")
 const MetsVsYankees = lazyWithRetry(() => import("./pages/matchups/MetsVsYankees"), "page-matchup-yankees");
 const MetsVsBlueJays = lazyWithRetry(() => import("./pages/matchups/MetsVsBlueJays"), "page-matchup-bluejays");
 const EmailTemplateSettings = lazyWithRetry(() => import("./pages/admin/EmailTemplateSettings"), "page-admin-email-template-settings");
+const AIAssistant = lazyWithRetry(() => import("./pages/admin/AIAssistant"), "page-admin-ai-assistant");
 const GameDayLive = lazyWithRetry(() => import("./pages/GameDayLive"), "page-gameday-live");
 const GameDayLiveAdmin = lazyWithRetry(() => import("./pages/admin/GameDayLiveAdmin"), "page-admin-gameday-live");
 
@@ -417,6 +418,7 @@ const AppContent = () => {
               <Route path="gameday-live" element={<GameDayLiveAdmin />} />
               <Route path="game-recaps" element={<GameRecapsManagement />} />
               <Route path="podcast-outlines" element={<PodcastOutlineTemplates />} />
+              <Route path="ai-assistant" element={<AIAssistant />} />
               <Route path="loyalty-rewards" element={<LoyaltyRewardsManagement />} />
             </Route>
             {/* Writer Portal Routes */}

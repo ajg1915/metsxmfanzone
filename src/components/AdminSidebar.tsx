@@ -24,6 +24,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 
 const overviewItems = [
   { title: "Dashboard", url: "/admin", icon: Home },
+  { title: "AI Assistant", url: "/admin/ai-assistant", icon: Bot },
   { title: "Real-Time Stats", url: "/admin/realtime-analytics", icon: TrendingUp },
   { title: "Daily Reports", url: "/admin/daily-reports", icon: ClipboardList },
   { title: "Activity Logs", url: "/admin/activity", icon: Activity },
