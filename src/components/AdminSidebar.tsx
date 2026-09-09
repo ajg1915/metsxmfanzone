@@ -3,7 +3,7 @@ import {
   MessageSquare, ChevronDown, Users, Mail, Palette,
   Megaphone, BookOpen, Trophy, UserCog, Send, Wallpaper, ShoppingBag,
   Activity, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
-  ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift
+  ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift, Bot
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
