@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { callCloudflareAi, transformCloudflareStreamToOpenAi, cloudflareAiErrorResponse } from "../_shared/cloudflareAi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -99,7 +100,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Authenticate and enforce admin-only access
@@ -168,13 +168,6 @@ serve(async (req) => {
       }
     }
 
-    if (!lovableApiKey) {
-      return new Response(JSON.stringify({ error: "AI gateway not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     // Gather live MLB context when the conversation touches current games/stats
     let liveContext = "";
     if (needsLiveStats(messages)) {
@@ -207,49 +200,16 @@ Do not make up player transactions, injuries, or rumors unless they appear in th
       ...messages.map((m) => ({ role: m.role, content: m.content })),
     ];
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: gatewayMessages,
-        stream: true,
-        max_tokens: 2000,
-      }),
+    const aiRes = await callCloudflareAi({
+      messages: gatewayMessages,
+      stream: true,
     });
 
     if (!aiRes.ok) {
-      if (aiRes.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Try again shortly." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (aiRes.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: "AI gateway unavailable. Please try again shortly." }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return cloudflareAiErrorResponse(aiRes.status, "AI service unavailable. Please try again shortly.", corsHeaders);
     }
 
-    // Stream the response back as SSE
-    const stream = aiRes.body;
-    if (!stream) {
-      return new Response(JSON.stringify({ error: "No response stream" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    return new Response(stream, {
+    return new Response(transformCloudflareStreamToOpenAi(aiRes), {
       headers: {
         ...corsHeaders,
         "Content-Type": "text/event-stream",

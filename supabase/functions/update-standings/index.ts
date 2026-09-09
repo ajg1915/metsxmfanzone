@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { generateCloudflareText } from "../_shared/cloudflareAi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,11 +27,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!LOVABLE_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       throw new Error("Missing required environment variables");
     }
 
@@ -43,104 +43,55 @@ Deno.serve(async (req) => {
 
     console.log(`Updating standings for ${today}`);
 
-    // Use Lovable AI to get current standings data
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-lite",
-        messages: [
-          {
-            role: "system",
-            content: `You are a sports data assistant. Provide realistic MLB NL East division standings and Mets team leaders. 
-            Since this is for a 2026 season simulation, generate plausible standings data that changes slightly each day.
-            Always respond with the exact JSON format requested.`,
-          },
-          {
-            role: "user",
-            content: `Generate current NL East standings and Mets team leaders for ${today}. 
-            
-            Return ONLY valid JSON in this exact format:
-            {
-              "standings": [
-                {"team_name": "TeamName", "wins": 0, "losses": 0, "games_back": "-", "position": 1}
-              ],
-              "leaders": [
-                {"category": "AVG", "player_name": "Player", "stat_value": ".300"},
-                {"category": "HR", "player_name": "Player", "stat_value": "25"},
-                {"category": "RBI", "player_name": "Player", "stat_value": "60"}
-              ]
-            }
-            
-            Include all 5 NL East teams: Mets, Braves, Phillies, Marlins, Nationals.
-            Make the stats realistic for mid-season (around 77 games played).
-            The Mets should be competitive but standings can vary.`,
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "update_standings",
-              description: "Update MLB standings and team leaders",
-              parameters: {
-                type: "object",
-                properties: {
-                  standings: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        team_name: { type: "string" },
-                        wins: { type: "number" },
-                        losses: { type: "number" },
-                        games_back: { type: "string" },
-                        position: { type: "number" },
-                      },
-                      required: ["team_name", "wins", "losses", "games_back", "position"],
-                    },
-                  },
-                  leaders: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        category: { type: "string" },
-                        player_name: { type: "string" },
-                        stat_value: { type: "string" },
-                      },
-                      required: ["category", "player_name", "stat_value"],
-                    },
-                  },
-                },
-                required: ["standings", "leaders"],
-              },
-            },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "update_standings" } },
-      }),
+    const prompt = `Generate current NL East standings and Mets team leaders for ${today}.
+
+Return ONLY valid JSON in this exact format (no markdown fences, no extra text):
+{
+  "standings": [
+    {"team_name": "Mets", "wins": 45, "losses": 32, "games_back": "-", "position": 1},
+    {"team_name": "Braves", "wins": 43, "losses": 34, "games_back": "2.0", "position": 2}
+  ],
+  "leaders": [
+    {"category": "AVG", "player_name": "Player Name", "stat_value": ".300"},
+    {"category": "HR", "player_name": "Player Name", "stat_value": "25"},
+    {"category": "RBI", "player_name": "Player Name", "stat_value": "60"}
+  ]
+}
+
+Include all 5 NL East teams: Mets, Braves, Phillies, Marlins, Nationals.
+Make the stats realistic for mid-season (around 77 games played).
+The Mets should be competitive but standings can vary.`;
+
+    const aiText = await generateCloudflareText({
+      messages: [
+        {
+          role: "system",
+          content: `You are a sports data assistant. Provide realistic MLB NL East division standings and Mets team leaders.
+Since this is for a 2026 season simulation, generate plausible standings data that changes slightly each day.
+ALWAYS respond with ONLY the exact JSON object requested. No markdown, no explanation, no prose.`,
+        },
+        { role: "user", content: prompt },
+      ],
+      max_tokens: 2048,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
+    const cleaned = aiText.replace(/^```json\s*|\s*```$/g, "").trim();
+    let data: any;
+    try {
+      data = JSON.parse(cleaned);
+    } catch (parseErr) {
+      // Try to extract the first JSON object from the response
+      const objectMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (objectMatch) {
+        try {
+          data = JSON.parse(objectMatch[0]);
+        } catch {
+          throw parseErr;
+        }
+      } else {
+        throw parseErr;
+      }
     }
-
-    const aiResponse = await response.json();
-    console.log("AI response received");
-
-    // Extract the tool call arguments
-    const toolCall = aiResponse.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall?.function?.arguments) {
-      throw new Error("No tool call response from AI");
-    }
-
-    const data = JSON.parse(toolCall.function.arguments);
     console.log("Parsed standings data:", JSON.stringify(data, null, 2));
 
     // Update standings in database

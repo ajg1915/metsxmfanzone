@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { generateCloudflareText } from "../_shared/cloudflareAi.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,15 +21,6 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
-      return new Response(
-        JSON.stringify({ error: "AI service not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const prompt = content
       ? `Generate a compelling, engaging excerpt (2-3 sentences, max 150 characters) for this blog article. The excerpt should hook readers and summarize the key points. Do not use quotes around the excerpt.
 
@@ -46,65 +38,29 @@ Return ONLY the excerpt text, nothing else.`;
 
     console.log("Generating excerpt for:", title);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          {
-            role: "system",
-            content: "You are a professional blog editor for MetsXMFanZone, a New York Mets fan community. Generate concise, engaging excerpts that capture the essence of articles and entice readers to click and read more. Keep excerpts under 150 characters."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-      }),
+    const excerpt = await generateCloudflareText({
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional blog editor for MetsXMFanZone, a New York Mets fan community. Generate concise, engaging excerpts that capture the essence of articles and entice readers to click and read more. Keep excerpts under 150 characters."
+        },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI API error:", response.status, errorText);
-
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits depleted. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ error: "Failed to generate excerpt" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const data = await response.json();
-    const excerpt = data.choices?.[0]?.message?.content?.trim();
-
-    if (!excerpt) {
-      console.error("No excerpt in response:", JSON.stringify(data));
+    const trimmed = excerpt.trim();
+    if (!trimmed) {
       return new Response(
         JSON.stringify({ error: "No excerpt generated" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("Generated excerpt:", excerpt);
+    console.log("Generated excerpt:", trimmed);
 
     return new Response(
-      JSON.stringify({ excerpt }),
+      JSON.stringify({ excerpt: trimmed }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
