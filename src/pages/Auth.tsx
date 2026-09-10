@@ -786,7 +786,9 @@ const Auth = () => {
       }
 
       if (data.user) {
-        // Check if email is verified in profiles table
+        // Supabase Auth is the source of truth for email confirmation. Migrated
+        // accounts can have a missing or stale profiles.email_verified value,
+        // which must not block an otherwise confirmed account from signing in.
         const { data: profile, error: profileError } = await withTimeout(
           supabase
             .from("profiles")
@@ -798,19 +800,11 @@ const Auth = () => {
         );
 
         if (profileError) {
-          console.error("Profile lookup error:", profileError);
-          toast({
-            title: "Account Error",
-            description: "There was an issue accessing your account. Please contact support.",
-            variant: "destructive",
-          });
-          await supabase.auth.signOut();
-
-
-          return;
+          console.warn("Profile verification lookup unavailable; using confirmed auth account.");
         }
 
-        if (profile?.email_verified !== true) {
+        const emailIsConfirmed = Boolean(data.user.email_confirmed_at || data.user.confirmed_at);
+        if (!emailIsConfirmed && profile?.email_verified !== true) {
 
 
           await supabase.auth.signOut();
