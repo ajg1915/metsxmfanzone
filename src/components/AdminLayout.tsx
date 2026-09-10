@@ -7,7 +7,7 @@ import { AdminSidebar } from "@/components/AdminSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Home, LogIn, RefreshCw, Search } from "lucide-react";
-import { AdminPinVerification } from "@/components/AdminPinVerification";
+
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import { NotificationsBell } from "@/components/admin/NotificationsBell";
@@ -260,14 +260,6 @@ export function AdminLayout() {
     checkAdmin();
   }, [user, loading, navigate, toast, pinVerified]);
 
-  const handlePinVerified = () => {
-    setPinVerified(true);
-    setNeedsPinVerification(false);
-  };
-
-  const handlePinCancel = () => {
-    navigate("/admin-portal");
-  };
 
   if (loading || checking) {
     return (
