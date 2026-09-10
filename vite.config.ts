@@ -14,11 +14,15 @@ const stripQuotes = (value?: string) =>
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+  // Keep this exported project connected to the owner's Supabase instance.
+  // Lovable may inject its managed preview values through process.env, so the
+  // dedicated public config intentionally takes precedence for browser builds.
+  const ownerSupabaseEnv = loadEnv("supabase", process.cwd(), "");
   const sanitizedEnv = Object.fromEntries(
     ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PROJECT_ID"]
       .map((key) => [
         `import.meta.env.${key}`,
-        JSON.stringify(stripQuotes(process.env[key] ?? env[key])),
+        JSON.stringify(stripQuotes(ownerSupabaseEnv[key] ?? env[key] ?? process.env[key])),
       ])
       .filter(([, value]) => value !== '""'),
   );
