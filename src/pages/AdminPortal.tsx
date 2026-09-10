@@ -152,7 +152,8 @@ export default function AdminPortal() {
       setConnectionIssue("");
     } catch (err) {
       console.error('Error checking lockout:', err);
-      setConnectionIssue("Secure connection was slow, but you can still try your PIN.");
+      setConnectionIssue("PIN sign-in is unavailable. Use your admin email and password below.");
+      setShowEmailLogin(true);
       setIsLocked(false);
       setAttemptsRemaining(5);
     } finally {
@@ -267,8 +268,13 @@ export default function AdminPortal() {
       }
     } catch (err) {
       console.error('Login error:', err);
-      setConnectionIssue("Login did not complete. Refresh the secure session and try again.");
-      toast({ title: "Error", description: "Failed to authenticate. Please try again.", variant: "destructive" });
+      setConnectionIssue("PIN sign-in is unavailable. Use your admin email and password below.");
+      setShowEmailLogin(true);
+      toast({
+        title: "Use email sign-in",
+        description: "Enter your admin email and password below to continue.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
