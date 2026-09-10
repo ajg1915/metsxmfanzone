@@ -53,22 +53,69 @@ export async function callCloudflareAi({
   });
 }
 
+// Fallback: Lovable AI Gateway, used only when Cloudflare is unavailable
+// (out of quota, rate limited, credentials missing, or upstream error).
+export const LOVABLE_FALLBACK_MODEL = "google/gemini-3.8-flash";
+
+export async function generateLovableFallbackText({
+  messages,
+  max_tokens,
+  temperature,
+}: Omit<CloudflareAiOptions, "stream" | "model">): Promise<string> {
+  const apiKey = Deno.env.get("LOVABLE_API_KEY");
+  if (!apiKey) throw new Error("LOVABLE_API_KEY not configured for AI fallback");
+
+  const body: Record<string, unknown> = {
+    model: LOVABLE_FALLBACK_MODEL,
+    messages,
+  };
+  if (max_tokens !== undefined) body.max_tokens = max_tokens;
+  if (temperature !== undefined) body.temperature = temperature;
+
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Lovable-API-Key": apiKey,
+      "X-Lovable-AIG-SDK": "fetch",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Lovable AI fallback error ${res.status}: ${text.slice(0, 500)}`);
+  }
+  const data = await res.json();
+  return data?.choices?.[0]?.message?.content ?? "";
+}
+
 export async function generateCloudflareText({
   messages,
   model,
   max_tokens,
   temperature,
 }: Omit<CloudflareAiOptions, "stream">): Promise<string> {
-  const res = await callCloudflareAi({ messages, model, max_tokens, temperature, stream: false });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Cloudflare AI error ${res.status}: ${text.slice(0, 500)}`);
+  try {
+    const res = await callCloudflareAi({ messages, model, max_tokens, temperature, stream: false });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Cloudflare AI error ${res.status}: ${text.slice(0, 500)}`);
+    }
+    const data = await res.json();
+    const raw = data?.result?.response;
+    if (typeof raw === "string" && raw.trim()) return raw;
+    if (raw !== undefined && raw !== null && typeof raw !== "string") return JSON.stringify(raw);
+    throw new Error("Cloudflare AI returned an empty response");
+  } catch (cloudflareError) {
+    console.warn("Cloudflare AI failed, falling back to Lovable AI:", cloudflareError);
+    try {
+      return await generateLovableFallbackText({ messages, max_tokens, temperature });
+    } catch (fallbackError) {
+      console.error("Lovable AI fallback also failed:", fallbackError);
+      throw cloudflareError;
+    }
   }
-  const data = await res.json();
-  const raw = data?.result?.response;
-  if (typeof raw === "string") return raw;
-  if (raw !== undefined && raw !== null) return JSON.stringify(raw);
-  return "";
 }
 
 // Transforms a Cloudflare Workers AI text-generation SSE stream into an
