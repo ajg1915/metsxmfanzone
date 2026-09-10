@@ -310,21 +310,7 @@ export function AdminLayout() {
     return null;
   }
 
-  // Show PIN verification if needed (only for traditional auth flow)
-  if (needsPinVerification && !pinVerified && user) {
-    const userId = user?.id || sessionStorage.getItem("admin_user_id");
-    if (!userId) {
-      navigate("/admin-portal");
-      return null;
-    }
-    return (
-      <AdminPinVerification
-        userId={userId}
-        onVerified={handlePinVerified}
-        onCancel={handlePinCancel}
-      />
-    );
-  }
+  // PIN verification screen removed — admins go straight to the dashboard.
 
   return (
     <SidebarProvider defaultOpen={true}>
