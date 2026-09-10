@@ -44,7 +44,7 @@ interface RecipientCounts {
   subscribers: number;
 }
 
-const DEFAULT_LOGO_URL = 'https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png';
+const DEFAULT_LOGO_URL = 'https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/logo-192.png';
 
 interface EmailStyle {
   logoWidth: number;

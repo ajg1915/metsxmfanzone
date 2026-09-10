@@ -21,7 +21,7 @@ interface EmailSettings {
 }
 
 const DEFAULTS: EmailSettings = {
-  logo_url: "https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/metsxmfanzone-logo.png",
+  logo_url: "https://clwghkbtkofacsjeyrtk.supabase.co/storage/v1/object/public/email-assets/metsxmfanzone-logo.png",
   primary_color: "#FF5910",
   card_bg_color: "#1a1a2e",
   body_bg_color: "#0a0a0a",
