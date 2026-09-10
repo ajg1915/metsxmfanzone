@@ -240,11 +240,9 @@ export function AdminLayout() {
 
 
         setIsAdmin(true);
-        
-        // If not already PIN verified, require PIN
-        if (!pinVerified) {
-          setNeedsPinVerification(true);
-        }
+        // PIN verification removed: admin role check is sufficient.
+        setPinVerified(true);
+        setNeedsPinVerification(false);
       } catch (err) {
         console.error("Error checking admin role:", err);
         toast({
