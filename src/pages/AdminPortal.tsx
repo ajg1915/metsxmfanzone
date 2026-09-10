@@ -41,6 +41,65 @@ export default function AdminPortal() {
     sessionStorage.removeItem("admin_device_fingerprint");
   };
 
+  const handleEmailLogin = async () => {
+    if (!adminEmail.trim() || !adminPassword || emailLoading) return;
+    setEmailLoading(true);
+    setConnectionIssue("");
+    try {
+      const { data: signInData, error: signInError } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email: adminEmail.trim(),
+          password: adminPassword,
+        }),
+        12000,
+        "Admin sign-in timed out"
+      );
+
+      if (signInError || !signInData?.user) {
+        toast({
+          title: "Sign-in failed",
+          description: "Check your email and password and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", signInData.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!roleRow) {
+        await supabase.auth.signOut({ scope: "local" });
+        toast({
+          title: "Access denied",
+          description: "This account does not have admin access.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const activeFingerprint = deviceFingerprint || (await generateDeviceFingerprint());
+      clearStoredAdminSession();
+      sessionStorage.setItem("admin_verified", "true");
+      sessionStorage.setItem("admin_verified_at", new Date().toISOString());
+      sessionStorage.setItem("admin_device_fingerprint", activeFingerprint);
+
+      toast({ title: "Welcome, Admin", description: "Successfully authenticated" });
+      setAdminPassword("");
+      setTimeout(() => navigate(isTV ? "/tv" : "/admin"), 400);
+    } catch (err) {
+      console.error("Admin email login error:", err);
+      toast({ title: "Error", description: "Could not sign in. Please try again.", variant: "destructive" });
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+
+
   const handleForgotPin = async () => {
     if (!forgotEmail.trim()) {
       toast({ title: "Email required", description: "Enter the admin email address.", variant: "destructive" });
