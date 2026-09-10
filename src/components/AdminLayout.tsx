@@ -7,7 +7,7 @@ import { AdminSidebar } from "@/components/AdminSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Home, LogIn, RefreshCw, Search } from "lucide-react";
-import { AdminPinVerification } from "@/components/AdminPinVerification";
+
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import { NotificationsBell } from "@/components/admin/NotificationsBell";
@@ -240,11 +240,9 @@ export function AdminLayout() {
 
 
         setIsAdmin(true);
-        
-        // If not already PIN verified, require PIN
-        if (!pinVerified) {
-          setNeedsPinVerification(true);
-        }
+        // PIN verification removed: admin role check is sufficient.
+        setPinVerified(true);
+        setNeedsPinVerification(false);
       } catch (err) {
         console.error("Error checking admin role:", err);
         toast({
@@ -262,14 +260,6 @@ export function AdminLayout() {
     checkAdmin();
   }, [user, loading, navigate, toast, pinVerified]);
 
-  const handlePinVerified = () => {
-    setPinVerified(true);
-    setNeedsPinVerification(false);
-  };
-
-  const handlePinCancel = () => {
-    navigate("/admin-portal");
-  };
 
   if (loading || checking) {
     return (
@@ -312,21 +302,7 @@ export function AdminLayout() {
     return null;
   }
 
-  // Show PIN verification if needed (only for traditional auth flow)
-  if (needsPinVerification && !pinVerified && user) {
-    const userId = user?.id || sessionStorage.getItem("admin_user_id");
-    if (!userId) {
-      navigate("/admin-portal");
-      return null;
-    }
-    return (
-      <AdminPinVerification
-        userId={userId}
-        onVerified={handlePinVerified}
-        onCancel={handlePinCancel}
-      />
-    );
-  }
+  // PIN verification screen removed — admins go straight to the dashboard.
 
   return (
     <SidebarProvider defaultOpen={true}>
