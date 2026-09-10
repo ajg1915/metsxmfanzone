@@ -27,6 +27,11 @@ export default function AdminPortal() {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
   const [connectionIssue, setConnectionIssue] = useState("");
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+
 
   const clearStoredAdminSession = () => {
     sessionStorage.removeItem("admin_verified");
