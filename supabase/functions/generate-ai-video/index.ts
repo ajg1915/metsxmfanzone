@@ -83,75 +83,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log("Generating AI video from image with prompt:", prompt);
-
-    // Use Lovable AI Video Generation API
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY not configured");
-      return new Response(JSON.stringify({ error: "AI service not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Call the Lovable Video Generation API
-    console.log("Calling Lovable AI Video Generation API...");
-    
-    const videoResponse = await fetch("https://ai.gateway.lovable.dev/v1/video/generations", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt: prompt,
-        starting_frame: imageUrl,
-        duration: duration,
-        resolution: "1080p",
-      }),
-    });
-
-    if (!videoResponse.ok) {
-      const errorText = await videoResponse.text();
-      console.error("Video API error:", videoResponse.status, errorText);
-      
-      if (videoResponse.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      
-      return new Response(JSON.stringify({ error: "Failed to generate video" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const videoData = await videoResponse.json();
-    console.log("Video generation response received");
-
-    const generatedVideoUrl = videoData.url || videoData.video_url;
-    
-    if (!generatedVideoUrl) {
-      console.error("No video URL in response:", videoData);
-      return new Response(JSON.stringify({ error: "Failed to generate video" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    console.log("Video generated successfully:", generatedVideoUrl);
+    console.log("AI video generation requested but no provider is configured.");
 
     return new Response(
       JSON.stringify({
-        success: true,
-        videoUrl: generatedVideoUrl,
-        message: "AI video generated successfully",
+        error: "AI video generation is currently unavailable. Please upload a video file instead.",
       }),
       {
-        status: 200,
+        status: 501,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
