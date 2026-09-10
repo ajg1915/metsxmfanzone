@@ -27,6 +27,11 @@ export default function AdminPortal() {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotSent, setForgotSent] = useState(false);
   const [connectionIssue, setConnectionIssue] = useState("");
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+
 
   const clearStoredAdminSession = () => {
     sessionStorage.removeItem("admin_verified");
@@ -35,6 +40,65 @@ export default function AdminPortal() {
     sessionStorage.removeItem("admin_session_token");
     sessionStorage.removeItem("admin_device_fingerprint");
   };
+
+  const handleEmailLogin = async () => {
+    if (!adminEmail.trim() || !adminPassword || emailLoading) return;
+    setEmailLoading(true);
+    setConnectionIssue("");
+    try {
+      const { data: signInData, error: signInError } = await withTimeout(
+        supabase.auth.signInWithPassword({
+          email: adminEmail.trim(),
+          password: adminPassword,
+        }),
+        12000,
+        "Admin sign-in timed out"
+      );
+
+      if (signInError || !signInData?.user) {
+        toast({
+          title: "Sign-in failed",
+          description: "Check your email and password and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", signInData.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!roleRow) {
+        await supabase.auth.signOut({ scope: "local" });
+        toast({
+          title: "Access denied",
+          description: "This account does not have admin access.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const activeFingerprint = deviceFingerprint || (await generateDeviceFingerprint());
+      clearStoredAdminSession();
+      sessionStorage.setItem("admin_verified", "true");
+      sessionStorage.setItem("admin_verified_at", new Date().toISOString());
+      sessionStorage.setItem("admin_device_fingerprint", activeFingerprint);
+
+      toast({ title: "Welcome, Admin", description: "Successfully authenticated" });
+      setAdminPassword("");
+      setTimeout(() => navigate(isTV ? "/tv" : "/admin"), 400);
+    } catch (err) {
+      console.error("Admin email login error:", err);
+      toast({ title: "Error", description: "Could not sign in. Please try again.", variant: "destructive" });
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+
 
   const handleForgotPin = async () => {
     if (!forgotEmail.trim()) {
@@ -398,6 +462,65 @@ export default function AdminPortal() {
                     </div>
                   )}
                 </div>
+
+                {/* Email + password fallback */}
+                <div className="border-t border-muted/30 pt-3">
+                  {!showEmailLogin ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowEmailLogin(true)}
+                      className="w-full text-center text-[11px] text-secondary hover:text-secondary/80 transition-colors"
+                    >
+                      Sign in with email and password
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-[10px] text-muted-foreground text-center">
+                        Admin sign-in without a PIN.
+                      </p>
+                      <Input
+                        type="email"
+                        value={adminEmail}
+                        onChange={(e) => setAdminEmail(e.target.value)}
+                        placeholder="admin@example.com"
+                        autoComplete="username"
+                        className="h-9 text-xs bg-muted/30 border-muted/50 rounded-lg"
+                        disabled={emailLoading}
+                      />
+                      <Input
+                        type="password"
+                        value={adminPassword}
+                        onChange={(e) => setAdminPassword(e.target.value)}
+                        placeholder="Password"
+                        autoComplete="current-password"
+                        className="h-9 text-xs bg-muted/30 border-muted/50 rounded-lg"
+                        disabled={emailLoading}
+                        onKeyDown={(e) => { if (e.key === "Enter") handleEmailLogin(); }}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => { setShowEmailLogin(false); setAdminPassword(""); }}
+                          disabled={emailLoading}
+                          className="flex-1 h-8 text-[10px]"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={handleEmailLogin}
+                          disabled={emailLoading || !adminEmail.trim() || !adminPassword}
+                          className="flex-1 h-8 text-[10px] bg-primary hover:bg-primary/90"
+                        >
+                          {emailLoading ? "Signing in..." : "Sign In"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+
 
                 <button
                   type="button"
