@@ -227,6 +227,13 @@ export type Database = {
             referencedRelation: "blog_posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "blog_comments_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blogs"
+            referencedColumns: ["id"]
+          },
         ]
       }
       blog_posts: {
@@ -337,40 +344,14 @@ export type Database = {
             referencedRelation: "blog_posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "blog_views_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blogs"
+            referencedColumns: ["id"]
+          },
         ]
-      }
-      blogs: {
-        Row: {
-          author_id: string | null
-          content: string
-          created_at: string
-          id: string
-          image_url: string | null
-          is_published: boolean | null
-          slug: string
-          title: string
-        }
-        Insert: {
-          author_id?: string | null
-          content: string
-          created_at?: string
-          id?: string
-          image_url?: string | null
-          is_published?: boolean | null
-          slug: string
-          title: string
-        }
-        Update: {
-          author_id?: string | null
-          content?: string
-          created_at?: string
-          id?: string
-          image_url?: string | null
-          is_published?: boolean | null
-          slug?: string
-          title?: string
-        }
-        Relationships: []
       }
       business_ads: {
         Row: {
@@ -1344,6 +1325,13 @@ export type Database = {
             columns: ["blog_post_id"]
             isOneToOne: false
             referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hero_slides_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blogs"
             referencedColumns: ["id"]
           },
         ]
@@ -3019,6 +3007,13 @@ export type Database = {
             referencedRelation: "blog_posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "stories_blog_post_id_fkey"
+            columns: ["blog_post_id"]
+            isOneToOne: false
+            referencedRelation: "blogs"
+            referencedColumns: ["id"]
+          },
         ]
       }
       story_comments: {
@@ -4106,6 +4101,84 @@ export type Database = {
       }
     }
     Views: {
+      blogs: {
+        Row: {
+          approval_status: string | null
+          audio_url: string | null
+          category: string | null
+          content: string | null
+          created_at: string | null
+          excerpt: string | null
+          id: string | null
+          image_url: string | null
+          is_draft: boolean | null
+          is_published: boolean | null
+          meta_description: string | null
+          published_at: string | null
+          scheduled_publish_at: string | null
+          slug: string | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          approval_status?: string | null
+          audio_url?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_draft?: boolean | null
+          is_published?: boolean | null
+          meta_description?: string | null
+          published_at?: string | null
+          scheduled_publish_at?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          approval_status?: string | null
+          audio_url?: string | null
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          excerpt?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_draft?: boolean | null
+          is_published?: boolean | null
+          meta_description?: string | null
+          published_at?: string | null
+          scheduled_publish_at?: string | null
+          slug?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_ads_public: {
         Row: {
           ad_description: string | null
