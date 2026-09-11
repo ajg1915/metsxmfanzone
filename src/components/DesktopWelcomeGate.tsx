@@ -80,12 +80,15 @@ export const DesktopWelcomeGate = () => {
     // Allow tablets (<1024px). Only block true desktop.
     if (!forcePreview && window.innerWidth < 1024) return;
     if (window.location.search.includes("tv=true")) return;
-    // Never block auth or admin routes
+    // Never block auth, admin, or publicly shared article routes.
+    // Blog pages must remain directly readable on desktop and from social links.
     const path = location.pathname;
     if (
       !forcePreview &&
       (path.startsWith("/admin") ||
         path.startsWith("/auth") ||
+        path.startsWith("/blog") ||
+        path.startsWith("/og-blog") ||
         path.startsWith("/writer-auth") ||
         path.startsWith("/reset-password"))
     )
