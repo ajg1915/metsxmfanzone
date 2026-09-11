@@ -27,7 +27,7 @@ export default function RelatedPosts({ currentPostId, category, tags }: RelatedP
     const fetchRelated = async () => {
       // Fetch posts from same category, excluding current
       const { data } = await supabase
-        .from("blog_posts")
+        .from("blogs")
         .select("id, title, slug, excerpt, featured_image_url, category, published_at")
         .eq("published", true)
         .eq("category", category)
@@ -40,7 +40,7 @@ export default function RelatedPosts({ currentPostId, category, tags }: RelatedP
       } else {
         // Fallback: fetch latest posts
         const { data: latest } = await supabase
-          .from("blog_posts")
+          .from("blogs")
           .select("id, title, slug, excerpt, featured_image_url, category, published_at")
           .eq("published", true)
           .neq("id", currentPostId)

@@ -294,7 +294,7 @@ const HeroManagement = () => {
     try {
       const [slidesRes, blogsRes] = await Promise.all([
         supabase.from("hero_slides").select("*").order("display_order", { ascending: true }),
-        supabase.from("blog_posts").select("id, title, slug, featured_image_url, excerpt").eq("published", true).order("published_at", { ascending: false }).limit(50),
+        supabase.from("blogs").select("id, title, slug, featured_image_url, excerpt").eq("published", true).order("published_at", { ascending: false }).limit(50),
       ]);
       if (slidesRes.error) throw slidesRes.error;
       if (blogsRes.error) throw blogsRes.error;

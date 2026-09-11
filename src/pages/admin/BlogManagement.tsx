@@ -141,7 +141,7 @@ export default function BlogManagement() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from("blog_posts")
+        .from("blogs")
         .select(`*, profiles ( full_name, email )`)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -174,7 +174,7 @@ export default function BlogManagement() {
 
   const handleApprove = async (post: BlogPost) => {
     try {
-      const { error } = await supabase.from("blog_posts").update({
+      const { error } = await supabase.from("blogs").update({
         approval_status: "approved", published: true, published_at: new Date().toISOString(),
       }).eq("id", post.id);
       if (error) throw error;
@@ -195,7 +195,7 @@ export default function BlogManagement() {
 
   const handleReject = async (post: BlogPost) => {
     try {
-      const { error } = await supabase.from("blog_posts").update({
+      const { error } = await supabase.from("blogs").update({
         approval_status: "rejected", published: false,
       }).eq("id", post.id);
       if (error) throw error;
@@ -247,11 +247,11 @@ export default function BlogManagement() {
 
     try {
       if (editingPost) {
-        const { error } = await supabase.from("blog_posts").update(postData).eq("id", editingPost.id);
+        const { error } = await supabase.from("blogs").update(postData).eq("id", editingPost.id);
         if (error) throw error;
         toast({ title: "Updated", description: isScheduledFuture ? "Scheduled for later." : "Saved." });
       } else {
-        const { error } = await supabase.from("blog_posts").insert([postData]);
+        const { error } = await supabase.from("blogs").insert([postData]);
         if (error) throw error;
         toast({ title: "Created", description: isScheduledFuture ? "Scheduled for later." : "Saved." });
       }
@@ -288,7 +288,7 @@ export default function BlogManagement() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this post permanently?")) return;
     try {
-      const { error } = await supabase.from("blog_posts").delete().eq("id", id);
+      const { error } = await supabase.from("blogs").delete().eq("id", id);
       if (error) throw error;
       toast({ title: "Deleted" });
       fetchPosts();

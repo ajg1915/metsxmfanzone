@@ -129,7 +129,7 @@ export default function WriterArticleEditor() {
 
       if (isEditing) {
         const { data: article, error } = await supabase
-          .from("blog_posts")
+          .from("blogs")
           .select("*")
           .eq("id", id)
           .eq("user_id", user.id)
@@ -282,7 +282,7 @@ export default function WriterArticleEditor() {
 
       if (isEditing) {
         const { error } = await supabase
-          .from("blog_posts")
+          .from("blogs")
           .update(articleData)
           .eq("id", id);
 
@@ -296,7 +296,7 @@ export default function WriterArticleEditor() {
         });
       } else {
         const { error } = await supabase
-          .from("blog_posts")
+          .from("blogs")
           .insert([articleData]);
 
         if (error) throw error;
