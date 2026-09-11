@@ -4109,11 +4109,11 @@ export type Database = {
           content: string | null
           created_at: string | null
           excerpt: string | null
+          featured_image_url: string | null
           id: string | null
-          image_url: string | null
           is_draft: boolean | null
-          is_published: boolean | null
           meta_description: string | null
+          published: boolean | null
           published_at: string | null
           scheduled_publish_at: string | null
           slug: string | null
@@ -4129,11 +4129,11 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           excerpt?: string | null
+          featured_image_url?: string | null
           id?: string | null
-          image_url?: string | null
           is_draft?: boolean | null
-          is_published?: boolean | null
           meta_description?: string | null
+          published?: boolean | null
           published_at?: string | null
           scheduled_publish_at?: string | null
           slug?: string | null
@@ -4149,11 +4149,11 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           excerpt?: string | null
+          featured_image_url?: string | null
           id?: string | null
-          image_url?: string | null
           is_draft?: boolean | null
-          is_published?: boolean | null
           meta_description?: string | null
+          published?: boolean | null
           published_at?: string | null
           scheduled_publish_at?: string | null
           slug?: string | null
