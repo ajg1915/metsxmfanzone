@@ -10,7 +10,7 @@ const Sitemap = () => {
       
       // Fetch all published blog posts
       const { data: posts } = await supabase
-        .from('blog_posts')
+        .from('blogs')
         .select('slug, published_at')
         .eq('published', true)
         .order('published_at', { ascending: false });

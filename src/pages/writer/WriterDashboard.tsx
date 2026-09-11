@@ -76,7 +76,7 @@ export default function WriterDashboard() {
 
       // Fetch writer's articles
       const { data: articlesData, error } = await supabase
-        .from("blog_posts")
+        .from("blogs")
         .select("id, title, slug, excerpt, published, approval_status, created_at, updated_at")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });

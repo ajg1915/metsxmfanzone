@@ -89,7 +89,7 @@ const WhatsNew = () => {
 
       const [blogRes, podcastRes, streamRes] = await Promise.all([
         supabase
-          .from("blog_posts")
+          .from("blogs")
           .select("id, title, created_at")
           .eq("published", true)
           .gte("created_at", oneWeekAgo.toISOString())

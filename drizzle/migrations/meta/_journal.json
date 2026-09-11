@@ -8,6 +8,13 @@
       "when": 1788886887270,
       "tag": "0000_create_fcm_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789131750493,
+      "tag": "0001_blogs_view_mirror_blog_posts",
+      "breakpoints": true
     }
   ]
 }

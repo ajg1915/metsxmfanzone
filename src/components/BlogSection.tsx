@@ -29,7 +29,7 @@ const BlogSection = () => {
     const load = async () => {
       try {
         const { data, error } = await supabase
-          .from("blog_posts")
+          .from("blogs")
           .select("id, title, slug, excerpt, featured_image_url, category, published_at, created_at")
           .eq("published", true)
           .order("published_at", { ascending: false })

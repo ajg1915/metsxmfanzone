@@ -56,7 +56,7 @@ const DailyReports = () => {
 
       // Fetch new blog posts
       const { count: newBlogPosts } = await supabase
-        .from('blog_posts')
+        .from('blogs')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', dayStart)
         .lte('created_at', dayEnd)

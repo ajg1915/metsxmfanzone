@@ -91,7 +91,7 @@ const StoriesManagement = () => {
   const fetchBlogPosts = async () => {
     try {
       const { data, error } = await supabase
-        .from("blog_posts")
+        .from("blogs")
         .select("id, title, slug")
         .eq("published", true)
         .order("created_at", { ascending: false });

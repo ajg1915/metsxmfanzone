@@ -53,7 +53,7 @@ const DashboardNotificationsInbox = () => {
         .order("created_at", { ascending: false })
         .limit(10),
       supabase
-        .from("blog_posts")
+        .from("blogs")
         .select("id, title, slug, published_at")
         .eq("published", true)
         .gte("published_at", sinceISO)
