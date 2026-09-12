@@ -13,7 +13,7 @@ const stripQuotes = (value?: string) =>
 
 // Owner-managed Supabase backend override: the app runs on the owner's own
 // Supabase project (rdmrxeplasttewtlfetc) instead of Lovable Cloud.
-const OWNER_SUPABASE = {
+const OWNER_SUPABASE: Record<string, string> = {
   VITE_SUPABASE_URL: "https://rdmrxeplasttewtlfetc.supabase.co",
   VITE_SUPABASE_PUBLISHABLE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA",
   VITE_SUPABASE_PROJECT_ID: "rdmrxeplasttewtlfetc",
