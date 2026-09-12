@@ -1,4 +1,4 @@
-import { MessageSquarePlus, Tv, BookOpen, Mic, Lock, CalendarDays } from "lucide-react";
+import { Tv, BookOpen, Mic, Lock, CalendarDays } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,11 +18,11 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Home", path: "/", requiresPremium: false },
   { label: "Watch Live", path: "/metsxmfanzone", requiresPremium: true },
-  { label: "Post", path: "/community", requiresPremium: false },
   { label: "Blog", path: "/blog", requiresPremium: true },
   { label: "Podcast", path: "/podcast", requiresPremium: true },
   { label: "Games", path: "/mets-schedule-2026", requiresPremium: false },
 ];
+
 
 const SocialMediaBar = () => {
   const navigate = useNavigate();
@@ -50,17 +50,6 @@ const SocialMediaBar = () => {
       return;
     }
 
-    // Community requires login but NOT premium
-    if (item.label === "Post" && !user) {
-      navigate("/auth");
-      return;
-    }
-
-    // Admin override: Post button goes to admin stories
-    if (item.label === "Post" && isAdmin) {
-      navigate("/admin/stories");
-      return;
-    }
 
     if (item.isAnchor && location.pathname === "/") {
       const el = document.getElementById("social");
@@ -89,9 +78,8 @@ const SocialMediaBar = () => {
                 <img src={metsLogo} alt={item.label} className="h-12 w-12 object-contain" />
               ) : item.label === "Watch Live" ? (
                 <Tv className="h-7 w-7" />
-              ) : item.label === "Post" ? (
-                <MessageSquarePlus className="h-7 w-7" />
               ) : item.label === "Blog" ? (
+
                 <BookOpen className="h-7 w-7" />
               ) : item.label === "Podcast" ? (
                 <Mic className="h-7 w-7" />
