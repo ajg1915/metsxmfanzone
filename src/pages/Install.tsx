@@ -24,6 +24,7 @@ import {
   Globe
 } from "lucide-react";
 import { motion } from "framer-motion";
+import apkAsset from "@/assets/metsxmfanzone-apk.asset.json";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -277,7 +278,7 @@ const Install = () => {
                         </p>
                       </div>
                       <Button asChild size="lg" className="gap-2 shadow-lg shadow-primary/20">
-                        <a href="/downloads/metsxmfanzone.apk" download="MetsXMFanZone.apk">
+                        <a href={apkAsset.url} download="MetsXMFanZone.apk">
                           <Download className="h-5 w-5" />
                           Download APK
                         </a>
