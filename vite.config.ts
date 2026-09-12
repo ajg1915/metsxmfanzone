@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
     ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY", "VITE_SUPABASE_PROJECT_ID"]
       .map((key) => [
         `import.meta.env.${key}`,
-        JSON.stringify(stripQuotes(OWNER_SUPABASE_ENV[key] ?? env[key] ?? process.env[key])),
+        JSON.stringify(stripQuotes(env[key] ?? process.env[key])),
       ])
       .filter(([, value]) => value !== '""'),
   );
