@@ -29,6 +29,7 @@ export default function AdminAlertsFeed() {
 
   useEffect(() => {
     load();
+
     const channel = supabase
       .channel("admin-alerts-feed")
       .on(
@@ -37,8 +38,21 @@ export default function AdminAlertsFeed() {
         () => load(),
       )
       .subscribe();
+
+    // Polling fallback so the feed still refreshes if realtime is unavailable
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, 20000);
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
       supabase.removeChannel(channel);
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 
