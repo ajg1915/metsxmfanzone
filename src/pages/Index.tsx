@@ -30,7 +30,7 @@ const HomeLineupCard = lazyWithRetry(() => import("@/components/HomeLineupCard")
 const FindUsSection = lazyWithRetry(() => import("@/components/FindUsSection"), "home-find-us-section");
 const TikTokFeedSection = lazyWithRetry(() => import("@/components/TikTokFeedSection"), "home-tiktok-feed-section");
 
-const StoriesSection = lazyWithRetry(() => import("@/components/StoriesSection"), "home-stories-section");
+
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
 const FAQSection = lazyWithRetry(() => import("@/components/FAQSection"), "home-faq-section");
 const TestimonialsSection = lazyWithRetry(() => import("@/components/TestimonialsSection"), "home-testimonials-section");
@@ -186,9 +186,6 @@ const Index = () => {
           <GamecastBanner />
         </Suspense>
 
-        <Suspense fallback={<SectionSkeleton height="h-32" />}>
-          <StoriesSection />
-        </Suspense>
 
         <Suspense fallback={<SectionSkeleton />}>
           <LiveNetworks />
