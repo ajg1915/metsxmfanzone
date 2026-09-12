@@ -142,7 +142,7 @@ const Community = () => {
 
     // Fetch published blog posts
     const { data: blogData, error: blogError } = await supabase
-      .from("blogs")
+      .from("blog_posts")
       .select(`
         id,
         user_id,

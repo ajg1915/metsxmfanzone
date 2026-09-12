@@ -28,7 +28,7 @@ export default function OGBlogPost() {
   const fetchPostAndRedirect = async () => {
     try {
       const { data, error } = await supabase
-        .from("blogs")
+        .from("blog_posts")
         .select("id, title, slug, excerpt, featured_image_url, category, tags, published_at")
         .eq("slug", slug)
         .eq("published", true)
