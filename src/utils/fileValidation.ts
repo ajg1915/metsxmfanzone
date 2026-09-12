@@ -125,12 +125,33 @@ const matchesMagicBytes = (fileBytes: Uint8Array, signatures: number[][]): boole
   });
 };
 
+const isIsoBaseMediaFile = (fileBytes: Uint8Array): boolean => {
+  // MP4, M4A, and MOV files use an ISO Base Media "ftyp" box. The marker is
+  // normally at byte 4, so checking only the first byte incorrectly rejects
+  // videos recorded by many phones.
+  return fileBytes.length >= 8
+    && fileBytes[4] === 0x66
+    && fileBytes[5] === 0x74
+    && fileBytes[6] === 0x79
+    && fileBytes[7] === 0x70;
+};
+
 /**
  * Validate file content by checking magic bytes
  */
 export const validateMagicBytes = async (file: File, fileType: FileType): Promise<ValidationResult> => {
   try {
     const fileBytes = await readFileBytes(file, 12); // Read first 12 bytes
+
+    if (
+      (file.type === 'video/mp4'
+        || file.type === 'video/quicktime'
+        || file.type === 'audio/mp4'
+        || file.type === 'audio/x-m4a')
+      && isIsoBaseMediaFile(fileBytes)
+    ) {
+      return { valid: true };
+    }
     
     let allowedMimes: string[];
     switch (fileType) {

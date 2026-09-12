@@ -49,6 +49,29 @@ interface Story {
   text_bg_style?: string | null;
 }
 
+const MAX_STORY_VIDEO_MB = 25;
+const MAX_STORY_IMAGE_MB = 10;
+
+const getUploadErrorMessage = (error: unknown): string => {
+  const message = error instanceof Error ? error.message : String(error || "");
+  const normalized = message.toLowerCase();
+
+  if (normalized.includes("jwt") || normalized.includes("unauthorized") || normalized.includes("not authenticated")) {
+    return "Your sign-in expired. Sign in again, then retry the upload.";
+  }
+  if (normalized.includes("row-level security") || normalized.includes("policy")) {
+    return "Your account does not have permission to upload this video. Sign in with an admin account.";
+  }
+  if (normalized.includes("maximum allowed size") || normalized.includes("too large") || normalized.includes("payload too large")) {
+    return `This video is too large. Choose a video under ${MAX_STORY_VIDEO_MB}MB.`;
+  }
+  if (normalized.includes("failed to fetch") || normalized.includes("network") || normalized.includes("timeout")) {
+    return "The upload lost its connection. Keep this page open and try again on a stable connection.";
+  }
+
+  return message || "The video could not be uploaded. Please try again.";
+};
+
 const StoriesManagement = () => {
   const { toast } = useToast();
   const [stories, setStories] = useState<Story[]>([]);
@@ -145,6 +168,11 @@ const StoriesManagement = () => {
     setUploading(true);
 
     try {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData.user) {
+        throw new Error("Not authenticated");
+      }
+
       let mediaUrl: string | null = editingStory?.media_url || null;
       let thumbnailUrl = editingStory?.thumbnail_url || null;
       let mediaType: 'image' | 'video' | 'text' =
@@ -156,7 +184,11 @@ const StoriesManagement = () => {
 
         const { error: uploadError } = await supabase.storage
           .from("stories")
-          .upload(fileName, mediaFile);
+          .upload(fileName, mediaFile, {
+            cacheControl: "3600",
+            contentType: mediaFile.type,
+            upsert: false,
+          });
 
         if (uploadError) throw uploadError;
         mediaUrl = fileName;
@@ -235,8 +267,8 @@ const StoriesManagement = () => {
     } catch (error: any) {
       console.error("Error saving story:", error);
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Upload failed",
+        description: getUploadErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -403,7 +435,7 @@ const StoriesManagement = () => {
     
     // Determine file type and validate
     const fileType: FileType = file.type.startsWith('video/') ? 'video' : 'image';
-    const maxSize = fileType === 'video' ? 100 : 10; // 100MB for video, 10MB for images
+    const maxSize = fileType === 'video' ? MAX_STORY_VIDEO_MB : MAX_STORY_IMAGE_MB;
     
     const validation = await validateFile(file, fileType, maxSize);
     if (!validation.valid) {
@@ -655,8 +687,13 @@ const StoriesManagement = () => {
                     onChange={(e) => handleMediaFileChange(e.target.files?.[0] || null)}
                   />
                   <p className="text-[10px] text-muted-foreground mt-1">
-                    Upload an image/video, or skip and fill in the text below for a text-only update.
+                    MP4, MOV, or WebM video up to {MAX_STORY_VIDEO_MB}MB. Images up to {MAX_STORY_IMAGE_MB}MB.
                   </p>
+                  {mediaFile && (
+                    <p className="mt-1 text-xs font-medium text-foreground">
+                      Selected: {mediaFile.name} ({(mediaFile.size / 1024 / 1024).toFixed(1)}MB)
+                    </p>
+                  )}
                 </div>
               )}
 
