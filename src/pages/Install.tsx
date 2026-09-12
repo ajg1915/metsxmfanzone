@@ -264,17 +264,38 @@ const Install = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Direct APK Download */}
+                  <div className="p-5 rounded-xl bg-gradient-to-r from-primary/15 via-primary/5 to-transparent border border-primary/30">
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                      <div className="p-3 rounded-xl bg-primary/20">
+                        <Download className="h-7 w-7 text-primary" />
+                      </div>
+                      <div className="flex-1 text-center sm:text-left">
+                        <h3 className="font-bold text-lg mb-1">Download the Android App (APK)</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Get the native Android app directly. Tap download, open the file, and allow installation from your browser when prompted.
+                        </p>
+                      </div>
+                      <Button asChild size="lg" className="gap-2 shadow-lg shadow-primary/20">
+                        <a href="/downloads/metsxmfanzone.apk" download="MetsXMFanZone.apk">
+                          <Download className="h-5 w-5" />
+                          Download APK
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+
                   {deferredPrompt ? (
                     <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
                       <p className="text-green-500 font-medium mb-3">Your browser supports direct installation!</p>
-                      <Button onClick={handleInstall} className="gap-2">
+                      <Button onClick={handleInstall} variant="outline" className="gap-2">
                         <Download className="h-4 w-4" />
-                        Install Now
+                        Install PWA Instead
                       </Button>
                     </div>
                   ) : (
                     <p className="text-muted-foreground">
-                      If you don't see an install prompt, follow these steps in Chrome:
+                      Prefer the browser version? Follow these steps in Chrome to install it as an app:
                     </p>
                   )}
                   
