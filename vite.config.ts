@@ -11,13 +11,7 @@ import { VitePWA } from "vite-plugin-pwa";
 const stripQuotes = (value?: string) =>
   (value ?? "").trim().replace(/^['"]+/, "").replace(/['"]+$/, "");
 
-// Owner-managed Supabase project (overrides the managed .env values).
-const OWNER_SUPABASE_ENV: Record<string, string> = {
-  VITE_SUPABASE_URL: "https://rdmrxeplasttewtlfetc.supabase.co",
-  VITE_SUPABASE_PUBLISHABLE_KEY:
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA",
-  VITE_SUPABASE_PROJECT_ID: "rdmrxeplasttewtlfetc",
-};
+// Rolled back: use the managed Lovable Cloud backend from .env (no override).
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
