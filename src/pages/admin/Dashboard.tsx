@@ -117,7 +117,7 @@ export default function AdminDashboard() {
           .eq("status", "active")
           .or(`end_date.is.null,end_date.gt.${nowIso}`),
         supabase.from("live_streams").select("status"),
-        supabase.from("blogs").select("*", { count: "exact", head: true }),
+        supabase.from("blog_posts").select("*", { count: "exact", head: true }),
         supabase.from("stories").select("*", { count: "exact", head: true }),
       ]);
 

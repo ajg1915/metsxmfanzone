@@ -21,7 +21,7 @@ export default function BlogRSS() {
   const generateRSS = async () => {
     try {
       const { data: posts, error } = await supabase
-        .from("blogs")
+        .from("blog_posts")
         .select("*")
         .eq("published", true)
         .order("published_at", { ascending: false })

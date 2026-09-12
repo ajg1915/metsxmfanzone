@@ -119,7 +119,7 @@ export default function BlogPost() {
       })();
 
       const { data, error } = await supabase
-        .from("blogs")
+        .from("blog_posts")
         .select("*")
         .eq("slug", decodedSlug)
         .eq("published", true)

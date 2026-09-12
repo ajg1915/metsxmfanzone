@@ -46,7 +46,7 @@ export const WelcomeBackToast = () => {
 
         // Fetch new blog posts
         const { data: blogPosts } = await supabase
-          .from('blogs')
+          .from('blog_posts')
           .select('title, slug')
           .eq('published', true)
           .gt('created_at', lastVisit)

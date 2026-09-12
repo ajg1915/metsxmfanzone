@@ -56,7 +56,7 @@ const SpringTrainingLive = () => {
   useEffect(() => {
     const timer = setTimeout(async () => {
       const { data } = await supabase
-        .from("blogs")
+        .from("blog_posts")
         .select("id, title, slug, excerpt, featured_image_url, category, published_at")
         .eq("published", true)
         .order("published_at", { ascending: false })
