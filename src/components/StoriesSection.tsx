@@ -65,6 +65,27 @@ const StoriesSection = () => {
 
   useEffect(() => {
     fetchStories();
+
+    const refreshStories = () => {
+      if (document.visibilityState === "visible") fetchStories();
+    };
+    const intervalId = window.setInterval(refreshStories, 20_000);
+    document.addEventListener("visibilitychange", refreshStories);
+
+    const channel = supabase
+      .channel("public-stories-feed")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "stories" },
+        () => fetchStories(),
+      )
+      .subscribe();
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", refreshStories);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -86,7 +107,6 @@ const StoriesSection = () => {
         .select("*")
         .eq("published", true)
         .neq("media_type", "text")
-        .order("display_order", { ascending: true })
         .order("created_at", { ascending: false });
       
       if (error) throw error;

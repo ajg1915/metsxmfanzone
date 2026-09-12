@@ -63,7 +63,7 @@ const StoriesManagement = () => {
   const [formData, setFormData] = useState({
     title: "",
     display_order: 0,
-    published: false,
+    published: true,
     link_url: "",
     blog_post_id: "",
     text_content: "",
@@ -468,7 +468,7 @@ const StoriesManagement = () => {
   };
 
   const resetForm = () => {
-    setFormData({ title: "", display_order: 0, published: false, link_url: "", blog_post_id: "", text_content: "", text_bg_style: "gradient" });
+    setFormData({ title: "", display_order: 0, published: true, link_url: "", blog_post_id: "", text_content: "", text_bg_style: "gradient" });
     setLinkType("blog");
     setMediaFile(null);
     setThumbnailFile(null);
