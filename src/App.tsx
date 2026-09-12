@@ -421,7 +421,6 @@ const AppContent = () => {
               <Route path="ai-assistant" element={<AIAssistant />} />
               <Route path="loyalty-rewards" element={<LoyaltyRewardsManagement />} />
             </Route>
-            <Route path="/ai-test" element={<AIAssistant />} />
             {/* Writer Portal Routes */}
             <Route path="/writer" element={<WriterDashboard />} />
             <Route path="/writer/new-article" element={<WriterArticleEditor />} />
