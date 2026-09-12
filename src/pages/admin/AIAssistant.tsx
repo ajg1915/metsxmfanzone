@@ -148,9 +148,9 @@ export default function AIAssistant() {
   };
 
   return (
-    <div className="w-full max-w-full min-h-0 h-[calc(100dvh-8rem)] min-h-[500px] flex flex-col overflow-hidden">
+    <div className="w-full max-w-full h-full min-h-0 flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-3 shrink-0">
         <div className="p-2 rounded-lg bg-[#FF5910]/10 border border-[#FF5910]/20">
           <Bot className="w-6 h-6 text-[#FF5910]" />
         </div>
