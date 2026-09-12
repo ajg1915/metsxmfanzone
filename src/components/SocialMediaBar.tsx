@@ -27,6 +27,7 @@ const navItems: NavItem[] = [
 const SocialMediaBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  if (location.pathname.startsWith("/admin")) return null;
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [isAdmin, setIsAdmin] = useState(false);
