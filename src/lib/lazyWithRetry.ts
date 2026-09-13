@@ -59,8 +59,20 @@ export const lazyWithRetry = <T extends ComponentType<any>>(
       sessionStorage.removeItem(storageKey);
       return module;
     } catch (error) {
-      if (isRecoverableDynamicImportError(error) && reloadForFreshAssets(storageKey)) {
-        return new Promise<never>(() => {});
+      if (isRecoverableDynamicImportError(error)) {
+        // One in-place retry first — transient network blips are common on
+        // mobile and shouldn't force a full page reload.
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 600));
+          const module = await importer();
+          sessionStorage.removeItem(storageKey);
+          return module;
+        } catch (retryError) {
+          if (reloadForFreshAssets(storageKey)) {
+            return new Promise<never>(() => {});
+          }
+          throw retryError;
+        }
       }
 
       throw error;
