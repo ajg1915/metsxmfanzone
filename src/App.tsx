@@ -305,7 +305,9 @@ const AppContent = () => {
         <DesktopWelcomeGate />
         <UpdatePrompt />
         
+        <RouteErrorBoundary resetKey={location.pathname}>
         <Suspense fallback={<PageLoader />}>
+
 
           <Routes>
 
