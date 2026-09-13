@@ -27,6 +27,7 @@ import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -466,6 +467,8 @@ const AppContent = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
+        </RouteErrorBoundary>
+
       </PullToRefresh>
       </TVModeWrapper>
     </TooltipProvider>
