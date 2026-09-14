@@ -221,7 +221,7 @@ export default function MetsSchedule2026() {
                   <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {monthGames.map((game, index) => (
                       <motion.div
-                        key={game.gameId}
+                        key={`${game.gameId ?? "game"}-${game.date ?? ""}-${index}`}
                         initial={{ opacity: 0, scale: 0.95 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
