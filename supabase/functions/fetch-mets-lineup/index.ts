@@ -290,8 +290,10 @@ Deno.serve(async (req) => {
             console.log("Triggering daily predictions generation with lineup data...");
             console.log("Lineup player IDs for predictions:", lineupPlayerIds);
 
+            // Run predictions generation in the background. AI generation can
+            // take tens of seconds and must not block the lineup response.
             const predictionsUrl = `${supabaseUrl}/functions/v1/generate-daily-predictions`;
-            const predResponse = await fetch(predictionsUrl, {
+            const predPromise = fetch(predictionsUrl, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -306,9 +308,18 @@ Deno.serve(async (req) => {
                 gameTime: gameTimeStr,
                 location: location
               }),
-            });
-            const predResult = await predResponse.text();
-            console.log("Predictions generation result:", predResponse.status, predResult);
+            }).then(async (predResponse) => {
+              const predResult = await predResponse.text();
+              console.log("Predictions generation result:", predResponse.status, predResult);
+            }).catch((e) => console.error("Background predictions failed:", e));
+
+            try {
+              // @ts-ignore EdgeRuntime is available in Supabase edge functions
+              if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(predPromise);
+              else await predPromise;
+            } catch {
+              await predPromise;
+            }
           }
         }
       }
