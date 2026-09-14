@@ -107,10 +107,12 @@ const Podcast = () => {
       const { data, error } = await supabase
         .from("podcast_live_stream")
         .select("*")
-        .single();
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (error) throw error;
-      setLiveStream(data);
+      setLiveStream(data ?? null);
     } catch (error) {
       console.error("Error fetching live stream:", error);
     }
