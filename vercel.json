@@ -9,7 +9,7 @@
       "destination": "/api/og/blog/:slug"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]
