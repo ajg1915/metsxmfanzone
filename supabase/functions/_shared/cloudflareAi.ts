@@ -86,6 +86,7 @@ export async function generateLovableFallbackText({
       "X-Lovable-AIG-SDK": "fetch",
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(25_000),
   });
 
   if (!res.ok) {
@@ -212,6 +213,7 @@ export async function generateCloudflareImage({
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ prompt }),
+    signal: AbortSignal.timeout(45_000),
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
