@@ -238,6 +238,7 @@ const BlogSection = () => {
                       src={post.featured_image_url}
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => { const t = e.currentTarget; if (!t.dataset.fbk) { t.dataset.fbk = "1"; t.src = "/placeholder.svg"; } }}
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
