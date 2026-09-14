@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/blog/:slug",
-      "destination": "/api/og/blog/:slug"
+      "destination": "/api/og/blog/[slug]"
     },
     {
       "source": "/blog/:slug/",
-      "destination": "/api/og/blog/:slug"
+      "destination": "/api/og/blog/[slug]"
     },
     {
       "source": "/((?!api/|.*\\..*).*)",
