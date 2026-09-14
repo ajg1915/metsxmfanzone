@@ -150,53 +150,13 @@ export function AdminLayout() {
       const adminUserId = sessionStorage.getItem("admin_user_id");
       const pinVerifiedSession = sessionStorage.getItem("admin_verified") === "true";
       
-      if (adminUserId && pinVerifiedSession) {
-        // PIN portal auth - verify server-side first, even if a stale browser auth
-        // session exists. A stale non-admin user session must not override a valid
-        // PIN login for the real admin account.
-        try {
-          const { data: verifyData, error: verifyError } = await withTimeout(
-            supabase.functions.invoke("admin-pin-login", {
-              body: { action: "verify-admin", userId: adminUserId },
-            }),
-            8000,
-            "Admin verification timed out"
-          );
-
-          // Network/backend hiccup: keep the existing verified session instead of locking the admin out
-          if (verifyError || !verifyData) {
-            console.warn("Admin verification unavailable, keeping existing session", verifyError);
-            setIsAdmin(true);
-            setPinOnlyAuth(true);
-            setPinVerified(true);
-            setChecking(false);
-            return;
-          }
-
-          if (verifyData.isAdmin === false) {
-            toast({
-              title: "Access Denied",
-              description: "Admin privileges have been revoked",
-              variant: "destructive",
-            });
-            sessionStorage.removeItem("admin_verified");
-            sessionStorage.removeItem("admin_user_id");
-            navigate("/admin-portal");
-            return;
-          }
-
-          setIsAdmin(true);
-          setPinOnlyAuth(true);
-          setPinVerified(true);
-          setNeedsPinVerification(false);
-        } catch (err) {
-          // Timeout or offline - don't kick the admin out, trust the verified session
-          console.warn("Admin role check failed, keeping session:", err);
-          setIsAdmin(true);
-          setPinOnlyAuth(true);
-          setPinVerified(true);
-          setNeedsPinVerification(false);
-        }
+      if (adminUserId && pinVerifiedSession && !user) {
+        // Session was verified at sign-in on this device; trust it without an
+        // extra backend round-trip so admin pages open instantly.
+        setIsAdmin(true);
+        setPinOnlyAuth(true);
+        setPinVerified(true);
+        setNeedsPinVerification(false);
         setChecking(false);
         return;
       }
