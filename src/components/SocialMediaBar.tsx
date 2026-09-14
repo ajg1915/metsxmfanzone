@@ -27,12 +27,13 @@ const navItems: NavItem[] = [
 const SocialMediaBar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  if (location.pathname.startsWith("/admin")) return null;
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [isAdmin, setIsAdmin] = useState(false);
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   useEffect(() => {
+    if (isAdminRoute) return;
     if (!user) { setIsAdmin(false); return; }
     supabase
       .from("user_roles")
@@ -41,7 +42,11 @@ const SocialMediaBar = () => {
       .then(({ data }) => {
         setIsAdmin(data?.some(r => r.role === "admin") ?? false);
       });
-  }, [user]);
+  }, [isAdminRoute, user]);
+
+  // Keep hooks in the same order on every route. Returning before the hooks
+  // caused React to crash when navigating from the public site into /admin.
+  if (isAdminRoute) return null;
 
   const handleClick = (item: typeof navItems[0]) => {
     // Items requiring premium: redirect to pricing if not premium
