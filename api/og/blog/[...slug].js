@@ -76,7 +76,10 @@ function stripSocialTags(html) {
 }
 
 function buildHead(post, slug, siteUrl) {
-  const postUrl = `${siteUrl}/blog/${encodeURIComponent(slug)}`;
+  const postUrl = `${siteUrl}/blog/${String(slug)
+    .split("/")
+    .map(encodeURIComponent)
+    .join("/")}`;
   const image = resolveImage(post.featured_image_url, siteUrl);
   const rawDescription =
     (post.excerpt && String(post.excerpt).trim().length > 0
@@ -184,7 +187,9 @@ export default async function handler(req, res) {
   try {
     const siteUrl = resolveSiteUrl(req);
     const slugParam = req.query?.slug;
-    const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam;
+    // Nested paths (e.g. /blog/tech/my-post) arrive as an array of segments.
+    const slug = (Array.isArray(slugParam) ? slugParam.join("/") : slugParam || "")
+      .replace(/^\/+|\/+$/g, "");
 
     if (!slug) {
       res.status(400).send("Missing slug");
