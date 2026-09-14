@@ -13,6 +13,8 @@ export interface CloudflareAiOptions {
   max_tokens?: number;
   temperature?: number;
   stream?: boolean;
+  /** Abort the Cloudflare request after this many ms (default 20s, 30s for streams). */
+  timeoutMs?: number;
 }
 
 // Default to a capable free-tier text model. Override per-call if needed.
@@ -37,11 +39,14 @@ export async function callCloudflareAi({
   max_tokens,
   temperature,
   stream = false,
+  timeoutMs,
 }: CloudflareAiOptions): Promise<Response> {
   const { accountId, apiToken } = getCloudflareAiConfig();
   const body: Record<string, unknown> = { messages, stream };
   if (max_tokens !== undefined) body.max_tokens = max_tokens;
   if (temperature !== undefined) body.temperature = temperature;
+
+  const limit = timeoutMs ?? (stream ? 30_000 : 20_000);
 
   return fetch(buildCloudflareAiUrl(accountId, model), {
     method: "POST",
@@ -50,6 +55,7 @@ export async function callCloudflareAi({
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(limit),
   });
 }
 
