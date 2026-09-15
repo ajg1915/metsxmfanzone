@@ -7,13 +7,11 @@ const distDir = path.resolve(__dirname, 'dist');
 const templatePath = path.resolve(distDir, 'index.html');
 
 const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://metsxmfanzone.com';
-const SUPABASE_URL =
-  process.env.VITE_SUPABASE_URL ||
-  process.env.SUPABASE_URL ||
-  'https://rdmrxeplasttewtlfetc.supabase.co';
+// Owner-managed Supabase backend override (must match vite.config.ts) so the
+// prerenderer always reads live content from the owner's project, never from
+// any stale VITE_/SUPABASE_ env values left in the build environment.
+const SUPABASE_URL = 'https://rdmrxeplasttewtlfetc.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY =
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.SUPABASE_PUBLISHABLE_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA';
 const FALLBACK_IMAGE = `${SITE_URL}/og-image.jpg`;
 const SOCIAL_IMAGE = `${SITE_URL}/og-image.jpg`;
@@ -140,9 +138,60 @@ function buildHead({ title, description, keywords, canonical, image, type = 'web
   `.trim();
 }
 
-function writeHtmlForRoute(template, routePath, headHtml) {
+// Replaces the SPA root markup with server-visible article content so crawlers,
+// link previewers and reader views read the article — not the leftover markup
+// inherited from the build template — before JavaScript runs.
+function injectBody(html, bodyHtml) {
+  if (!bodyHtml) return html;
+  const openMatch = html.match(/<div id="root"[^>]*>/);
+  if (!openMatch) return html;
+  const openIdx = html.indexOf(openMatch[0]);
+  const contentStart = openIdx + openMatch[0].length;
+  // The SPA scripts always follow the #root element, so the last </div> before
+  // them closes #root — robust against unbalanced markup inside the snapshot.
+  const scriptIdx = html.indexOf('<script', contentStart);
+  const searchEnd = scriptIdx === -1 ? html.length : scriptIdx;
+  const endIdx = html.lastIndexOf('</div>', searchEnd);
+  if (endIdx === -1 || endIdx < contentStart) return html;
+  return html.slice(0, contentStart) + bodyHtml + html.slice(endIdx);
+}
+
+
+function buildArticleBody({ title, image, description, contentHtml, publishedTime, canonical, author = 'MetsXMFanZone' }) {
+  const safeTitle = escapeHtml(title || '');
+  const body = contentHtml && String(contentHtml).trim().length > 0
+    ? String(contentHtml)
+    : `<p>${escapeHtml(description || '')}</p>`;
+  return [
+    '<article>',
+    `<h1>${safeTitle}</h1>`,
+    publishedTime ? `<p><time datetime="${escapeHtml(publishedTime)}">${escapeHtml(String(publishedTime).slice(0, 10))}</time> · ${escapeHtml(author)}</p>` : '',
+    image ? `<p><img src="${escapeHtml(image)}" alt="${safeTitle}" width="1200" height="630" /></p>` : '',
+    description ? `<p>${escapeHtml(description)}</p>` : '',
+    `<div>${body}</div>`,
+    canonical ? `<p><a href="${escapeHtml(canonical)}">${safeTitle}</a></p>` : '',
+    '</article>',
+  ].filter(Boolean).join('\n');
+}
+
+function buildBlogBody(post) {
+  const rawDescription =
+    (post.excerpt && String(post.excerpt).trim().length > 0
+      ? String(post.excerpt)
+      : stripHtml(post.content || '')) || String(post.title || '');
+  return buildArticleBody({
+    title: post.title,
+    image: resolveImage(post.featured_image_url),
+    description: rawDescription.length > 300 ? `${rawDescription.slice(0, 297)}...` : rawDescription,
+    contentHtml: post.content || '',
+    publishedTime: post.published_at,
+    canonical: `${SITE_URL}/blog/${encodeURIComponent(post.slug)}`,
+  });
+}
+
+function writeHtmlForRoute(template, routePath, headHtml, bodyHtml) {
   const stripped = stripTemplateSocialTags(template);
-  const html = stripped.replace('</head>', `${headHtml}\n</head>`);
+  const html = injectBody(stripped.replace('</head>', `${headHtml}\n</head>`), bodyHtml);
   // Root route -> dist/index.html (overwrite). Others -> dist/<path>/index.html
   const rel = routePath === '/' ? '' : routePath.replace(/^\/+|\/+$/g, '');
   const filePath = rel
@@ -152,6 +201,7 @@ function writeHtmlForRoute(template, routePath, headHtml) {
   fs.writeFileSync(filePath, html);
   console.log(`✓ Prerendered ${routePath}`);
 }
+
 
 // ---------- Blog posts ----------
 function buildBlogHead(post) {
@@ -353,7 +403,7 @@ async function prerenderAll() {
         if (!post?.slug) continue;
         const routePath = `/blog/${post.slug}`;
         const stripped = stripTemplateSocialTags(template);
-        const html = stripped.replace('</head>', `${buildBlogHead(post)}\n</head>`);
+        const html = injectBody(stripped.replace('</head>', `${buildBlogHead(post)}\n</head>`), buildBlogBody(post));
         const filePath = path.resolve(distDir, 'blog', post.slug, 'index.html');
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
         fs.writeFileSync(filePath, html);
@@ -428,7 +478,7 @@ async function postprocessAll() {
     posts = await fetchPublishedBlogPosts();
     for (const post of posts) {
       if (!post?.slug) continue;
-      jobs.push({ routePath: `/blog/${post.slug}`, head: buildBlogHead(post) });
+      jobs.push({ routePath: `/blog/${post.slug}`, head: buildBlogHead(post), body: buildBlogBody(post), bodyMatch: post.title });
     }
   } catch (e) {
     console.warn('Blog postprocessing skipped due to error:', e.message);
@@ -480,10 +530,16 @@ async function postprocessAll() {
     const filePath = routeFilePath(job.routePath);
     if (fs.existsSync(filePath)) {
       const html = fs.readFileSync(filePath, 'utf-8');
-      fs.writeFileSync(filePath, stripTemplateSocialTags(html).replace('</head>', `${job.head}\n</head>`));
+      const withHead = stripTemplateSocialTags(html).replace('</head>', `${job.head}\n</head>`);
+      // Only inject article markup when the page does not already contain the
+      // real rendered article (otherwise it is template/homepage leftover).
+      const rootMarkup = html.slice(Math.max(0, html.indexOf('<div id="root"')));
+      const alreadyRendered =
+        job.bodyMatch && rootMarkup.includes('<h1') && rootMarkup.includes(escapeHtml(job.bodyMatch));
+      fs.writeFileSync(filePath, alreadyRendered ? withHead : injectBody(withHead, job.body));
       updated++;
     } else {
-      writeHtmlForRoute(template, job.routePath, job.head);
+      writeHtmlForRoute(template, job.routePath, job.head, job.body);
       created++;
     }
   }
