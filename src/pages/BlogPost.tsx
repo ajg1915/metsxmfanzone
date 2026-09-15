@@ -10,6 +10,7 @@ import Footer from "@/components/Footer";
 import SocialShareButtons from "@/components/SocialShareButtons";
 import { getBlogShareUrl } from "@/lib/blogLinks";
 import RelatedPosts from "@/components/RelatedPosts";
+import ArticleLinkPreviews from "@/components/blog/ArticleLinkPreviews";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import {
