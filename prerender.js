@@ -533,8 +533,9 @@ async function postprocessAll() {
       const withHead = stripTemplateSocialTags(html).replace('</head>', `${job.head}\n</head>`);
       // Only inject article markup when the page does not already contain the
       // real rendered article (otherwise it is template/homepage leftover).
+      const rootMarkup = html.slice(Math.max(0, html.indexOf('<div id="root"')));
       const alreadyRendered =
-        job.bodyMatch && html.includes('<h1') && html.includes(escapeHtml(job.bodyMatch));
+        job.bodyMatch && rootMarkup.includes('<h1') && rootMarkup.includes(escapeHtml(job.bodyMatch));
       fs.writeFileSync(filePath, alreadyRendered ? withHead : injectBody(withHead, job.body));
       updated++;
     } else {
