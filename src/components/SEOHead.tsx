@@ -69,6 +69,11 @@ export default function SEOHead({
   } else if (!socialImage.startsWith('http')) {
     socialImage = `${BASE_URL}${socialImage.startsWith('/') ? '' : '/'}${socialImage}`;
   }
+  const socialImageType = /\.png(?:$|\?)/i.test(socialImage)
+    ? "image/png"
+    : /\.webp(?:$|\?)/i.test(socialImage)
+      ? "image/webp"
+      : "image/jpeg";
 
   // Auto-generate breadcrumbs from URL when none provided (boosts SEO sitelinks)
   const autoBreadcrumbs = (() => {
@@ -134,7 +139,7 @@ export default function SEOHead({
       <meta property="og:image:alt" content={finalImageAlt} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:type" content="image/jpeg" />
+      <meta property="og:image:type" content={socialImageType} />
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:locale" content="en_US" />
 

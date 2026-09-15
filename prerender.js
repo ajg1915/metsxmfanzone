@@ -99,6 +99,7 @@ function buildHead({ title, description, keywords, canonical, image, type = 'web
   const safeTitle = escapeHtml(title);
   const safeDesc = escapeHtml(description);
   const img = image || SOCIAL_IMAGE;
+  const imageType = /\.png(?:$|\?)/i.test(img) ? 'image/png' : /\.webp(?:$|\?)/i.test(img) ? 'image/webp' : 'image/jpeg';
 
   return `
     <title>${safeTitle}</title>
@@ -117,7 +118,7 @@ function buildHead({ title, description, keywords, canonical, image, type = 'web
     <meta property="og:image:secure_url" content="${img}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:type" content="${imageType}" />
     <meta property="og:image:alt" content="${safeTitle}" />
     <meta property="og:locale" content="en_US" />
 
