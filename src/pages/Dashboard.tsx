@@ -224,7 +224,7 @@ const Dashboard = () => {
   const quickLinks = [
     { label: "Watch Live", icon: Tv, href: "/metsxmfanzone", premium: true },
     { label: "Community", icon: MessageSquarePlus, href: "/community", premium: true },
-    { label: "Blog", icon: BookOpen, href: "/blog", premium: true },
+    { label: "Blog", icon: BookOpen, href: "/blog", premium: false },
     { label: "Podcast", icon: Mic, href: "/podcast", premium: true },
   ];
 
