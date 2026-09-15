@@ -84,7 +84,6 @@ const LiveStream = lazyWithRetry(() => import("./pages/LiveStream"), "page-live-
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"), "page-not-found");
 const Blog = lazyWithRetry(() => import("./pages/Blog"), "page-blog");
 const BlogPost = lazyWithRetry(() => import("./pages/BlogPost"), "page-blog-post");
-const OGBlogPost = lazyWithRetry(() => import("./pages/OGBlogPost"), "page-og-blog-post");
 const BlogRSS = lazyWithRetry(() => import("./pages/BlogRSS"), "page-blog-rss");
 const HelpCenter = lazyWithRetry(() => import("./pages/HelpCenter"), "page-help-center");
 const Contact = lazyWithRetry(() => import("./pages/Contact"), "page-contact");
@@ -331,7 +330,6 @@ const AppContent = () => {
 
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/og-blog/:slug" element={<OGBlogPost />} />
             <Route path="/blog/rss" element={<BlogRSS />} />
             <Route path="/help-center" element={<HelpCenter />} />
             <Route path="/help/create-account" element={<CreateAccount />} />
