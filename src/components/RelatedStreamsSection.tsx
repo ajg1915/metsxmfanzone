@@ -118,18 +118,6 @@ const isMetsXM2 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) =
 };
 
 
-// Only trust thumbnails hosted on the app's own storage. External hotlinks
-// break or get blocked and used to override the bundled channel artwork.
-const TRUSTED_THUMB_HOST = "rdmrxeplasttewtlfetc.supabase.co";
-const safeThumbnail = (url: string | null | undefined, fallback: string | null): string | null => {
-  if (!url) return fallback;
-  try {
-    return new URL(url).host === TRUSTED_THUMB_HOST ? url : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
 const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => {
   const pages = stream.assigned_pages || [];
   let href = `/live/${stream.id}`;
@@ -142,7 +130,8 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
     id: stream.id,
     title: stream.title,
     subtitle: stream.description || fallback.subtitle,
-    thumbnail: safeThumbnail(stream.thumbnail_url, fallback.thumbnail),
+    // Always prefer the artwork set in admin; bundled art is only a safety net
+    thumbnail: stream.thumbnail_url || fallback.thumbnail,
     fallbackThumb: fallback.thumbnail,
     href,
     assignedPages: pages,
@@ -192,21 +181,22 @@ const RelatedStreamsSection = () => {
   }, []);
 
   const streams = useMemo(() => {
-    const mlbStream = networkStreams.find(isMlbNetwork24x7);
-    const snyStream = networkStreams.find(isSnyTv24x7);
-    const msgStream = networkStreams.find(isMsgNetwork24x7);
-    const espnStream = networkStreams.find(isEspn24x7);
-    const pixStream = networkStreams.find(isPix1124x7);
-    const xm2Stream = networkStreams.find(isMetsXM2);
-
-    return [
-      mlbStream ? streamToCard(mlbStream, FALLBACK_STREAMS[0]) : FALLBACK_STREAMS[0],
-      snyStream ? streamToCard(snyStream, FALLBACK_STREAMS[1]) : FALLBACK_STREAMS[1],
-      msgStream ? streamToCard(msgStream, FALLBACK_STREAMS[2]) : FALLBACK_STREAMS[2],
-      espnStream ? streamToCard(espnStream, FALLBACK_STREAMS[3]) : FALLBACK_STREAMS[3],
-      pixStream ? streamToCard(pixStream, FALLBACK_STREAMS[4]) : FALLBACK_STREAMS[4],
-      xm2Stream ? streamToCard(xm2Stream, FALLBACK_STREAMS[5]) : FALLBACK_STREAMS[5],
+    const matchers = [
+      isMlbNetwork24x7,
+      isSnyTv24x7,
+      isMsgNetwork24x7,
+      isEspn24x7,
+      isPix1124x7,
+      isMetsXM2,
     ];
+
+    // Only show channels that actually exist as live streams in the database.
+    return matchers
+      .map((matcher, i) => {
+        const stream = networkStreams.find(matcher);
+        return stream ? streamToCard(stream, FALLBACK_STREAMS[i]) : null;
+      })
+      .filter((s): s is RelatedStream => s !== null);
   }, [networkStreams]);
 
   const handleClick = (s: RelatedStream) => {
@@ -216,6 +206,8 @@ const RelatedStreamsSection = () => {
       navigate(s.href);
     }
   };
+
+  if (streams.length === 0) return null;
 
   return (
     <section className="py-6 sm:py-8 relative">
@@ -248,6 +240,12 @@ const RelatedStreamsSection = () => {
                     alt={s.title}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      if (s.fallbackThumb && img.src !== s.fallbackThumb) {
+                        img.src = s.fallbackThumb;
+                      }
+                    }}
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
