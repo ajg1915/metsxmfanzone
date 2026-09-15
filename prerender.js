@@ -237,7 +237,7 @@ async function prerenderGameRecaps(template) {
 }
 
 async function prerenderLiveStreams(template) {
-  const query = new URLSearchParams({ published: 'eq.true', select: 'id,title,description,thumbnail_url' });
+  const query = new URLSearchParams({ select: 'id,title,description,thumbnail_url' });
   const streams = await fetchPublicRows('live_streams_public', query.toString());
   for (const stream of streams) {
     if (!stream.id) continue;
