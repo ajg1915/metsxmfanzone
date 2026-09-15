@@ -158,6 +158,9 @@ const PlayerStats = () => {
         title={playerInfo ? `${playerInfo.fullName} Career Stats` : "Player Stats"}
         description={playerInfo ? `View ${playerInfo.fullName}'s career statistics, including hitting, pitching, and fielding stats on MetsXMFanZone.` : "View player career statistics."}
         keywords={playerInfo ? `${playerInfo.fullName} stats, Mets player stats, ${playerInfo.fullName} career, MLB stats` : "Mets player stats, MLB stats"}
+        canonical={`https://metsxmfanzone.com/player/${encodeURIComponent(playerId || "")}`}
+        ogImage={playerId ? `https://img.mlbstatic.com/mlb-photos/image/upload/w_1200,h_630,c_fill,g_auto,q_auto:best/v1/people/${encodeURIComponent(playerId)}/headshot/67/current` : "/share/mets-roster.jpg"}
+        ogImageAlt={playerInfo ? `${playerInfo.fullName} — New York Mets` : "New York Mets player stats"}
       />
 
       <Navigation />

@@ -24,8 +24,7 @@ interface SEOHeadProps {
 }
 
 const BASE_URL = "https://metsxmfanzone.com";
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
-const FALLBACK_IMAGE = `${BASE_URL}/logo-512.png`;
+const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
 const SITE_NAME = "MetsXMFanZone";
 const TWITTER_HANDLE = "@metsxmfanzone";
 
@@ -98,7 +97,7 @@ export default function SEOHead({
   const breadcrumbSchema = autoBreadcrumbs && autoBreadcrumbs.length > 0 ? {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": autoBreadcrumbs!.map((crumb, index) => ({
+    "itemListElement": autoBreadcrumbs.map((crumb, index) => ({
       "@type": "ListItem",
       "position": index + 1,
       "name": crumb.name,
@@ -132,6 +131,7 @@ export default function SEOHead({
       <meta property="og:image:alt" content={finalImageAlt} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
+      <meta property="og:image:type" content="image/jpeg" />
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:locale" content="en_US" />
 

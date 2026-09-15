@@ -116,9 +116,11 @@ const LiveStream = () => {
         <SEOHead
           title={`${stream.title} - Live Stream | MetsXMFanZone`}
           description={stream.description || `Watch ${stream.title} live on MetsXMFanZone`}
-          canonical={`https://www.metsxmfanzone.com/live/${stream.id}`}
+          canonical={`https://metsxmfanzone.com/live/${stream.id}`}
           keywords="live stream, mets, baseball, watch live"
           ogType="video.other"
+          ogImage={stream.thumbnail_url || "/share/metsxmfanzone.jpg"}
+          ogImageAlt={`${stream.title} live on MetsXMFanZone`}
         />
         <Navigation />
 
