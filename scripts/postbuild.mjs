@@ -9,7 +9,8 @@ function run(cmd, args) {
   return res.status === 0;
 }
 
-const skip = process.env.SKIP_REACT_SNAP === "1";
+// Vercel build containers have no reliable Chromium; use templates there.
+const skip = process.env.SKIP_REACT_SNAP === "1" || !!process.env.VERCEL;
 
 if (skip) {
   console.log("react-snap skipped (SKIP_REACT_SNAP=1)");
