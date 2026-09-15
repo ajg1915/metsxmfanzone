@@ -131,7 +131,12 @@ export default function MediaLibrary() {
       queryClient.invalidateQueries({ queryKey: ["media-library"] });
       toast.success(`${files.length} file(s) uploaded`);
     } catch (err: any) {
-      toast.error(err.message || "Upload failed");
+      const msg = String(err?.message || "");
+      if (/row-level security|violates|not authorized|403/i.test(msg)) {
+        toast.error("Upload blocked: your account needs admin permission on the media library.");
+      } else {
+        toast.error(msg || "Upload failed");
+      }
     } finally {
       setUploading(false);
       e.target.value = "";
