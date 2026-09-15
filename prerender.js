@@ -30,6 +30,12 @@ function stripHtml(input) {
 
 function resolveImage(url) {
   if (!url) return FALLBACK_IMAGE;
+  // Rewrite storage URLs from the retired Lovable Cloud project to the
+  // current owner backend (same objects were migrated across).
+  url = String(url).replace(
+    'clwghkbtkofacsjeyrtk.supabase.co',
+    'rdmrxeplasttewtlfetc.supabase.co'
+  );
   if (url.startsWith('data:')) return FALLBACK_IMAGE;
   if (url.startsWith('http://')) return `https://${url.slice(7)}`;
   if (url.startsWith('https://')) return url;
@@ -38,7 +44,7 @@ function resolveImage(url) {
 
 function stripTemplateSocialTags(html) {
   return html
-    .replace(/<title>[\s\S]*?<\/title>\s*/i, '')
+    .replace(/<title>[\s\S]*?<\/title>\s*/gi, '')
     .replace(/<meta\s+name="title"[^>]*>\s*/gi, '')
     .replace(/<meta\s+name="description"[^>]*>\s*/gi, '')
     .replace(/<meta\s+name="keywords"[^>]*>\s*/gi, '')
@@ -377,7 +383,143 @@ async function prerenderAll() {
   console.log('\n✓ SSG prerendering complete.');
 }
 
-prerenderAll().catch((error) => {
-  console.error('Prerendering failed:', error);
-  process.exit(1);
-});
+// ---------- Postprocess mode (runs after react-snap) ----------
+function routeFilePath(routePath) {
+  const rel = routePath === '/' ? '' : routePath.replace(/^\/+|\/+$/g, '');
+  return rel ? path.resolve(distDir, rel, 'index.html') : path.resolve(distDir, 'index.html');
+}
+
+async function postprocessAll() {
+  if (!fs.existsSync(templatePath)) {
+    throw new Error(`Missing build template at ${templatePath}. Run the client build first.`);
+  }
+  const template = fs.readFileSync(templatePath, 'utf-8');
+
+  const jobs = [];
+  for (const route of STATIC_ROUTES) {
+    jobs.push({
+      routePath: route.path,
+      head: buildHead({
+        title: route.title,
+        description: route.description,
+        keywords: route.keywords,
+        canonical: `${SITE_URL}${route.path === '/' ? '/' : route.path}`,
+        image: route.image,
+      }),
+    });
+  }
+
+  const opponents = await loadOpponentRegistry();
+  for (const opp of opponents) {
+    const routePath = `/matchup/${opp.slug}`;
+    jobs.push({
+      routePath,
+      head: buildHead({
+        title: `Mets vs ${opp.name} — 2026 Matchup Analysis | MetsXMFanZone`,
+        description: `Full breakdown of the New York Mets vs ${opp.name} matchup: lineups, pitching, betting lines, and head-to-head history for the 2026 season.`,
+        keywords: `Mets vs ${opp.name}, ${opp.name} matchup, Mets betting, Mets 2026 matchup`,
+        canonical: `${SITE_URL}${routePath}`,
+      }),
+    });
+  }
+
+  let posts = [];
+  try {
+    posts = await fetchPublishedBlogPosts();
+    for (const post of posts) {
+      if (!post?.slug) continue;
+      jobs.push({ routePath: `/blog/${post.slug}`, head: buildBlogHead(post) });
+    }
+  } catch (e) {
+    console.warn('Blog postprocessing skipped due to error:', e.message);
+  }
+
+  try {
+    const query = new URLSearchParams({ status: 'eq.published', select: 'slug,title,summary,body,hero_image_url,published_at' });
+    const recaps = await fetchPublicRows('game_recaps', query.toString());
+    for (const recap of recaps) {
+      const slug = String(recap.slug || '').trim();
+      if (!slug || /\s/.test(slug)) continue;
+      const canonical = `${SITE_URL}/mets-game-recaps/${encodeURIComponent(slug)}`;
+      const description = String(recap.summary || stripHtml(recap.body || '') || recap.title).slice(0, 160);
+      jobs.push({
+        routePath: `/mets-game-recaps/${slug}`,
+        head: buildHead({
+          title: `${recap.title} | Mets Game Recap`, description, canonical,
+          image: resolveImage(recap.hero_image_url || '/share/mets-game-recaps.jpg'), type: 'article',
+          extraJsonLd: { '@context': 'https://schema.org', '@type': 'NewsArticle', headline: recap.title, description, image: [resolveImage(recap.hero_image_url || '/share/mets-game-recaps.jpg')], datePublished: recap.published_at, mainEntityOfPage: canonical },
+        }),
+      });
+    }
+  } catch (e) {
+    console.warn('Game recap postprocessing skipped due to error:', e.message);
+  }
+
+  try {
+    const streams = await fetchPublicRows('live_streams_public', 'select=id,title,description,thumbnail_url');
+    for (const stream of streams) {
+      if (!stream.id) continue;
+      const canonical = `${SITE_URL}/live/${stream.id}`;
+      const title = `${stream.title} — Live Stream | MetsXMFanZone`;
+      const description = String(stream.description || `Watch ${stream.title} live on MetsXMFanZone`).slice(0, 160);
+      jobs.push({
+        routePath: `/live/${stream.id}`,
+        head: buildHead({
+          title, description, canonical,
+          image: resolveImage(stream.thumbnail_url || '/share/metsxmfanzone.jpg'), type: 'video.other',
+        }),
+      });
+    }
+  } catch (e) {
+    console.warn('Live stream postprocessing skipped due to error:', e.message);
+  }
+
+  let updated = 0;
+  let created = 0;
+  for (const job of jobs) {
+    const filePath = routeFilePath(job.routePath);
+    if (fs.existsSync(filePath)) {
+      const html = fs.readFileSync(filePath, 'utf-8');
+      fs.writeFileSync(filePath, stripTemplateSocialTags(html).replace('</head>', `${job.head}\n</head>`));
+      updated++;
+    } else {
+      writeHtmlForRoute(template, job.routePath, job.head);
+      created++;
+    }
+  }
+  console.log(`✓ Postprocessed ${updated} react-snap page(s), created ${created} fallback page(s)`);
+
+  // Sweep remaining rendered HTML for storage URLs from the retired backend.
+  let swept = 0;
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.html')) {
+        const html = fs.readFileSync(full, 'utf-8');
+        if (html.includes('clwghkbtkofacsjeyrtk.supabase.co')) {
+          fs.writeFileSync(full, html.replaceAll('clwghkbtkofacsjeyrtk.supabase.co', 'rdmrxeplasttewtlfetc.supabase.co'));
+          swept++;
+        }
+      }
+    }
+  };
+  walk(distDir);
+  if (swept) console.log(`✓ Rewrote old storage domain in ${swept} page(s)`);
+
+  if (Array.isArray(posts) && posts.length > 0) {
+    appendBlogUrlsToSitemap(posts);
+  }
+}
+
+if (process.argv.includes('--postprocess')) {
+  postprocessAll().catch((error) => {
+    console.error('Postprocessing failed:', error);
+    process.exit(1);
+  });
+} else {
+  prerenderAll().catch((error) => {
+    console.error('Prerendering failed:', error);
+    process.exit(1);
+  });
+}
