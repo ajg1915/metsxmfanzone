@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ChevronRight, ChevronLeft, Radio, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
+import fanartGeneral from "@/assets/fanart-mets-general.jpg";
 import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -253,6 +254,7 @@ const RegularSeasonSeriesSection = () => {
                       src={group.streams[0].thumbnail_url}
                       alt={`Mets vs ${group.opponent}`}
                       className="w-full h-full object-cover"
+                      onError={(e) => { if (e.currentTarget.src !== fanartGeneral) e.currentTarget.src = fanartGeneral; }}
                     />
                   ) : (
                     <div className="w-full h-full bg-muted flex items-center justify-center">
