@@ -118,18 +118,6 @@ const isMetsXM2 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) =
 };
 
 
-// Only trust thumbnails hosted on the app's own storage. External hotlinks
-// break or get blocked and used to override the bundled channel artwork.
-const TRUSTED_THUMB_HOST = "rdmrxeplasttewtlfetc.supabase.co";
-const safeThumbnail = (url: string | null | undefined, fallback: string | null): string | null => {
-  if (!url) return fallback;
-  try {
-    return new URL(url).host === TRUSTED_THUMB_HOST ? url : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
 const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => {
   const pages = stream.assigned_pages || [];
   let href = `/live/${stream.id}`;
@@ -142,7 +130,8 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
     id: stream.id,
     title: stream.title,
     subtitle: stream.description || fallback.subtitle,
-    thumbnail: safeThumbnail(stream.thumbnail_url, fallback.thumbnail),
+    // Always prefer the artwork set in admin; bundled art is only a safety net
+    thumbnail: stream.thumbnail_url || fallback.thumbnail,
     fallbackThumb: fallback.thumbnail,
     href,
     assignedPages: pages,
