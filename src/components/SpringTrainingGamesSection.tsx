@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Radio, Users, Play, ChevronRight, ChevronLeft, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import fanartGeneral from "@/assets/fanart-mets-general.jpg";
 import { useAuth } from "@/hooks/useAuth";
 
 const getMatchupRoute = (title: string): string | null => {
@@ -194,7 +195,7 @@ const SpringTrainingGamesSection = () => {
               <div className="relative overflow-hidden rounded-md sm:rounded-lg transition-all duration-300 group-hover:scale-105 group-hover:z-10 group-hover:shadow-2xl group-hover:shadow-primary/20">
                 <div className="aspect-video relative">
                   {stream.thumbnail_url ? (
-                    <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover" />
+                    <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover" onError={(e) => { if (e.currentTarget.src !== fanartGeneral) e.currentTarget.src = fanartGeneral; }} />
                   ) : (
                     <div className="w-full h-full bg-muted flex items-center justify-center">
                       <Radio className="w-8 h-8 text-muted-foreground" />

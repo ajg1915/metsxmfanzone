@@ -10,6 +10,7 @@ import { Radio, Users, Play, ChevronRight, ChevronLeft, ShieldCheck, GripVertica
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import PremiumBadge from "@/components/PremiumBadge";
+import fanartGeneral from "@/assets/fanart-mets-general.jpg";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import {
@@ -106,7 +107,7 @@ const SortableStreamCard = ({
       >
         <div className="aspect-video relative">
           {stream.thumbnail_url ? (
-            <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover" />
+            <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover" onError={(e) => { if (e.currentTarget.src !== fanartGeneral) e.currentTarget.src = fanartGeneral; }} />
           ) : (
             <div className="w-full h-full bg-muted flex items-center justify-center">
               <Radio className="w-8 h-8 text-muted-foreground" />
