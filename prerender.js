@@ -210,6 +210,48 @@ async function fetchPublishedBlogPosts() {
   return response.json();
 }
 
+async function fetchPublicRows(table, query) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+    headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` },
+  });
+  if (!response.ok) throw new Error(`Failed to fetch ${table} [${response.status}]`);
+  return response.json();
+}
+
+async function prerenderGameRecaps(template) {
+  const query = new URLSearchParams({ status: 'eq.published', select: 'slug,title,summary,body,hero_image_url,published_at' });
+  const recaps = await fetchPublicRows('game_recaps', query.toString());
+  for (const recap of recaps) {
+    const slug = String(recap.slug || '').trim();
+    if (!slug || /\s/.test(slug)) continue;
+    const canonical = `${SITE_URL}/mets-game-recaps/${encodeURIComponent(slug)}`;
+    const description = String(recap.summary || stripHtml(recap.body || '') || recap.title).slice(0, 160);
+    const head = buildHead({
+      title: `${recap.title} | Mets Game Recap`, description, canonical,
+      image: resolveImage(recap.hero_image_url || '/share/mets-game-recaps.jpg'), type: 'article',
+      extraJsonLd: { '@context': 'https://schema.org', '@type': 'NewsArticle', headline: recap.title, description, image: [resolveImage(recap.hero_image_url || '/share/mets-game-recaps.jpg')], datePublished: recap.published_at, mainEntityOfPage: canonical },
+    });
+    writeHtmlForRoute(template, `/mets-game-recaps/${slug}`, head);
+  }
+  return recaps.length;
+}
+
+async function prerenderLiveStreams(template) {
+  const query = new URLSearchParams({ published: 'eq.true', select: 'id,title,description,thumbnail_url' });
+  const streams = await fetchPublicRows('live_streams_public', query.toString());
+  for (const stream of streams) {
+    if (!stream.id) continue;
+    const canonical = `${SITE_URL}/live/${stream.id}`;
+    const title = `${stream.title} — Live Stream | MetsXMFanZone`;
+    const description = String(stream.description || `Watch ${stream.title} live on MetsXMFanZone`).slice(0, 160);
+    writeHtmlForRoute(template, `/live/${stream.id}`, buildHead({
+      title, description, canonical,
+      image: resolveImage(stream.thumbnail_url || '/share/metsxmfanzone.jpg'), type: 'video.other',
+    }));
+  }
+  return streams.length;
+}
+
 // ---------- Matchups ----------
 async function loadOpponentRegistry() {
   try {
@@ -317,6 +359,18 @@ async function prerenderAll() {
     }
   } catch (e) {
     console.warn('Blog prerendering skipped due to error:', e.message);
+  }
+
+  // 4. Public database-backed pages
+  try {
+    console.log(`✓ Prerendered ${await prerenderGameRecaps(template)} game recap page(s)`);
+  } catch (e) {
+    console.warn('Game recap prerendering skipped due to error:', e.message);
+  }
+  try {
+    console.log(`✓ Prerendered ${await prerenderLiveStreams(template)} live stream page(s)`);
+  } catch (e) {
+    console.warn('Live stream prerendering skipped due to error:', e.message);
   }
 
   console.log('\n✓ SSG prerendering complete.');

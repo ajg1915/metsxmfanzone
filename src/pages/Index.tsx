@@ -165,9 +165,9 @@ const Index = () => {
         title="MetsXMFanZone — NY Mets Live Games, News & Podcasts"
         description="The ultimate Mets fan community. Watch live game streams, highlights, podcasts, and exclusive Mets coverage. Join thousands of passionate New York Mets fans."
         keywords="Mets live streams, New York Mets, Mets highlights, Mets podcast, Mets fan community, MLB streams, Mets games, baseball live stream, Spring Training, Francisco Lindor, Pete Alonso, Citi Field"
-        canonical="https://www.metsxmfanzone.com/"
+        canonical="https://metsxmfanzone.com/"
         ogType="website"
-        ogImage="https://www.metsxmfanzone.com/og-image.png"
+        ogImage="https://metsxmfanzone.com/share/home.jpg"
         ogImageAlt="MetsXMFanZone - The Ultimate Destination Where The Fans Go"
         structuredData={combinedSchemas}
         pageType="home"

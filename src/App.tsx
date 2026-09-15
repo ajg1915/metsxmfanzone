@@ -28,7 +28,6 @@ import { useMaintenanceMode } from "@/hooks/useMaintenanceMode";
 import { Skeleton } from "@/components/ui/skeleton";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
-import RouteShareMetadata from "@/components/RouteShareMetadata";
 
 // Eager load critical pages
 import Index from "./pages/Index";
@@ -305,7 +304,6 @@ const AppContent = () => {
         <SweepstakesWheel />
         <DesktopWelcomeGate />
         <UpdatePrompt />
-        <RouteShareMetadata />
         
         <RouteErrorBoundary resetKey={location.pathname}>
         <Suspense fallback={<PageLoader />}>
