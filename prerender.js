@@ -7,13 +7,11 @@ const distDir = path.resolve(__dirname, 'dist');
 const templatePath = path.resolve(distDir, 'index.html');
 
 const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://metsxmfanzone.com';
-const SUPABASE_URL =
-  process.env.VITE_SUPABASE_URL ||
-  process.env.SUPABASE_URL ||
-  'https://rdmrxeplasttewtlfetc.supabase.co';
+// Owner-managed Supabase backend override (must match vite.config.ts) so the
+// prerenderer always reads live content from the owner's project, never from
+// any stale VITE_/SUPABASE_ env values left in the build environment.
+const SUPABASE_URL = 'https://rdmrxeplasttewtlfetc.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY =
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  process.env.SUPABASE_PUBLISHABLE_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA';
 const FALLBACK_IMAGE = `${SITE_URL}/og-image.jpg`;
 const SOCIAL_IMAGE = `${SITE_URL}/og-image.jpg`;
