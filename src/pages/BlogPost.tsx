@@ -508,6 +508,7 @@ export default function BlogPost() {
                 ) : (
                   <div className="whitespace-pre-wrap">{post.content}</div>
                 )}
+                <ArticleLinkPreviews content={post.content} />
               </CardContent>
             </Card>
 
