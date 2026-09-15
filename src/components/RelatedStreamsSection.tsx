@@ -16,6 +16,7 @@ interface RelatedStream {
   title: string;
   subtitle: string;
   thumbnail: string | null;
+  fallbackThumb?: string | null;
   href: string;
   external?: boolean;
   assignedPages?: string[];
