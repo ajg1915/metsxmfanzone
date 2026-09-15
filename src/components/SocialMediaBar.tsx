@@ -18,7 +18,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Home", path: "/", requiresPremium: false },
   { label: "Watch Live", path: "/metsxmfanzone", requiresPremium: true },
-  { label: "Blog", path: "/blog", requiresPremium: true },
+  { label: "Blog", path: "/blog", requiresPremium: false },
   { label: "Podcast", path: "/podcast", requiresPremium: true },
   { label: "Games", path: "/mets-schedule-2026", requiresPremium: false },
 ];
