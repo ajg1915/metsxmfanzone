@@ -318,7 +318,26 @@ Deno.serve(async (req: Request) => {
       }
 
 
-      case 'BILLING.SUBSCRIPTION.EXPIRED':
+      case 'BILLING.SUBSCRIPTION.EXPIRED': {
+        // Natural end of term — mark the membership expired. Never delete the account.
+        const subscriptionId = resource.id;
+        const nowIso = new Date().toISOString();
+
+        const { error: expireError } = await supabase
+          .from('subscriptions')
+          .update({
+            status: 'expired',
+            end_date: nowIso,
+            updated_at: nowIso,
+          })
+          .eq('paypal_subscription_id', subscriptionId);
+
+        if (expireError) {
+          console.error('Error expiring subscription:', expireError.message);
+        }
+        break;
+      }
+
       case 'BILLING.SUBSCRIPTION.CANCELLED': {
         // Subscription cancelled (from PayPal or from our site)
         const subscriptionId = resource.id;

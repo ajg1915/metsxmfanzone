@@ -10,8 +10,8 @@ import { useRef, useState } from "react";
  * replacement for it.
  */
 
-const MIN_FILL_MS = 2500;
-const THROTTLE_MS = 30_000;
+const MIN_FILL_MS = 600;
+const THROTTLE_MS = 5_000;
 
 export type BotGuardResult = { ok: boolean; reason?: string };
 
