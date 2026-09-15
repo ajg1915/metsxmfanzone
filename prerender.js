@@ -396,7 +396,7 @@ async function prerenderAll() {
         if (!post?.slug) continue;
         const routePath = `/blog/${post.slug}`;
         const stripped = stripTemplateSocialTags(template);
-        const html = stripped.replace('</head>', `${buildBlogHead(post)}\n</head>`);
+        const html = injectBody(stripped.replace('</head>', `${buildBlogHead(post)}\n</head>`), buildBlogBody(post));
         const filePath = path.resolve(distDir, 'blog', post.slug, 'index.html');
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
         fs.writeFileSync(filePath, html);
