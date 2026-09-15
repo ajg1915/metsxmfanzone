@@ -30,6 +30,12 @@ function stripHtml(input) {
 
 function resolveImage(url) {
   if (!url) return FALLBACK_IMAGE;
+  // Rewrite storage URLs from the retired Lovable Cloud project to the
+  // current owner backend (same objects were migrated across).
+  url = String(url).replace(
+    'clwghkbtkofacsjeyrtk.supabase.co',
+    'rdmrxeplasttewtlfetc.supabase.co'
+  );
   if (url.startsWith('data:')) return FALLBACK_IMAGE;
   if (url.startsWith('http://')) return `https://${url.slice(7)}`;
   if (url.startsWith('https://')) return url;
@@ -482,6 +488,24 @@ async function postprocessAll() {
     }
   }
   console.log(`✓ Postprocessed ${updated} react-snap page(s), created ${created} fallback page(s)`);
+
+  // Sweep remaining rendered HTML for storage URLs from the retired backend.
+  let swept = 0;
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.html')) {
+        const html = fs.readFileSync(full, 'utf-8');
+        if (html.includes('clwghkbtkofacsjeyrtk.supabase.co')) {
+          fs.writeFileSync(full, html.replaceAll('clwghkbtkofacsjeyrtk.supabase.co', 'rdmrxeplasttewtlfetc.supabase.co'));
+          swept++;
+        }
+      }
+    }
+  };
+  walk(distDir);
+  if (swept) console.log(`✓ Rewrote old storage domain in ${swept} page(s)`);
 
   if (Array.isArray(posts) && posts.length > 0) {
     appendBlogUrlsToSitemap(posts);
