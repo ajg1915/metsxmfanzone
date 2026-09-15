@@ -486,7 +486,7 @@ async function postprocessAll() {
     posts = await fetchPublishedBlogPosts();
     for (const post of posts) {
       if (!post?.slug) continue;
-      jobs.push({ routePath: `/blog/${post.slug}`, head: buildBlogHead(post), body: buildBlogBody(post) });
+      jobs.push({ routePath: `/blog/${post.slug}`, head: buildBlogHead(post), body: buildBlogBody(post), bodyMatch: post.title });
     }
   } catch (e) {
     console.warn('Blog postprocessing skipped due to error:', e.message);
