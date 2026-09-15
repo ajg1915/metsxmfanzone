@@ -109,6 +109,7 @@ function buildHead({ title, description, keywords, canonical, image, type = 'web
     <meta property="og:image:secure_url" content="${img}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="${safeTitle}" />
     <meta property="og:locale" content="en_US" />
 
     <meta name="twitter:card" content="summary_large_image" />
