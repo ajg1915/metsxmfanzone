@@ -1,71 +1,562 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  <!-- Homepage -->
   <url>
     <loc>https://metsxmfanzone.com/</loc>
-    <lastmod>2026-03-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://metsxmfanzone.com/share/home.jpg</image:loc>
-      <image:title>MetsXMFanZone - New York Mets Fan Community</image:title>
+      <image:title>MetsXMFanZone — New York Mets Fan Community</image:title>
     </image:image>
   </url>
-  
-  <!-- Core Content -->
-  <url><loc>https://metsxmfanzone.com/blog</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>https://metsxmfanzone.com/podcast</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://metsxmfanzone.com/community</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
-  
-  <!-- Mets Coverage -->
-  <url><loc>https://metsxmfanzone.com/mets-roster</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://metsxmfanzone.com/mets-schedule-2026</loc><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>https://metsxmfanzone.com/mets-scores</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://metsxmfanzone.com/mets-gamecast</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://metsxmfanzone.com/mets-history</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://metsxmfanzone.com/mets-game-recaps</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
-  
-  <!-- TV Networks -->
-  <url><loc>https://metsxmfanzone.com/metsxmfanzone</loc><changefreq>daily</changefreq><priority>0.85</priority></url>
-  <url><loc>https://metsxmfanzone.com/mlb-network</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://metsxmfanzone.com/espn-network</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>https://metsxmfanzone.com/pix11-network</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
-  <url><loc>https://metsxmfanzone.com/msg-network</loc><changefreq>daily</changefreq><priority>0.75</priority></url>
-  
-  <!-- Media -->
-  <url><loc>https://metsxmfanzone.com/gallery</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://metsxmfanzone.com/video-gallery</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
-  <url><loc>https://metsxmfanzone.com/replay-games</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  
-  <!-- Scores -->
-  <url><loc>https://metsxmfanzone.com/nl-scores</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
-  
-  <!-- Commerce -->
-  <url><loc>https://metsxmfanzone.com/pricing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  
-  <!-- Info -->
-  <url><loc>https://metsxmfanzone.com/whats-new</loc><changefreq>weekly</changefreq><priority>0.65</priority></url>
-  <url><loc>https://metsxmfanzone.com/social</loc><changefreq>weekly</changefreq><priority>0.65</priority></url>
-  <url><loc>https://metsxmfanzone.com/help-center</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://metsxmfanzone.com/contact</loc><changefreq>monthly</changefreq><priority>0.65</priority></url>
-  <url><loc>https://metsxmfanzone.com/feedback</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>https://metsxmfanzone.com/faqs</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  
-  <!-- Partnership -->
-  <url><loc>https://metsxmfanzone.com/business-partner</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>https://metsxmfanzone.com/podcaster-application</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  
-  <!-- Matchups -->
-  <url><loc>https://metsxmfanzone.com/matchup/yankees</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchup/braves</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchup/astros</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchup/cardinals</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchup/nationals</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchup/redsox</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://metsxmfanzone.com/matchup/bluejays</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  
-  <!-- Legal -->
-  <url><loc>https://metsxmfanzone.com/privacy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>https://metsxmfanzone.com/terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url>
+    <loc>https://metsxmfanzone.com/blog</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/blog.jpg</image:loc>
+      <image:title>Mets News, Analysis &amp; Trade Rumors | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/community</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/community.jpg</image:loc>
+      <image:title>Mets Fan Community | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/gallery</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/gallery.jpg</image:loc>
+      <image:title>Mets Video Highlights &amp; Gallery | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/pricing</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/pricing.jpg</image:loc>
+      <image:title>Membership Plans | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help-center</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-center.jpg</image:loc>
+      <image:title>Help Center | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/contact</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/contact.jpg</image:loc>
+      <image:title>Contact MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/feedback</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/feedback.jpg</image:loc>
+      <image:title>Send Feedback | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/faqs</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/faqs.jpg</image:loc>
+      <image:title>Frequently Asked Questions | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/privacy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/privacy.jpg</image:loc>
+      <image:title>Privacy Policy | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/terms.jpg</image:loc>
+      <image:title>Terms of Service | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/whats-new</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/whats-new.jpg</image:loc>
+      <image:title>What's New at MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/install</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/install.jpg</image:loc>
+      <image:title>Install the MetsXMFanZone App</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/podcast</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/podcast.jpg</image:loc>
+      <image:title>Mets Podcast | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/community-podcast</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/community-podcast.jpg</image:loc>
+      <image:title>Mets Community Podcast | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/podcaster-application</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/podcaster-application.jpg</image:loc>
+      <image:title>Become a MetsXMFanZone Podcaster</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/business-partner</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/business-partner.jpg</image:loc>
+      <image:title>Partner with MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/rewards/claim</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/rewards-claim.jpg</image:loc>
+      <image:title>Claim Your MetsXMFanZone Reward</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/replay-games</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/replay-games.jpg</image:loc>
+      <image:title>Mets Game Replays | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/mets-schedule-2026</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/mets-schedule-2026.jpg</image:loc>
+      <image:title>2026 Mets Schedule &amp; Game Times | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/broadcast-schedule</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/broadcast-schedule.jpg</image:loc>
+      <image:title>Mets TV Broadcast Schedule | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/mets-scores</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/mets-scores.jpg</image:loc>
+      <image:title>Mets Scores &amp; Results | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/mets-gamecast</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/mets-gamecast.jpg</image:loc>
+      <image:title>Mets Gamecast — Live Updates | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/video-gallery</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/video-gallery.jpg</image:loc>
+      <image:title>Mets Video Gallery | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/social</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/social.jpg</image:loc>
+      <image:title>MetsXMFanZone Social Hub</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/nl-scores</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/nl-scores.jpg</image:loc>
+      <image:title>National League Scores | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/mets-roster</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/mets-roster.jpg</image:loc>
+      <image:title>2026 New York Mets Roster | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/mets-history</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/mets-history.jpg</image:loc>
+      <image:title>New York Mets History | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/metsxmfanzone</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/metsxmfanzone.jpg</image:loc>
+      <image:title>MetsXMFanZone Live Network</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/mets-game-recaps</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/mets-game-recaps.jpg</image:loc>
+      <image:title>Mets Game Recaps | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/gameday-live</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/gameday-live.jpg</image:loc>
+      <image:title>Mets Game Day Live | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/mlb-network</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/mlb-network.jpg</image:loc>
+      <image:title>MLB Network | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/espn-network</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/espn-network.jpg</image:loc>
+      <image:title>ESPN Baseball | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/pix11-network</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/pix11-network.jpg</image:loc>
+      <image:title>PIX11 Mets Coverage | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/msg-network</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/msg-network.jpg</image:loc>
+      <image:title>MSG Network | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/msg-plus</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/msg-plus.jpg</image:loc>
+      <image:title>MSG+ | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/tv</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/tv.jpg</image:loc>
+      <image:title>MetsXMFanZone TV</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/create-account</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-create-account.jpg</image:loc>
+      <image:title>How to Create an Account | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/biometric-login</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-biometric-login.jpg</image:loc>
+      <image:title>Biometric Login Help | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/navigate-platform</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-navigate-platform.jpg</image:loc>
+      <image:title>Navigate MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/watch-streams</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-watch-streams.jpg</image:loc>
+      <image:title>How to Watch Streams | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/community-guidelines</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-community-guidelines.jpg</image:loc>
+      <image:title>Community Guidelines | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/video-quality</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-video-quality.jpg</image:loc>
+      <image:title>Video Quality Help | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/premium-content</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-premium-content.jpg</image:loc>
+      <image:title>Premium Content Help | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/offline-viewing</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-offline-viewing.jpg</image:loc>
+      <image:title>Offline Viewing Help | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/playback-issues</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-playback-issues.jpg</image:loc>
+      <image:title>Playback Troubleshooting | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/post-community</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-post-community.jpg</image:loc>
+      <image:title>How to Post in the Community | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/comments-reactions</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-comments-reactions.jpg</image:loc>
+      <image:title>Comments and Reactions | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/follow-fans</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-follow-fans.jpg</image:loc>
+      <image:title>Follow Mets Fans | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/report-content</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-report-content.jpg</image:loc>
+      <image:title>Report Content | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/update-profile</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-update-profile.jpg</image:loc>
+      <image:title>Update Your Profile | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/subscription-plans</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-subscription-plans.jpg</image:loc>
+      <image:title>Subscription Plans Help | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/payment-methods</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-payment-methods.jpg</image:loc>
+      <image:title>Payment Methods Help | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/cancel-subscription</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-cancel-subscription.jpg</image:loc>
+      <image:title>Cancel a Membership | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/help/return-policy</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/help-return-policy.jpg</image:loc>
+      <image:title>Return Policy | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/matchup/astros</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/matchup-astros.jpg</image:loc>
+      <image:title>Mets vs Houston Astros — 2026 Matchup | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/matchup/bluejays</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/matchup-bluejays.jpg</image:loc>
+      <image:title>Mets vs Toronto Blue Jays — 2026 Matchup | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/matchup/braves</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/matchup-braves.jpg</image:loc>
+      <image:title>Mets vs Atlanta Braves — 2026 Matchup | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/matchup/cardinals</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/matchup-cardinals.jpg</image:loc>
+      <image:title>Mets vs St. Louis Cardinals — 2026 Matchup | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/matchup/nationals</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/matchup-nationals.jpg</image:loc>
+      <image:title>Mets vs Washington Nationals — 2026 Matchup | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/matchup/redsox</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/matchup-redsox.jpg</image:loc>
+      <image:title>Mets vs Boston Red Sox — 2026 Matchup | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://metsxmfanzone.com/matchup/yankees</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <image:image>
+      <image:loc>https://metsxmfanzone.com/share/matchup-yankees.jpg</image:loc>
+      <image:title>Mets vs New York Yankees — 2026 Matchup | MetsXMFanZone</image:title>
+    </image:image>
+  </url>
 </urlset>

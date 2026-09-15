@@ -383,5 +383,54 @@
     "title": "Return Policy | MetsXMFanZone",
     "description": "Read the MetsXMFanZone shop return and refund policy.",
     "image": "/share/help-return-policy.jpg"
+  },
+  {
+    "path": "/matchup/astros",
+    "label": "Mets vs Houston Astros",
+    "title": "Mets vs Houston Astros \u2014 2026 Matchup | MetsXMFanZone",
+    "description": "New York Mets vs Houston Astros matchup analysis, probable lineups, pitching, and head-to-head coverage.",
+    "image": "/share/matchup-astros.jpg"
+  },
+  {
+    "path": "/matchup/bluejays",
+    "label": "Mets vs Toronto Blue Jays",
+    "title": "Mets vs Toronto Blue Jays \u2014 2026 Matchup | MetsXMFanZone",
+    "description": "New York Mets vs Toronto Blue Jays matchup analysis, probable lineups, pitching, and head-to-head coverage.",
+    "image": "/share/matchup-bluejays.jpg"
+  },
+  {
+    "path": "/matchup/braves",
+    "label": "Mets vs Atlanta Braves",
+    "title": "Mets vs Atlanta Braves \u2014 2026 Matchup | MetsXMFanZone",
+    "description": "New York Mets vs Atlanta Braves matchup analysis, probable lineups, pitching, and head-to-head coverage.",
+    "image": "/share/matchup-braves.jpg"
+  },
+  {
+    "path": "/matchup/cardinals",
+    "label": "Mets vs St. Louis Cardinals",
+    "title": "Mets vs St. Louis Cardinals \u2014 2026 Matchup | MetsXMFanZone",
+    "description": "New York Mets vs St. Louis Cardinals matchup analysis, probable lineups, pitching, and head-to-head coverage.",
+    "image": "/share/matchup-cardinals.jpg"
+  },
+  {
+    "path": "/matchup/nationals",
+    "label": "Mets vs Washington Nationals",
+    "title": "Mets vs Washington Nationals \u2014 2026 Matchup | MetsXMFanZone",
+    "description": "New York Mets vs Washington Nationals matchup analysis, probable lineups, pitching, and head-to-head coverage.",
+    "image": "/share/matchup-nationals.jpg"
+  },
+  {
+    "path": "/matchup/redsox",
+    "label": "Mets vs Boston Red Sox",
+    "title": "Mets vs Boston Red Sox \u2014 2026 Matchup | MetsXMFanZone",
+    "description": "New York Mets vs Boston Red Sox matchup analysis, probable lineups, pitching, and head-to-head coverage.",
+    "image": "/share/matchup-redsox.jpg"
+  },
+  {
+    "path": "/matchup/yankees",
+    "label": "Mets vs New York Yankees",
+    "title": "Mets vs New York Yankees \u2014 2026 Matchup | MetsXMFanZone",
+    "description": "New York Mets vs New York Yankees matchup analysis, probable lineups, pitching, and head-to-head coverage.",
+    "image": "/share/matchup-yankees.jpg"
   }
 ]
