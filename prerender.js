@@ -539,7 +539,11 @@ async function postprocessAll() {
     if (fs.existsSync(filePath)) {
       const html = fs.readFileSync(filePath, 'utf-8');
       const withHead = stripTemplateSocialTags(html).replace('</head>', `${job.head}\n</head>`);
-      fs.writeFileSync(filePath, injectBody(withHead, job.body));
+      // Only inject article markup when the page does not already contain the
+      // real rendered article (otherwise it is template/homepage leftover).
+      const alreadyRendered =
+        job.bodyMatch && html.includes('<h1') && html.includes(escapeHtml(job.bodyMatch));
+      fs.writeFileSync(filePath, alreadyRendered ? withHead : injectBody(withHead, job.body));
       updated++;
     } else {
       writeHtmlForRoute(template, job.routePath, job.head, job.body);
