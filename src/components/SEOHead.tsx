@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import sharePages from "@/data/share-pages.json";
 
 interface SEOHeadProps {
   title: string;
@@ -53,7 +54,9 @@ export default function SEOHead({
   const trimmedDescription = description.length > 160 
     ? description.substring(0, 157) + "..." 
     : description;
-  const finalImage = ogImage || DEFAULT_IMAGE;
+  const currentPath = typeof window !== "undefined" ? window.location.pathname.replace(/\/+$/, "") || "/" : "/";
+  const routeImage = sharePages.find((page) => page.path === currentPath)?.image;
+  const finalImage = ogImage || routeImage || DEFAULT_IMAGE;
   const finalImageAlt = ogImageAlt || title;
   const rawCanonical = canonical || (typeof window !== 'undefined' ? window.location.href.split('?')[0] : BASE_URL);
   // Normalize: strip www. to prevent 3XX redirect issues

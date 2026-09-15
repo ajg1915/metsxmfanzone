@@ -289,7 +289,6 @@ export default function BlogPost() {
     );
   }
 
-  const currentUrl = window.location.href;
   const canonicalUrl = getBlogShareUrl(post.slug);
   
   // Calculate reading time

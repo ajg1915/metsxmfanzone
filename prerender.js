@@ -15,8 +15,8 @@ const SUPABASE_PUBLISHABLE_KEY =
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   process.env.SUPABASE_PUBLISHABLE_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA';
-const FALLBACK_IMAGE = `${SITE_URL}/logo-512.png`;
-const SOCIAL_IMAGE = 'https://i.ibb.co/XfLZyQGc/Screenshot-20251115-202937-Google.png';
+const FALLBACK_IMAGE = `${SITE_URL}/og-image.jpg`;
+const SOCIAL_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 function escapeHtml(input) {
   return String(input ?? '').replace(/[&<>"']/g, (match) => (
@@ -50,7 +50,7 @@ function stripTemplateSocialTags(html) {
 
 // ---------- Static route registry ----------
 // Curated list of public, indexable routes. Auth/admin/live/dashboard/realtime omitted intentionally.
-const STATIC_ROUTES = [
+const LEGACY_STATIC_ROUTES = [
   { path: '/', title: 'MetsXMFanZone — #1 New York Mets Fan Community', description: 'Live games, podcasts, news, highlights, and the most passionate New York Mets fan community. Built by fans, for fans.', keywords: 'New York Mets, Mets fan community, Mets live games, Mets news, Mets podcasts, MLB, baseball, Citi Field' },
   { path: '/blog', title: 'Mets Blog — News, Analysis & Trade Rumors | MetsXMFanZone', description: 'The latest New York Mets news, analysis, trade rumors, and feature articles from the MetsXMFanZone editorial team.', keywords: 'Mets news, Mets blog, Mets analysis, Mets trade rumors, MLB articles' },
   { path: '/podcast', title: 'Mets Podcast — The MetsXMFanZone Show', description: 'Listen to the official MetsXMFanZone podcast. Game recaps, interviews, and unfiltered Mets fan takes every week.', keywords: 'Mets podcast, MetsXMFanZone podcast, Mets show, MLB podcast' },
@@ -87,6 +87,14 @@ const STATIC_ROUTES = [
   { path: '/events', title: 'Mets Fan Events | MetsXMFanZone', description: 'Upcoming MetsXMFanZone fan events, watch parties, and meetups.', keywords: 'Mets fan events, watch party' },
 ];
 
+const sharePages = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, 'src/data/share-pages.json'), 'utf-8')
+);
+const STATIC_ROUTES = sharePages.map((page) => ({
+  ...page,
+  image: resolveImage(page.image),
+}));
+
 function buildHead({ title, description, keywords, canonical, image, type = 'website', extraJsonLd }) {
   const safeTitle = escapeHtml(title);
   const safeDesc = escapeHtml(description);
@@ -109,6 +117,7 @@ function buildHead({ title, description, keywords, canonical, image, type = 'web
     <meta property="og:image:secure_url" content="${img}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:alt" content="${safeTitle}" />
     <meta property="og:locale" content="en_US" />
 
@@ -266,6 +275,7 @@ async function prerenderAll() {
       description: route.description,
       keywords: route.keywords,
       canonical,
+      image: route.image,
     });
     writeHtmlForRoute(template, route.path, head);
   }
