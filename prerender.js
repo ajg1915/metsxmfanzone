@@ -147,20 +147,12 @@ function injectBody(html, bodyHtml) {
   if (!openMatch) return html;
   const openIdx = html.indexOf(openMatch[0]);
   const contentStart = openIdx + openMatch[0].length;
-  // Walk nested <div> tags to find the matching closing tag for #root.
-  const tagRe = /<div\b[^>]*>|<\/div>/gi;
-  tagRe.lastIndex = contentStart;
-  let depth = 1;
-  let endIdx = -1;
-  let m;
-  while ((m = tagRe.exec(html))) {
-    depth += m[0][1] === '/' ? -1 : 1;
-    if (depth === 0) {
-      endIdx = m.index;
-      break;
-    }
-  }
-  if (endIdx === -1) return html;
+  // The SPA scripts always follow the #root element, so the last </div> before
+  // them closes #root — robust against unbalanced markup inside the snapshot.
+  const scriptIdx = html.indexOf('<script', contentStart);
+  const searchEnd = scriptIdx === -1 ? html.length : scriptIdx;
+  const endIdx = html.lastIndexOf('</div>', searchEnd);
+  if (endIdx === -1 || endIdx < contentStart) return html;
   return html.slice(0, contentStart) + bodyHtml + html.slice(endIdx);
 }
 
