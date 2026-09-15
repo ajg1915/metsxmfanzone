@@ -523,10 +523,11 @@ async function postprocessAll() {
     const filePath = routeFilePath(job.routePath);
     if (fs.existsSync(filePath)) {
       const html = fs.readFileSync(filePath, 'utf-8');
-      fs.writeFileSync(filePath, stripTemplateSocialTags(html).replace('</head>', `${job.head}\n</head>`));
+      const withHead = stripTemplateSocialTags(html).replace('</head>', `${job.head}\n</head>`);
+      fs.writeFileSync(filePath, injectBody(withHead, job.body));
       updated++;
     } else {
-      writeHtmlForRoute(template, job.routePath, job.head);
+      writeHtmlForRoute(template, job.routePath, job.head, job.body);
       created++;
     }
   }
