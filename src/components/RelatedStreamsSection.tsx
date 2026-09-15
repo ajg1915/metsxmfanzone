@@ -143,6 +143,7 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
     title: stream.title,
     subtitle: stream.description || fallback.subtitle,
     thumbnail: safeThumbnail(stream.thumbnail_url, fallback.thumbnail),
+    fallbackThumb: fallback.thumbnail,
     href,
     assignedPages: pages,
   };
