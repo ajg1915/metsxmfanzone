@@ -217,6 +217,40 @@ async function loadOpponentRegistry() {
   }
 }
 
+// ---------- Sitemap ----------
+function appendBlogUrlsToSitemap(posts) {
+  const sitemapPath = path.resolve(distDir, 'sitemap.xml');
+  if (!fs.existsSync(sitemapPath)) {
+    console.warn('sitemap.xml not found in build output; skipping blog sitemap entries.');
+    return;
+  }
+  let xml = fs.readFileSync(sitemapPath, 'utf-8');
+
+  // Remove any previously generated block so re-runs stay idempotent.
+  xml = xml.replace(/\n?  <!-- BLOG:START -->[\s\S]*?<!-- BLOG:END -->/g, '');
+
+  const entries = [];
+  for (const post of posts) {
+    const slug = String(post?.slug ?? '').trim();
+    if (!slug || /\s/.test(slug)) continue;
+    const loc = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
+    if (xml.includes(`<loc>${loc}</loc>`)) continue;
+    const stamp = post.updated_at || post.published_at;
+    const lastmod = stamp ? String(stamp).slice(0, 10) : null;
+    entries.push(
+      `  <url><loc>${loc}</loc>` +
+      (lastmod ? `<lastmod>${lastmod}</lastmod>` : '') +
+      `<changefreq>weekly</changefreq><priority>0.7</priority></url>`
+    );
+  }
+
+  if (entries.length === 0) return;
+  const block = `\n  <!-- BLOG:START -->\n${entries.join('\n')}\n  <!-- BLOG:END -->\n`;
+  xml = xml.replace('</urlset>', `${block}</urlset>`);
+  fs.writeFileSync(sitemapPath, xml);
+  console.log(`\u2713 Added ${entries.length} blog URL(s) to sitemap.xml`);
+}
+
 // ---------- Main ----------
 async function prerenderAll() {
   if (!fs.existsSync(templatePath)) {
@@ -267,6 +301,7 @@ async function prerenderAll() {
         console.log(`✓ Prerendered ${routePath}`);
       }
       console.log(`✓ Prerendered ${posts.length} blog post page(s)`);
+      appendBlogUrlsToSitemap(posts);
     } else {
       console.log('No published blog posts found to prerender.');
     }
