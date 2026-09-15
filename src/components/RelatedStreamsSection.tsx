@@ -181,21 +181,22 @@ const RelatedStreamsSection = () => {
   }, []);
 
   const streams = useMemo(() => {
-    const mlbStream = networkStreams.find(isMlbNetwork24x7);
-    const snyStream = networkStreams.find(isSnyTv24x7);
-    const msgStream = networkStreams.find(isMsgNetwork24x7);
-    const espnStream = networkStreams.find(isEspn24x7);
-    const pixStream = networkStreams.find(isPix1124x7);
-    const xm2Stream = networkStreams.find(isMetsXM2);
-
-    return [
-      mlbStream ? streamToCard(mlbStream, FALLBACK_STREAMS[0]) : FALLBACK_STREAMS[0],
-      snyStream ? streamToCard(snyStream, FALLBACK_STREAMS[1]) : FALLBACK_STREAMS[1],
-      msgStream ? streamToCard(msgStream, FALLBACK_STREAMS[2]) : FALLBACK_STREAMS[2],
-      espnStream ? streamToCard(espnStream, FALLBACK_STREAMS[3]) : FALLBACK_STREAMS[3],
-      pixStream ? streamToCard(pixStream, FALLBACK_STREAMS[4]) : FALLBACK_STREAMS[4],
-      xm2Stream ? streamToCard(xm2Stream, FALLBACK_STREAMS[5]) : FALLBACK_STREAMS[5],
+    const matchers = [
+      isMlbNetwork24x7,
+      isSnyTv24x7,
+      isMsgNetwork24x7,
+      isEspn24x7,
+      isPix1124x7,
+      isMetsXM2,
     ];
+
+    // Only show channels that actually exist as live streams in the database.
+    return matchers
+      .map((matcher, i) => {
+        const stream = networkStreams.find(matcher);
+        return stream ? streamToCard(stream, FALLBACK_STREAMS[i]) : null;
+      })
+      .filter((s): s is RelatedStream => s !== null);
   }, [networkStreams]);
 
   const handleClick = (s: RelatedStream) => {
