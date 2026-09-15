@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import sharePages from "@/data/share-pages.json";
 
 interface SEOHeadProps {
   title: string;
@@ -24,8 +25,7 @@ interface SEOHeadProps {
 }
 
 const BASE_URL = "https://metsxmfanzone.com";
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
-const FALLBACK_IMAGE = `${BASE_URL}/logo-512.png`;
+const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
 const SITE_NAME = "MetsXMFanZone";
 const TWITTER_HANDLE = "@metsxmfanzone";
 
@@ -54,7 +54,9 @@ export default function SEOHead({
   const trimmedDescription = description.length > 160 
     ? description.substring(0, 157) + "..." 
     : description;
-  const finalImage = ogImage || DEFAULT_IMAGE;
+  const currentPath = typeof window !== "undefined" ? window.location.pathname.replace(/\/+$/, "") || "/" : "/";
+  const routeImage = sharePages.find((page) => page.path === currentPath)?.image;
+  const finalImage = ogImage || routeImage || DEFAULT_IMAGE;
   const finalImageAlt = ogImageAlt || title;
   const rawCanonical = canonical || (typeof window !== 'undefined' ? window.location.href.split('?')[0] : BASE_URL);
   // Normalize: strip www. to prevent 3XX redirect issues
@@ -67,6 +69,11 @@ export default function SEOHead({
   } else if (!socialImage.startsWith('http')) {
     socialImage = `${BASE_URL}${socialImage.startsWith('/') ? '' : '/'}${socialImage}`;
   }
+  const socialImageType = /\.png(?:$|\?)/i.test(socialImage)
+    ? "image/png"
+    : /\.webp(?:$|\?)/i.test(socialImage)
+      ? "image/webp"
+      : "image/jpeg";
 
   // Auto-generate breadcrumbs from URL when none provided (boosts SEO sitelinks)
   const autoBreadcrumbs = (() => {
@@ -98,7 +105,7 @@ export default function SEOHead({
   const breadcrumbSchema = autoBreadcrumbs && autoBreadcrumbs.length > 0 ? {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": autoBreadcrumbs!.map((crumb, index) => ({
+    "itemListElement": autoBreadcrumbs.map((crumb, index) => ({
       "@type": "ListItem",
       "position": index + 1,
       "name": crumb.name,
@@ -132,6 +139,7 @@ export default function SEOHead({
       <meta property="og:image:alt" content={finalImageAlt} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
+      <meta property="og:image:type" content={socialImageType} />
       <meta property="og:site_name" content={SITE_NAME} />
       <meta property="og:locale" content="en_US" />
 

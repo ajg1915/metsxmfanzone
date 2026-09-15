@@ -15,8 +15,8 @@ const SUPABASE_PUBLISHABLE_KEY =
   process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   process.env.SUPABASE_PUBLISHABLE_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA';
-const FALLBACK_IMAGE = `${SITE_URL}/logo-512.png`;
-const SOCIAL_IMAGE = 'https://i.ibb.co/XfLZyQGc/Screenshot-20251115-202937-Google.png';
+const FALLBACK_IMAGE = `${SITE_URL}/og-image.jpg`;
+const SOCIAL_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 function escapeHtml(input) {
   return String(input ?? '').replace(/[&<>"']/g, (match) => (
@@ -50,7 +50,7 @@ function stripTemplateSocialTags(html) {
 
 // ---------- Static route registry ----------
 // Curated list of public, indexable routes. Auth/admin/live/dashboard/realtime omitted intentionally.
-const STATIC_ROUTES = [
+const LEGACY_STATIC_ROUTES = [
   { path: '/', title: 'MetsXMFanZone — #1 New York Mets Fan Community', description: 'Live games, podcasts, news, highlights, and the most passionate New York Mets fan community. Built by fans, for fans.', keywords: 'New York Mets, Mets fan community, Mets live games, Mets news, Mets podcasts, MLB, baseball, Citi Field' },
   { path: '/blog', title: 'Mets Blog — News, Analysis & Trade Rumors | MetsXMFanZone', description: 'The latest New York Mets news, analysis, trade rumors, and feature articles from the MetsXMFanZone editorial team.', keywords: 'Mets news, Mets blog, Mets analysis, Mets trade rumors, MLB articles' },
   { path: '/podcast', title: 'Mets Podcast — The MetsXMFanZone Show', description: 'Listen to the official MetsXMFanZone podcast. Game recaps, interviews, and unfiltered Mets fan takes every week.', keywords: 'Mets podcast, MetsXMFanZone podcast, Mets show, MLB podcast' },
@@ -87,10 +87,19 @@ const STATIC_ROUTES = [
   { path: '/events', title: 'Mets Fan Events | MetsXMFanZone', description: 'Upcoming MetsXMFanZone fan events, watch parties, and meetups.', keywords: 'Mets fan events, watch party' },
 ];
 
+const sharePages = JSON.parse(
+  fs.readFileSync(path.resolve(__dirname, 'src/data/share-pages.json'), 'utf-8')
+);
+const STATIC_ROUTES = sharePages.map((page) => ({
+  ...page,
+  image: resolveImage(page.image),
+}));
+
 function buildHead({ title, description, keywords, canonical, image, type = 'website', extraJsonLd }) {
   const safeTitle = escapeHtml(title);
   const safeDesc = escapeHtml(description);
   const img = image || SOCIAL_IMAGE;
+  const imageType = /\.png(?:$|\?)/i.test(img) ? 'image/png' : /\.webp(?:$|\?)/i.test(img) ? 'image/webp' : 'image/jpeg';
 
   return `
     <title>${safeTitle}</title>
@@ -109,6 +118,7 @@ function buildHead({ title, description, keywords, canonical, image, type = 'web
     <meta property="og:image:secure_url" content="${img}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="${imageType}" />
     <meta property="og:image:alt" content="${safeTitle}" />
     <meta property="og:locale" content="en_US" />
 
@@ -201,6 +211,48 @@ async function fetchPublishedBlogPosts() {
   return response.json();
 }
 
+async function fetchPublicRows(table, query) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+    headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` },
+  });
+  if (!response.ok) throw new Error(`Failed to fetch ${table} [${response.status}]`);
+  return response.json();
+}
+
+async function prerenderGameRecaps(template) {
+  const query = new URLSearchParams({ status: 'eq.published', select: 'slug,title,summary,body,hero_image_url,published_at' });
+  const recaps = await fetchPublicRows('game_recaps', query.toString());
+  for (const recap of recaps) {
+    const slug = String(recap.slug || '').trim();
+    if (!slug || /\s/.test(slug)) continue;
+    const canonical = `${SITE_URL}/mets-game-recaps/${encodeURIComponent(slug)}`;
+    const description = String(recap.summary || stripHtml(recap.body || '') || recap.title).slice(0, 160);
+    const head = buildHead({
+      title: `${recap.title} | Mets Game Recap`, description, canonical,
+      image: resolveImage(recap.hero_image_url || '/share/mets-game-recaps.jpg'), type: 'article',
+      extraJsonLd: { '@context': 'https://schema.org', '@type': 'NewsArticle', headline: recap.title, description, image: [resolveImage(recap.hero_image_url || '/share/mets-game-recaps.jpg')], datePublished: recap.published_at, mainEntityOfPage: canonical },
+    });
+    writeHtmlForRoute(template, `/mets-game-recaps/${slug}`, head);
+  }
+  return recaps.length;
+}
+
+async function prerenderLiveStreams(template) {
+  const query = new URLSearchParams({ select: 'id,title,description,thumbnail_url' });
+  const streams = await fetchPublicRows('live_streams_public', query.toString());
+  for (const stream of streams) {
+    if (!stream.id) continue;
+    const canonical = `${SITE_URL}/live/${stream.id}`;
+    const title = `${stream.title} — Live Stream | MetsXMFanZone`;
+    const description = String(stream.description || `Watch ${stream.title} live on MetsXMFanZone`).slice(0, 160);
+    writeHtmlForRoute(template, `/live/${stream.id}`, buildHead({
+      title, description, canonical,
+      image: resolveImage(stream.thumbnail_url || '/share/metsxmfanzone.jpg'), type: 'video.other',
+    }));
+  }
+  return streams.length;
+}
+
 // ---------- Matchups ----------
 async function loadOpponentRegistry() {
   try {
@@ -266,6 +318,7 @@ async function prerenderAll() {
       description: route.description,
       keywords: route.keywords,
       canonical,
+      image: route.image,
     });
     writeHtmlForRoute(template, route.path, head);
   }
@@ -307,6 +360,18 @@ async function prerenderAll() {
     }
   } catch (e) {
     console.warn('Blog prerendering skipped due to error:', e.message);
+  }
+
+  // 4. Public database-backed pages
+  try {
+    console.log(`✓ Prerendered ${await prerenderGameRecaps(template)} game recap page(s)`);
+  } catch (e) {
+    console.warn('Game recap prerendering skipped due to error:', e.message);
+  }
+  try {
+    console.log(`✓ Prerendered ${await prerenderLiveStreams(template)} live stream page(s)`);
+  } catch (e) {
+    console.warn('Live stream prerendering skipped due to error:', e.message);
   }
 
   console.log('\n✓ SSG prerendering complete.');

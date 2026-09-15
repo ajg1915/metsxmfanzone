@@ -66,6 +66,11 @@ export default function MetsGameRecaps() {
         <SEOHead
           title={r ? `${r.title} | Mets Game Recap` : "Mets Game Recap"}
           description={r?.summary || "Mets game recap"}
+          canonical={`https://metsxmfanzone.com/mets-game-recaps/${encodeURIComponent(slug)}`}
+          ogType="article"
+          ogImage={r?.hero_image_url || "/share/mets-game-recaps.jpg"}
+          ogImageAlt={r?.title || "Mets game recap"}
+          publishedTime={r?.published_at || undefined}
         />
         <Navigation />
         <main className="flex-1 container mx-auto px-4 pt-20 pb-6 max-w-3xl">
@@ -120,6 +125,9 @@ export default function MetsGameRecaps() {
       <SEOHead
         title="Mets Game Recaps | MetsXMFanZone"
         description="Read the latest New York Mets game recaps with scores, highlights, and analysis."
+        canonical="https://metsxmfanzone.com/mets-game-recaps"
+        ogImage="/share/mets-game-recaps.jpg"
+        ogImageAlt="Mets game recaps from MetsXMFanZone"
       />
       <Navigation />
       <main className="flex-1 container mx-auto px-4 pt-20 pb-6">

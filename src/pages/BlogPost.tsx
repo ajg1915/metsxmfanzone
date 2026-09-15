@@ -289,7 +289,7 @@ export default function BlogPost() {
     );
   }
 
-  const currentUrl = window.location.href;
+  const canonicalUrl = getBlogShareUrl(post.slug);
   
   // Calculate reading time
   const wordCount = post.content.split(/\s+/).length;
@@ -301,7 +301,7 @@ export default function BlogPost() {
     image: post.featured_image_url,
     datePublished: post.published_at,
     authorName: "MetsXMFanZone",
-    url: currentUrl,
+    url: canonicalUrl,
   });
 
   return (
@@ -309,6 +309,7 @@ export default function BlogPost() {
       <SEOHead
         title={post.title}
         description={post.excerpt || post.title}
+        canonical={canonicalUrl}
         ogType="article"
         ogImage={post.featured_image_url}
         ogImageAlt={post.title}
