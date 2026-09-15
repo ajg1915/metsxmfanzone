@@ -1,16 +1,21 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
-    {
-      "source": "/blog/:slug+",
-      "destination": "/api/og/blog/:slug+"
-    },
-    {
-      "source": "/blog/:slug+/",
-      "destination": "/api/og/blog/:slug+"
-    },
     {
       "source": "/((?!api/|.*\\..*).*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/blog/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ]
 }
