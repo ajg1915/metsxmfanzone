@@ -238,6 +238,12 @@ const RelatedStreamsSection = () => {
                     alt={s.title}
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      if (s.fallbackThumb && img.src !== s.fallbackThumb) {
+                        img.src = s.fallbackThumb;
+                      }
+                    }}
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
