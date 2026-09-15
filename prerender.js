@@ -119,6 +119,7 @@ function buildHead({ title, description, keywords, canonical, image, type = 'web
     <meta name="twitter:title" content="${safeTitle}" />
     <meta name="twitter:description" content="${safeDesc}" />
     <meta name="twitter:image" content="${img}" />
+    <meta name="twitter:image:alt" content="${safeTitle}" />
     ${extraJsonLd ? `<script type="application/ld+json">${JSON.stringify(extraJsonLd)}</script>` : ''}
   `.trim();
 }
