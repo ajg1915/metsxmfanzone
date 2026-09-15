@@ -140,9 +140,51 @@ function buildHead({ title, description, keywords, canonical, image, type = 'web
   `.trim();
 }
 
-function writeHtmlForRoute(template, routePath, headHtml) {
+// Injects server-visible article markup into an empty SPA root so crawlers,
+// link previewers and reader views can read the content before JS runs.
+function injectBody(html, bodyHtml) {
+  if (!bodyHtml) return html;
+  return html.replace(
+    /(<div id="root")([^>]*)(>)\s*(<\/div>)/,
+    (match, open, attrs, close) => `${open}${attrs}${close}${bodyHtml}</div>`
+  );
+}
+
+function buildArticleBody({ title, image, description, contentHtml, publishedTime, canonical, author = 'MetsXMFanZone' }) {
+  const safeTitle = escapeHtml(title || '');
+  const body = contentHtml && String(contentHtml).trim().length > 0
+    ? String(contentHtml)
+    : `<p>${escapeHtml(description || '')}</p>`;
+  return [
+    '<article>',
+    `<h1>${safeTitle}</h1>`,
+    publishedTime ? `<p><time datetime="${escapeHtml(publishedTime)}">${escapeHtml(String(publishedTime).slice(0, 10))}</time> · ${escapeHtml(author)}</p>` : '',
+    image ? `<p><img src="${escapeHtml(image)}" alt="${safeTitle}" width="1200" height="630" /></p>` : '',
+    description ? `<p>${escapeHtml(description)}</p>` : '',
+    `<div>${body}</div>`,
+    canonical ? `<p><a href="${escapeHtml(canonical)}">${safeTitle}</a></p>` : '',
+    '</article>',
+  ].filter(Boolean).join('\n');
+}
+
+function buildBlogBody(post) {
+  const rawDescription =
+    (post.excerpt && String(post.excerpt).trim().length > 0
+      ? String(post.excerpt)
+      : stripHtml(post.content || '')) || String(post.title || '');
+  return buildArticleBody({
+    title: post.title,
+    image: resolveImage(post.featured_image_url),
+    description: rawDescription.length > 300 ? `${rawDescription.slice(0, 297)}...` : rawDescription,
+    contentHtml: post.content || '',
+    publishedTime: post.published_at,
+    canonical: `${SITE_URL}/blog/${encodeURIComponent(post.slug)}`,
+  });
+}
+
+function writeHtmlForRoute(template, routePath, headHtml, bodyHtml) {
   const stripped = stripTemplateSocialTags(template);
-  const html = stripped.replace('</head>', `${headHtml}\n</head>`);
+  const html = injectBody(stripped.replace('</head>', `${headHtml}\n</head>`), bodyHtml);
   // Root route -> dist/index.html (overwrite). Others -> dist/<path>/index.html
   const rel = routePath === '/' ? '' : routePath.replace(/^\/+|\/+$/g, '');
   const filePath = rel
@@ -152,6 +194,7 @@ function writeHtmlForRoute(template, routePath, headHtml) {
   fs.writeFileSync(filePath, html);
   console.log(`✓ Prerendered ${routePath}`);
 }
+
 
 // ---------- Blog posts ----------
 function buildBlogHead(post) {
