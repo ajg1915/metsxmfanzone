@@ -138,15 +138,32 @@ function buildHead({ title, description, keywords, canonical, image, type = 'web
   `.trim();
 }
 
-// Injects server-visible article markup into an empty SPA root so crawlers,
-// link previewers and reader views can read the content before JS runs.
+// Replaces the SPA root markup with server-visible article content so crawlers,
+// link previewers and reader views read the article — not the leftover markup
+// inherited from the build template — before JavaScript runs.
 function injectBody(html, bodyHtml) {
   if (!bodyHtml) return html;
-  return html.replace(
-    /(<div id="root")([^>]*)(>)\s*(<\/div>)/,
-    (match, open, attrs, close) => `${open}${attrs}${close}${bodyHtml}</div>`
-  );
+  const openMatch = html.match(/<div id="root"[^>]*>/);
+  if (!openMatch) return html;
+  const openIdx = html.indexOf(openMatch[0]);
+  const contentStart = openIdx + openMatch[0].length;
+  // Walk nested <div> tags to find the matching closing tag for #root.
+  const tagRe = /<div\b[^>]*>|<\/div>/gi;
+  tagRe.lastIndex = contentStart;
+  let depth = 1;
+  let endIdx = -1;
+  let m;
+  while ((m = tagRe.exec(html))) {
+    depth += m[0][1] === '/' ? -1 : 1;
+    if (depth === 0) {
+      endIdx = m.index;
+      break;
+    }
+  }
+  if (endIdx === -1) return html;
+  return html.slice(0, contentStart) + bodyHtml + html.slice(endIdx);
 }
+
 
 function buildArticleBody({ title, image, description, contentHtml, publishedTime, canonical, author = 'MetsXMFanZone' }) {
   const safeTitle = escapeHtml(title || '');
