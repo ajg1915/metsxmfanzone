@@ -8,6 +8,7 @@ import { Calendar, Tag, ArrowLeft, Headphones, Volume2, Square, Settings } from 
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SocialShareButtons from "@/components/SocialShareButtons";
+import { getBlogShareUrl } from "@/lib/blogLinks";
 import RelatedPosts from "@/components/RelatedPosts";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -512,7 +513,7 @@ export default function BlogPost() {
             <div className="mt-8">
               <Card>
                 <CardContent className="py-6">
-                  <SocialShareButtons title={post.title} url={window.location.href} />
+                  <SocialShareButtons title={post.title} url={getBlogShareUrl(post.slug)} />
                 </CardContent>
               </Card>
             </div>
