@@ -70,13 +70,17 @@ const LiveStream = () => {
 
   const handleShare = async () => {
     if (!stream) return;
-    const url = window.location.href;
+    const url = new URL(window.location.href);
+    url.protocol = "https:";
+    url.hostname = "metsxmfanzone.com";
+    url.port = "";
+    const shareUrl = url.toString();
     if (navigator.share) {
       try {
-        await navigator.share({ title: stream.title, url });
+        await navigator.share({ title: stream.title, url: shareUrl });
       } catch {}
     } else {
-      navigator.clipboard.writeText(url);
+      navigator.clipboard.writeText(shareUrl);
     }
   };
 
