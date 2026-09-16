@@ -1,3 +1,4 @@
+import { useAutoLineupFetch } from "@/hooks/useAutoLineupFetch";
 import { useState, useEffect } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
