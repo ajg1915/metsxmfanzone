@@ -5,6 +5,14 @@ import App from "./App.tsx";
 import { isRecoverableDynamicImportError, reloadForFreshAssets } from "./lib/lazyWithRetry";
 import "./index.css";
 
+// Keep one stable public hostname. Older social posts and saved links may still
+// use www; normalize them before the app, service worker, or auth client starts.
+if (window.location.hostname === "www.metsxmfanzone.com") {
+  const canonicalUrl = new URL(window.location.href);
+  canonicalUrl.hostname = "metsxmfanzone.com";
+  window.location.replace(canonicalUrl.toString());
+}
+
 // Register service worker for push notifications and offline caching
 // NOTE: the Lovable preview environment can be unstable with a Service Worker enabled
 // (cached JS/CSS can get out of sync during rapid iterations). We disable + fully clean SW

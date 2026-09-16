@@ -29,6 +29,15 @@ export function normalizeToBlogShareUrl(rawUrl: string): string {
   try {
     const parsed = new URL(rawUrl, SITE_URL);
 
+    if (
+      parsed.hostname === "metsxmfanzone.com" ||
+      parsed.hostname === "www.metsxmfanzone.com"
+    ) {
+      parsed.protocol = "https:";
+      parsed.hostname = "metsxmfanzone.com";
+      parsed.port = "";
+    }
+
     if (parsed.pathname.includes("/functions/v1/blog-og-meta")) {
       const pathSegments = parsed.pathname.split("/").filter(Boolean);
       const ogIdx = pathSegments.indexOf("blog-og-meta");
@@ -36,7 +45,7 @@ export function normalizeToBlogShareUrl(rawUrl: string): string {
         parsed.searchParams.get("slug") ||
         (ogIdx !== -1 ? pathSegments[ogIdx + 1] : undefined);
 
-      return functionSlug ? getBlogShareUrl(decodeURIComponent(functionSlug)) : rawUrl;
+      return functionSlug ? getBlogShareUrl(decodeURIComponent(functionSlug)) : parsed.toString();
     }
 
     const blogMatch = parsed.pathname.match(/^\/blog\/([^/?#]+)/);
@@ -50,7 +59,7 @@ export function normalizeToBlogShareUrl(rawUrl: string): string {
       return getBlogShareUrl(decodeURIComponent(parts[ogIdx + 1]));
     }
 
-    return rawUrl;
+    return parsed.toString();
   } catch {
     return rawUrl;
   }
