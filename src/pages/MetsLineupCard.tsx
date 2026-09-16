@@ -387,7 +387,11 @@ export default function MetsLineupCard() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Auto lineup fetch removed to reduce Cloud load — triggered by admin instead
+  // Keep today's lineup + predictions fresh automatically (throttled)
+  useAutoLineupFetch(() => {
+    fetchUpcomingLineups();
+    fetchPredictions();
+  });
 
   const fetchUpcomingLineups = async () => {
     try {

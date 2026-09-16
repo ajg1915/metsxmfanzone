@@ -92,6 +92,11 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  useAutoLineupFetch(() => {
+    queryClient.invalidateQueries({ queryKey: ["today-lineup-card"] });
+    queryClient.invalidateQueries({ queryKey: ["todays-predictions"] });
+  });
+
   const handleRefreshLineup = async () => {
     setIsRefreshing(true);
     try {
