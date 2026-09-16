@@ -1,3 +1,4 @@
+import { useAutoLineupFetch } from "@/hooks/useAutoLineupFetch";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -91,6 +92,11 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
   const [selectedPlayer, setSelectedPlayer] = useState<LineupPlayer | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  useAutoLineupFetch(() => {
+    queryClient.invalidateQueries({ queryKey: ["today-lineup-card"] });
+    queryClient.invalidateQueries({ queryKey: ["todays-predictions"] });
+  });
 
   const handleRefreshLineup = async () => {
     setIsRefreshing(true);
