@@ -219,7 +219,7 @@ const STATIC_ROUTES = [
 async function fetchPublishedPosts() {
   const url =
     `${SUPABASE_URL}/rest/v1/blog_posts` +
-    `?select=slug,title,excerpt,content,featured_image_url,author,published_at,created_at,updated_at,category` +
+    `?select=slug,title,excerpt,meta_description,content,featured_image_url,published_at,created_at,updated_at,category` +
     `&published=eq.true&order=published_at.desc&limit=500`;
   try {
     const res = await fetch(url, {
@@ -290,7 +290,7 @@ async function main() {
     const slug = String(post.slug).trim();
     const canonical = `${SITE_URL}/blog/${slug}`;
     const image = absoluteImage(post.featured_image_url);
-    const description = post.excerpt || clamp(post.content, 200);
+    const description = post.meta_description || post.excerpt || clamp(post.content, 200);
     const head = buildHead({
       title: `${post.title} | ${SITE_NAME}`,
       description,
