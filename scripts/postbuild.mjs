@@ -22,3 +22,11 @@ if (!run("node", ["prerender.js", "--postprocess"])) {
   console.error("prerender postprocess failed");
   process.exit(1);
 }
+
+// Safety net: any URL that has no prerendered file (e.g. an article published
+// after this build) must still load the app instead of a hosting 404 page.
+const indexHtml = resolve("dist/index.html");
+if (existsSync(indexHtml)) {
+  copyFileSync(indexHtml, resolve("dist/404.html"));
+  console.log("wrote dist/404.html SPA fallback");
+}
