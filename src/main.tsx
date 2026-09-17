@@ -13,26 +13,11 @@ if (window.location.hostname === "www.metsxmfanzone.com") {
   window.location.replace(canonicalUrl.toString());
 }
 
-// Register service worker for push notifications and offline caching
+// Register one push-only service worker. It must not intercept page navigation:
+// Android in-app browsers can surface a rejected service-worker fetch as ERR_FAILED.
 // NOTE: the Lovable preview environment can be unstable with a Service Worker enabled
 // (cached JS/CSS can get out of sync during rapid iterations). We disable + fully clean SW
 // on preview hosts to prevent the "Sorry, we ran into an issue starting the live preview" modal.
-// Always purge all browser caches on every page load to guarantee fresh content
-const purgeAllCaches = async () => {
-  try {
-    if ("caches" in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((k) => caches.delete(k)));
-      if (keys.length > 0) {
-        console.log("[App] Purged", keys.length, "cache(s)");
-      }
-    }
-  } catch (e) {
-    console.warn("[App] Cache purge failed", e);
-  }
-};
-
-void purgeAllCaches();
 
 // Auto-recover from stale dynamic import chunks after a redeploy.
 // When the deployed index.html references new hashed JS files but the user
@@ -62,7 +47,7 @@ if (isPreviewHost) {
 } else if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
-      const registration = await navigator.serviceWorker.register("/sw.js", {
+      const registration = await navigator.serviceWorker.register("/service-worker.js", {
         scope: "/",
       });
       console.log("[App] Service Worker registered:", registration.scope);
