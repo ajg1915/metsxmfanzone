@@ -3,6 +3,8 @@
 // download/launch can fail — in that case we still produce every page from the
 // prerender templates instead of failing the whole deployment.
 import { spawnSync } from "node:child_process";
+import { copyFileSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
 
 function run(cmd, args) {
   const res = spawnSync(cmd, args, { stdio: "inherit", shell: process.platform === "win32" });
