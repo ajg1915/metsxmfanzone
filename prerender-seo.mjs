@@ -243,8 +243,8 @@ function writeSitemap(urls) {
         `  <url><loc>${esc(loc)}</loc>${lastmod ? `<lastmod>${esc(lastmod)}</lastmod>` : ''}<changefreq>daily</changefreq><priority>${priority}</priority></url>`
     )
     .join('\n');
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemap
-s.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`.replace('www.sitemap\ns.org', 'www.sitemaps.org');
+  const ns = 'http://www.sitemaps.org/schemas/sitemap/0.9';
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="${ns}">\n${body}\n</urlset>\n`;
   fs.writeFileSync(path.join(distDir, 'sitemap.xml'), xml, 'utf8');
   log(`sitemap.xml → ${urls.length} urls`);
 }
