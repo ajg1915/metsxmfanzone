@@ -426,6 +426,7 @@ async function main() {
   }
 
   writeSitemap(sitemap);
+  writeRobotsTxt();
   log(`done — ${written} pages (${posts.length} articles) written to dist/`);
 }
 
