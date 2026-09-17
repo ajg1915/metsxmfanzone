@@ -1,5 +1,7 @@
-// MetsXM FanZone Service Worker v4 - Zero Cache Policy
-// Forces fresh content on every visit
+// MetsXMFanZone legacy service worker cleanup.
+// Page requests intentionally bypass this worker. Push is handled by
+// /service-worker.js so Android in-app browsers cannot lose a navigation to a
+// rejected service-worker fetch.
 
 // Install - immediately take over
 self.addEventListener('install', () => {
@@ -27,13 +29,6 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-
-// Fetch - ALWAYS go to network, never cache anything
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  // Network only - no caching at all
-  event.respondWith(fetch(event.request));
-});
 
 // Push notification event
 self.addEventListener('push', (event) => {

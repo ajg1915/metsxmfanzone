@@ -32,9 +32,11 @@ async function getClient(instanceId: string) {
       const { Client } = await import("@pusher/push-notifications-web");
       return new Client({
         instanceId,
-        serviceWorkerRegistration: await navigator.serviceWorker.register("/service-worker.js", {
-          scope: "/",
-        }),
+        // Reuse the same root registration created at app startup. Registering a
+        // second worker at "/" can abort navigations in Android in-app browsers.
+        serviceWorkerRegistration:
+          (await navigator.serviceWorker.getRegistration("/")) ??
+          (await navigator.serviceWorker.register("/service-worker.js", { scope: "/" })),
       });
     })();
   }
