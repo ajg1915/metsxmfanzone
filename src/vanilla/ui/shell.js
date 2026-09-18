@@ -1,4 +1,5 @@
 import { escapeHtml } from "../core/sanitize.js";
+import { auth } from "../core/auth.js";
 
 const navItems = [
   ["/", "Home"],
@@ -18,7 +19,9 @@ export const renderShell = ({ content, currentPath = window.location.pathname })
       <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">☰</button>
       <nav class="site-nav" aria-label="Primary navigation">
         ${navItems.map(([href, label]) => `<a href="${href}" ${currentPath === href ? 'aria-current="page"' : ""}>${label}</a>`).join("")}
-        <a class="account-link" href="/auth">Account</a>
+        <a class="account-link" href="${auth.state.user ? "/dashboard" : "/auth"}">${auth.state.user ? "My Account" : "Sign In"}</a>
+        ${auth.state.isAdmin ? '<a class="account-link" href="/admin">Admin</a>' : ""}
+        ${auth.state.user ? '<button class="account-link sign-out" type="button">Sign out</button>' : ""}
       </nav>
     </header>
     <main id="page-content">${content}</main>
@@ -34,6 +37,11 @@ export const renderShell = ({ content, currentPath = window.location.pathname })
   </div>`;
 
 export const bindShell = (root) => {
+  const signOut = root.querySelector(".sign-out");
+  signOut?.addEventListener("click", async () => {
+    await auth.signOut();
+    window.location.assign("/");
+  });
   const toggle = root.querySelector(".menu-toggle");
   const nav = root.querySelector(".site-nav");
   toggle?.addEventListener("click", () => {
