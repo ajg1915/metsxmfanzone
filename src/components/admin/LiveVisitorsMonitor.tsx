@@ -74,6 +74,13 @@ export default function LiveVisitorsMonitor() {
   useEffect(() => {
     load();
 
+    // Collapse bursts of presence updates into one refresh.
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    const debouncedLoad = () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
+      reloadTimer = setTimeout(load, 2000);
+    };
+
     const channel = supabase
       .channel("admin-live-visitors")
       .on("postgres_changes", { event: "*", schema: "public", table: "realtime_presence" }, (payload) => {
@@ -84,17 +91,18 @@ export default function LiveVisitorsMonitor() {
             description: `${row.is_authenticated ? "Member" : "Guest"} from ${locationLabel(row)} • ${row.current_page}`,
           });
         }
-        load();
+        debouncedLoad();
       })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "visitor_clicks" }, (payload) => {
         setClicks((prev) => [payload.new as ClickEvent, ...prev].slice(0, 60));
       })
       .subscribe();
 
-    const interval = setInterval(load, 30000);
+    const interval = setInterval(load, 60000);
     return () => {
       supabase.removeChannel(channel);
       clearInterval(interval);
+      if (reloadTimer) clearTimeout(reloadTimer);
     };
   }, []);
 
