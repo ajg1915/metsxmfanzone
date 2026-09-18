@@ -51,7 +51,6 @@ export const renderSchedule = async (root, pathname = "/mets-schedule-2026") => 
     title: "Mets 2026 Schedule | MetsXMFanZone",
     description: "The full New York Mets 2026 regular season schedule with dates, opponents, and start times in Eastern Time.",
     path: pathname,
-    image: "/share/schedule.jpg",
   });
 
   root.innerHTML = renderShell({ content: statusPanel("Schedule", "Loading the 2026 schedule…"), currentPath: pathname });
@@ -100,7 +99,6 @@ export const renderScores = async (root, pathname = "/mets-scores") => {
       ? "Today's National League scores and results."
       : "Today's New York Mets score, recent results, and division standings.",
     path: pathname,
-    image: "/share/scores.jpg",
   });
 
   root.innerHTML = renderShell({ content: statusPanel("Scores", "Loading scores…"), currentPath: pathname });

@@ -83,7 +83,7 @@ export const attachPlayer = (video, url) => {
 const playerMarkup = (stream) => `
   <section class="content-width player-panel">
     <video id="stream-player" class="stream-player" controls playsinline autoplay
-      poster="${safeUrl(stream.thumbnail_url || "/share/live.jpg", "/share/live.jpg")}"></video>
+      poster="${safeUrl(stream.thumbnail_url || "/share/metsxmfanzone.jpg", "/share/metsxmfanzone.jpg")}"></video>
     <h1>${escapeHtml(stream.title || "MetsXMFanZone Live")}</h1>
     <p class="stream-meta">${stream.status === "live" ? "Live now" : startTime(stream.scheduled_start)}</p>
     ${stream.description ? `<p>${escapeHtml(stream.description)}</p>` : ""}
@@ -101,7 +101,7 @@ const renderStream = async (root, pathname, stream) => {
     title: `${stream.title || "Watch Live"} | MetsXMFanZone`,
     description: stream.description || "Watch live New York Mets coverage on MetsXMFanZone.",
     path: pathname,
-    image: stream.thumbnail_url || "/share/live.jpg",
+    image: stream.thumbnail_url || "/share/metsxmfanzone.jpg",
     type: "video.other",
   });
 

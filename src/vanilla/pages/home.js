@@ -38,7 +38,7 @@ const streamCard = (stream) => {
   return `
   <article class="stream-card">
     <a href="/live/${encodeURIComponent(stream.id)}">
-      <img src="${safeUrl(stream.thumbnail_url || "/share/live.jpg", "/share/live.jpg")}" alt="${escapeHtml(stream.title || "Live stream")}" loading="lazy">
+      <img src="${safeUrl(stream.thumbnail_url || "/share/metsxmfanzone.jpg", "/share/metsxmfanzone.jpg")}" alt="${escapeHtml(stream.title || "Live stream")}" loading="lazy">
       <span class="stream-badge ${live ? "is-live" : ""}">${live ? "LIVE" : formatStart(stream.scheduled_start)}</span>
       <h3>${escapeHtml(stream.title || "MetsXMFanZone Live")}</h3>
     </a>
