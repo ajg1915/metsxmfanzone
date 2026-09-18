@@ -38,12 +38,40 @@ const copyByPath = {
 
 export const renderStaticPage = async (root, pathname) => {
   const record = pageRegistry.find((item) => item.path === pathname);
+
+  if (!record && !copyByPath[pathname]) {
+    setPageMetadata({
+      title: "Page Not Found | MetsXMFanZone",
+      description: "The page you were looking for is not available. Head back to MetsXMFanZone for Mets news, live coverage, and community.",
+      path: pathname,
+      noindex: true,
+    });
+
+    const notFound = `
+      <section class="content-width home-section">
+        <p class="eyebrow">404</p>
+        <h1>We couldn't find that page</h1>
+        <p>The link may be old or mistyped. Try one of these instead:</p>
+        <div class="hero-actions">
+          <a class="button primary" href="/">Home</a>
+          <a class="button secondary" href="/blog">Mets News</a>
+          <a class="button secondary" href="/mets-scores">Scores</a>
+          <a class="button secondary" href="/help-center">Help Center</a>
+        </div>
+      </section>`;
+
+    root.innerHTML = renderShell({ content: notFound, currentPath: pathname });
+    bindShell(root);
+    return;
+  }
+
   const copy = copyByPath[pathname] || {
     eyebrow: record?.label || "MetsXMFanZone",
     heading: record?.title?.split("|")[0]?.trim() || "MetsXMFanZone",
     body: record?.description || "New York Mets coverage and community from MetsXMFanZone.",
     actions: [["/", "Back Home"], ["/blog", "Latest News"]],
   };
+
 
   setPageMetadata({
     title: record?.title || "MetsXMFanZone — New York Mets Fan Community",
