@@ -105,7 +105,7 @@ a { color: inherit; }
   padding: 0.5rem 0 1rem;
   border-top: 1px solid var(--border);
 }
-.mobile-nav.open { display: flex; }
+.mobile-nav.open { display: flex; max-height: 60vh; overflow-y: auto; }
 .mobile-nav a {
   text-decoration: none;
   color: var(--text);
