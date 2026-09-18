@@ -20,8 +20,8 @@
       "destination": "/index.html"
     },
     {
-      "source": "/blog/:path*",
-      "destination": "/index.html"
+      "source": "/blog/:slug*",
+      "destination": "/api/blog?slug=:slug*"
     },
     {
       "source": "/((?!api/|.*\\..*).*)",

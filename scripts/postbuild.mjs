@@ -3,7 +3,7 @@
 // download/launch can fail — in that case we still produce every page from the
 // prerender templates instead of failing the whole deployment.
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync } from "node:fs";
+import { copyFileSync, existsSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 
 function run(cmd, args) {
@@ -23,6 +23,14 @@ if (skip) {
 if (!run("node", ["prerender.js", "--postprocess"])) {
   console.error("prerender postprocess failed");
   process.exit(1);
+}
+
+// Blog articles are rendered on request by api/blog.js so that newly published
+// and freshly edited posts are always correct. Remove the build-time copies so
+// they can't shadow that route with stale content.
+if (existsSync(resolve("dist/blog"))) {
+  rmSync(resolve("dist/blog"), { recursive: true, force: true });
+  console.log("removed dist/blog (served dynamically by /api/blog)");
 }
 
 // Safety net: any URL that has no prerendered file (e.g. an article published
