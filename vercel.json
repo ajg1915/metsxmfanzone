@@ -24,6 +24,10 @@
       "destination": "/api/blog?slug=:slug*"
     },
     {
+      "source": "/blog-html/:slug*",
+      "destination": "/api/blog-html?slug=:slug*"
+    },
+    {
       "source": "/((?!api/|.*\\..*).*)",
       "destination": "/index.html"
     }
