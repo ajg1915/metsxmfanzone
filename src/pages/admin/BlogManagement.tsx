@@ -87,6 +87,7 @@ export default function BlogManagement() {
   };
   const [formData, setFormData] = useState(defaultFormData);
 
+  const [htmlMode, setHtmlMode] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingFeatured, setUploadingFeatured] = useState(false);
   const [uploadingAudio, setUploadingAudio] = useState(false);
@@ -466,13 +467,33 @@ export default function BlogManagement() {
                   </div>
 
                   <div>
-                    <Label className="text-[11px] mb-1 block">Article Content · {wordCount} words</Label>
-                    <RichTextEditor
-                      value={formData.content}
-                      onChange={(html) => setFormData(f => ({ ...f, content: html }))}
-                      placeholder="Start writing… use the toolbar to format."
-                      onImageUploadRequest={() => editorImageInputRef.current?.click()}
-                    />
+                    <div className="flex items-center justify-between mb-1">
+                      <Label className="text-[11px] block">Article Content · {wordCount} words</Label>
+                      <Button type="button" variant="ghost" size="sm" className="h-6 px-2 text-[10px]"
+                        onClick={() => setHtmlMode(v => !v)}>
+                        <Code2 className="w-3 h-3 mr-1" />
+                        {htmlMode ? "Visual editor" : "Edit HTML"}
+                      </Button>
+                    </div>
+                    {htmlMode ? (
+                      <Textarea
+                        value={formData.content}
+                        onChange={(e) => setFormData(f => ({ ...f, content: e.target.value }))}
+                        placeholder="<p>Write or paste HTML here…</p>"
+                        className="font-mono text-[11px] min-h-[320px]"
+                        spellCheck={false}
+                      />
+                    ) : (
+                      <RichTextEditor
+                        value={formData.content}
+                        onChange={(html) => setFormData(f => ({ ...f, content: html }))}
+                        placeholder="Start writing… use the toolbar to format."
+                        onImageUploadRequest={() => editorImageInputRef.current?.click()}
+                      />
+                    )}
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Every published article also gets its own plain HTML page at /blog-html/{formData.slug || "your-slug"} for sharing.
+                    </p>
                     <input ref={editorImageInputRef} type="file" accept="image/*"
                       onChange={handleEditorImageUpload} className="hidden" />
                     {uploadingImage && (
