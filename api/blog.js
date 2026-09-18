@@ -73,8 +73,7 @@ function buildHead(post, slug) {
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:image" content="${escapeHtml(image)}">
   <meta property="og:image:secure_url" content="${escapeHtml(image)}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  ${image === FALLBACK_IMAGE ? '<meta property="og:image:width" content="1200">\n  <meta property="og:image:height" content="630">' : ""}
   <meta property="og:image:alt" content="${escapeHtml(post.title || "")}">
   <meta property="og:locale" content="en_US">
   <meta property="article:published_time" content="${escapeHtml(post.published_at || "")}">
