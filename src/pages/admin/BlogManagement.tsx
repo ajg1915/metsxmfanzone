@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   Plus, Edit, Trash2, FileText, Music, Copy, CheckCircle,
-  XCircle, Clock, Loader2, Eye, Search, CalendarClock,
+  XCircle, Clock, Loader2, Eye, Search, CalendarClock, Code2,
 } from "lucide-react";
 import { z } from "zod";
 import { validateFile, generateSafeFilename } from "@/utils/fileValidation";
@@ -684,10 +684,16 @@ export default function BlogManagement() {
                     </div>
                     <div className="flex items-center gap-0.5 flex-shrink-0 flex-wrap">
                       {post.published && (
-                        <Button variant="ghost" size="sm" className="h-7 px-1.5" title="Open"
-                          onClick={() => window.open(`/blog/${post.slug}`, "_blank")}>
-                          <Eye className="w-3 h-3" />
-                        </Button>
+                        <>
+                          <Button variant="ghost" size="sm" className="h-7 px-1.5" title="Open"
+                            onClick={() => window.open(`/blog/${post.slug}`, "_blank")}>
+                            <Eye className="w-3 h-3" />
+                          </Button>
+                          <Button variant="ghost" size="sm" className="h-7 px-1.5" title="Open standalone HTML page"
+                            onClick={() => window.open(`/blog-html/${post.slug}`, "_blank")}>
+                            <Code2 className="w-3 h-3" />
+                          </Button>
+                        </>
                       )}
                       <Button variant="ghost" size="sm" className="h-7 px-1.5" title="Copy link"
                         onClick={() => handleCopyLink(post)}>
