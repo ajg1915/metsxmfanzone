@@ -25,6 +25,14 @@ if (!run("node", ["prerender.js", "--postprocess"])) {
   process.exit(1);
 }
 
+// Blog articles are rendered on request by api/blog.js so that newly published
+// and freshly edited posts are always correct. Remove the build-time copies so
+// they can't shadow that route with stale content.
+if (existsSync(resolve("dist/blog"))) {
+  rmSync(resolve("dist/blog"), { recursive: true, force: true });
+  console.log("removed dist/blog (served dynamically by /api/blog)");
+}
+
 // Safety net: any URL that has no prerendered file (e.g. an article published
 // after this build) must still load the app instead of a hosting 404 page.
 const indexHtml = resolve("dist/index.html");
