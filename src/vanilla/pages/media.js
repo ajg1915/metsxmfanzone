@@ -68,7 +68,6 @@ export const renderVideoGallery = async (root, pathname = "/video-gallery") => {
     title: "Mets Video Gallery | Highlights & Replays | MetsXMFanZone",
     description: "Watch New York Mets highlights, replays, and original MetsXMFanZone video coverage.",
     path: pathname,
-    image: "/share/videos.jpg",
   });
 
   root.innerHTML = renderShell({ content: statusPanel("Videos", "Loading videos…"), currentPath: pathname });
@@ -94,7 +93,7 @@ export const renderVideoGallery = async (root, pathname = "/video-gallery") => {
             (video) => `
         <article class="video-card">
           <button type="button" data-video="${safeUrl(video.video_url || "", "")}" data-title="${escapeHtml(video.title || "")}">
-            <img src="${safeUrl(video.thumbnail_url || "/share/videos.jpg", "/share/videos.jpg")}" alt="${escapeHtml(video.title || "Video")}" loading="lazy">
+            <img src="${safeUrl(video.thumbnail_url || "/share/video-gallery.jpg", "/share/video-gallery.jpg")}" alt="${escapeHtml(video.title || "Video")}" loading="lazy">
             <span class="stream-badge">${escapeHtml(duration(video.duration) || "Play")}</span>
             <h2>${escapeHtml(video.title || "Video")}</h2>
           </button>
@@ -137,7 +136,7 @@ export const renderVideoGallery = async (root, pathname = "/video-gallery") => {
 const recapCard = (recap) => `
   <article class="story-card">
     <a href="/mets-game-recaps/${encodeURIComponent(recap.slug || recap.id)}">
-      <img src="${safeUrl(recap.hero_image_url || "/share/recaps.jpg", "/share/recaps.jpg")}" alt="${escapeHtml(recap.title || "Game recap")}" loading="lazy">
+      <img src="${safeUrl(recap.hero_image_url || "/share/mets-game-recaps.jpg", "/share/mets-game-recaps.jpg")}" alt="${escapeHtml(recap.title || "Game recap")}" loading="lazy">
       <div class="story-copy">
         <span class="eyebrow">${escapeHtml(recap.result || "Recap")} · ${escapeHtml(recap.opponent || "")}</span>
         <h2>${escapeHtml(recap.title || "Mets game recap")}</h2>
@@ -152,7 +151,7 @@ export const renderRecaps = async (root, pathname = "/mets-game-recaps") => {
     title: "Mets Game Recaps | MetsXMFanZone",
     description: "Read New York Mets game recaps with scores, highlights, and analysis after every game.",
     path: pathname,
-    image: "/share/recaps.jpg",
+    image: "/share/mets-game-recaps.jpg",
   });
 
   root.innerHTML = renderShell({ content: statusPanel("Game Recaps", "Loading recaps…"), currentPath: pathname });
@@ -204,7 +203,7 @@ export const renderRecap = async (root, slug) => {
     title: `${recap.title} | MetsXMFanZone`,
     description: recap.summary || "New York Mets game recap from MetsXMFanZone.",
     path: pathname,
-    image: recap.hero_image_url || "/share/recaps.jpg",
+    image: recap.hero_image_url || "/share/mets-game-recaps.jpg",
     type: "article",
   });
 
