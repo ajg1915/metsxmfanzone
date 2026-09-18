@@ -97,6 +97,9 @@ export const usePresenceTracking = () => {
   // Presence heartbeat for EVERY visitor (anonymous included)
   useEffect(() => {
     const updatePresence = async () => {
+      // Don't write while the tab is in the background — these rows only matter
+      // for "who is on the site right now".
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       try {
         await supabase.from('realtime_presence').upsert({
           session_id: sessionId.current,
@@ -122,7 +125,7 @@ export const usePresenceTracking = () => {
 
     const timer = setTimeout(() => {
       updatePresence();
-      intervalRef.current = setInterval(updatePresence, 45000);
+      intervalRef.current = setInterval(updatePresence, 120000);
     }, 1500);
 
     return () => {
@@ -131,11 +134,17 @@ export const usePresenceTracking = () => {
     };
   }, [location.pathname]);
 
-  // Click-path tracking
+  // Click-path tracking (throttled so rapid clicking can't flood the database)
   useEffect(() => {
+    let lastClickLoggedAt = 0;
+
     const handleClick = (e: MouseEvent) => {
       const target = (e.target as HTMLElement | null)?.closest('a,button,[role="button"]') as HTMLElement | null;
       if (!target) return;
+
+      const now = Date.now();
+      if (now - lastClickLoggedAt < 1500) return;
+      lastClickLoggedAt = now;
 
       const label = (target.getAttribute('aria-label') || target.innerText || '').trim().slice(0, 120);
       const href = target.getAttribute('href');
