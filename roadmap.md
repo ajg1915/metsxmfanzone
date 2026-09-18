@@ -13,3 +13,21 @@
 - [ ] Admin portal and content management
 - [ ] Static page generation, sitemap, robots for the new build
 - [ ] Cutover: switch the live entry point, then remove React dependencies
+
+## Update — vanilla rebuild progress
+Done since last update:
+- Contact and feedback forms (plain JS, saved to the database, feedback requires sign-in)
+- Admin portal core: dashboard counters, article create/publish/unpublish/delete,
+  stream go-live/hide toggles, community feature/delete, member directory
+- Styles for account, plans, watch, podcast, video, recaps, community, games, forms, admin
+
+Verified in the private preview (port 8081): home, blog list, auth, plans/pricing,
+community, podcast, video gallery, recaps, schedule, scores, nl-scores, watch gate,
+dashboard redirect, help-center, faqs, privacy, contact, feedback — no console errors.
+Admin pages redirect correctly when signed out; signed-in admin screens still need a
+real owner-account login to verify.
+
+Still open: matchup pages, roster, history, social, tv, install, whats-new, rewards,
+podcaster/business applications, per-help-article content, stories, gamecast,
+sweepstakes, shop, notifications/FCM, AI assistant, uploads, casting,
+static generation + sitemap/robots for the new build, cutover, React dependency removal.
