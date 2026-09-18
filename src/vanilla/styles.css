@@ -77,3 +77,21 @@ button, input { font: inherit; }
   .article-grid { grid-template-columns: 1fr; }
   .story-card.featured a { display: block; }
 }
+/* Home page */
+.home-intro { padding-block: 26px 10px; }
+.home-intro h1 { margin: 6px 0 14px; font-family: "Bebas Neue", sans-serif; font-size: clamp(2.4rem, 9vw, 4.4rem); font-weight: 400; line-height: .95; }
+.home-section { margin-block: 26px; }
+.section-title { margin: 0 0 12px; font-family: "Bebas Neue", sans-serif; font-size: 1.7rem; font-weight: 400; letter-spacing: .04em; color: var(--orange); }
+.hero-rail, .stream-rail { display: grid; grid-auto-flow: column; grid-auto-columns: min(86%, 340px); gap: 12px; margin: 0; padding: 0 0 6px; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.hero-rail::-webkit-scrollbar, .stream-rail::-webkit-scrollbar { display: none; }
+.hero-slide, .stream-card { scroll-snap-align: start; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--surface); }
+.hero-slide { min-height: 200px; display: grid; align-items: end; background-image: linear-gradient(180deg, transparent, hsl(211 63% 6% / .92)), var(--slide-image); background-size: cover; background-position: center; }
+.hero-slide-copy { padding: 14px; display: grid; gap: 8px; justify-items: start; }
+.hero-slide-copy h2 { margin: 0; font-size: 1.15rem; }
+.hero-slide-copy p { margin: 0; color: hsl(210 20% 88%); font-size: .85rem; }
+.stream-card a { display: grid; gap: 8px; position: relative; text-decoration: none; color: inherit; }
+.stream-card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; }
+.stream-card h3 { margin: 0 12px 12px; font-size: .98rem; }
+.stream-badge { position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: 999px; background: hsl(211 63% 6% / .82); font-size: .68rem; letter-spacing: .06em; text-transform: uppercase; }
+.stream-badge.is-live { background: hsl(8 82% 52%); font-weight: 700; }
+.account-link.sign-out { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; padding: 0; }
