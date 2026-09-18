@@ -168,10 +168,17 @@ export default async function handler(req, res) {
       const head = stripExistingMeta(html.slice(0, headEnd));
       html = head + buildHead(post, slug) + html.slice(headEnd);
     }
-    html = html.replace(
-      /(<div id="root"[^>]*>)([\s\S]*?)(<\/div>)/,
-      (_m, open, _inner, close) => `${open}${buildBody(post)}${close}`,
-    );
+    // Replace everything inside #root (the prerendered homepage markup) with
+    // this article, using the last </div> before the first <script> as the end.
+    const rootMatch = html.match(/<div id="root"[^>]*>/);
+    if (rootMatch) {
+      const start = rootMatch.index + rootMatch[0].length;
+      const scriptAt = html.indexOf("<script", start);
+      const endAt = html.lastIndexOf("</div>", scriptAt === -1 ? html.length : scriptAt);
+      if (endAt > start) {
+        html = html.slice(0, start) + buildBody(post) + html.slice(endAt);
+      }
+    }
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "public, max-age=0, s-maxage=300, stale-while-revalidate=600");
