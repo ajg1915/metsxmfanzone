@@ -33,5 +33,5 @@ sweepstakes, shop, notifications/FCM, AI assistant, uploads, casting,
 static generation + sitemap/robots for the new build, cutover, React dependency removal.
 - [ ] Convert every remaining TSX page to plain HTML/CSS/JavaScript
 - [ ] Replace App.tsx with the plain HTML entry point after parity checks
-- [ ] Make og-image.png the sitewide social share card while preserving the same artwork
-- [ ] Regenerate favicon.ico from the MetsXMFanZone icon
+- [x] Make og-image.png the sitewide social share card while preserving the same artwork
+- [x] Regenerate favicon.ico from the MetsXMFanZone icon
