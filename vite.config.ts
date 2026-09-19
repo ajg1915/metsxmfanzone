@@ -72,7 +72,7 @@ export default defineConfig(({ mode }) => {
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.png", "logo-192.png", "logo-512.png"],
+      includeAssets: ["favicon.ico", "favicon.png", "logo-192.png", "logo-512.png"],
       manifest: {
         name: "MetsXMFanZone",
         short_name: "MetsXM",

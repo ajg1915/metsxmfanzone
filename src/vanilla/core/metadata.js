@@ -3,7 +3,7 @@ import pageRegistry from "../../data/share-pages.json";
 const SITE_URL = "https://metsxmfanzone.com";
 const SITE_NAME = "MetsXMFanZone";
 const TWITTER_HANDLE = "@metsxmfanzone";
-const DEFAULT_IMAGE = "/og-image.jpg";
+const DEFAULT_IMAGE = "/og-image.png";
 
 const PRIVATE_PREFIXES = [
   "/admin",
@@ -78,6 +78,7 @@ export const setPageMetadata = ({
   setMeta('meta[property="og:image:alt"]', { property: "og:image:alt", content: alt });
   setMeta('meta[property="og:image:width"]', { property: "og:image:width", content: "1200" });
   setMeta('meta[property="og:image:height"]', { property: "og:image:height", content: "630" });
+  setMeta('meta[property="og:image:type"]', { property: "og:image:type", content: "image/png" });
 
   setMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
   setMeta('meta[name="twitter:site"]', { name: "twitter:site", content: TWITTER_HANDLE });
