@@ -6,7 +6,7 @@ export const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA";
 
 export const SITE_URL = process.env.PUBLIC_SITE_URL || "https://metsxmfanzone.com";
-export const FALLBACK_IMAGE = `${SITE_URL}/og-image.jpg`;
+export const FALLBACK_IMAGE = `${SITE_URL}/og-image.png`;
 const OLD_STORAGE = "https://clwghkbtkofacsjeyrtk.supabase.co";
 
 export function escapeHtml(input) {

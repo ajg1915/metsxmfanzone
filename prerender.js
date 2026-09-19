@@ -13,8 +13,8 @@ const SITE_URL = process.env.PUBLIC_SITE_URL || 'https://metsxmfanzone.com';
 const SUPABASE_URL = 'https://rdmrxeplasttewtlfetc.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA';
-const FALLBACK_IMAGE = `${SITE_URL}/og-image.jpg`;
-const SOCIAL_IMAGE = `${SITE_URL}/og-image.jpg`;
+const FALLBACK_IMAGE = `${SITE_URL}/og-image.png`;
+const SOCIAL_IMAGE = `${SITE_URL}/og-image.png`;
 
 function escapeHtml(input) {
   return String(input ?? '').replace(/[&<>"']/g, (match) => (

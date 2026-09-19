@@ -36,7 +36,7 @@ const SUPABASE_KEY =
 
 const OLD_STORAGE_HOST = 'clwghkbtkofacsjeyrtk.supabase.co';
 const NEW_STORAGE_HOST = 'rdmrxeplasttewtlfetc.supabase.co';
-const FALLBACK_IMAGE = `${SITE_URL}/og-image.jpg`;
+const FALLBACK_IMAGE = `${SITE_URL}/og-image.png`;
 
 const quiet = process.argv.includes('--quiet');
 const log = (...a) => { if (!quiet) console.log('[prerender-seo]', ...a); };

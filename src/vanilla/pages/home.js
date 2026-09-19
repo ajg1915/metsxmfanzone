@@ -21,7 +21,7 @@ const formatStart = (value) =>
     : "Scheduled";
 
 const heroSlide = (slide) => `
-  <li class="hero-slide" style="--slide-image: url('${safeUrl(slide.image_url || "/og-image.jpg", "/og-image.jpg")}')">
+  <li class="hero-slide" style="--slide-image: url('${safeUrl(slide.image_url || "/og-image.png", "/og-image.png")}')">
     <div class="hero-slide-copy">
       <h2>${escapeHtml(slide.title || "MetsXMFanZone")}</h2>
       ${slide.description ? `<p>${escapeHtml(slide.description)}</p>` : ""}

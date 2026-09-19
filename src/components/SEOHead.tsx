@@ -25,7 +25,7 @@ interface SEOHeadProps {
 }
 
 const BASE_URL = "https://metsxmfanzone.com";
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
+const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 const SITE_NAME = "MetsXMFanZone";
 const TWITTER_HANDLE = "@metsxmfanzone";
 

@@ -77,11 +77,11 @@ export const renderStaticPage = async (root, pathname) => {
     title: record?.title || "MetsXMFanZone — New York Mets Fan Community",
     description: record?.description || copy.body,
     path: pathname,
-    image: record?.image || "/og-image.jpg",
+    image: record?.image || "/og-image.png",
   });
 
   const content = `
-    <section class="static-hero" style="--page-image: url('${escapeHtml(record?.image || "/og-image.jpg")}')">
+    <section class="static-hero" style="--page-image: url('${escapeHtml(record?.image || "/og-image.png")}')">
       <div class="static-hero-overlay content-width">
         <p class="eyebrow">${escapeHtml(copy.eyebrow)}</p>
         <h1>${escapeHtml(copy.heading)}</h1>

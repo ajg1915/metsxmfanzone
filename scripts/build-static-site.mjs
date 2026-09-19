@@ -24,7 +24,7 @@ const esc = (s = "") =>
 
 const imageFor = (entry) => {
   const name = (entry.image || "").replace("/share/", "");
-  return shareImages.has(name) ? `https://metsxmfanzone.com/share/${name}` : `${SITE_URL}/og-image.jpg`;
+  return shareImages.has(name) ? `https://metsxmfanzone.com/share/${name}` : `${SITE_URL}/og-image.png`;
 };
 
 const byPath = new Map(registry.map((e) => [e.path, e]));
