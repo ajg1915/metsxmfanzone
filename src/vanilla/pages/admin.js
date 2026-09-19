@@ -7,9 +7,22 @@ import { bindShell, renderShell, statusPanel } from "../ui/shell.js";
 const SECTIONS = [
   ["/admin", "Dashboard"],
   ["/admin/blog", "Articles"],
+  ["/admin/stories", "Stories"],
+  ["/admin/hero", "Hero slides"],
   ["/admin/streams", "Streams"],
+  ["/admin/videos", "Videos"],
+  ["/admin/podcasts", "Podcasts"],
+  ["/admin/events", "Events"],
+  ["/admin/predictions", "Predictions"],
+  ["/admin/lineups", "Lineups"],
+  ["/admin/media", "Media"],
+  ["/admin/popups", "Popups"],
   ["/admin/community", "Community"],
+  ["/admin/feedback", "Feedback"],
+  ["/admin/support", "Support"],
   ["/admin/users", "Members"],
+  ["/admin/subscriptions", "Subscriptions"],
+  ["/admin/roles", "Roles"],
 ];
 
 const slugify = (value) =>
