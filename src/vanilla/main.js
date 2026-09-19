@@ -16,6 +16,12 @@ import {
   renderAdminStreams,
   renderAdminUsers,
 } from "./pages/admin.js";
+import {
+  adminCollections,
+  renderAdminCollection,
+  renderAdminRoles,
+  renderAdminSubscriptions,
+} from "./pages/adminExtra.js";
 import { formPaths, renderFormPage } from "./pages/forms.js";
 import { publicStaticPaths, renderStaticPage } from "./pages/static.js";
 
@@ -49,6 +55,9 @@ router.add("/admin/blog", () => renderAdminBlog(root));
 router.add("/admin/streams", () => renderAdminStreams(root));
 router.add("/admin/community", () => renderAdminCommunity(root));
 router.add("/admin/users", () => renderAdminUsers(root));
+router.add("/admin/roles", () => renderAdminRoles(root));
+router.add("/admin/subscriptions", () => renderAdminSubscriptions(root));
+adminCollections.forEach((config) => router.add(config.path, () => renderAdminCollection(root, config)));
 formPaths.forEach((path) => router.add(path, ({ pathname }) => renderFormPage(root, pathname)));
 watchPaths.forEach((path) => router.add(path, ({ pathname }) => renderWatchPage(root, pathname)));
 
