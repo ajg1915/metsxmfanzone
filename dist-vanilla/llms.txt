@@ -1,0 +1,44 @@
+# MetsXMFanZone
+
+> The #1 New York Mets fan community — live games, podcasts, news, trade rumors, game-day breakdowns, and exclusive content. Built by fans, for fans.
+
+MetsXMFanZone is an independent fan platform covering the New York Mets. Members get live stream access across MetsXMFanZone, MLB Network, ESPN, PIX11, and MSG, plus the MetsXMFanZone podcast, daily blog coverage, lineup cards, gamecasts, predictions, sweepstakes, and a moderated fan community.
+
+## Pages
+
+- [Home](/): Featured live streams, news, podcast highlights, and community feed.
+- [Blog](/blog): Daily Mets articles, recaps, analysis, and trade rumors.
+- [Podcast](/podcast): MetsXMFanZone podcast episodes and live shows.
+- [Community](/community): Fan posts, comments, and discussions.
+- [Pricing](/pricing): Premium and annual membership plans.
+- [Mets Roster](/mets-roster): Current 2026 NY Mets roster.
+- [Mets Schedule](/mets-schedule-2026): 2026 spring training and regular-season schedule.
+- [Mets Scores](/mets-scores): Latest Mets game scores.
+- [Mets Gamecast](/mets-gamecast): Real-time scoreboard, lineups, plays, and box score.
+- [Mets History](/mets-history): Franchise history and milestones.
+- [Game Recaps](/mets-game-recaps): Recaps of recent Mets games.
+- [MetsXMFanZone Network](/metsxmfanzone): MetsXMFanZone live network channel.
+- [MLB Network](/mlb-network): MLB Network live channel.
+- [ESPN Network](/espn-network): ESPN live channel.
+- [PIX11 Network](/pix11-network): PIX11 live channel.
+- [MSG Network](/msg-network): MSG live channel.
+- [Gallery](/gallery): Photo gallery.
+- [Video Gallery](/video-gallery): Video highlights and clips.
+- [Replay Games](/replay-games): On-demand replays of past games.
+- [NL Scores](/nl-scores): National League scoreboard.
+- [Matchup: Yankees](/matchup/yankees): Mets vs. Yankees breakdown.
+- [Matchup: Braves](/matchup/braves): Mets vs. Braves breakdown.
+- [Matchup: Astros](/matchup/astros): Mets vs. Astros breakdown.
+
+## Optional
+
+- [What's New](/whats-new): Product updates and announcements.
+- [Social Media Hub](/social-media-hub): Find MetsXMFanZone on every platform.
+- [Help Center](/help-center): Account, payment, and playback help articles.
+- [Contact](/contact): Customer support form.
+- [FAQs](/faqs): Frequently asked questions.
+- [Feedback](/feedback): Share feedback with the team.
+- [Business Partner](/business-partner): Partnership inquiries.
+- [Podcaster Application](/podcaster-application): Apply to host on the network.
+- [Privacy](/privacy): Privacy policy.
+- [Terms](/terms): Terms of service.

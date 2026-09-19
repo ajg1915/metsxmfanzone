@@ -7,9 +7,22 @@ import { bindShell, renderShell, statusPanel } from "../ui/shell.js";
 const SECTIONS = [
   ["/admin", "Dashboard"],
   ["/admin/blog", "Articles"],
+  ["/admin/stories", "Stories"],
+  ["/admin/hero", "Hero slides"],
   ["/admin/streams", "Streams"],
+  ["/admin/videos", "Videos"],
+  ["/admin/podcasts", "Podcasts"],
+  ["/admin/events", "Events"],
+  ["/admin/predictions", "Predictions"],
+  ["/admin/lineups", "Lineups"],
+  ["/admin/media", "Media"],
+  ["/admin/popups", "Popups"],
   ["/admin/community", "Community"],
+  ["/admin/feedback", "Feedback"],
+  ["/admin/support", "Support"],
   ["/admin/users", "Members"],
+  ["/admin/subscriptions", "Subscriptions"],
+  ["/admin/roles", "Roles"],
 ];
 
 const slugify = (value) =>
@@ -19,7 +32,7 @@ const slugify = (value) =>
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
 
-const shortDate = (value) =>
+export const shortDate = (value) =>
   value ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(new Date(value)) : "—";
 
 const adminNav = (current) => `
@@ -30,7 +43,7 @@ const adminNav = (current) => `
     ).join("")}
   </nav>`;
 
-const adminPage = (root, pathname, title, body) => {
+export const adminPage = (root, pathname, title, body) => {
   root.innerHTML = renderShell({
     content: `
       <section class="content-width page-heading">
@@ -44,7 +57,7 @@ const adminPage = (root, pathname, title, body) => {
   bindShell(root);
 };
 
-const requireAdmin = async (root, pathname) => {
+export const requireAdmin = async (root, pathname) => {
   root.innerHTML = renderShell({ content: statusPanel("Admin", "Checking your access…"), currentPath: pathname });
   bindShell(root);
 

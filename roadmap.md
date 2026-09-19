@@ -35,3 +35,4 @@ static generation + sitemap/robots for the new build, cutover, React dependency 
 - [ ] Replace App.tsx with the plain HTML entry point after parity checks
 - [x] Make og-image.png the sitewide social share card while preserving the same artwork
 - [x] Regenerate favicon.ico from the MetsXMFanZone icon
+- [x] Rebuild admin area in plain HTML/JS: dashboard, articles, stories, hero slides, streams, videos, podcasts, events, predictions, lineups, media, popups, community, feedback, support, members, subscriptions, roles
