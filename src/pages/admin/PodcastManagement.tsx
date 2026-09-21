@@ -85,17 +85,7 @@ export default function PodcastManagement() {
 
     try {
       // Upload audio file
-      const fileExt = "mp3";
-      const fileName = `${Date.now()}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("podcasts")
-        .upload(fileName, formData.audioFile);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("podcasts")
-        .getPublicUrl(fileName);
+      const { publicUrl } = await uploadToR2(formData.audioFile, "podcasts", formData.audioFile.name);
 
       // Create podcast record
       const { error: insertError } = await supabase.from("podcasts").insert({

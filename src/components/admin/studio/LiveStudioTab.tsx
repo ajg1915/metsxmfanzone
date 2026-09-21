@@ -101,13 +101,11 @@ export default function LiveStudioTab() {
     }
     setSaving(true);
     try {
-      const ext = recordingMode === "video" ? "webm" : "webm";
+      const ext = "webm";
       const fileName = `studio-${Date.now()}.${ext}`;
-      const bucket = recordingMode === "video" ? "videos" : "podcasts";
-      const { error: uploadError } = await supabase.storage.from(bucket).upload(fileName, recordedBlobRef.current, { contentType: recordedBlobRef.current.type });
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+      const folder = recordingMode === "video" ? "videos" : "podcasts";
+      const { publicUrl: urlData_publicUrl } = await uploadToR2(recordedBlobRef.current, folder, fileName);
+      const urlData = { publicUrl: urlData_publicUrl };
 
       if (recordingMode === "video") {
         const { error } = await supabase.from("videos").insert({

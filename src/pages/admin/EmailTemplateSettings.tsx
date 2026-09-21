@@ -94,20 +94,14 @@ const EmailTemplateSettings = () => {
     }
 
     setUploading(true);
-    const fileName = `email-logo-${Date.now()}.${file.name.split(".").pop()}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("email-assets")
-      .upload(fileName, file, { upsert: true });
-
-    if (uploadError) {
-      toast({ title: "Upload failed", description: uploadError.message, variant: "destructive" });
+    try {
+      const { publicUrl } = await uploadToR2(file, "email-assets");
+      setSettings((prev) => ({ ...prev, logo_url: publicUrl }));
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message || "Upload failed", variant: "destructive" });
       setUploading(false);
       return;
     }
-
-    const { data: urlData } = supabase.storage.from("email-assets").getPublicUrl(fileName);
-    setSettings((prev) => ({ ...prev, logo_url: urlData.publicUrl }));
     setUploading(false);
     toast({ title: "Logo uploaded!", description: "Don't forget to save your changes." });
   };
