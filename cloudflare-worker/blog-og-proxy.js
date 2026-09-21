@@ -80,6 +80,12 @@ const CRAWLER_UA_PATTERNS = [
 function isCrawler(userAgent) {
   if (!userAgent) return false;
   const ua = userAgent.toLowerCase();
+
+  // Facebook in-app browser contains FBAN/FBAV/FBIOS — NOT a crawler, let it through
+  if (ua.includes("fban") || ua.includes("fbav") || ua.includes("fbios")) {
+    return false;
+  }
+
   return CRAWLER_UA_PATTERNS.some((p) => ua.includes(p));
 }
 
