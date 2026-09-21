@@ -146,9 +146,7 @@ export default function FeedHealth() {
       setLoading(true);
       setFailed(null);
       try {
-        const { data, error } = await supabase.functions.invoke("feed-health");
-        if (error) throw error;
-        const result = data as Report;
+        const result = (await fetchFeedHealth()) as Report;
         setReport(result);
         const problems = recordProblems(result);
 
