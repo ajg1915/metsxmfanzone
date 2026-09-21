@@ -301,12 +301,9 @@ export default function BlogManagement() {
 
 
 
-  const uploadToBucket = async (file: File, bucket: string, folder: string) => {
-    const fileName = generateSafeFilename(file.name);
-    const filePath = `${folder}/${fileName}`;
-    const { error } = await supabase.storage.from(bucket).upload(filePath, file);
-    if (error) throw error;
-    return supabase.storage.from(bucket).getPublicUrl(filePath).data.publicUrl;
+  const uploadToBucket = async (file: File, _bucket: string, folder: string) => {
+    const { publicUrl } = await uploadToR2(file, folder);
+    return publicUrl;
   };
 
   const handleFeaturedImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

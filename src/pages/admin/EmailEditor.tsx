@@ -430,15 +430,7 @@ export default function EmailEditor() {
 
     setIsUploadingLogo(true);
     try {
-      const ext = file.name.split('.').pop()?.toLowerCase() || 'png';
-      const fileName = `email-logo-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from('email-assets')
-        .upload(fileName, file, { upsert: true, contentType: file.type });
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage.from('email-assets').getPublicUrl(fileName);
-      const publicUrl = urlData.publicUrl;
+      const { publicUrl } = await uploadToR2(file, 'email-assets');
       setEmailStyle(s => ({ ...s, logoUrl: publicUrl }));
       toast({ title: "Logo Uploaded", description: "Email logo updated successfully." });
     } catch (err: any) {

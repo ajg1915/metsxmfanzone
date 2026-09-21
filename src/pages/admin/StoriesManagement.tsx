@@ -550,18 +550,13 @@ const StoriesManagement = () => {
       const blob = await response.blob();
       const file = new File([blob], `ai_generated_${Date.now()}.png`, { type: 'image/png' });
 
-      // Upload to Supabase storage
-      const fileName = `ai_${Date.now()}.png`;
-      const { error: uploadError } = await supabase.storage
-        .from("stories")
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
+      // Upload to R2
+      const { publicUrl } = await uploadToR2(file, "stories");
 
       // Create story with the generated image
       const storyData = {
         title: aiPrompt.slice(0, 50) + (aiPrompt.length > 50 ? "..." : ""),
-        media_url: fileName,
+        media_url: publicUrl,
         media_type: "image",
         thumbnail_url: null,
         display_order: 0,
