@@ -20,6 +20,14 @@
       "destination": "/index.html"
     },
     {
+      "source": "/blog/rss",
+      "destination": "/api/blog-rss"
+    },
+    {
+      "source": "/rss.xml",
+      "destination": "/api/blog-rss"
+    },
+    {
       "source": "/blog/:slug*",
       "destination": "/api/blog?slug=:slug*"
     },
