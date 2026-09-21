@@ -160,43 +160,7 @@ export default function VideoGalleryManagement() {
 
       // Handle file upload method
       if (uploadMethod === 'file' && videoFile) {
-        const fileExt = videoFile.name.split('.').pop();
-        const fileName = `${Math.random()}.${fileExt}`;
-        
-        // Upload with progress tracking using XMLHttpRequest
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-        const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const session = (await supabase.auth.getSession()).data.session;
-        const token = session?.access_token || supabaseKey;
-
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.upload.addEventListener('progress', (e) => {
-            if (e.lengthComputable) {
-              const pct = Math.round((e.loaded / e.total) * 100);
-              setUploadProgress(pct);
-            }
-          });
-          xhr.addEventListener('load', () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve();
-            } else {
-              reject(new Error(`Upload failed: ${xhr.statusText}`));
-            }
-          });
-          xhr.addEventListener('error', () => reject(new Error('Upload failed')));
-          xhr.open('POST', `${supabaseUrl}/storage/v1/object/videos/${fileName}`);
-          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-          xhr.setRequestHeader('apikey', supabaseKey);
-          xhr.setRequestHeader('x-upsert', 'false');
-          xhr.setRequestHeader('cache-control', '3600');
-          xhr.send(videoFile);
-        });
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('videos')
-          .getPublicUrl(fileName);
-
+        const { publicUrl } = await uploadToR2(videoFile, 'videos', videoFile.name, setUploadProgress);
         videoUrl = publicUrl;
 
         const videoElement = document.createElement('video');
