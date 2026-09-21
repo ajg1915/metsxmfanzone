@@ -130,7 +130,7 @@ export function AdminSidebar() {
                                 onClick={handleNavigate}
                                 className={`flex items-center gap-2.5 rounded-lg px-3 transition-all duration-200 ${
                                   active
-                                    ? "adm-accent-border border bg-[#FF5910]/15 font-semibold text-[#FF7A3D] shadow-[inset_0_0_14px_-4px_rgba(255,89,16,0.6)]"
+                                    ? "adm-accent-border border bg-[#FF5910]/15 font-semibold !text-[#FF7A3D] && shadow-[inset_0_0_14px_-4px_rgba(255,89,16,0.6)]"
                                     : "border border-transparent text-slate-400 hover:bg-white/5 hover:text-white"
                                 }`}
                               >
