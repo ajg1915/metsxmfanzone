@@ -74,6 +74,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { uploadToR2 } from "@/lib/r2Upload";
 
 interface LiveStream {
   id: string;
