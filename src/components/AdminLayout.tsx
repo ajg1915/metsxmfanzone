@@ -50,53 +50,60 @@ function AdminHeader({
   onOpenSearch: () => void;
 }) {
   return (
-    <header className="h-14 border-b border-white/10 flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-4 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-20">
-      <div className="flex items-center gap-2 flex-shrink-0">
-        <SidebarTrigger className="h-9 w-9 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg" />
-        <div className="hidden sm:flex items-center gap-1.5 cursor-pointer" onClick={() => navigate("/")}>
-          <img src={logo} alt="MetsXMFanZone Logo" className="h-7 w-auto" />
-          <span className="text-[11px] font-semibold text-foreground">MetsXMFanZone</span>
-        </div>
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-2 border-b border-white/5 bg-[#060d1d]/85 px-3 backdrop-blur-xl sm:gap-4 sm:px-6">
+      <div className="flex min-w-0 items-center gap-2">
+        <SidebarTrigger className="h-10 w-10 rounded-xl text-slate-300 hover:bg-white/5 hover:text-white" />
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="flex min-w-0 items-center gap-2 rounded-xl px-1 py-1 text-left hover:bg-white/5"
+        >
+          <img src={logo} alt="MetsXMFanZone" className="h-8 w-auto flex-shrink-0" />
+          <span className="hidden min-w-0 flex-col leading-tight sm:flex">
+            <span className="adm-display truncate text-[13px] font-bold text-white">MetsXMFanZone</span>
+            <span className="adm-chip truncate text-[9px] text-[#FF7A3D]">Control Room</span>
+          </span>
+        </button>
       </div>
 
-      <div className="flex-1 max-w-xl hidden sm:block">
+      <div className="hidden max-w-xl flex-1 sm:block">
         <button
           type="button"
           onClick={onOpenSearch}
-          className="relative w-full text-left bg-white/5 border border-white/10 rounded-full py-2 pl-9 pr-12 text-xs text-slate-500 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-[#FF5910]/60 transition-all"
+          className="relative w-full rounded-xl border border-white/10 bg-white/[0.04] py-2.5 pl-10 pr-14 text-left text-xs text-slate-400 transition-all hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-[#FF5910]/40"
         >
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
-          Search admin pages...
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] bg-white/10 px-1.5 py-0.5 rounded border border-white/10 text-slate-400 font-mono pointer-events-none">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          Search admin pages…
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-white/10 bg-white/10 px-1.5 py-0.5 font-mono text-[9px] text-slate-400">
             ⌘K
           </span>
         </button>
       </div>
 
-      <div className="flex items-center gap-1.5 flex-shrink-0">
+      <div className="flex flex-shrink-0 items-center gap-1">
         <button
           onClick={onOpenSearch}
-          className="sm:hidden p-2 rounded-full text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+          className="rounded-xl p-2.5 text-slate-300 transition-all hover:bg-white/5 hover:text-white sm:hidden"
           title="Search admin"
         >
-          <Search className="w-4 h-4" />
+          <Search className="h-4.5 w-4.5" />
         </button>
         <button
           onClick={() => window.location.reload()}
-          className="relative p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+          className="rounded-xl p-2.5 text-slate-400 transition-all hover:bg-white/5 hover:text-white"
           title="Refresh"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="h-4.5 w-4.5" />
         </button>
         <NotificationsBell />
         <Button
           variant="ghost"
           size="sm"
           onClick={() => navigate("/")}
-          className="h-8 text-[11px] px-2.5 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg"
+          className="h-9 rounded-xl px-2.5 text-[11px] text-slate-300 hover:bg-white/5 hover:text-white"
         >
-          <Home className="w-3.5 h-3.5 sm:mr-1.5" />
-          <span className="hidden sm:inline">Site</span>
+          <Home className="h-4 w-4 sm:mr-1.5" />
+          <span className="hidden sm:inline">View site</span>
         </Button>
       </div>
     </header>
