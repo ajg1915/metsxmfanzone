@@ -1,11 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Users, FileText, Activity, Radio, HelpCircle, ArrowRight, UserCog, Eye, HeartPulse, Mail, Search, CreditCard, Globe, Sparkles, Settings, Video, Mic, ClipboardList, Loader2, RefreshCw, Bell } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-
+import { fetchFeedHealth } from "@/lib/feedHealth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -15,34 +13,70 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Activity,
+  ArrowRight,
+  Bell,
+  ClipboardList,
+  CreditCard,
+  FileText,
+  Globe,
+  HelpCircle,
+  Image as ImageIcon,
+  Loader2,
+  Mail,
+  Megaphone,
+  Mic,
+  Radio,
+  RefreshCw,
+  Search,
+  Sparkles,
+  Users,
+  Video,
+} from "lucide-react";
 
-function ManualFetchButton({ label, icon, functionName, successMessage, onCreditsExhausted }: { label: string; icon: React.ReactNode; functionName: string; successMessage: string; onCreditsExhausted?: () => void }) {
+/* ---------------------------------- bits --------------------------------- */
+
+function ManualFetchButton({
+  label,
+  icon,
+  functionName,
+  successMessage,
+  onCreditsExhausted,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  functionName: string;
+  successMessage: string;
+  onCreditsExhausted?: () => void;
+}) {
   const [loading, setLoading] = useState(false);
   const handleFetch = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke(functionName);
       if (error) {
-        // Check if the error response contains credits exhausted info
         try {
           const errorBody = JSON.parse(error.message || "{}");
           if (errorBody.creditsExhausted || error.message?.includes("402") || error.message?.includes("credits")) {
-            toast.error("AI Credits Exhausted", { 
+            toast.error("AI Credits Exhausted", {
               description: "Use manual entry in Predictions Management instead.",
-              action: onCreditsExhausted ? { label: "Go to Manual Entry", onClick: onCreditsExhausted } : undefined
+              action: onCreditsExhausted ? { label: "Go to Manual Entry", onClick: onCreditsExhausted } : undefined,
             });
             return;
           }
-        } catch { /* not JSON, fall through */ }
+        } catch {
+          /* not JSON, fall through */
+        }
         throw error;
       }
       toast.success(successMessage, { description: data?.message || JSON.stringify(data) });
     } catch (err: any) {
-      const msg = err.message || "Unknown error";
+      const msg = err?.message || "Unknown error";
       if (msg.includes("credits") || msg.includes("402")) {
-        toast.error("AI Credits Exhausted", { 
+        toast.error("AI Credits Exhausted", {
           description: "Use manual entry in Predictions Management instead.",
-          action: onCreditsExhausted ? { label: "Go to Manual Entry", onClick: onCreditsExhausted } : undefined
+          action: onCreditsExhausted ? { label: "Go to Manual Entry", onClick: onCreditsExhausted } : undefined,
         });
       } else {
         toast.error("Fetch failed", { description: msg });
@@ -52,10 +86,14 @@ function ManualFetchButton({ label, icon, functionName, successMessage, onCredit
     }
   };
   return (
-    <Button variant="outline" size="sm" className="gap-2" onClick={handleFetch} disabled={loading}>
-      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : icon}
+    <button
+      onClick={handleFetch}
+      disabled={loading}
+      className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-xs font-semibold text-slate-200 transition-all hover:border-[#FF5910]/50 hover:bg-white/[0.08] disabled:opacity-60"
+    >
+      {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#FF7A3D]" /> : icon}
       {label}
-    </Button>
+    </button>
   );
 }
 
@@ -84,33 +122,42 @@ function TestPushButton() {
     }
   };
   return (
-    <Button variant="outline" size="sm" className="gap-2" onClick={handleSend} disabled={loading}>
-      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bell className="h-3.5 w-3.5" />}
-      Test Push
-    </Button>
+    <button
+      onClick={handleSend}
+      disabled={loading}
+      className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-xs font-semibold text-slate-200 transition-all hover:border-[#FF5910]/50 hover:bg-white/[0.08] disabled:opacity-60"
+    >
+      {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#FF7A3D]" /> : <Bell className="h-4 w-4" />}
+      Test push alert
+    </button>
   );
 }
+
+type FeedState = { overall: string; problemCount: number } | null;
+
+/* --------------------------------- page ---------------------------------- */
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [helpOpen, setHelpOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [adminUserId, setAdminUserId] = useState<string | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [feed, setFeed] = useState<FeedState>(null);
   const [stats, setStats] = useState({
     activeUsers: 0,
     totalBlogs: 0,
     activeStreams: 0,
     totalStreams: 0,
     totalStories: 0,
+    totalPodcasts: 0,
   });
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) setAdminUserId(user.id);
+    let cancelled = false;
 
+    const fetchStats = async () => {
       const nowIso = new Date().toISOString();
-      const [activeResult, streamsResult, blogsResult, storiesResult] = await Promise.all([
+      const [activeResult, streamsResult, blogsResult, storiesResult, podcastsResult] = await Promise.all([
         supabase
           .from("subscriptions")
           .select("user_id")
@@ -119,216 +166,245 @@ export default function AdminDashboard() {
         supabase.from("live_streams").select("status"),
         supabase.from("blog_posts").select("*", { count: "exact", head: true }),
         supabase.from("stories").select("*", { count: "exact", head: true }),
+        supabase.from("podcasts").select("*", { count: "exact", head: true }),
       ]);
 
-      const activeStreams = streamsResult.data?.filter(s => s.status === "live").length || 0;
-      const totalStreams = streamsResult.data?.length || 0;
-      const activeUsers = new Set((activeResult.data || []).map((s: any) => s.user_id)).size;
-
+      if (cancelled) return;
       setStats({
-        activeUsers,
+        activeUsers: new Set((activeResult.data || []).map((s: any) => s.user_id)).size,
         totalBlogs: blogsResult.count || 0,
-        activeStreams,
-        totalStreams,
+        activeStreams: streamsResult.data?.filter((s) => s.status === "live").length || 0,
+        totalStreams: streamsResult.data?.length || 0,
         totalStories: storiesResult.count || 0,
+        totalPodcasts: podcastsResult.count || 0,
       });
+      setLoadingStats(false);
     };
 
+    const fetchFeed = async () => {
+      try {
+        const data = await fetchFeedHealth();
+        if (!cancelled && data) setFeed({ overall: data.overall, problemCount: data.problemCount ?? 0 });
+      } catch {
+        if (!cancelled) setFeed({ overall: "unknown", problemCount: 0 });
+      }
+    };
 
     fetchStats();
+    fetchFeed();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const quickAccessItems = [
+  const isLive = stats.activeStreams > 0;
+
+  const kpis = [
     {
-      title: "Media Library",
-      description: "Upload & manage all assets",
-      icon: Eye,
-      url: "/admin/media-library",
-      stat: "Assets",
-    },
-    {
-      title: "Highlights",
-      description: "Manage video highlights",
-      icon: Video,
-      url: "/admin/video-gallery-management",
-      stat: "Videos",
-    },
-    {
-      title: "Podcasts",
-      description: "Manage podcast episodes",
-      icon: Mic,
-      url: "/admin/podcasts",
-      stat: "Episodes",
-    },
-    {
-      title: "Live Streams & Health",
-      description: "Manage streams & monitor health",
+      label: "Live now",
+      value: isLive ? `${stats.activeStreams}` : "Off air",
+      sub: `${stats.totalStreams} streams set up`,
       icon: Radio,
+      tone: isLive ? "live" : "idle",
       url: "/admin/live-streams",
-      stat: `${stats.activeStreams} Live`,
     },
     {
-      title: "Blog Management",
-      description: "Create and manage blog posts",
-      icon: FileText,
-      url: "/admin/blog",
-      stat: `${stats.totalBlogs} Posts`,
-    },
-    {
-      title: "Members & Subscriptions",
-      description: "Users, roles & subscription plans",
-      icon: UserCog,
+      label: "Paying members",
+      value: stats.activeUsers,
+      sub: "Active memberships",
+      icon: Users,
+      tone: "blue",
       url: "/admin/user-management",
-      stat: `${stats.activeUsers} Active`,
     },
     {
-      title: "Newsletter",
-      description: "Send newsletters",
-      icon: Mail,
-      url: "/admin/newsletter",
-      stat: "Send",
+      label: "Blog posts",
+      value: stats.totalBlogs,
+      sub: "Published articles",
+      icon: FileText,
+      tone: "blue",
+      url: "/admin/blog",
     },
     {
-      title: "SEO",
-      description: "Manage page SEO settings",
-      icon: Globe,
-      url: "/admin/seo",
-      stat: "Optimize",
+      label: "Feeds",
+      value: feed ? (feed.overall === "healthy" ? "All good" : feed.overall === "unknown" ? "—" : `${feed.problemCount} issue${feed.problemCount === 1 ? "" : "s"}`) : "Checking…",
+      sub: "Video, news & schedule sources",
+      icon: Activity,
+      tone: feed?.overall === "healthy" ? "ok" : feed?.overall === "unknown" || !feed ? "idle" : "warn",
+      url: "/admin/feed-health",
     },
   ];
 
-  const filteredItems = quickAccessItems.filter(item => 
-    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const toneRing: Record<string, string> = {
+    live: "text-[#FF7A3D] bg-[#FF5910]/12 border-[#FF5910]/30",
+    ok: "text-emerald-400 bg-emerald-400/10 border-emerald-400/25",
+    warn: "text-amber-400 bg-amber-400/10 border-amber-400/25",
+    blue: "text-[#4F8FE8] bg-[#1E5FBF]/12 border-[#1E5FBF]/30",
+    idle: "text-slate-400 bg-white/5 border-white/10",
+  };
+
+  const jumpItems = [
+    { title: "Live streams", description: "Schedule, go live, monitor", icon: Radio, url: "/admin/live-streams", tag: isLive ? "Live now" : "Standby" },
+    { title: "Blog", description: "Write and publish articles", icon: FileText, url: "/admin/blog", tag: `${stats.totalBlogs} posts` },
+    { title: "Media library", description: "Images, video and audio", icon: ImageIcon, url: "/admin/media-library", tag: "Uploads" },
+    { title: "Highlights", description: "Video gallery and clips", icon: Video, url: "/admin/video-gallery-management", tag: "Videos" },
+    { title: "Podcasts", description: "Episodes and shows", icon: Mic, url: "/admin/podcasts", tag: `${stats.totalPodcasts} episodes` },
+    { title: "Stories", description: "Short posts on the home page", icon: Sparkles, url: "/admin/stories", tag: `${stats.totalStories} live` },
+    { title: "Members", description: "Accounts, roles and access", icon: Users, url: "/admin/user-management", tag: `${stats.activeUsers} active` },
+    { title: "Subscriptions", description: "Plans, payments, renewals", icon: CreditCard, url: "/admin/subscriptions", tag: "Billing" },
+    { title: "Newsletter", description: "Write and send emails", icon: Mail, url: "/admin/newsletter", tag: "Send" },
+    { title: "Alerts & popups", description: "Push alerts and banners", icon: Megaphone, url: "/admin/popup-notifications", tag: "Notify" },
+    { title: "Feed health", description: "Watch your content sources", icon: Activity, url: "/admin/feed-health", tag: feed?.overall === "healthy" ? "Healthy" : "Check" },
+    { title: "SEO", description: "Titles, previews and sitemap", icon: Globe, url: "/admin/seo", tag: "Optimize" },
+  ];
+
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return jumpItems;
+    return jumpItems.filter(
+      (i) => i.title.toLowerCase().includes(q) || i.description.toLowerCase().includes(q)
+    );
+  }, [searchQuery, jumpItems]);
 
   return (
     <div className="w-full max-w-full space-y-6">
-      {/* Page Heading */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard Overview</h1>
-          <p className="text-slate-400 text-sm mt-1">Welcome back. Here's what's happening today in the zone.</p>
-        </div>
-        <div className="flex gap-2">
-          <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
-            <DialogTrigger asChild>
-              <Button className="h-9 px-4 bg-white/5 border border-white/10 rounded-lg text-xs font-medium text-slate-200 hover:bg-white/10 transition-all">
-                <HelpCircle className="h-3.5 w-3.5 mr-1.5" />
-                How to Use
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-[#0a0f1e] border-white/10 text-slate-200">
-              <DialogHeader>
-                <DialogTitle className="text-white">Admin Portal Navigation Guide</DialogTitle>
-                <DialogDescription className="text-slate-400">
-                  Learn how to navigate and use the admin portal effectively
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-white">Quick Access Cards</h3>
-                  <p className="text-sm text-slate-400">
-                    Use the quick access cards below to jump directly to the most commonly used features.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-sm text-white">Sidebar Navigation</h3>
-                  <p className="text-sm text-slate-400">
-                    The sidebar on the left organizes all admin features into categories: Overview, Streaming, Content, Podcasts, Community, Commerce, Members, Notifications, Email, and Settings.
-                  </p>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
-          <Button
-            onClick={() => navigate("/admin/live-streams")}
-            className="h-9 px-4 bg-[#FF5910] hover:brightness-110 rounded-lg text-xs font-bold text-white shadow-lg shadow-[#FF5910]/20 transition-all"
-          >
-            <Radio className="h-3.5 w-3.5 mr-1.5" /> Go Live
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Active Accounts", value: stats.activeUsers, icon: Users, accent: "text-[#FF5910]", sub: "Active memberships" },
-          { label: "Blog Posts", value: stats.totalBlogs, icon: FileText, accent: "text-[#22c55e]", sub: "Published articles" },
-          { label: "Stories", value: stats.totalStories, icon: Sparkles, accent: "text-[#FF5910]", sub: "Active stories" },
-          { label: "Live Streams", value: `${stats.activeStreams}/${stats.totalStreams}`, icon: Radio, accent: "text-[#FF5910]", sub: stats.activeStreams > 0 ? "Live now" : "Standby" },
-        ].map(({ label, value, icon: Icon, accent, sub }) => (
-          <div
-            key={label}
-            className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl relative overflow-hidden hover:border-[#FF5910]/30 transition-all group"
-          >
-            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Icon className={`w-12 h-12 ${accent}`} />
+      {/* Masthead */}
+      <section className="adm-panel relative overflow-hidden p-5 sm:p-6">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[#FF5910]/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-24 bottom-[-6rem] h-56 w-56 rounded-full bg-[#1E5FBF]/20 blur-3xl" />
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
+            <div className="mb-2 flex items-center gap-2">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 adm-chip ${
+                  isLive ? toneRing.live : toneRing.idle
+                }`}
+              >
+                <span className={`h-1.5 w-1.5 rounded-full ${isLive ? "animate-pulse bg-[#FF5910]" : "bg-slate-500"}`} />
+                {isLive ? "On air" : "Off air"}
+              </span>
+              <span className="adm-chip text-slate-500">Control room</span>
             </div>
-            <p className="text-xs text-slate-400 font-medium mb-1">{label}</p>
-            <h3 className="text-2xl font-bold text-white">{value}</h3>
-            <p className={`text-[10px] mt-2 font-bold ${accent}`}>{sub}</p>
+            <h1 className="text-white">Welcome back</h1>
+            <p className="mt-1 text-sm text-slate-400">Everything running the zone, in one place.</p>
           </div>
-        ))}
-      </div>
 
-      {/* Manual Fetch Actions */}
-      <div className="p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold text-white">Manual Fetch</h3>
-          <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Daily Sync</span>
+          <div className="flex flex-wrap gap-2">
+            <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
+              <DialogTrigger asChild>
+                <Button className="h-10 rounded-xl border border-white/10 bg-white/[0.04] px-4 text-xs font-semibold text-slate-200 hover:bg-white/10">
+                  <HelpCircle className="mr-1.5 h-4 w-4" />
+                  How to use
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="admin-shell max-h-[80vh] max-w-2xl overflow-y-auto border-white/10 bg-[#0a1122] text-slate-200">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Getting around the admin portal</DialogTitle>
+                  <DialogDescription className="text-slate-400">
+                    Three ways to reach any page.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-2 text-sm text-slate-400">
+                  <p><span className="font-semibold text-white">Tiles below</span> — tap any card to jump straight to that area.</p>
+                  <p><span className="font-semibold text-white">Search</span> — the box at the top (or ⌘K / Ctrl+K) finds any page by name.</p>
+                  <p><span className="font-semibold text-white">Menu</span> — the left menu groups everything: Overview, Streaming, Content, Podcasts, Community, Commerce, Members, Notifications, Email and Settings. On a phone, the bar along the bottom holds your five most-used pages.</p>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button
+              onClick={() => navigate("/admin/live-streams")}
+              className="h-10 rounded-xl bg-[#FF5910] px-4 text-xs font-bold text-white shadow-lg shadow-[#FF5910]/25 hover:brightness-110"
+            >
+              <Radio className="mr-1.5 h-4 w-4" /> Go live
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* KPI row */}
+      <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        {kpis.map(({ label, value, sub, icon: Icon, tone, url }) => (
+          <button
+            key={label}
+            onClick={() => navigate(url)}
+            className="adm-panel adm-panel-hover group p-4 text-left sm:p-5"
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <span className={`flex h-9 w-9 items-center justify-center rounded-xl border ${toneRing[tone]}`}>
+                <Icon className="h-4.5 w-4.5" />
+              </span>
+              <ArrowRight className="h-4 w-4 text-slate-600 transition-all group-hover:translate-x-0.5 group-hover:text-[#FF7A3D]" />
+            </div>
+            <p className="adm-chip text-slate-500">{label}</p>
+            <p className="adm-display mt-1 truncate text-xl font-bold text-white sm:text-2xl">
+              {loadingStats && typeof value === "number" ? "—" : value}
+            </p>
+            <p className="mt-1 truncate text-[11px] text-slate-500">{sub}</p>
+          </button>
+        ))}
+      </section>
+
+      {/* Daily actions */}
+      <section className="adm-panel p-4 sm:p-5">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="text-white">Daily actions</h2>
+          <span className="adm-chip text-slate-500">Refresh content</span>
         </div>
         <div className="flex flex-wrap gap-2">
-          <ManualFetchButton label="Lineup Card" icon={<ClipboardList className="h-3.5 w-3.5" />} functionName="fetch-mets-lineup" successMessage="Lineup card fetched!" />
-          <ManualFetchButton label="Highlights" icon={<Video className="h-3.5 w-3.5" />} functionName="fetch-mets-highlights" successMessage="Highlights fetched!" />
-          <ManualFetchButton label="Schedule" icon={<RefreshCw className="h-3.5 w-3.5" />} functionName="fetch-mets-schedule" successMessage="Schedule fetched!" />
-          <ManualFetchButton label="Predictions" icon={<Sparkles className="h-3.5 w-3.5" />} functionName="generate-daily-predictions" successMessage="Predictions generated!" onCreditsExhausted={() => navigate("/admin/predictions")} />
+          <ManualFetchButton label="Lineup card" icon={<ClipboardList className="h-4 w-4" />} functionName="fetch-mets-lineup" successMessage="Lineup card fetched!" />
+          <ManualFetchButton label="Highlights" icon={<Video className="h-4 w-4" />} functionName="fetch-mets-highlights" successMessage="Highlights fetched!" />
+          <ManualFetchButton label="Schedule" icon={<RefreshCw className="h-4 w-4" />} functionName="fetch-mets-schedule" successMessage="Schedule fetched!" />
+          <ManualFetchButton
+            label="Predictions"
+            icon={<Sparkles className="h-4 w-4" />}
+            functionName="generate-daily-predictions"
+            successMessage="Predictions generated!"
+            onCreditsExhausted={() => navigate("/admin/predictions")}
+          />
           <TestPushButton />
         </div>
-      </div>
+      </section>
 
-      {/* Quick Access */}
-      <div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h3 className="text-sm font-bold text-white">Quick Access</h3>
+      {/* Jump to */}
+      <section>
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-white">Jump to</h2>
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <Input
-              placeholder="Search management areas..."
+              placeholder="Search these areas…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-xs bg-white/5 border-white/10 rounded-full text-slate-200 placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-[#FF5910]/60"
+              className="h-10 rounded-xl border-white/10 bg-white/[0.04] pl-10 text-xs text-slate-200 placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-[#FF5910]/50"
             />
           </div>
         </div>
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {filteredItems.length > 0 ? filteredItems.map((item) => {
-            const Icon = item.icon;
-            return (
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {filteredItems.length > 0 ? (
+            filteredItems.map(({ title, description, icon: Icon, url, tag }) => (
               <button
-                key={item.title}
-                onClick={() => navigate(item.url)}
-                className="text-left p-5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl hover:border-[#FF5910]/40 hover:bg-white/[0.07] transition-all group relative overflow-hidden"
+                key={title}
+                onClick={() => navigate(url)}
+                className="adm-panel adm-panel-hover group flex items-center gap-3.5 p-4 text-left"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-[#FF5910]/10 border border-[#FF5910]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Icon className="w-5 h-5 text-[#FF5910]" />
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-[#FF5910] group-hover:translate-x-0.5 transition-all" />
-                </div>
-                <h4 className="text-sm font-bold text-white mb-1 truncate">{item.title}</h4>
-                <p className="text-xs text-slate-400 line-clamp-2 mb-3">{item.description}</p>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[#FF5910]">{item.stat}</p>
+                <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-[#FF5910]/25 bg-[#FF5910]/10 text-[#FF7A3D] transition-transform group-hover:scale-105">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="adm-display block truncate text-sm font-bold text-white">{title}</span>
+                  <span className="block truncate text-[11px] text-slate-400">{description}</span>
+                  <span className="adm-chip mt-1 block text-[#4F8FE8]">{tag}</span>
+                </span>
+                <ArrowRight className="h-4 w-4 flex-shrink-0 text-slate-600 transition-all group-hover:translate-x-0.5 group-hover:text-[#FF7A3D]" />
               </button>
-            );
-          }) : (
-            <div className="col-span-full text-center py-10 text-slate-500 text-sm">
-              No management areas found for "{searchQuery}"
+            ))
+          ) : (
+            <div className="col-span-full py-10 text-center text-sm text-slate-500">
+              Nothing matches “{searchQuery}”.
             </div>
           )}
         </div>
-      </div>
-
+      </section>
     </div>
   );
 }

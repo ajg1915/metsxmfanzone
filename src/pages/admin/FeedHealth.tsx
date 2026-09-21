@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchFeedHealth } from "@/lib/feedHealth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -146,9 +146,7 @@ export default function FeedHealth() {
       setLoading(true);
       setFailed(null);
       try {
-        const { data, error } = await supabase.functions.invoke("feed-health");
-        if (error) throw error;
-        const result = data as Report;
+        const result = (await fetchFeedHealth()) as Report;
         setReport(result);
         const problems = recordProblems(result);
 

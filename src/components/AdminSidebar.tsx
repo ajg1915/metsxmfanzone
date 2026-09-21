@@ -53,7 +53,7 @@ export function AdminSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-white/5 bg-[#020617]/95 backdrop-blur-2xl">
+    <Sidebar collapsible="icon" className="admin-shell border-r border-white/5 bg-[#060d1d]/95 backdrop-blur-2xl">
       <SidebarHeader className="gap-2 p-3 group-data-[collapsible=icon]:p-2">
         <div className="flex items-center gap-2.5 px-1">
           <img src={logo} alt="MetsXMFanZone Logo" className="h-8 w-auto flex-shrink-0" />
@@ -121,14 +121,16 @@ export function AdminSidebar() {
                               asChild
                               tooltip={item.title}
                               isActive={active}
-                              className={collapsed ? "h-9" : "h-10 md:h-9"}
+                              className={`data-[active=true]:bg-transparent data-[active=true]:text-inherit ${
+                                collapsed ? "h-9" : "h-11 md:h-9"
+                              }`}
                             >
                               <NavLink
                                 to={item.url}
                                 onClick={handleNavigate}
                                 className={`flex items-center gap-2.5 rounded-lg px-3 transition-all duration-200 ${
                                   active
-                                    ? "border border-[#FF5910]/20 bg-[#FF5910]/10 font-semibold text-[#FF5910] shadow-[inset_0_0_12px_-4px_rgba(255,89,16,0.4)]"
+                                    ? "adm-accent-border border bg-[#FF5910]/15 font-semibold !text-[#FF7A3D] shadow-[inset_0_0_14px_-4px_rgba(255,89,16,0.6)]"
                                     : "border border-transparent text-slate-400 hover:bg-white/5 hover:text-white"
                                 }`}
                               >

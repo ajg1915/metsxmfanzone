@@ -1300,3 +1300,64 @@ google-cast-launcher,
   --connected-color: transparent;
   --disconnected-color: transparent;
 }
+
+/* ============================================================
+   Admin portal theme (scoped) — Outfit headings / Figtree body
+   ============================================================ */
+.admin-shell {
+  --adm-bg: 218 63% 6%;
+  --adm-bg-2: 219 55% 9%;
+  --adm-panel: 218 46% 12%;
+  --adm-line: 213 30% 26%;
+  --adm-text: 212 34% 92%;
+  --adm-muted: 214 18% 64%;
+  --adm-orange: 18 100% 53%;
+  --adm-blue: 214 74% 44%;
+  font-family: "Figtree", system-ui, -apple-system, sans-serif;
+  color: hsl(var(--adm-text));
+  background:
+    radial-gradient(1200px 600px at 12% -10%, hsl(var(--adm-blue) / 0.18), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, hsl(var(--adm-orange) / 0.12), transparent 55%),
+    linear-gradient(180deg, hsl(var(--adm-bg-2)), hsl(var(--adm-bg)));
+}
+
+.admin-shell h1,
+.admin-shell h2,
+.admin-shell h3,
+.admin-shell h4,
+.admin-shell .adm-display {
+  font-family: "Outfit", "Figtree", system-ui, sans-serif;
+  letter-spacing: -0.015em;
+}
+
+/* Tame the site-wide orange border override inside the admin area */
+.admin-shell :where(.border, [class*="border-"]):not(.border-transparent):not([class*="border-transparent"]) {
+  border-color: hsl(var(--adm-line) / 0.55) !important;
+}
+.admin-shell :where(input, textarea, select, button, [role="button"]):not(.border-transparent) {
+  border-color: hsl(var(--adm-line) / 0.6) !important;
+}
+.admin-shell .adm-accent-border {
+  border-color: hsl(var(--adm-orange) / 0.55) !important;
+}
+
+.adm-panel {
+  background: linear-gradient(180deg, hsl(var(--adm-panel) / 0.85), hsl(var(--adm-panel) / 0.55));
+  border: 1px solid hsl(var(--adm-line) / 0.5);
+  border-radius: 1rem;
+  backdrop-filter: blur(18px);
+}
+.adm-panel-hover:hover {
+  border-color: hsl(var(--adm-orange) / 0.5) !important;
+  box-shadow: 0 14px 40px -22px hsl(var(--adm-orange) / 0.8);
+  transform: translateY(-2px);
+}
+.adm-panel-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.adm-chip {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
