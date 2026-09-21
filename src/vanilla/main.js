@@ -24,11 +24,19 @@ import {
 } from "./pages/adminExtra.js";
 import { formPaths, renderFormPage } from "./pages/forms.js";
 import { publicStaticPaths, renderStaticPage } from "./pages/static.js";
+import { helpRoutes } from "./pages/helpPages.js";
+import { accountRoutes } from "./pages/accountPages.js";
+import { gameRoutes } from "./pages/gamePages.js";
 
 const root = document.querySelector("#app");
 if (!root) throw new Error("Missing application root");
 
 const router = new Router(root);
+
+// Rebuilt full-content pages take priority over the older lightweight routes
+[...helpRoutes, ...accountRoutes, ...gameRoutes].forEach((route) =>
+  router.add(route.path, (ctx) => route.render(root, ctx)),
+);
 
 // Dynamic pages
 router.add("/", () => renderHome(root));
@@ -69,5 +77,4 @@ publicStaticPaths
 
 router.add("*", ({ pathname }) => renderStaticPage(root, pathname));
 
-await auth.start();
-router.start();
+auth.start().finally(() => router.start());
