@@ -101,14 +101,8 @@ const GameAlertsManagement = () => {
     }
 
     try {
-      const safeName = generateSafeFilename(customSoundFile.name);
-      const filePath = `alert-sounds/${safeName}`;
-      const { error } = await supabase.storage.from("content_uploads").upload(filePath, customSoundFile);
-      if (error) throw error;
-
-      const { data: urlData } = supabase.storage.from("content_uploads").getPublicUrl(filePath);
-      
-      setAlertSound(urlData.publicUrl);
+      const { publicUrl } = await uploadToR2(customSoundFile, "alert-sounds");
+      setAlertSound(publicUrl);
       setCustomSoundFile(null);
       setCustomSoundName("");
       loadCustomSounds();
@@ -147,14 +141,8 @@ const GameAlertsManagement = () => {
       let uploadedImageUrl: string | null = null;
       if (imageFile) {
         setUploadingImage(true);
-        const safeName = generateSafeFilename(imageFile.name);
-        const filePath = `game-alerts/${safeName}`;
-        const { error: uploadError } = await supabase.storage
-          .from("content_uploads")
-          .upload(filePath, imageFile);
-        if (uploadError) throw uploadError;
-        const { data: urlData } = supabase.storage.from("content_uploads").getPublicUrl(filePath);
-        uploadedImageUrl = urlData.publicUrl;
+        const { publicUrl } = await uploadToR2(imageFile, "game-alerts");
+        uploadedImageUrl = publicUrl;
         setUploadingImage(false);
       }
 

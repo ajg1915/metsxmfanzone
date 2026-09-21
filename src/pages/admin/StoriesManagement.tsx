@@ -181,18 +181,8 @@ const StoriesManagement = () => {
 
       if (mediaFile) {
         mediaType = mediaFile.type.startsWith("video/") ? "video" : "image";
-        const fileName = generateSafeFilename(mediaFile.name);
-
-        const { error: uploadError } = await supabase.storage
-          .from("stories")
-          .upload(fileName, mediaFile, {
-            cacheControl: "3600",
-            contentType: mediaFile.type,
-            upsert: false,
-          });
-
-        if (uploadError) throw uploadError;
-        mediaUrl = fileName;
+        const { publicUrl } = await uploadToR2(mediaFile, "stories");
+        mediaUrl = publicUrl;
       } else if (!editingStory && hasText) {
         // Brand new text-only story
         mediaType = "text";
@@ -203,14 +193,8 @@ const StoriesManagement = () => {
       }
 
       if (thumbnailFile) {
-        const thumbName = `thumb_${generateSafeFilename(thumbnailFile.name)}`;
-
-        const { error: thumbError } = await supabase.storage
-          .from("stories")
-          .upload(thumbName, thumbnailFile);
-
-        if (thumbError) throw thumbError;
-        thumbnailUrl = thumbName;
+        const { publicUrl } = await uploadToR2(thumbnailFile, "stories/thumbnails");
+        thumbnailUrl = publicUrl;
       }
 
       // Determine link_url based on link type
