@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchFeedHealth } from "@/lib/feedHealth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -182,8 +183,7 @@ export default function AdminDashboard() {
 
     const fetchFeed = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke("feed-health");
-        if (error) throw error;
+        const data = await fetchFeedHealth();
         if (!cancelled && data) setFeed({ overall: data.overall, problemCount: data.problemCount ?? 0 });
       } catch {
         if (!cancelled) setFeed({ overall: "unknown", problemCount: 0 });
