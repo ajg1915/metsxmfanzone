@@ -72,7 +72,7 @@ export default function TurboUploadTab() {
         const { error } = await supabase.from("videos").insert({
           title: title.trim(),
           description: description.trim() || null,
-          video_url: urlData.publicUrl,
+          video_url: publicUrl,
           video_type: "uploaded",
           published: false,
         });
@@ -81,7 +81,7 @@ export default function TurboUploadTab() {
         const { error } = await supabase.from("podcasts").insert({
           title: title.trim(),
           description: description.trim() || null,
-          audio_url: urlData.publicUrl,
+          audio_url: publicUrl,
           duration: 0,
           published: false,
         });
