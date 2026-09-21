@@ -171,8 +171,9 @@ const Community = () => {
     const postsWithSignedUrls = await Promise.all(
       (postsData || []).map(async (post) => {
         let imageUrl = post.image_url;
-        if (post.image_url && !post.image_url.startsWith('http')) {
-          const fileName = post.image_url.split('/community_images/')[1] || post.image_url;
+        // Re-sign only legacy Supabase storage references; R2 and external URLs are used as-is.
+        if (post.image_url && (!post.image_url.startsWith('http') || post.image_url.includes('/storage/v1/object/'))) {
+          const fileName = (post.image_url.split('/community_images/')[1] || post.image_url).split('?')[0];
           if (fileName) {
             const { data: signedUrlData } = await supabase.storage
               .from('community_images')

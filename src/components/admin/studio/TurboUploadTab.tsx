@@ -62,38 +62,11 @@ export default function TurboUploadTab() {
     setProgress(0);
 
     try {
-      const bucket = isVideo(file) ? "videos" : "podcasts";
+      const folder = isVideo(file) ? "videos" : "podcasts";
       const ext = file.name.split(".").pop() || "bin";
       const fileName = `turbo-${Date.now()}.${ext}`;
 
-      // Chunked upload simulation with XHR progress
-      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-
-      if (totalChunks <= 1) {
-        // Small file - direct upload with progress via XHR
-        await uploadWithXHR(bucket, fileName, file);
-      } else {
-        // Large file - chunked upload
-        for (let i = 0; i < totalChunks; i++) {
-          const start = i * CHUNK_SIZE;
-          const end = Math.min(start + CHUNK_SIZE, file.size);
-          const chunk = file.slice(start, end);
-
-          if (i === 0) {
-            // First chunk creates the file
-            const { error } = await supabase.storage.from(bucket).upload(fileName, file, {
-              contentType: file.type,
-              upsert: true,
-            });
-            if (error) throw error;
-            setProgress(100);
-            break;
-          }
-          setProgress(Math.round(((i + 1) / totalChunks) * 100));
-        }
-      }
-
-      const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+      const { publicUrl } = await uploadToR2(file, folder, fileName, setProgress);
 
       if (isVideo(file)) {
         const { error } = await supabase.from("videos").insert({
