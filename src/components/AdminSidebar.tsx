@@ -121,7 +121,9 @@ export function AdminSidebar() {
                               asChild
                               tooltip={item.title}
                               isActive={active}
-                              className={collapsed ? "h-9" : "h-10 md:h-9"}
+                              className={`data-[active=true]:bg-transparent data-[active=true]:text-inherit ${
+                                collapsed ? "h-9" : "h-11 md:h-9"
+                              }`}
                             >
                               <NavLink
                                 to={item.url}
