@@ -197,21 +197,8 @@ export default function WriterArticleEditor() {
 
     setImageUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `blog-images/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("content_uploads")
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("content_uploads")
-        .getPublicUrl(filePath);
-
-      setFeaturedImageUrl(urlData.publicUrl);
+      const { publicUrl } = await uploadToR2(file, "blog-images");
+      setFeaturedImageUrl(publicUrl);
       toast({
         title: "Image uploaded",
         description: "Featured image has been uploaded successfully.",

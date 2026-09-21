@@ -116,20 +116,13 @@ const PodcastAudioRecorder = () => {
     try {
       const ext = uploadedFile ? uploadedFile.name.split(".").pop() : "webm";
       const fileName = `community-${Date.now()}.${ext}`;
-      const filePath = `community/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("podcasts")
-        .upload(filePath, audioBlob, { contentType: audioBlob.type });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage.from("podcasts").getPublicUrl(filePath);
+      const { publicUrl } = await uploadToR2(audioBlob, "podcasts/community", fileName);
 
       const { error: insertError } = await supabase.from("podcasts").insert({
         title: title.trim(),
         description: description.trim() || null,
-        audio_url: urlData.publicUrl,
+        audio_url: publicUrl,
         duration: recordingTime || null,
         published: false,
       });

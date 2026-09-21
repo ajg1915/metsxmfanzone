@@ -137,20 +137,8 @@ const PostComments = ({ postId, isCurrentUserAdmin }: PostCommentsProps) => {
         mediaType = "gif";
       } else if (selectedVideo) {
         setUploadingVideo(true);
-        const fileExt = selectedVideo.name.split(".").pop();
-        const fileName = `comments/${user.id}/${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("community_images")
-          .upload(fileName, selectedVideo);
-
-        if (uploadError) throw uploadError;
-
-        const { data: signedData } = await supabase.storage
-          .from("community_images")
-          .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year
-
-        mediaUrl = signedData?.signedUrl || fileName;
+        const { publicUrl } = await uploadToR2(selectedVideo, `comments/${user.id}`);
+        mediaUrl = publicUrl;
         mediaType = "video";
         setUploadingVideo(false);
       }

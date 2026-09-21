@@ -52,19 +52,7 @@ const CreateBusinessAdForm = ({
     }
     setUploadingImage(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/ad-${Date.now()}.${fileExt}`;
-      const {
-        error: uploadError
-      } = await supabase.storage.from('content_uploads').upload(fileName, file, {
-        upsert: true
-      });
-      if (uploadError) throw uploadError;
-      const {
-        data: {
-          publicUrl
-        }
-      } = supabase.storage.from('content_uploads').getPublicUrl(fileName);
+      const { publicUrl } = await uploadToR2(file, `business-ads/${userId}`);
       setFormData(prev => ({
         ...prev,
         ad_image_url: publicUrl
