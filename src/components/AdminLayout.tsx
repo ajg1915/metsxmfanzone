@@ -333,7 +333,8 @@ export function AdminLayout() {
       <div className="min-h-screen flex w-full overflow-x-hidden bg-[#020617] text-slate-200">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0 w-full max-w-full">
-          <AdminHeader navigate={navigate} />
+          <AdminHeader navigate={navigate} onOpenSearch={() => setSearchOpen(true)} />
+          <AdminCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
           <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-5 md:p-6 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-6 max-w-full
             [&_h1]:text-base [&_h1]:sm:text-lg [&_h1]:md:text-xl [&_h1]:font-bold [&_h1]:tracking-tight [&_h1]:text-white
             [&_h2]:text-sm [&_h2]:sm:text-base [&_h2]:font-semibold [&_h2]:text-white
@@ -348,6 +349,7 @@ export function AdminLayout() {
           ">
             <Outlet />
           </main>
+          <AdminMobileNav />
         </div>
       </div>
     </SidebarProvider>
