@@ -111,6 +111,7 @@ export function AdminLayout() {
   const [pinVerified, setPinVerified] = useState(false);
   const [pinOnlyAuth, setPinOnlyAuth] = useState(false);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const clearAdminSession = () => {
     sessionStorage.removeItem("admin_verified");
