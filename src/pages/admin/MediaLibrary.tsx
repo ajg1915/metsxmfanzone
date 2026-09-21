@@ -300,7 +300,7 @@ export default function MediaLibrary() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => deleteMutation.mutate({ id: item.id, file_name: item.file_name, folder: item.folder ?? "general" })}
+                          onClick={() => deleteMutation.mutate({ id: item.id, file_name: item.file_name, folder: item.folder ?? "general", file_url: item.file_url })}
                         >
                           Delete
                         </AlertDialogAction>
@@ -418,7 +418,7 @@ export default function MediaLibrary() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => deleteMutation.mutate({ id: item.id, file_name: item.file_name, folder: item.folder ?? "general" })}
+                          onClick={() => deleteMutation.mutate({ id: item.id, file_name: item.file_name, folder: item.folder ?? "general", file_url: item.file_url })}
                         >
                           Delete
                         </AlertDialogAction>
