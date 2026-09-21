@@ -340,7 +340,7 @@ export function AdminLayout() {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full overflow-x-hidden bg-[#020617] text-slate-200">
+      <div className="admin-shell flex min-h-screen w-full overflow-x-hidden">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0 w-full max-w-full">
           <AdminHeader navigate={navigate} onOpenSearch={() => setSearchOpen(true)} />
