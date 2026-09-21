@@ -77,5 +77,4 @@ publicStaticPaths
 
 router.add("*", ({ pathname }) => renderStaticPage(root, pathname));
 
-await auth.start();
-router.start();
+auth.start().finally(() => router.start());
