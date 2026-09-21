@@ -173,11 +173,7 @@ const Dashboard = () => {
 
     setUploadingAvatar(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(fileName, file, { upsert: true });
-      if (uploadError) throw uploadError;
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      const { publicUrl } = await uploadToR2(file, `avatars/${user.id}`);
       const { error: updateError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
       if (updateError) throw updateError;
       setAvatarUrl(publicUrl);

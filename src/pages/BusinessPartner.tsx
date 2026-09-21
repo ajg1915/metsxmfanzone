@@ -73,17 +73,7 @@ const BusinessPartner = () => {
 
       // Upload image if provided
       if (imageFile) {
-        const fileExt = imageFile.name.split(".").pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-        const {
-          error: uploadError
-        } = await supabase.storage.from("content_uploads").upload(fileName, imageFile);
-        if (uploadError) throw uploadError;
-        const {
-          data: {
-            publicUrl
-          }
-        } = supabase.storage.from("content_uploads").getPublicUrl(fileName);
+        const { publicUrl } = await uploadToR2(imageFile, `business-ads/${user.id}`);
         imageUrl = publicUrl;
       }
 
