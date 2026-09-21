@@ -111,26 +111,12 @@ export default function MediaLibrary() {
 
     try {
       for (const file of Array.from(files)) {
-        const timestamp = Date.now();
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const storagePath = `${uploadFolder}/${timestamp}_${safeName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("media_library")
-          .upload(storagePath, file, { upsert: false });
-        if (uploadError) {
-          console.error("Storage upload error:", uploadError);
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from("media_library")
-          .getPublicUrl(storagePath);
+        const { key, publicUrl } = await uploadToR2(file, uploadFolder, file.name);
 
         const { error: dbError } = await supabase.from("media_library").insert({
           uploaded_by: user.id,
-          file_name: `${timestamp}_${safeName}`,
-          file_url: urlData.publicUrl,
+          file_name: key.split("/").pop() as string,
+          file_url: publicUrl,
           file_size: file.size,
           file_type: file.type,
           folder: uploadFolder,
