@@ -120,13 +120,18 @@ serve(async (req) => {
     const user = userData?.user;
     if (userError || !user) return json({ error: "Not signed in" }, 401);
 
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    if (!roleRow) return json({ error: "Admin access required" }, 403);
+    // Deletes are admin-only; any signed-in user may upload.
+    const body = await req.json().catch(() => ({}));
+    const action = body?.action === "delete" ? "delete" : "upload";
+    if (action === "delete") {
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!roleRow) return json({ error: "Admin access required" }, 403);
+    }
 
     const body = await req.json().catch(() => ({}));
     const action = body?.action === "delete" ? "delete" : "upload";
