@@ -11,8 +11,6 @@ import { Upload, Zap, FileVideo, FileAudio, CheckCircle, Loader2 } from "lucide-
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
-
 export default function TurboUploadTab() {
   const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
@@ -95,25 +93,6 @@ export default function TurboUploadTab() {
     } finally {
       setUploading(false);
     }
-  };
-
-  const uploadWithXHR = (bucket: string, fileName: string, file: File): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/${bucket}/${fileName}`;
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
-      };
-      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`)));
-      xhr.onerror = () => reject(new Error("Upload error"));
-
-      xhr.open("POST", url);
-      xhr.setRequestHeader("Authorization", `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`);
-      xhr.setRequestHeader("Content-Type", file.type);
-      xhr.setRequestHeader("x-upsert", "true");
-      xhr.send(file);
-    });
   };
 
   const reset = () => {
