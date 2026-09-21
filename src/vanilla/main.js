@@ -27,6 +27,9 @@ import { publicStaticPaths, renderStaticPage } from "./pages/static.js";
 import { helpRoutes } from "./pages/helpPages.js";
 import { accountRoutes } from "./pages/accountPages.js";
 import { gameRoutes } from "./pages/gamePages.js";
+import { networkRoutes } from "./pages/networkPages.js";
+import { adminContentRoutes } from "./pages/adminContent.js";
+import { adminOpsRoutes } from "./pages/adminOps.js";
 
 const root = document.querySelector("#app");
 if (!root) throw new Error("Missing application root");
@@ -34,7 +37,14 @@ if (!root) throw new Error("Missing application root");
 const router = new Router(root);
 
 // Rebuilt full-content pages take priority over the older lightweight routes
-[...helpRoutes, ...accountRoutes, ...gameRoutes].forEach((route) =>
+[
+  ...helpRoutes,
+  ...accountRoutes,
+  ...gameRoutes,
+  ...networkRoutes,
+  ...adminContentRoutes,
+  ...adminOpsRoutes,
+].forEach((route) =>
   router.add(route.path, (ctx) => route.render(root, ctx)),
 );
 
