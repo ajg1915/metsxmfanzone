@@ -293,7 +293,6 @@
 
   <body>
     <div id="root"><!--app-html--></div>
-    <div id="app"><noscript>MetsXMFanZone requires JavaScript for live content.</noscript></div>
-    <script type="module" src="/src/vanilla/main.js"></script>
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
