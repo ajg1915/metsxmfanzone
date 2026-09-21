@@ -7,9 +7,9 @@ live site over from React to the HTML build.
 
 - [x] Shell, router, metadata, auth, backend helpers (`src/vanilla/core`, `ui/shell.js`)
 - [x] Admin area (18 sections) — signed-out verified
-- [ ] Batch A — help centre, legal and informational pages with real content
-- [ ] Batch B — account, membership and payment pages (auth, dashboard, pricing, PayPal returns, writer)
-- [ ] Batch C — games, media and network/watch pages (matchups, roster, scores, schedule, recaps, gallery, TV)
+- [x] Batch A — help centre, legal and informational pages with real content
+- [x] Batch B — account, membership and payment pages (auth, dashboard, pricing, PayPal returns, writer)
+- [x] Batch C — games, media and network/watch pages (matchups, roster, scores, schedule, recaps, gallery, TV)
 - [ ] Batch D — homepage, blog, community parity pass
 - [ ] Full mobile + desktop test sweep, link check, per-page titles/descriptions/canonicals/social images
 - [ ] Cutover: make the HTML build the live site (replaces React entry)
