@@ -19,13 +19,6 @@ const PROBES: Probe[] = [
     key: 'sny-videos',
     label: 'SNY Videos',
     source: 'primary',
-    url: `https://www.youtube.com/feeds/videos.xml?channel_id=${SNY_CHANNEL_ID}`,
-    count: (b) => b.split('<entry>').length - 1,
-  },
-  {
-    key: 'sny-videos',
-    label: 'SNY Videos',
-    source: 'backup',
     url: 'https://www.youtube.com/@SNYtv/videos',
     count: (b) => new Set(b.match(/"videoId":"[\w-]{11}"/g) ?? []).size,
   },
