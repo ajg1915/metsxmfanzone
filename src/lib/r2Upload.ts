@@ -11,30 +11,29 @@ const safeName = (name: string) => name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-
 export const buildR2Key = (folder: string, fileName: string) =>
   `${folder.replace(/^\/+|\/+$/g, "") || "general"}/${Date.now()}_${safeName(fileName)}`;
 
-// The signing function runs on the Lovable backend (where the R2 keys are stored);
-// the app itself signs users in on the owner project, so we call it directly with
-// the current session token.
-const SIGN_URL = "https://clwghkbtkofacsjeyrtk.supabase.co/functions/v1/r2-sign-upload";
-const SIGN_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsd2doa2J0a29mYWNzamV5cnRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNTI3NDIsImV4cCI6MjA3NzkyODc0Mn0.11mr9r-U-BAwy9Mmr2yrzjLhjljswgOotJeOOXyfllc";
+// Upload signing runs on the owner's own Cloudflare Worker (r2-sign-upload),
+// so files never touch Supabase storage. The Worker only allows the
+// Content-Type header, so no auth/apikey headers may be sent here.
+const SIGN_URL = "https://r2-sign-upload.metsxmfan.workers.dev";
 
 async function signR2(key: string, action: "upload" | "delete") {
+  // Gate on a signed-in session for UX only — the Worker does the real signing.
   const { data: sessionData } = await supabase.auth.getSession();
-  const token = sessionData?.session?.access_token;
-  if (!token) throw new Error("Not signed in");
+  if (!sessionData?.session) throw new Error("Not signed in");
 
   const res = await fetch(SIGN_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SIGN_ANON_KEY,
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ key, action }),
   });
   const data = await res.json().catch(() => null);
   if (!res.ok || !data?.uploadUrl) {
     throw new Error(data?.error || "Could not prepare the upload");
+  }
+  if (!data.publicUrl || String(data.publicUrl).startsWith("undefined")) {
+    throw new Error(
+      "Upload signer is missing its public URL setting (R2_PUBLIC_BASE_URL) — files cannot be linked yet"
+    );
   }
   return data as { uploadUrl: string; key: string; publicUrl: string };
 }
