@@ -167,18 +167,16 @@ const TVDashboard = () => {
 
   const resolvedStories = useMemo(() =>
     stories.map((s) => {
-      let publicMediaUrl: string | null = null;
-      if (s.media_url) {
-        const fileName = s.media_url.split('/stories/')[1] || s.media_url;
+      // Full URLs (R2 or external) are used as-is; only legacy bare file names resolve via storage.
+      const resolveAsset = (value: string | null): string | null => {
+        if (!value) return null;
+        if (value.startsWith('http')) return value;
+        const fileName = value.split('/stories/')[1] || value;
         const { data: urlData } = supabase.storage.from('stories').getPublicUrl(fileName);
-        publicMediaUrl = urlData?.publicUrl || s.media_url;
-      }
-      let thumbnailUrl = s.thumbnail_url;
-      if (thumbnailUrl) {
-        const thumbFileName = thumbnailUrl.split('/stories/')[1] || thumbnailUrl;
-        const { data: thumbData } = supabase.storage.from('stories').getPublicUrl(thumbFileName);
-        thumbnailUrl = thumbData?.publicUrl || thumbnailUrl;
-      }
+        return urlData?.publicUrl || value;
+      };
+      const publicMediaUrl = resolveAsset(s.media_url);
+      const thumbnailUrl = resolveAsset(s.thumbnail_url ?? null);
       return { ...s, media_url: publicMediaUrl, thumbnail_url: thumbnailUrl };
     }),
     [stories]
