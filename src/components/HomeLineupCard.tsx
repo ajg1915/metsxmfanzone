@@ -665,11 +665,10 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                         <div className="w-1 h-4 rounded-full bg-primary" />
                         <p className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground">2026 Season Stats</p>
                       </div>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 gap-2">
                         {[
                           { value: metsStanding?.wins || "-", label: "Wins" },
                           { value: metsStanding?.losses || "-", label: "Losses" },
-                          { value: metsStanding?.position ? `${metsStanding.position}${metsStanding.position === 1 ? "st" : metsStanding.position === 2 ? "nd" : metsStanding.position === 3 ? "rd" : "th"}` : "-", label: "NL East" },
                         ].map((stat) => (
                           <div key={stat.label} className="rounded-xl bg-muted/20 border border-border/20 p-2.5 text-center">
                             <p className="text-lg font-black text-primary leading-none">{stat.value}</p>
