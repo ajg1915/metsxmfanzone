@@ -113,23 +113,16 @@ const StoriesSection = () => {
 
       // Stories bucket is public — use getPublicUrl instead of signed URLs (no network requests!)
       const storiesWithUrls = (data || []).map((story) => {
-        let publicMediaUrl: string | null = null;
-        if (story.media_url && typeof story.media_url === 'string') {
-          const fileName = story.media_url.split('/stories/')[1] || story.media_url;
-          const { data: urlData } = supabase.storage
-            .from('stories')
-            .getPublicUrl(fileName);
-          publicMediaUrl = urlData?.publicUrl || story.media_url;
-        }
-
-        let thumbnailUrl: string | null = story.thumbnail_url ?? null;
-        if (thumbnailUrl && typeof thumbnailUrl === 'string') {
-          const thumbFileName = thumbnailUrl.split('/stories/')[1] || thumbnailUrl;
-          const { data: thumbData } = supabase.storage
-            .from('stories')
-            .getPublicUrl(thumbFileName);
-          thumbnailUrl = thumbData?.publicUrl || thumbnailUrl;
-        }
+        // R2 and other full URLs are used as-is; only legacy bare file names resolve via storage.
+        const resolveStoryUrl = (value: string | null): string | null => {
+          if (!value || typeof value !== 'string') return null;
+          if (value.startsWith('http')) return value;
+          const fileName = value.split('/stories/')[1] || value;
+          const { data: urlData } = supabase.storage.from('stories').getPublicUrl(fileName);
+          return urlData?.publicUrl || value;
+        };
+        const publicMediaUrl = resolveStoryUrl(story.media_url);
+        const thumbnailUrl = resolveStoryUrl(story.thumbnail_url ?? null);
 
         return {
           ...story,

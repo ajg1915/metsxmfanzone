@@ -171,50 +171,18 @@ export default function VideoGalleryManagement() {
         videoElement.src = URL.createObjectURL(videoFile);
 
           if (thumbnailFile) {
-            const thumbExt = thumbnailFile.name.split('.').pop();
-            const thumbName = `thumb_${Math.random()}.${thumbExt}`;
-            const { error: thumbError } = await supabase.storage
-              .from('videos')
-              .upload(thumbName, thumbnailFile);
-
-            if (thumbError) throw thumbError;
-
-            const { data: { publicUrl: thumbUrl } } = supabase.storage
-              .from('videos')
-              .getPublicUrl(thumbName);
-
+            const { publicUrl: thumbUrl } = await uploadToR2(thumbnailFile, 'videos/thumbnails');
             thumbnailUrl = thumbUrl;
           } else if (selectedFrameBlob) {
             // Use the frame picked by the admin
-            const thumbName = `thumb_${Math.random()}.jpg`;
-            const { error: thumbError } = await supabase.storage
-              .from('videos')
-              .upload(thumbName, selectedFrameBlob);
-
-            if (thumbError) throw thumbError;
-
-            const { data: { publicUrl: thumbUrl } } = supabase.storage
-              .from('videos')
-              .getPublicUrl(thumbName);
-
+            const { publicUrl: thumbUrl } = await uploadToR2(selectedFrameBlob, 'videos/thumbnails', `thumb_${Date.now()}.jpg`);
             thumbnailUrl = thumbUrl;
           } else {
             setGeneratingThumbnail(true);
             try {
               const thumbDataUrl = await generateThumbnailFromVideo(videoFile);
               const thumbBlob = await fetch(thumbDataUrl).then(r => r.blob());
-              const thumbName = `thumb_${Math.random()}.jpg`;
-              
-              const { error: thumbError } = await supabase.storage
-                .from('videos')
-                .upload(thumbName, thumbBlob);
-
-              if (thumbError) throw thumbError;
-
-              const { data: { publicUrl: thumbUrl } } = supabase.storage
-                .from('videos')
-                .getPublicUrl(thumbName);
-
+              const { publicUrl: thumbUrl } = await uploadToR2(thumbBlob, 'videos/thumbnails', `thumb_${Date.now()}.jpg`);
               thumbnailUrl = thumbUrl;
             } catch (error) {
               console.error('Error generating thumbnail:', error);
