@@ -24,6 +24,9 @@ import {
 } from "./pages/adminExtra.js";
 import { formPaths, renderFormPage } from "./pages/forms.js";
 import { publicStaticPaths, renderStaticPage } from "./pages/static.js";
+import { helpRoutes } from "./pages/helpPages.js";
+import { accountRoutes } from "./pages/accountPages.js";
+import { gameRoutes } from "./pages/gamePages.js";
 
 const root = document.querySelector("#app");
 if (!root) throw new Error("Missing application root");
