@@ -3,7 +3,6 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
-const SNY_CHANNEL_ID = 'UCL_OEjsHTwsHK6WKWs7s7Uw';
 
 type Probe = {
   key: string;
@@ -40,13 +39,6 @@ const PROBES: Probe[] = [
     key: 'mets-news',
     label: 'Mets News',
     source: 'primary',
-    url: 'https://sny.tv/mets/feed',
-    count: (b) => (b.match(/<item[\s>]/g) ?? []).length,
-  },
-  {
-    key: 'mets-news',
-    label: 'Mets News',
-    source: 'backup',
     url: 'https://www.mlb.com/feeds/news/rss.xml',
     count: (b) => (b.match(/<item[\s>]/g) ?? []).length,
   },
