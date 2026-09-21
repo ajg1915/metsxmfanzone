@@ -74,6 +74,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { uploadToR2 } from "@/lib/r2Upload";
 
 interface LiveStream {
   id: string;
@@ -593,19 +594,7 @@ export default function LiveStreamManagement() {
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `stream-${Date.now()}.${fileExt}`;
-      const filePath = `live-streams/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('content_uploads')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('content_uploads')
-        .getPublicUrl(filePath);
+      const { publicUrl } = await uploadToR2(file, "live-streams", file.name);
 
       setFormData({ ...formData, thumbnail_url: publicUrl });
       toast({

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { uploadToR2, deleteFromR2, isR2Url } from "@/lib/r2Upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -80,9 +81,17 @@ export default function MediaLibrary() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (item: { id: string; file_name: string; folder: string }) => {
+    mutationFn: async (item: { id: string; file_name: string; folder: string; file_url?: string }) => {
       const storagePath = `${item.folder}/${item.file_name}`;
-      await supabase.storage.from("media_library").remove([storagePath]);
+      try {
+        if (isR2Url(item.file_url)) {
+          await deleteFromR2(storagePath);
+        } else {
+          await supabase.storage.from("media_library").remove([storagePath]);
+        }
+      } catch (err) {
+        console.error("Remove file error:", err);
+      }
       const { error } = await supabase.from("media_library").delete().eq("id", item.id);
       if (error) throw error;
     },
@@ -102,26 +111,12 @@ export default function MediaLibrary() {
 
     try {
       for (const file of Array.from(files)) {
-        const timestamp = Date.now();
-        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const storagePath = `${uploadFolder}/${timestamp}_${safeName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("media_library")
-          .upload(storagePath, file, { upsert: false });
-        if (uploadError) {
-          console.error("Storage upload error:", uploadError);
-          throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
-          .from("media_library")
-          .getPublicUrl(storagePath);
+        const { key, publicUrl } = await uploadToR2(file, uploadFolder, file.name);
 
         const { error: dbError } = await supabase.from("media_library").insert({
           uploaded_by: user.id,
-          file_name: `${timestamp}_${safeName}`,
-          file_url: urlData.publicUrl,
+          file_name: key.split("/").pop() as string,
+          file_url: publicUrl,
           file_size: file.size,
           file_type: file.type,
           folder: uploadFolder,
@@ -305,7 +300,7 @@ export default function MediaLibrary() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => deleteMutation.mutate({ id: item.id, file_name: item.file_name, folder: item.folder ?? "general" })}
+                          onClick={() => deleteMutation.mutate({ id: item.id, file_name: item.file_name, folder: item.folder ?? "general", file_url: item.file_url })}
                         >
                           Delete
                         </AlertDialogAction>
@@ -423,7 +418,7 @@ export default function MediaLibrary() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => deleteMutation.mutate({ id: item.id, file_name: item.file_name, folder: item.folder ?? "general" })}
+                          onClick={() => deleteMutation.mutate({ id: item.id, file_name: item.file_name, folder: item.folder ?? "general", file_url: item.file_url })}
                         >
                           Delete
                         </AlertDialogAction>
