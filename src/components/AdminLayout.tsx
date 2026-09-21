@@ -11,13 +11,46 @@ import { AlertTriangle, Home, LogIn, RefreshCw, Search } from "lucide-react";
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import { NotificationsBell } from "@/components/admin/NotificationsBell";
+import { AdminCommandPalette } from "@/components/admin/AdminCommandPalette";
+import { ADMIN_QUICK_NAV } from "@/components/admin/adminNav";
+import { NavLink } from "react-router-dom";
 import { withTimeout } from "@/utils/asyncTimeout";
 
-function AdminHeader({ navigate }: { navigate: (path: string | number) => void }) {
+function AdminMobileNav() {
+  return (
+    <nav className="md:hidden sticky bottom-0 z-30 border-t border-white/10 bg-[#020617]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+      <div className="grid grid-cols-5">
+        {ADMIN_QUICK_NAV.map((item) => (
+          <NavLink
+            key={item.url}
+            to={item.url}
+            end={item.url === "/admin"}
+            className={({ isActive }) =>
+              `flex flex-col items-center justify-center gap-1 py-2 text-[10px] font-medium transition-colors ${
+                isActive ? "text-[#FF5910]" : "text-slate-400"
+              }`
+            }
+          >
+            <item.icon className="h-4.5 w-4.5" />
+            {item.title}
+          </NavLink>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+function AdminHeader({
+  navigate,
+  onOpenSearch,
+}: {
+  navigate: (path: string | number) => void;
+  onOpenSearch: () => void;
+}) {
   return (
     <header className="h-14 border-b border-white/10 flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-4 bg-[#020617]/80 backdrop-blur-xl sticky top-0 z-20">
       <div className="flex items-center gap-2 flex-shrink-0">
-        <SidebarTrigger className="h-8 w-8 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg" />
+        <SidebarTrigger className="h-9 w-9 text-slate-300 hover:text-white hover:bg-white/5 rounded-lg" />
         <div className="hidden sm:flex items-center gap-1.5 cursor-pointer" onClick={() => navigate("/")}>
           <img src={logo} alt="MetsXMFanZone Logo" className="h-7 w-auto" />
           <span className="text-[11px] font-semibold text-foreground">MetsXMFanZone</span>
@@ -25,20 +58,27 @@ function AdminHeader({ navigate }: { navigate: (path: string | number) => void }
       </div>
 
       <div className="flex-1 max-w-xl hidden sm:block">
-        <div className="relative">
+        <button
+          type="button"
+          onClick={onOpenSearch}
+          className="relative w-full text-left bg-white/5 border border-white/10 rounded-full py-2 pl-9 pr-12 text-xs text-slate-500 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-[#FF5910]/60 transition-all"
+        >
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search admin..."
-            className="w-full bg-white/5 border border-white/10 rounded-full py-1.5 pl-9 pr-12 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-[#FF5910]/60 focus:border-transparent transition-all"
-          />
+          Search admin pages...
           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] bg-white/10 px-1.5 py-0.5 rounded border border-white/10 text-slate-400 font-mono pointer-events-none">
             ⌘K
           </span>
-        </div>
+        </button>
       </div>
 
       <div className="flex items-center gap-1.5 flex-shrink-0">
+        <button
+          onClick={onOpenSearch}
+          className="sm:hidden p-2 rounded-full text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+          title="Search admin"
+        >
+          <Search className="w-4 h-4" />
+        </button>
         <button
           onClick={() => window.location.reload()}
           className="relative p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5 transition-all"
@@ -71,6 +111,7 @@ export function AdminLayout() {
   const [pinVerified, setPinVerified] = useState(false);
   const [pinOnlyAuth, setPinOnlyAuth] = useState(false);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const clearAdminSession = () => {
     sessionStorage.removeItem("admin_verified");
@@ -293,7 +334,8 @@ export function AdminLayout() {
       <div className="min-h-screen flex w-full overflow-x-hidden bg-[#020617] text-slate-200">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0 w-full max-w-full">
-          <AdminHeader navigate={navigate} />
+          <AdminHeader navigate={navigate} onOpenSearch={() => setSearchOpen(true)} />
+          <AdminCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
           <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-5 md:p-6 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-6 max-w-full
             [&_h1]:text-base [&_h1]:sm:text-lg [&_h1]:md:text-xl [&_h1]:font-bold [&_h1]:tracking-tight [&_h1]:text-white
             [&_h2]:text-sm [&_h2]:sm:text-base [&_h2]:font-semibold [&_h2]:text-white
@@ -308,6 +350,7 @@ export function AdminLayout() {
           ">
             <Outlet />
           </main>
+          <AdminMobileNav />
         </div>
       </div>
     </SidebarProvider>
