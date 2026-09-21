@@ -33,6 +33,11 @@ if (!root) throw new Error("Missing application root");
 
 const router = new Router(root);
 
+// Rebuilt full-content pages take priority over the older lightweight routes
+[...helpRoutes, ...accountRoutes, ...gameRoutes].forEach((route) =>
+  router.add(route.path, (ctx) => route.render(root, ctx)),
+);
+
 // Dynamic pages
 router.add("/", () => renderHome(root));
 router.add("/blog", () => renderBlog(root));
