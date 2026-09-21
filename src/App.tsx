@@ -400,6 +400,7 @@ const AppContent = () => {
               <Route path="realtime-analytics" element={<RealtimeAnalytics />} />
               <Route path="stream-health" element={<StreamHealthDashboard />} />
               <Route path="stream-tester" element={<StreamTester />} />
+              <Route path="feed-health" element={<FeedHealth />} />
               <Route path="seo" element={<SEOManagement />} />
               <Route path="game-notifications" element={<GameNotifications />} />
               <Route path="game-alerts" element={<GameAlertsManagement />} />
