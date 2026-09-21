@@ -18,20 +18,22 @@ import { withTimeout } from "@/utils/asyncTimeout";
 
 function AdminMobileNav() {
   return (
-    <nav className="md:hidden sticky bottom-0 z-30 border-t border-white/10 bg-[#020617]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-5">
+    <nav className="md:hidden sticky bottom-0 z-30 border-t border-white/5 bg-[#060d1d]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+      <div className="grid grid-cols-5 px-1 py-1">
         {ADMIN_QUICK_NAV.map((item) => (
           <NavLink
             key={item.url}
             to={item.url}
             end={item.url === "/admin"}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 py-2 text-[10px] font-medium transition-colors ${
-                isActive ? "text-[#FF5910]" : "text-slate-400"
+              `flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-[10px] font-semibold transition-all ${
+                isActive
+                  ? "bg-[#FF5910]/12 text-[#FF7A3D] shadow-[inset_0_0_0_1px_rgba(255,89,16,0.35)]"
+                  : "text-slate-400 active:bg-white/5"
               }`
             }
           >
-            <item.icon className="h-4.5 w-4.5" />
+            <item.icon className="h-5 w-5" />
             {item.title}
           </NavLink>
         ))}
