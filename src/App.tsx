@@ -124,6 +124,7 @@ const WriterApplications = lazyWithRetry(() => import("./pages/admin/WriterAppli
 const RealtimeAnalytics = lazyWithRetry(() => import("./pages/admin/RealtimeAnalytics"), "page-admin-realtime-analytics");
 const StreamHealthDashboard = lazyWithRetry(() => import("./pages/admin/StreamHealthDashboard"), "page-admin-stream-health-dashboard");
 const StreamTester = lazyWithRetry(() => import("./pages/admin/StreamTester"), "page-admin-stream-tester");
+const FeedHealth = lazyWithRetry(() => import("./pages/admin/FeedHealth"), "page-admin-feed-health");
 const SEOManagement = lazyWithRetry(() => import("./pages/admin/SEOManagement"), "page-admin-seo-management");
 const HeroManagement = lazyWithRetry(() => import("./pages/admin/HeroManagement"), "page-admin-hero-management");
 
