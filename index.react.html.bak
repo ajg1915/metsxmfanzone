@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en" prefix="og: https://ogp.me/ns#">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#1a1a1a" />
+    <link rel="apple-touch-icon" href="/logo-192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/logo-192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/logo-512.png" />
+
+    <!-- Google Search Console verification -->
+    <meta name="google-site-verification" content="QwvX-HYTYuPTRADufkd-lj3v_rML6UhNe4vZEMnYdPA" />
+
+    <!-- Primary Meta Tags -->
+    <title>MetsXMFanZone — #1 New York Mets Fan Community</title>
+    <meta name="title" content="MetsXMFanZone — #1 New York Mets Fan Community" />
+    <meta
+      name="description"
+      content="MetsXMFanZone — the #1 New York Mets fan community. Live games, podcasts, news, trade rumors, and game-day breakdowns. Built by fans, for fans."
+    />
+    <meta
+      name="keywords"
+      content="New York Mets, Mets fan community, Mets live games, Mets news, Mets podcasts, MLB, baseball, Citi Field, Mets highlights, Mets analysis, Mets TV, Mets streaming, Mets 2026, Spring Training, Francisco Lindor, Pete Alonso"
+    />
+    <meta name="author" content="MetsXMFanZone" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="bingbot" content="index, follow" />
+    <meta name="rating" content="General" />
+    <meta name="referrer" content="origin-when-cross-origin" />
+    <link rel="canonical" href="https://metsxmfanzone.com/" />
+
+    <!-- Verification Tags -->
+    <meta name="google-site-verification" content="QwvX-HYTYuPTRADufkd-lj3v_rML6UhNe4vZEMnYdPA" />
+    <meta name="facebook-domain-verification" content="w5ciz1thomkdtq4z9qyt466zque1bc" />
+
+    <!-- Facebook/Open Graph -->
+    <meta property="fb:app_id" content="1151558476948104" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://metsxmfanzone.com/" />
+
+    <meta property="og:image" content="https://metsxmfanzone.com/og-image.png" />
+    <meta property="og:image:secure_url" content="https://metsxmfanzone.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="MetsXMFanZone — Live Games, Podcasts, News and Community for New York Mets fans" />
+    <meta property="og:site_name" content="MetsXMFanZone" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://metsxmfanzone.com/og-image.png" />
+    <meta name="twitter:image:alt" content="MetsXMFanZone — Live Games, Podcasts, News and Community for New York Mets fans" />
+    <meta name="twitter:domain" content="metsxmfanzone.com" />
+
+    <!-- Pinterest -->
+    <meta name="pinterest-rich-pin" content="true" />
+    <meta name="p:domain_verify" content="metsxmfanzone" />
+
+    <!-- Additional SEO & Geo -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="geo.region" content="US-NY" />
+    <meta name="geo.placename" content="New York City" />
+    <meta name="geo.position" content="40.7128;-74.0060" />
+    <meta name="ICBM" content="40.7128, -74.0060" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="1 days" />
+    <meta name="distribution" content="global" />
+    <meta name="coverage" content="Worldwide" />
+    <meta name="target" content="all" />
+    <meta name="HandheldFriendly" content="True" />
+    <meta name="MobileOptimized" content="320" />
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BN6DS4HJ0E"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-BN6DS4HJ0E');
+    </script>
+
+    <!-- Speed & Performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://rdmrxeplasttewtlfetc.supabase.co" />
+    <link rel="preconnect" href="https://www.google-analytics.com" />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+
+    <!-- Critical assets loaded on demand -->
+
+    <!-- Video.js Quality Selector CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/silvermine-videojs-quality-selector@1.1.2/dist/css/quality-selector.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Chromecast SDK for TV casting -->
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+      async
+    ></script>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Alternate Languages -->
+    <link rel="alternate" hreflang="en" href="https://metsxmfanzone.com/" />
+    <link rel="alternate" hreflang="en-US" href="https://metsxmfanzone.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://metsxmfanzone.com/" />
+
+    <!-- RSS Feed -->
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="MetsXMFanZone Blog RSS Feed"
+      href="https://metsxmfanzone.com/blog/rss"
+    />
+
+    <!-- JSON-LD Structured Data - Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://metsxmfanzone.com/#organization",
+        "name": "MetsXMFanZone",
+        "alternateName": ["MetsXM", "Mets XM Fan Zone"],
+        "url": "https://metsxmfanzone.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://metsxmfanzone.com/metsxmfanzone-logo.png",
+          "caption": "MetsXMFanZone logo"
+        },
+        "image": "https://metsxmfanzone.com/og-image.png",
+        "description": "The #1 New York Mets fan community featuring live games, podcasts, news, and exclusive content.",
+        "foundingDate": "2024",
+        "sameAs": [
+          "https://twitter.com/metsxmfanzone",
+          "https://facebook.com/metsxmfanzone",
+          "https://instagram.com/metsxmfanzone",
+          "https://youtube.com/@metsxmfanzone",
+          "https://www.tiktok.com/@metsxmfanzone"
+        ],
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer support",
+          "url": "https://metsxmfanzone.com/contact",
+          "availableLanguage": "English"
+        }
+      }
+    </script>
+
+    <!-- JSON-LD Structured Data - WebSite with Search -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": "https://metsxmfanzone.com/#website",
+        "name": "MetsXMFanZone",
+        "alternateName": "XMZ",
+        "url": "https://metsxmfanzone.com",
+        "description": "The ultimate destination for New York Mets fans. Live games, podcasts, news, and community.",
+        "inLanguage": "en-US",
+        "publisher": {
+          "@id": "https://metsxmfanzone.com/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://metsxmfanzone.com/blog?search={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    </script>
+
+    <!-- JSON-LD Structured Data - SportsOrganization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SportsOrganization",
+        "@id": "https://metsxmfanzone.com/#sportsorg",
+        "name": "MetsXMFanZone",
+        "sport": "Baseball",
+        "url": "https://metsxmfanzone.com",
+        "description": "Fan community dedicated to the New York Mets baseball team",
+        "memberOf": {
+          "@type": "SportsOrganization",
+          "name": "Major League Baseball",
+          "alternateName": "MLB",
+          "url": "https://www.mlb.com"
+        },
+        "areaServed": {
+          "@type": "Country",
+          "name": "United States"
+        }
+      }
+    </script>
+
+    <!-- JSON-LD Structured Data - BreadcrumbList -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://metsxmfanzone.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Spring Training",
+            "item": "https://metsxmfanzone.com/spring-training-live"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Blog",
+            "item": "https://metsxmfanzone.com/blog"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "Podcast",
+            "item": "https://metsxmfanzone.com/podcast"
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "name": "Community",
+            "item": "https://metsxmfanzone.com/community"
+          },
+          {
+            "@type": "ListItem",
+            "position": 6,
+            "name": "Mets Roster",
+            "item": "https://metsxmfanzone.com/mets-roster"
+          }
+        ]
+      }
+    </script>
+
+    <!-- JSON-LD Structured Data - LocalBusiness for Fan Community -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "OnlineContent",
+        "name": "MetsXMFanZone",
+        "description": "Premier online destination for New York Mets fans featuring live streaming, podcasts, news, and community engagement.",
+        "url": "https://metsxmfanzone.com",
+        "offers": {
+          "@type": "Offer",
+          "description": "Premium membership for exclusive Mets content",
+          "url": "https://metsxmfanzone.com/plans"
+        },
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "New York Mets Fans",
+          "geographicArea": {
+            "@type": "Country",
+            "name": "United States"
+          }
+        }
+      }
+    </script>
+
+    <meta property="og:title" content="MetsXMFanZone — Ultimate Mets Fan Destination" />
+    <meta name="twitter:title" content="MetsXMFanZone — Ultimate Mets Fan Destination" />
+    <meta
+      property="og:description"
+      content="Welcome to MetsXMFanZone, the heartbeat of the Mets community. Whether you&#39;re here for our signature podcast, live game-day breakdowns, or the latest trade rumors, we are your #1 source for everything blue and orange—built by fans, for fans."
+    />
+    <meta
+      name="twitter:description"
+      content="Welcome to MetsXMFanZone, the heartbeat of the Mets community. Whether you&#39;re here for our signature podcast, live game-day breakdowns, or the latest trade rumors, we are your #1 source for everything blue and orange—built by fans, for fans."
+    />
+  </head>
+
+  <body>
+    <div id="root"><!--app-html--></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
