@@ -133,8 +133,6 @@ serve(async (req) => {
       if (!roleRow) return json({ error: "Admin access required" }, 403);
     }
 
-    const body = await req.json().catch(() => ({}));
-    const action = body?.action === "delete" ? "delete" : "upload";
     const rawKey = typeof body?.key === "string" ? body.key : "";
     const key = rawKey.replace(/^\/+/, "").slice(0, 512);
     if (!key || key.includes("..")) return json({ error: "Invalid file name" }, 400);
