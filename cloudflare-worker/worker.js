@@ -36,6 +36,12 @@ const CRAWLER_UA_PATTERNS = [
 function isCrawler(ua) {
   if (!ua) return false;
   const lower = ua.toLowerCase();
+
+  // Facebook in-app browser contains FBAN/FBAV/FBIOS — NOT a crawler, let it through
+  if (lower.includes("fban") || lower.includes("fbav") || lower.includes("fbios")) {
+    return false;
+  }
+
   return CRAWLER_UA_PATTERNS.some((p) => lower.includes(p));
 }
 
