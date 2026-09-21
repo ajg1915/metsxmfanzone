@@ -80,9 +80,17 @@ export default function MediaLibrary() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (item: { id: string; file_name: string; folder: string }) => {
+    mutationFn: async (item: { id: string; file_name: string; folder: string; file_url?: string }) => {
       const storagePath = `${item.folder}/${item.file_name}`;
-      await supabase.storage.from("media_library").remove([storagePath]);
+      try {
+        if (isR2Url(item.file_url)) {
+          await deleteFromR2(storagePath);
+        } else {
+          await supabase.storage.from("media_library").remove([storagePath]);
+        }
+      } catch (err) {
+        console.error("Remove file error:", err);
+      }
       const { error } = await supabase.from("media_library").delete().eq("id", item.id);
       if (error) throw error;
     },

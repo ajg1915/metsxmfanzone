@@ -56,9 +56,8 @@ export async function deleteFromR2(key: string): Promise<void> {
   await fetch(signed.uploadUrl, { method: "DELETE" });
 }
 
-/** True when a stored URL points at the R2 public domain. */
+/** True when a stored URL is served from R2 rather than the built-in storage. */
 export function isR2Url(url: string | null | undefined): boolean {
-  const base = import.meta.env.VITE_R2_PUBLIC_BASE_URL as string | undefined;
-  if (!url || !base) return false;
-  return url.startsWith(base.replace(/\/+$/, ""));
+  if (!url) return false;
+  return !url.includes("/storage/v1/object/");
 }
