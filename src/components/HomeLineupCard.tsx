@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Clock, MapPin, Video, TrendingUp, Calendar, Trophy, RefreshCw, User, Zap, ArrowRight, Activity, Sparkles, Lock } from "lucide-react";
+import { Clock, MapPin, Video, TrendingUp, Calendar, RefreshCw, User, Zap, ArrowRight, Activity, Sparkles, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
@@ -733,64 +733,6 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
             </div>
           </motion.div>
 
-          {/* Right Column - Standings & Leaders */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4"
-          >
-
-            {/* NL East Standings */}
-            <div className="rounded-2xl overflow-hidden border border-border/30 backdrop-blur-xl bg-card/60 shadow-lg">
-              <div className="relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/70" />
-                <div className="relative p-3 text-primary-foreground flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-4 h-4" />
-                    <span className="font-black text-sm">NL East Standings</span>
-                  </div>
-                  <Link to="/nl-scores" className="text-[10px] bg-white/15 hover:bg-white/25 px-2 py-0.5 rounded-md transition-colors font-semibold">
-                    NL Scores
-                  </Link>
-                </div>
-              </div>
-              <div className="p-3">
-                {standings && standings.length > 0 ? (
-                  <div className="space-y-1">
-                    {standings.map((team: any) => {
-                      const isMets = team.team_name === "Mets";
-                      return (
-                        <div key={team.team_name} className={`relative flex items-center gap-2 p-2 pl-3 rounded-xl text-xs transition-all overflow-hidden ${
-                          isMets
-                            ? "bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/30 shadow-md shadow-primary/10"
-                            : "bg-muted/10 hover:bg-muted/20 border border-transparent"
-                        }`}>
-                          {isMets && <span className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" aria-hidden />}
-                          <span className={`font-black w-4 text-center text-[10px] ${isMets ? "text-primary" : "text-muted-foreground/50"}`}>{team.position}</span>
-                          <span className={`flex-1 font-bold uppercase tracking-tight ${isMets ? "text-primary" : ""}`}>{team.team_name}</span>
-                          <span className="w-7 text-center font-mono font-black text-[10px]" style={{ fontVariantNumeric: "tabular-nums" }}>{team.wins}</span>
-                          <span className="w-7 text-center font-mono font-bold text-[10px] text-muted-foreground" style={{ fontVariantNumeric: "tabular-nums" }}>{team.losses}</span>
-                          <span className={`w-7 text-center font-mono text-[10px] ${isMets ? "text-primary font-black" : "text-muted-foreground"}`} style={{ fontVariantNumeric: "tabular-nums" }}>{team.games_back}</span>
-                        </div>
-                      );
-                    })}
-                    <div className="flex items-center gap-2 pt-1.5 text-[9px] text-muted-foreground/50 border-t border-border/20 mt-1.5 font-semibold uppercase tracking-wider">
-                      <span className="w-4" />
-                      <span className="flex-1">Team</span>
-                      <span className="w-7 text-center">W</span>
-                      <span className="w-7 text-center">L</span>
-                      <span className="w-7 text-center">GB</span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center py-3">Season not started</p>
-                )}
-              </div>
-            </div>
-
-          </motion.div>
         </div>
       </div>
     </section>
