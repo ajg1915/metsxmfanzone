@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { Megaphone, Upload, Loader2, Image } from "lucide-react";
 interface CreateBusinessAdFormProps {
   userId: string;
@@ -52,19 +53,7 @@ const CreateBusinessAdForm = ({
     }
     setUploadingImage(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/ad-${Date.now()}.${fileExt}`;
-      const {
-        error: uploadError
-      } = await supabase.storage.from('content_uploads').upload(fileName, file, {
-        upsert: true
-      });
-      if (uploadError) throw uploadError;
-      const {
-        data: {
-          publicUrl
-        }
-      } = supabase.storage.from('content_uploads').getPublicUrl(fileName);
+      const { publicUrl } = await uploadToR2(file, `business-ads/${userId}`);
       setFormData(prev => ({
         ...prev,
         ad_image_url: publicUrl

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -180,18 +181,8 @@ const StoriesManagement = () => {
 
       if (mediaFile) {
         mediaType = mediaFile.type.startsWith("video/") ? "video" : "image";
-        const fileName = generateSafeFilename(mediaFile.name);
-
-        const { error: uploadError } = await supabase.storage
-          .from("stories")
-          .upload(fileName, mediaFile, {
-            cacheControl: "3600",
-            contentType: mediaFile.type,
-            upsert: false,
-          });
-
-        if (uploadError) throw uploadError;
-        mediaUrl = fileName;
+        const { publicUrl } = await uploadToR2(mediaFile, "stories");
+        mediaUrl = publicUrl;
       } else if (!editingStory && hasText) {
         // Brand new text-only story
         mediaType = "text";
@@ -202,14 +193,8 @@ const StoriesManagement = () => {
       }
 
       if (thumbnailFile) {
-        const thumbName = `thumb_${generateSafeFilename(thumbnailFile.name)}`;
-
-        const { error: thumbError } = await supabase.storage
-          .from("stories")
-          .upload(thumbName, thumbnailFile);
-
-        if (thumbError) throw thumbError;
-        thumbnailUrl = thumbName;
+        const { publicUrl } = await uploadToR2(thumbnailFile, "stories/thumbnails");
+        thumbnailUrl = publicUrl;
       }
 
       // Determine link_url based on link type
@@ -565,18 +550,13 @@ const StoriesManagement = () => {
       const blob = await response.blob();
       const file = new File([blob], `ai_generated_${Date.now()}.png`, { type: 'image/png' });
 
-      // Upload to Supabase storage
-      const fileName = `ai_${Date.now()}.png`;
-      const { error: uploadError } = await supabase.storage
-        .from("stories")
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
+      // Upload to R2
+      const { publicUrl } = await uploadToR2(file, "stories");
 
       // Create story with the generated image
       const storyData = {
         title: aiPrompt.slice(0, 50) + (aiPrompt.length > 50 ? "..." : ""),
-        media_url: fileName,
+        media_url: publicUrl,
         media_type: "image",
         thumbnail_url: null,
         display_order: 0,

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -137,20 +138,8 @@ const PostComments = ({ postId, isCurrentUserAdmin }: PostCommentsProps) => {
         mediaType = "gif";
       } else if (selectedVideo) {
         setUploadingVideo(true);
-        const fileExt = selectedVideo.name.split(".").pop();
-        const fileName = `comments/${user.id}/${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("community_images")
-          .upload(fileName, selectedVideo);
-
-        if (uploadError) throw uploadError;
-
-        const { data: signedData } = await supabase.storage
-          .from("community_images")
-          .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year
-
-        mediaUrl = signedData?.signedUrl || fileName;
+        const { publicUrl } = await uploadToR2(selectedVideo, `comments/${user.id}`);
+        mediaUrl = publicUrl;
         mediaType = "video";
         setUploadingVideo(false);
       }

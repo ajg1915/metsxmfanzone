@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,8 +10,6 @@ import { Progress } from "@/components/ui/progress";
 import { Upload, Zap, FileVideo, FileAudio, CheckCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
 
 export default function TurboUploadTab() {
   const { toast } = useToast();
@@ -61,44 +60,17 @@ export default function TurboUploadTab() {
     setProgress(0);
 
     try {
-      const bucket = isVideo(file) ? "videos" : "podcasts";
+      const folder = isVideo(file) ? "videos" : "podcasts";
       const ext = file.name.split(".").pop() || "bin";
       const fileName = `turbo-${Date.now()}.${ext}`;
 
-      // Chunked upload simulation with XHR progress
-      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-
-      if (totalChunks <= 1) {
-        // Small file - direct upload with progress via XHR
-        await uploadWithXHR(bucket, fileName, file);
-      } else {
-        // Large file - chunked upload
-        for (let i = 0; i < totalChunks; i++) {
-          const start = i * CHUNK_SIZE;
-          const end = Math.min(start + CHUNK_SIZE, file.size);
-          const chunk = file.slice(start, end);
-
-          if (i === 0) {
-            // First chunk creates the file
-            const { error } = await supabase.storage.from(bucket).upload(fileName, file, {
-              contentType: file.type,
-              upsert: true,
-            });
-            if (error) throw error;
-            setProgress(100);
-            break;
-          }
-          setProgress(Math.round(((i + 1) / totalChunks) * 100));
-        }
-      }
-
-      const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+      const { publicUrl } = await uploadToR2(file, folder, fileName, setProgress);
 
       if (isVideo(file)) {
         const { error } = await supabase.from("videos").insert({
           title: title.trim(),
           description: description.trim() || null,
-          video_url: urlData.publicUrl,
+          video_url: publicUrl,
           video_type: "uploaded",
           published: false,
         });
@@ -107,7 +79,7 @@ export default function TurboUploadTab() {
         const { error } = await supabase.from("podcasts").insert({
           title: title.trim(),
           description: description.trim() || null,
-          audio_url: urlData.publicUrl,
+          audio_url: publicUrl,
           duration: 0,
           published: false,
         });
@@ -121,25 +93,6 @@ export default function TurboUploadTab() {
     } finally {
       setUploading(false);
     }
-  };
-
-  const uploadWithXHR = (bucket: string, fileName: string, file: File): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/${bucket}/${fileName}`;
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
-      };
-      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`)));
-      xhr.onerror = () => reject(new Error("Upload error"));
-
-      xhr.open("POST", url);
-      xhr.setRequestHeader("Authorization", `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`);
-      xhr.setRequestHeader("Content-Type", file.type);
-      xhr.setRequestHeader("x-upsert", "true");
-      xhr.send(file);
-    });
   };
 
   const reset = () => {

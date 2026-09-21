@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Mic, Square, Upload, Trash2, Play, Pause } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -116,20 +117,13 @@ const PodcastAudioRecorder = () => {
     try {
       const ext = uploadedFile ? uploadedFile.name.split(".").pop() : "webm";
       const fileName = `community-${Date.now()}.${ext}`;
-      const filePath = `community/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("podcasts")
-        .upload(filePath, audioBlob, { contentType: audioBlob.type });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage.from("podcasts").getPublicUrl(filePath);
+      const { publicUrl } = await uploadToR2(audioBlob, "podcasts/community", fileName);
 
       const { error: insertError } = await supabase.from("podcasts").insert({
         title: title.trim(),
         description: description.trim() || null,
-        audio_url: urlData.publicUrl,
+        audio_url: publicUrl,
         duration: recordingTime || null,
         published: false,
       });

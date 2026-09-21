@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -170,8 +171,9 @@ const Community = () => {
     const postsWithSignedUrls = await Promise.all(
       (postsData || []).map(async (post) => {
         let imageUrl = post.image_url;
-        if (post.image_url) {
-          const fileName = post.image_url.split('/community_images/')[1] || post.image_url;
+        // Re-sign only legacy Supabase storage references; R2 and external URLs are used as-is.
+        if (post.image_url && (!post.image_url.startsWith('http') || post.image_url.includes('/storage/v1/object/'))) {
+          const fileName = (post.image_url.split('/community_images/')[1] || post.image_url).split('?')[0];
           if (fileName) {
             const { data: signedUrlData } = await supabase.storage
               .from('community_images')
@@ -300,33 +302,14 @@ const Community = () => {
       let imageUrl = null;
 
       if (selectedImage) {
-        const fileExt = selectedImage.name.split(".").pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("community_images")
-          .upload(fileName, selectedImage);
-
-        if (uploadError) throw uploadError;
-        imageUrl = fileName;
+        const { publicUrl } = await uploadToR2(selectedImage, `community/${user.id}`);
+        imageUrl = publicUrl;
       } else if (selectedPostGif) {
         // Store GIF URL directly as image_url (external URL)
         imageUrl = selectedPostGif;
       } else if (selectedPostVideo) {
-        const fileExt = selectedPostVideo.name.split(".").pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from("community_images")
-          .upload(fileName, selectedPostVideo);
-
-        if (uploadError) throw uploadError;
-
-        const { data: signedData } = await supabase.storage
-          .from("community_images")
-          .createSignedUrl(fileName, 60 * 60 * 24 * 365);
-
-        imageUrl = signedData?.signedUrl || fileName;
+        const { publicUrl } = await uploadToR2(selectedPostVideo, `community/${user.id}`);
+        imageUrl = publicUrl;
       }
 
       const { error } = await supabase.from("posts").insert({

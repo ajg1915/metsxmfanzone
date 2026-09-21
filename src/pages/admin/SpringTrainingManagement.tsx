@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,19 +65,7 @@ export default function SpringTrainingManagement() {
 
     setUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `spring-training/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("content_uploads")
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from("content_uploads")
-        .getPublicUrl(filePath);
+      const { publicUrl } = await uploadToR2(file, "spring-training");
 
       setFormData({ ...formData, preview_image_url: publicUrl });
       toast({ title: "Image uploaded successfully" });

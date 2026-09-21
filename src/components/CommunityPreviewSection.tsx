@@ -74,7 +74,10 @@ const CommunityPreviewSection = () => {
       from("profiles").
       select("*", { count: "exact", head: true });
 
-      const postsNeedingUrls = (postsData || []).filter((p) => p.image_url);
+      // Only legacy Supabase storage references need signing; R2/external URLs are used as-is.
+      const postsNeedingUrls = (postsData || []).filter(
+        (p) => p.image_url && (!p.image_url.startsWith('http') || p.image_url.includes('/storage/v1/object/'))
+      );
       const signedUrlMap: Record<string, string> = {};
 
       if (postsNeedingUrls.length > 0) {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadToR2 } from "@/lib/r2Upload";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,14 +53,8 @@ export function CreateRoomDialog({ onCreated }: { onCreated?: () => void }) {
 
       let image_url: string | null = null;
       if (imageFile) {
-        const ext = imageFile.name.split(".").pop() || "jpg";
-        const path = `voice-rooms/${user.id}/${Date.now()}.${ext}`;
-        const { error: upErr } = await supabase.storage
-          .from("media_library")
-          .upload(path, imageFile, { upsert: false });
-        if (upErr) throw upErr;
-        const { data: pub } = supabase.storage.from("media_library").getPublicUrl(path);
-        image_url = pub.publicUrl;
+        const { publicUrl } = await uploadToR2(imageFile, `voice-rooms/${user.id}`);
+        image_url = publicUrl;
       }
 
       const { error } = await supabase.from("gameday_voice_rooms").insert({
