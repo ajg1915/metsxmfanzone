@@ -17,3 +17,9 @@ live site over from React to the HTML build.
 ## Blocked
 - DB indexes on realtime_presence.session_id / last_seen_at and visitor_clicks.created_at (migrations need owner approval)
 - Signed-in admin testing (needs owner account login on the owner backend)
+
+## Batch D — remaining pages (in progress)
+- [ ] D1: public network/player/misc pages (espn/mlb/msg/pix11-network, private-player, admin-portal, admin-pin-reset, legal/admin-setup, tutorial, sitemap.xml)
+- [ ] D2: admin content sections (stories, posts, podcasts, polls, game-recaps, hero, media-library, video-gallery-management, sweepstakes, predictions, player-of-the-month, loyalty-rewards, newsletter)
+- [ ] D3: admin ops sections (settings, seo, realtime-analytics, notifications, email editor/templates, stream-health/tester, studio, user-management, trials, applications, feedbacks, business-ads, daily-reports, feed-health, toast-prompts, welcome-screen, tutorials, activity, ai-assistant, backgrounds, social-media)
+- [ ] Full mobile + desktop sweep, then cutover
