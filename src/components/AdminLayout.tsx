@@ -345,8 +345,8 @@ export function AdminLayout() {
         <div className="flex-1 flex flex-col min-w-0 w-full max-w-full">
           <AdminHeader navigate={navigate} onOpenSearch={() => setSearchOpen(true)} />
           <AdminCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-5 md:p-6 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-6 max-w-full
-            [&_h1]:text-base [&_h1]:sm:text-lg [&_h1]:md:text-xl [&_h1]:font-bold [&_h1]:tracking-tight [&_h1]:text-white
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-5 md:p-7 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-6 max-w-full
+            [&_h1]:text-lg [&_h1]:sm:text-xl [&_h1]:md:text-2xl [&_h1]:font-bold [&_h1]:tracking-tight [&_h1]:text-white
             [&_h2]:text-sm [&_h2]:sm:text-base [&_h2]:font-semibold [&_h2]:text-white
             [&_h3]:text-xs [&_h3]:sm:text-sm [&_h3]:text-white
             [&_.container]:px-0 [&_.container]:sm:px-1 [&_.container]:max-w-full
