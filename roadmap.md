@@ -15,4 +15,4 @@
 - [ ] Redesign login and registration for all screen sizes
 - [ ] Add admin signup/login activity visibility and alerts
 - [ ] Streamline member access, PayPal linkage, cancellation warnings, and repeat-cancellation limits
-- [ ] Condense admin navigation and remove user-approved unused sections
+- [x] Condense admin navigation and group infrequent tools under More
