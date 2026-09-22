@@ -82,10 +82,21 @@ export function StreamControls({
   }, [videoRef]);
 
   useEffect(() => {
-    const onFs = () => setFullscreen(!!document.fullscreenElement);
+    const onFs = () => {
+      const active = !!document.fullscreenElement || containerRef.current?.classList.contains("ios-pseudo-fullscreen");
+      setFullscreen(active);
+      if (!active) {
+        const orientation = screen.orientation as ScreenOrientation & { unlock?: () => void };
+        try { orientation.unlock?.(); } catch {}
+      }
+    };
     document.addEventListener("fullscreenchange", onFs);
-    return () => document.removeEventListener("fullscreenchange", onFs);
-  }, []);
+    document.addEventListener("webkitfullscreenchange", onFs);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFs);
+      document.removeEventListener("webkitfullscreenchange", onFs);
+    };
+  }, [containerRef]);
 
   // Poll quality levels + playback stats.
   useEffect(() => {
@@ -149,11 +160,36 @@ export function StreamControls({
     v.play().catch(() => {});
   };
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = async () => {
     const el = containerRef.current;
     if (!el) return;
-    if (document.fullscreenElement) document.exitFullscreen?.();
-    else (el.requestFullscreen?.() as Promise<void> | undefined)?.catch(() => {});
+    const video = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
+    const doc = document as Document & { webkitExitFullscreen?: () => void };
+    const element = el as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void };
+    if (document.fullscreenElement || el.classList.contains("ios-pseudo-fullscreen")) {
+      el.classList.remove("ios-pseudo-fullscreen");
+      if (document.fullscreenElement) await document.exitFullscreen?.().catch(() => {});
+      else doc.webkitExitFullscreen?.();
+      try { (screen.orientation as ScreenOrientation & { unlock?: () => void }).unlock?.(); } catch {}
+      setFullscreen(false);
+      return;
+    }
+    try {
+      if (el.requestFullscreen) await el.requestFullscreen();
+      else if (element.webkitRequestFullscreen) await element.webkitRequestFullscreen();
+      else if (video?.webkitEnterFullscreen) video.webkitEnterFullscreen();
+      else {
+        el.classList.add("ios-pseudo-fullscreen");
+        setFullscreen(true);
+      }
+      try { await screen.orientation.lock("landscape"); } catch {}
+    } catch {
+      if (video?.webkitEnterFullscreen) video.webkitEnterFullscreen();
+      else {
+        el.classList.add("ios-pseudo-fullscreen");
+        setFullscreen(true);
+      }
+    }
   };
 
   const setLevel = (index: number) => {
@@ -163,7 +199,7 @@ export function StreamControls({
   };
 
   const iconBtn =
-    "flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-lg text-white/90 hover:text-white hover:bg-white/10 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70";
+    "flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-lg text-player-foreground/90 hover:text-player-foreground hover:bg-player-foreground/10 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/70";
 
   return (
     <div
@@ -206,7 +242,7 @@ export function StreamControls({
       )}
 
       <div className="bg-gradient-to-t from-black via-black/70 to-transparent px-3 pb-3 pt-10 sm:px-4 sm:pb-4">
-        <div className="flex items-center gap-0.5 sm:gap-1">
+        <div className="flex items-center gap-0 sm:gap-1">
           <button onClick={togglePlay} className={iconBtn} aria-label={playing ? "Pause" : "Play"}>
             {playing ? <Pause className="w-6 h-6" fill="currentColor" /> : <Play className="w-6 h-6" fill="currentColor" />}
           </button>
@@ -244,12 +280,12 @@ export function StreamControls({
 
           <div className="flex-1" />
 
-          <button onClick={() => onReload?.()} className={iconBtn} aria-label="Reload stream">
+          <button onClick={() => onReload?.()} className={`${iconBtn} hidden min-[360px]:flex`} aria-label="Reload stream">
             <RotateCw className="w-5 h-5" />
           </button>
           <button
             onClick={() => { setShowStats((s) => !s); setShowSettings(false); }}
-            className={cn(iconBtn, showStats && "bg-white/10 text-white")}
+            className={cn(iconBtn, "hidden sm:flex", showStats && "bg-player-foreground/10 text-player-foreground")}
             aria-label="Stream stats"
           >
             <BarChart3 className="w-5 h-5" />

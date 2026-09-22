@@ -2,6 +2,7 @@ import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Loader2, AlertCircle, RotateCw, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
+import { StreamIssueDialog } from "./StreamIssueDialog";
 import { StreamControls } from "./player/StreamControls";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,7 @@ interface ClapprPlayerProps {
   pageDescription?: string;
   source?: string;
   showChrome?: boolean;
+  streamId?: string;
 }
 
 const isMobile = (() => {
@@ -28,6 +30,7 @@ const isIos = () => {
 export const ClapprPlayer = memo(function ClapprPlayer({
   source,
   pageTitle = "Live Stream",
+  streamId,
 }: ClapprPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,13 +73,13 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     setStatus("loading");
     setNeedsTap(false);
 
-    // Candidate URLs: HTTPS proxy first, then public CORS proxy, then raw.
+    // Secure sources load directly; only insecure sources require proxy fallbacks.
     const candidates = Array.from(
       new Set(
         [
-          toSecureStreamUrl(effectiveSource),
-          isInsecureUrl(effectiveSource) ? toCorsProxyUrl(effectiveSource) : "",
           effectiveSource,
+          isInsecureUrl(effectiveSource) ? toSecureStreamUrl(effectiveSource) : "",
+          isInsecureUrl(effectiveSource) ? toCorsProxyUrl(effectiveSource) : "",
         ].filter(Boolean)
       )
     );
@@ -147,18 +150,16 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         return;
       }
 
-      // Phones (especially Android) stall badly with ultra-low-latency buffers,
-      // so give mobile a deeper, more forgiving buffer.
       const hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: false,
-        backBufferLength: isMobile ? 30 : 10,
-        maxBufferLength: isMobile ? 30 : 12,
-        maxMaxBufferLength: isMobile ? 60 : 30,
+        lowLatencyMode: true,
+        backBufferLength: isMobile ? 15 : 8,
+        maxBufferLength: isMobile ? 18 : 10,
+        maxMaxBufferLength: isMobile ? 30 : 20,
         maxBufferSize: 60 * 1000 * 1000,
         maxBufferHole: 0.5,
-        liveSyncDurationCount: isMobile ? 4 : 3,
-        liveMaxLatencyDurationCount: isMobile ? 12 : 8,
+        liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: isMobile ? 8 : 6,
         liveDurationInfinity: true,
         highBufferWatchdogPeriod: 2,
         nudgeMaxRetry: 20,
@@ -234,10 +235,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   }, [effectiveSource, retryKey, notifyAdmins]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full aspect-video bg-black overflow-hidden rounded-2xl border border-white/10 shadow-2xl group">
+    <div ref={containerRef} className="stream-player relative h-full w-full aspect-video overflow-hidden bg-player group">
       <video
         ref={videoRef}
-        className="absolute inset-0 w-full h-full object-contain bg-black"
+        className="absolute inset-0 h-full w-full object-contain bg-player"
         autoPlay
         muted
         playsInline
@@ -253,7 +254,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       />
 
 
-      <CastButton source={effectiveSource} title={pageTitle} />
+      <div className="absolute right-2 top-2 z-40 flex items-center gap-2 sm:right-3 sm:top-3">
+        <StreamIssueDialog streamId={streamId} streamTitle={pageTitle} video={videoRef.current} compact />
+        <CastButton source={effectiveSource} title={pageTitle} />
+      </div>
 
 
       {status === "ready" && (
