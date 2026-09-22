@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-import { AlertTriangle, Fingerprint, RefreshCw } from "lucide-react";
+import { AlertTriangle, Check, ChevronLeft, ChevronRight, Eye, EyeOff, Fingerprint, RefreshCw, ShieldCheck } from "lucide-react";
 import AuthBackground from "@/components/AuthBackground";
 import authLogo from "@/assets/metsxmfanzone-logo-auth.png";
 import { trackFailedLogin } from "@/utils/securityAlerts";
@@ -138,6 +138,7 @@ const REMEMBER_ME_KEY = "metsxm_remember_user";
 const REMEMBER_PIN_KEY = "metsxm_remember_pin";
 const REMEMBER_ME_EXPIRY_HOURS = 720; // 30 days
 const MIN_FORM_FILL_TIME_MS = 3000;
+const SIGNUP_DRAFT_KEY = "metsxm_signup_draft";
 
 interface RememberedUser {
   email: string;
@@ -198,6 +199,8 @@ const Auth = () => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [paymentMethod, setPaymentMethod] = useState<string>("paypal");
+  const [signupStep, setSignupStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [actionTakingTooLong, setActionTakingTooLong] = useState(false);
@@ -261,6 +264,46 @@ const Auth = () => {
     localStorage.removeItem("pending_signup_plan");
     localStorage.removeItem("pending_signup_payment_method");
   }, []);
+
+  useEffect(() => {
+    if (isLogin) return;
+    try {
+      const raw = localStorage.getItem(SIGNUP_DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      setFullName(typeof draft.fullName === "string" ? draft.fullName : "");
+      setEmail(typeof draft.email === "string" ? draft.email : "");
+      setPhoneNumber(typeof draft.phoneNumber === "string" ? draft.phoneNumber : "");
+      setSmsOptIn(draft.smsOptIn === true);
+      setAgreeToTerms(draft.agreeToTerms === true);
+      setSelectedPlan(draft.selectedPlan === "premium" || draft.selectedPlan === "annual" ? draft.selectedPlan : "");
+      setSignupStep([1, 2, 3].includes(draft.signupStep) ? draft.signupStep : 1);
+    } catch {
+      localStorage.removeItem(SIGNUP_DRAFT_KEY);
+    }
+  }, [isLogin]);
+
+  useEffect(() => {
+    if (isLogin) return;
+    localStorage.setItem(SIGNUP_DRAFT_KEY, JSON.stringify({
+      fullName, email, phoneNumber, smsOptIn, agreeToTerms, selectedPlan, signupStep,
+    }));
+  }, [agreeToTerms, email, fullName, isLogin, phoneNumber, selectedPlan, signupStep, smsOptIn]);
+
+  const continueSignup = () => {
+    try {
+      if (signupStep === 1) {
+        signupSchema.pick({ fullName: true, email: true, password: true }).parse({ fullName, email, password });
+      } else if (signupStep === 2) {
+        signupSchema.pick({ phoneNumber: true, smsOptIn: true }).parse({ phoneNumber, smsOptIn });
+      }
+      setSignupStep((step) => Math.min(3, step + 1));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({ title: "Check this step", description: error.errors[0].message, variant: "destructive" });
+      }
+    }
+  };
 
   useEffect(() => {
     if (!loading && !authLoading && !biometricLoading) {
@@ -614,6 +657,7 @@ const Auth = () => {
       }
 
       if (data.user) {
+        localStorage.removeItem(SIGNUP_DRAFT_KEY);
         // Update profile with phone number, SMS preference, and ensure email_verified is false
         try {
           const updateData: Record<string, any> = { email_verified: false };
@@ -1237,7 +1281,7 @@ const Auth = () => {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] rounded-full bg-secondary/10 blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/3 w-[250px] h-[250px] rounded-full bg-primary/5 blur-[100px]" />
       </div>
-      <div className="w-full max-w-sm relative z-10">
+      <div className="w-full max-w-md relative z-10 py-3 sm:py-8">
         <div className="rounded-2xl border border-muted/40 bg-card/90 backdrop-blur-xl shadow-2xl overflow-hidden">
           <div className="h-1 bg-gradient-to-r from-secondary via-primary to-secondary" />
           <div className="p-5 sm:p-6">
@@ -1248,7 +1292,7 @@ const Auth = () => {
               </div>
               <div className="text-center">
                 <h1 className="text-lg font-bold text-foreground">
-                  {isResettingPassword ? "Set New Password" : isForgotPassword ? "Reset Password" : isLogin ? "Welcome Back" : "Create Account"}
+                   {isResettingPassword ? "Set New Password" : isForgotPassword ? "Reset Password" : isLogin ? "Welcome Back" : `Create Account · Step ${signupStep} of 3`}
                 </h1>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {isResettingPassword
@@ -1257,7 +1301,7 @@ const Auth = () => {
                     ? "Enter your email to receive a reset link"
                     : isLogin
                     ? "Enter your credentials to continue"
-                    : "Sign up to join MetsXMFanZone"}
+                     : signupStep === 1 ? "Start with your account details" : signupStep === 2 ? "Choose how we can reach you" : "Choose and review your membership"}
                 </p>
               </div>
             </div>
@@ -1280,9 +1324,15 @@ const Auth = () => {
             )}
             {!isLogin && !isForgotPassword && !isResettingPassword && (
               <>
-                <div className="bg-muted/50 border border-border rounded-md p-3 text-sm text-muted-foreground">
-                  <p>All signups require a paid membership. Choose Premium or Annual to continue.</p>
+                <div className="grid grid-cols-3 gap-2" aria-label={`Registration step ${signupStep} of 3`}>
+                  {["Account", "Contact", "Membership"].map((label, index) => (
+                    <div key={label} className="space-y-1">
+                      <div className={`h-1 rounded-full ${signupStep >= index + 1 ? "bg-primary" : "bg-muted"}`} />
+                      <p className={`text-[10px] text-center ${signupStep === index + 1 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{label}</p>
+                    </div>
+                  ))}
                 </div>
+                {signupStep === 1 && <div className="space-y-4 animate-in fade-in slide-in-from-right-2">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name</Label>
                   <Input
@@ -1297,7 +1347,7 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signupEmail">Email <span className="text-destructive">*</span></Label>
-                  <Input
+                  <div className="relative"><Input
                     id="signupEmail"
                     type="email"
                     placeholder="fan@mets.com"
@@ -1311,14 +1361,17 @@ const Auth = () => {
                   <Label htmlFor="signupPassword">Password <span className="text-destructive">*</span></Label>
                   <Input
                     id="signupPassword"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                  />
+                  /><Button type="button" variant="ghost" size="icon" onClick={() => setShowPassword((shown) => !shown)} className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2" aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button></div>
+                  <p className="text-[11px] text-muted-foreground">Use at least 6 characters. Your password is never saved in the form draft.</p>
                 </div>
+                </div>}
+                {signupStep === 2 && <div className="space-y-4 animate-in fade-in slide-in-from-right-2">
                 <div className="space-y-2">
                   <Label htmlFor="phoneNumber">Phone Number <span className="text-destructive">*</span></Label>
                   <Input
@@ -1350,20 +1403,21 @@ const Auth = () => {
                     </p>
                   </div>
                 </div>
+                </div>}
+                {signupStep === 3 && <div className="space-y-4 animate-in fade-in slide-in-from-right-2">
+                <div className="bg-muted/50 border border-border rounded-md p-3 text-sm text-muted-foreground">
+                  All memberships use secure PayPal billing. Review your choice before creating your account.
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="selectedPlan">Select Your Membership <span className="text-destructive">*</span></Label>
-                  <Select value={selectedPlan} onValueChange={setSelectedPlan} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose a plan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="premium">Premium - $9.99/month</SelectItem>
-                      <SelectItem value="annual">Annual - $129.99/year (Best Value)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Email signups require a paid plan selection first.
-                  </p>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {[{ value: "premium", label: "Premium", price: "$9.99/month" }, { value: "annual", label: "Annual", price: "$129.99/year" }].map((plan) => (
+                      <Button key={plan.value} type="button" variant="outline" onClick={() => setSelectedPlan(plan.value)} className={`h-auto justify-between p-3 ${selectedPlan === plan.value ? "border-primary bg-primary/10" : ""}`}>
+                        <span className="text-left"><span className="block font-semibold">{plan.label}</span><span className="block text-[11px] text-muted-foreground">{plan.price}</span></span>
+                        {selectedPlan === plan.value && <Check className="h-4 w-4 text-primary" />}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="paymentMethod">Payment Method <span className="text-destructive">*</span></Label>
@@ -1398,6 +1452,10 @@ const Auth = () => {
                     </p>
                   </div>
                 </div>
+                <div className="rounded-lg border border-border/60 bg-card/70 p-3 text-xs text-muted-foreground">
+                  <ShieldCheck className="mr-1 inline h-4 w-4 text-primary" /> {fullName || "Your account"} · {email || "email required"} · PayPal
+                </div>
+                </div>}
               </>
             )}
             
@@ -1502,7 +1560,12 @@ const Auth = () => {
               </>
             )}
 
-            <Button 
+            {!isLogin && !isForgotPassword && !isResettingPassword && signupStep < 3 ? (
+              <div className="flex gap-2">
+                {signupStep > 1 && <Button type="button" variant="outline" onClick={() => setSignupStep((step) => Math.max(1, step - 1))} className="flex-1"><ChevronLeft className="mr-1 h-4 w-4" />Back</Button>}
+                <Button type="button" onClick={continueSignup} className="flex-1">Continue<ChevronRight className="ml-1 h-4 w-4" /></Button>
+              </div>
+            ) : <Button 
               type="submit" 
               className="w-full" 
               disabled={
@@ -1525,7 +1588,7 @@ const Auth = () => {
                 : !agreeToTerms
                 ? "Agree to Terms to Continue"
                 : "Create Account"}
-            </Button>
+            </Button>}
 
             {/* OAuth Divider & Buttons */}
 
@@ -1611,6 +1674,7 @@ const Auth = () => {
                     setEmail(""); setPassword(""); setFullName("");
                     setPhoneNumber(""); setSmsOptIn(false);
                     setAgreeToTerms(false); setSelectedPlan("");
+                    setSignupStep(1);
                   }}
                   className="text-primary hover:underline"
                   disabled={loading}
