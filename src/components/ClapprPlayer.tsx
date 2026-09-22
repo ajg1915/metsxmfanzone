@@ -273,17 +273,17 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
 
       {status === "loading" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white gap-2 pointer-events-none">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-player/60 text-player-foreground gap-2 pointer-events-none">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-xs text-white/80">Loading stream…</p>
+          <p className="text-xs text-player-foreground/80">Loading stream…</p>
         </div>
       )}
 
       {status === "error" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white gap-3 p-4 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-player/80 text-player-foreground gap-3 p-4 text-center">
           <AlertCircle className="w-10 h-10 text-destructive" />
           <p className="text-sm font-medium">Stream unavailable</p>
-          <p className="text-xs text-white/70">Stream goes live 30 minutes before game time</p>
+          <p className="text-xs text-player-foreground/70">Stream goes live 30 minutes before game time</p>
           <Button
             onClick={handleRetry}
             size="sm"
@@ -304,7 +304,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             <Play className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground ml-1" fill="currentColor" />
           </div>
           <p className="text-sm sm:text-base font-bold">Tap to play</p>
-          <p className="text-[11px] sm:text-xs text-white/70 max-w-[280px] text-center px-4">
+          <p className="text-[11px] sm:text-xs text-player-foreground/70 max-w-[280px] text-center px-4">
             Your browser blocked autoplay. Tap anywhere on the player to start the stream.
           </p>
         </Button>

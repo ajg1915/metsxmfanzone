@@ -94,7 +94,7 @@ Deno.serve(async (req) => {
     const diagnostics = body.diagnostics && typeof body.diagnostics === 'object' && !Array.isArray(body.diagnostics)
       ? body.diagnostics as Record<string, unknown>
       : {};
-    if (!stream_id || !allowedIssues.has(issue_type) || !allowedSeverities.has(severity) || description.length < 5) {
+    if (!allowedIssues.has(issue_type) || !allowedSeverities.has(severity) || description.length < 5) {
       return new Response(JSON.stringify({ error: 'Invalid stream report' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

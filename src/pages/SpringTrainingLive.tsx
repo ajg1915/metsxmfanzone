@@ -164,7 +164,7 @@ const SpringTrainingLive = () => {
         {/* Stream Player Section */}
         <div className="container mx-auto px-4 py-6 sm:py-8">
           <div className="max-w-6xl mx-auto">
-            <div className="rounded-2xl overflow-hidden ring-1 ring-border/60 shadow-2xl shadow-primary/10 bg-black">
+            <div className="stream-player-shell overflow-hidden bg-player sm:rounded-lg">
               <ClapprPlayer
                 pageTitle="Regular Season Live Stream"
                 pageDescription="Live coverage of Mets games"
