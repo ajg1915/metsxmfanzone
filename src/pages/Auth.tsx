@@ -257,7 +257,9 @@ const Auth = () => {
     try {
       const normalizedEmail = z.string().email("Enter a valid email address").parse(email.trim());
       setLoading(true);
-      const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, { redirectTo: `${window.location.origin}/auth?mode=reset` });
+      const { error } = await supabase.functions.invoke("send-password-reset", {
+        body: { email: normalizedEmail, redirectTo: `${window.location.origin}/auth?mode=reset` },
+      });
       if (error) throw error;
       toast({ title: "Check your email", description: "We sent your password reset link." });
     } catch {
