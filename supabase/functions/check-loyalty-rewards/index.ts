@@ -79,16 +79,12 @@ Deno.serve(async (req) => {
       const claimUrl = `${SITE_URL}/rewards/claim?token=${reward.claim_token}`
       const optOutUrl = `${SITE_URL}/rewards/claim?token=${reward.claim_token}&action=optout`
 
-      await supabase.functions.invoke('send-transactional-email', {
-        body: {
-          templateName: 'loyalty-reward-available',
-          recipientEmail: profile.email,
-          idempotencyKey: `loyalty-reward-${reward.id}`,
-          templateData: {
-            name: profile.full_name || '',
-            claimUrl,
-            optOutUrl,
-          },
+      await sendTemplateEmail('loyalty-reward-available', profile.email, {
+        idempotencyKey: `loyalty-reward-${reward.id}`,
+        templateData: {
+          name: profile.full_name || '',
+          claimUrl,
+          optOutUrl,
         },
       })
 
