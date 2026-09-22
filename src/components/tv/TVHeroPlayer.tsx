@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Play, Radio } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ClapprPlayer from "@/components/ClapprPlayer";
 
@@ -28,7 +29,7 @@ export function TVHeroPlayer({ streams }: TVHeroPlayerProps) {
   const isPlaying = activeStream !== null;
 
   return (
-    <div className="rounded-lg overflow-hidden border border-border/40 bg-card/60">
+    <div className="overflow-hidden bg-card/60 sm:rounded-lg">
       <div className={cn(
         "relative w-full overflow-hidden",
         isPlaying
@@ -36,7 +37,7 @@ export function TVHeroPlayer({ streams }: TVHeroPlayerProps) {
           : "aspect-video max-h-[180px] landscape:max-h-[80vh] landscape:fixed landscape:inset-0 landscape:z-50 landscape:aspect-auto sm:landscape:relative sm:landscape:inset-auto sm:landscape:z-auto sm:landscape:max-h-[180px] sm:landscape:aspect-video"
       )}>
         {isPlaying ? (
-          <ClapprPlayer source={displayStream.stream_url} showChrome={false} />
+          <ClapprPlayer source={displayStream.stream_url} streamId={displayStream.id} pageTitle={displayStream.title} showChrome={false} />
         ) : (
           <>
             <img
@@ -45,13 +46,16 @@ export function TVHeroPlayer({ streams }: TVHeroPlayerProps) {
               className="w-full h-full object-cover"
             />
             {/* Dark overlay */}
-            <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
-              <button
+            <div className="absolute inset-0 bg-player/50 flex flex-col items-center justify-center">
+              <Button
+                type="button"
+                size="icon"
                 onClick={() => setActiveStream(displayStream)}
-                className="w-10 h-10 rounded-full bg-primary/90 hover:bg-primary flex items-center justify-center transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="h-10 w-10 rounded-full"
+                aria-label={`Play ${displayStream.title}`}
               >
                 <Play className="w-5 h-5 text-primary-foreground ml-0.5" />
-              </button>
+              </Button>
             </div>
             {/* LIVE badge */}
             {displayStream.status === "live" && (
@@ -79,11 +83,14 @@ export function TVHeroPlayer({ streams }: TVHeroPlayerProps) {
         {streams.length > 1 && (
           <div className="flex gap-1 ml-2 shrink-0">
             {streams.slice(0, 4).map((s) => (
-              <button
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
                 key={s.id}
                 onClick={() => setActiveStream(s)}
                 className={cn(
-                  "w-5 h-5 rounded border text-[7px] font-bold flex items-center justify-center transition-all",
+                  "w-5 h-5 rounded text-[7px] font-bold",
                   (activeStream?.id || liveStream.id) === s.id
                     ? "border-primary bg-primary/20 text-primary"
                     : "border-border/50 text-muted-foreground hover:border-primary/40"
@@ -95,7 +102,7 @@ export function TVHeroPlayer({ streams }: TVHeroPlayerProps) {
                 ) : (
                   (streams.indexOf(s) + 1)
                 )}
-              </button>
+              </Button>
             ))}
           </div>
         )}

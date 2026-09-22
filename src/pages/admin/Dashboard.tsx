@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Activity,
+  AlertTriangle,
   ArrowRight,
   Bell,
   ClipboardList,
@@ -254,6 +255,7 @@ export default function AdminDashboard() {
     { title: "Newsletter", description: "Write and send emails", icon: Mail, url: "/admin/newsletter", tag: "Send" },
     { title: "Alerts & popups", description: "Push alerts and banners", icon: Megaphone, url: "/admin/popup-notifications", tag: "Notify" },
     { title: "Feed health", description: "Watch your content sources", icon: Activity, url: "/admin/feed-health", tag: feed?.overall === "healthy" ? "Healthy" : "Check" },
+    { title: "Stream issues", description: "Review viewer playback tickets", icon: AlertTriangle, url: "/admin/stream-issues", tag: "Triage" },
     { title: "SEO", description: "Titles, previews and sitemap", icon: Globe, url: "/admin/seo", tag: "Optimize" },
   ];
 

@@ -122,7 +122,7 @@ const MetsXMFanZone = () => {
                 </div>
 
                 {/* 16:9 Player */}
-                <div className="relative aspect-video w-full bg-black rounded-xl overflow-hidden border border-border/60 shadow-2xl shadow-primary/10 group">
+                <div className="stream-player-shell relative aspect-video w-full overflow-hidden bg-player sm:rounded-lg">
                   <ClapprPlayer
                     source={streamUrl}
                     pageTitle="MetsXMFanZone Live Stream"
