@@ -192,10 +192,12 @@ Deno.serve(async (req) => {
           .replace(/\{\{name\}\}/g, escapeHtml(recipient.name || "Fan"))
           .replace(/\{\{email\}\}/g, escapeHtml(recipient.email));
 
-        const brandedHtml = await renderBrandedEmailFor(supabase, {
-          preheader: subject,
-          content: personalizedContent,
-        });
+        const brandedHtml = rawHtml
+          ? personalizedContent
+          : await renderBrandedEmailFor(supabase, {
+            preheader: subject,
+            content: personalizedContent,
+          });
 
         await sendDirectlyThroughResend({
           to: recipient.email,
