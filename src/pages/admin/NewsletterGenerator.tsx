@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeEmailFunction } from "@/lib/emailFallback";
 import { Mail, Loader2, Send, Newspaper, Eye, Sparkles, Copy, RefreshCw, Users, TestTube } from "lucide-react";
 import {
   AlertDialog,
