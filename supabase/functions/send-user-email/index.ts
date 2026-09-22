@@ -188,7 +188,8 @@ Deno.serve(async (req) => {
 
     for (const recipient of dedupedRecipients) {
       try {
-        const personalizedContent = sanitizedContent
+        // rawHtml is a full branded document already sanitized when it was rendered.
+        const personalizedContent = (rawHtml ? content : sanitizedContent)
           .replace(/\{\{name\}\}/g, escapeHtml(recipient.name || "Fan"))
           .replace(/\{\{email\}\}/g, escapeHtml(recipient.email));
 
