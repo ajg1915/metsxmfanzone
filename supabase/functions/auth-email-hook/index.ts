@@ -15,10 +15,10 @@ const corsHeaders = {
 }
 
 // Configuration
-const SITE_NAME = "MetsXMFanZone27"
+const SITE_NAME = "MetsXMFanZone"
 const SENDER_DOMAIN = "notify.metsxmfanzone.com"
 const ROOT_DOMAIN = "metsxmfanzone.com"
-const FROM_DOMAIN = "notify.metsxmfanzone.com"
+const FROM_DOMAIN = "metsxmfanzone.com"
 const SITE_URL = `https://${ROOT_DOMAIN}`
 
 // Template mapping for preview mode
