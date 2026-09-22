@@ -46,12 +46,17 @@ export const useSubscription = () => {
 
         setIsAdmin(false);
 
-        const { count: cancellationCount } = await supabase
+        const { data: accessEvents } = await supabase
           .from("subscription_activity")
-          .select("id", { count: "exact", head: true })
+          .select("action, created_at")
           .eq("user_id", user.id)
-          .in("action", ["membership_cancelled", "account_cancelled_deleted"]);
-        const isLimited = (cancellationCount || 0) > 2;
+          .in("action", ["membership_cancelled", "account_cancelled_deleted", "access_restored"])
+          .order("created_at", { ascending: false });
+        const latestRestore = accessEvents?.find((event) => event.action === "access_restored")?.created_at;
+        const cancellationCount = (accessEvents || []).filter((event) =>
+          event.action !== "access_restored" && (!latestRestore || event.created_at > latestRestore)
+        ).length;
+        const isLimited = cancellationCount > 2;
         setLimitedAccess(isLimited);
         if (isLimited) {
           setTier("free");
@@ -65,7 +70,6 @@ export const useSubscription = () => {
           .from("subscriptions")
           .select("plan_type, status, end_date, start_date")
           .eq("user_id", user.id)
-          .eq("status", "active")
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -73,7 +77,7 @@ export const useSubscription = () => {
         if (!error && data) {
           // Check if subscription is still valid
           const endDate = data.end_date ? new Date(data.end_date) : null;
-          const isActive = !endDate || endDate > new Date();
+          const isActive = ["active", "cancelled"].includes(data.status) && (!endDate || endDate > new Date());
 
           if (isActive) {
             setTier(data.plan_type as SubscriptionTier);

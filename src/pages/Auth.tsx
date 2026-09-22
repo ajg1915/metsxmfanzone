@@ -1348,7 +1348,7 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signupEmail">Email <span className="text-destructive">*</span></Label>
-                  <div className="relative"><Input
+                  <Input
                     id="signupEmail"
                     type="email"
                     placeholder="fan@mets.com"
@@ -1360,7 +1360,8 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signupPassword">Password <span className="text-destructive">*</span></Label>
-                  <Input
+                  <div className="relative">
+                    <Input
                     id="signupPassword"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
@@ -1368,7 +1369,10 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                  /><Button type="button" variant="ghost" size="icon" onClick={() => setShowPassword((shown) => !shown)} className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2" aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button></div>
+                    className="pr-11"
+                  />
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setShowPassword((shown) => !shown)} className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2" aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}</Button>
+                  </div>
                   <p className="text-[11px] text-muted-foreground">Use at least 6 characters. Your password is never saved in the form draft.</p>
                 </div>
                 </div>}

@@ -100,18 +100,23 @@ export async function cancelPaypalAndRetainAccount(
     }
   }
 
-  const { count: priorCount } = await admin
+  const { data: accessEvents } = await admin
     .from("subscription_activity")
-    .select("id", { count: "exact", head: true })
+    .select("action, created_at")
     .eq("user_id", userId)
-    .in("action", ["membership_cancelled", "account_cancelled_deleted"]);
+    .in("action", ["membership_cancelled", "account_cancelled_deleted", "access_restored"])
+    .order("created_at", { ascending: false });
+  const latestRestore = accessEvents?.find((event) => event.action === "access_restored")?.created_at;
+  const priorCount = (accessEvents || []).filter((event) =>
+    event.action !== "access_restored" && (!latestRestore || event.created_at > latestRestore)
+  ).length;
 
   if (failedPaypalCount > 0) {
     return {
       paypalConfirmed: false,
       accountRetained: true,
-      cancellationCount: priorCount || 0,
-      limitedAccess: (priorCount || 0) > 2,
+      cancellationCount: priorCount,
+      limitedAccess: priorCount > 2,
       cancelledPaypalCount,
       failedPaypalCount,
       message: "PayPal did not confirm every cancellation, so your membership was not changed.",
@@ -149,7 +154,7 @@ export async function cancelPaypalAndRetainAccount(
     }
   }
 
-  const cancellationCount = (priorCount || 0) + (recentCount ? 0 : 1);
+  const cancellationCount = priorCount + (recentCount ? 0 : 1);
   return {
     paypalConfirmed: true,
     accountRetained: true,

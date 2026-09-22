@@ -327,7 +327,6 @@ Deno.serve(async (req: Request) => {
           .from('subscriptions')
           .update({
             status: 'expired',
-            end_date: nowIso,
             updated_at: nowIso,
           })
           .eq('paypal_subscription_id', subscriptionId);

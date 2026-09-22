@@ -117,7 +117,6 @@ const Dashboard = () => {
             .from('subscriptions')
             .select('id, plan_type, status, start_date, end_date, amount, currency')
             .eq('user_id', user.id)
-            .eq('status', 'active')
             .order('created_at', { ascending: false })
             .limit(1)
             .single(),
@@ -132,9 +131,10 @@ const Dashboard = () => {
             .eq('user_id', user.id),
           supabase
             .from('subscription_activity')
-            .select('id', { count: 'exact', head: true })
+            .select('action, created_at')
             .eq('user_id', user.id)
-            .in('action', ['membership_cancelled', 'account_cancelled_deleted']),
+            .in('action', ['membership_cancelled', 'account_cancelled_deleted', 'access_restored'])
+            .order('created_at', { ascending: false }),
         ]);
 
         if (!subResult.error && subResult.data) {
@@ -151,7 +151,9 @@ const Dashboard = () => {
         }
 
         setPostCount(postsResult.count || 0);
-        setCancellationCount(cancellationResult.count || 0);
+        const accessEvents = cancellationResult.data || [];
+        const latestRestore = accessEvents.find((event) => event.action === 'access_restored')?.created_at;
+        setCancellationCount(accessEvents.filter((event) => event.action !== 'access_restored' && (!latestRestore || event.created_at > latestRestore)).length);
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
