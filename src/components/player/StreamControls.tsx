@@ -182,7 +182,10 @@ export function StreamControls({
         el.classList.add("ios-pseudo-fullscreen");
         setFullscreen(true);
       }
-      try { await screen.orientation.lock("landscape"); } catch {}
+      try {
+        const orientation = screen.orientation as ScreenOrientation & { lock?: (mode: string) => Promise<void> };
+        await orientation.lock?.("landscape");
+      } catch {}
     } catch {
       if (video?.webkitEnterFullscreen) video.webkitEnterFullscreen();
       else {

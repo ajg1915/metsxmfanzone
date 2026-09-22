@@ -4,6 +4,7 @@ import { Loader2, AlertCircle, RotateCw, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
 import { StreamIssueDialog } from "./StreamIssueDialog";
 import { StreamControls } from "./player/StreamControls";
+import { Button } from "@/components/ui/button";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
@@ -283,19 +284,21 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           <AlertCircle className="w-10 h-10 text-destructive" />
           <p className="text-sm font-medium">Stream unavailable</p>
           <p className="text-xs text-white/70">Stream goes live 30 minutes before game time</p>
-          <button
+          <Button
             onClick={handleRetry}
-            className="mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+            size="sm"
+            className="mt-1 text-xs"
           >
             <RotateCw className="w-3.5 h-3.5" /> Retry
-          </button>
+          </Button>
         </div>
       )}
 
       {status === "ready" && needsTap && (
-        <button
+        <Button
           onClick={handleTapPlay}
-          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-black/70 backdrop-blur-sm text-white transition-colors hover:bg-black/80"
+          variant="ghost"
+          className="absolute inset-0 z-30 flex h-full w-full flex-col items-center justify-center gap-3 rounded-none bg-player/70 text-player-foreground backdrop-blur-sm hover:bg-player/80"
         >
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 animate-pulse">
             <Play className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground ml-1" fill="currentColor" />
@@ -304,7 +307,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           <p className="text-[11px] sm:text-xs text-white/70 max-w-[280px] text-center px-4">
             Your browser blocked autoplay. Tap anywhere on the player to start the stream.
           </p>
-        </button>
+        </Button>
       )}
     </div>
   );
