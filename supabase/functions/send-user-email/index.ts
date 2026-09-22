@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { escapeHtml, sanitizeHtml } from "../_shared/sanitize-html.ts";
 import { queueTransactionalEmail } from "../_shared/queue-email.ts";
+import { renderBrandedEmailFor } from "../_shared/email-brand.ts";
 
 
 const corsHeaders = {
@@ -136,10 +137,15 @@ Deno.serve(async (req) => {
           .replace(/\{\{name\}\}/g, escapeHtml(recipient.name || "Fan"))
           .replace(/\{\{email\}\}/g, escapeHtml(recipient.email));
 
+        const brandedHtml = await renderBrandedEmailFor(supabase, {
+          preheader: subject,
+          content: personalizedContent,
+        });
+
         await queueTransactionalEmail(supabase, {
           to: recipient.email,
           subject,
-          html: personalizedContent,
+          html: brandedHtml,
           label: templateName,
         });
         successCount++;
