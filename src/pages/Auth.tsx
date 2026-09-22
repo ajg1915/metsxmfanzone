@@ -62,6 +62,7 @@ const Auth = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [smsOptIn, setSmsOptIn] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [loginAgreeToTerms, setLoginAgreeToTerms] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -209,6 +210,10 @@ const Auth = () => {
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     if (honeypot) return;
+    if (!loginAgreeToTerms) {
+      toast({ title: "Agreement required", description: "Please agree to the Terms and Privacy Policy to sign in.", variant: "destructive" });
+      return;
+    }
     try {
       const validated = { email: z.string().email().parse(email), password: z.string().min(6).parse(password) };
       setLoading(true);
@@ -377,14 +382,19 @@ const Auth = () => {
                 <><div className="space-y-1.5"><Label htmlFor="newPassword">New password</Label><Input id="newPassword" type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11" autoComplete="new-password" /></div><div className="space-y-1.5"><Label htmlFor="confirmPassword">Confirm password</Label><Input id="confirmPassword" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="h-11" autoComplete="new-password" /></div></>
               )}
 
-              {!isSignup && !forgotPassword && !isRecovery && <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground"><Checkbox checked={rememberMe} onCheckedChange={(value) => setRememberMe(value === true)} />Remember this email for 30 days</label>}
+              {!isSignup && !forgotPassword && !isRecovery && (
+                <>
+                  <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border/40 bg-muted/20 p-3"><Checkbox checked={loginAgreeToTerms} onCheckedChange={(value) => setLoginAgreeToTerms(value === true)} aria-label="Agree to the Terms and Privacy Policy" /><span className="text-xs leading-5 text-muted-foreground">I agree to the <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>. <span className="text-destructive">*</span></span></label>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground"><Checkbox checked={rememberMe} onCheckedChange={(value) => setRememberMe(value === true)} />Remember this email for 30 days</label>
+                </>
+              )}
 
               {isSignup && signupStep === 1 ? (
                 <Button type="button" className="h-11 w-full" onClick={continueSignup}>Continue <ArrowRight /></Button>
               ) : isSignup ? (
-                <div className="grid grid-cols-2 gap-2"><Button type="button" variant="outline" className="h-11" onClick={() => setSignupStep(1)}><ArrowLeft />Back</Button><Button type="submit" className="h-11" disabled={loading}>{loading ? <Loader2 className="animate-spin" /> : "Create account"}</Button></div>
+                <div className="grid grid-cols-2 gap-2"><Button type="button" variant="outline" className="h-11" onClick={() => setSignupStep(1)}><ArrowLeft />Back</Button><Button type="submit" className="h-11" disabled={loading || !agreeToTerms}>{loading ? <Loader2 className="animate-spin" /> : "Create account"}</Button></div>
               ) : (
-                <Button type="submit" className="h-11 w-full" disabled={loading}>{loading ? <Loader2 className="animate-spin" /> : isRecovery ? "Update password" : forgotPassword ? "Send reset link" : "Sign in"}</Button>
+                <Button type="submit" className="h-11 w-full" disabled={loading || (!isRecovery && !forgotPassword && !loginAgreeToTerms)}>{loading ? <Loader2 className="animate-spin" /> : isRecovery ? "Update password" : forgotPassword ? "Send reset link" : "Sign in"}</Button>
               )}
             </form>
 
