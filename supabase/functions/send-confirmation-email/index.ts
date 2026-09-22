@@ -139,37 +139,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Queue the email instead of sending directly via Resend
-    const messageId = crypto.randomUUID();
-    const unsubscribeToken = await getOrCreateUnsubscribeToken(supabase, email);
-
-    const payload = {
+    const { messageId } = await queueTransactionalEmail(supabase, {
       to: email,
-      from: VERIFIED_FROM_ADDRESS,
-      sender_domain: VERIFIED_EMAIL_DOMAIN,
       subject,
       html: emailContent,
-      text: subject,
-      purpose: "transactional",
       label: templateLabel,
-      idempotency_key: `${templateLabel}:${email.toLowerCase()}:${messageId}`,
-      message_id: messageId,
-      unsubscribe_token: unsubscribeToken,
-      queued_at: new Date().toISOString(),
-    };
-
-    const { error: queueError } = await supabase.rpc("enqueue_email", {
-      queue_name: EMAIL_QUEUE_NAME,
-      payload,
-    });
-
-    if (queueError) throw queueError;
-
-    await supabase.from("email_send_log").insert({
-      message_id: messageId,
-      template_name: templateLabel,
-      recipient_email: email,
-      status: "pending",
     });
 
     return new Response(JSON.stringify({ success: true, messageId }), {
