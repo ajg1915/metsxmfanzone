@@ -1,7 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import * as ammonia from "https://deno.land/x/ammonia@0.3.1/mod.ts";
+import { escapeHtml, sanitizeHtml } from "../_shared/sanitize-html.ts";
 
-await ammonia.init();
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,25 +15,6 @@ const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`
 const EMAIL_QUEUE_NAME = "transactional_emails";
 const TEMPLATE_NAME = "newsletter";
 
-const escapeHtml = (str: string): string => {
-  if (!str) return "";
-  return str.replace(/[&<>"']/g, (m) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
-  }[m] || m));
-};
-
-const sanitizeHtml = (html: string): string => {
-  try {
-    return ammonia.clean(html);
-  } catch (error) {
-    console.error("Error sanitizing HTML:", error);
-    return escapeHtml(html);
-  }
-};
 
 const getOrCreateUnsubscribeToken = async (
   supabase: any,
