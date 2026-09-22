@@ -121,7 +121,13 @@ Deno.serve(async (req) => {
           .replace(/\{\{name\}\}/g, escapeHtml(recipient.full_name || "Fan"))
           .replace(/\{\{email\}\}/g, escapeHtml(recipient.email));
 
-        await queueEmail(supabase, recipient.email, subject, personalizedContent);
+        await queueTransactionalEmail(supabase, {
+          to: recipient.email,
+          subject,
+          html: personalizedContent,
+          label: TEMPLATE_NAME,
+          metadata: { campaign: "newsletter" },
+        });
         successCount++;
       } catch (error: any) {
         lastFailureMessage =
