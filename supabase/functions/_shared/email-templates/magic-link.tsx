@@ -9,15 +9,11 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Preview,
-  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
-import type { EmailStyleProps } from './signup.tsx'
-
-interface MagicLinkEmailProps extends EmailStyleProps {
+interface MagicLinkEmailProps {
   siteName: string
   confirmationUrl: string
 }
@@ -25,47 +21,61 @@ interface MagicLinkEmailProps extends EmailStyleProps {
 export const MagicLinkEmail = ({
   siteName,
   confirmationUrl,
-  logoUrl = 'https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/metsxmfanzone-logo.png',
-  primaryColor = '#FF5910',
-  cardBgColor = '#1a1a2e',
-  bodyBgColor = '#0a0a0a',
-  headingColor = '#ffffff',
-  textColor = '#d1d5db',
-  footerText = '© 2026 MetsXMFanZone — The Ultimate Mets Fan Community',
-  buttonBorderRadius = '10px',
-  logoWidth = 85,
 }: MagicLinkEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head>
-      <meta name="color-scheme" content="dark" />
-      <meta name="supported-color-schemes" content="dark" />
+      <style>{darkModeCss}</style>
     </Head>
     <Preview>Your login link for {siteName}</Preview>
-    <Body style={{ backgroundColor: bodyBgColor, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif', padding: '20px 0' }}>
-      <Container style={{ maxWidth: '600px', margin: '0 auto' }}>
-        <Section style={{ textAlign: 'center' as const, padding: '30px 0 20px' }}>
-          <Img src={logoUrl} width={String(logoWidth)} height={String(logoWidth)} alt="MetsXMFanZone" style={{ margin: '0 auto', borderRadius: '12px' }} />
-        </Section>
-        <Section style={{ backgroundColor: cardBgColor, borderRadius: '16px', padding: '32px 28px', margin: '0 16px', border: `1px solid ${primaryColor}33` }}>
-          <Heading style={{ fontSize: '24px', fontWeight: 'bold' as const, color: headingColor, margin: '0 0 20px', textAlign: 'center' as const }}>Your Login Link ⚾</Heading>
-          <Text style={{ fontSize: '15px', color: textColor, lineHeight: '1.6', margin: '0 0 20px' }}>
-            Click the button below to log in to {siteName}. This link will expire shortly.
-          </Text>
-          <Section style={{ textAlign: 'center' as const, margin: '28px 0' }}>
-            <Button style={{ backgroundColor: primaryColor, color: '#ffffff', fontSize: '16px', fontWeight: 'bold' as const, borderRadius: buttonBorderRadius, padding: '14px 32px', textDecoration: 'none' }} href={confirmationUrl}>
-              Log In Now
-            </Button>
-          </Section>
-        </Section>
-        <Section style={{ padding: '24px 16px', textAlign: 'center' as const }}>
-          <Text style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 8px', textAlign: 'center' as const }}>
-            If you didn't request this link, you can safely ignore this email.
-          </Text>
-          <Text style={{ fontSize: '11px', color: '#4b5563', margin: '0', textAlign: 'center' as const }}>{footerText}</Text>
-        </Section>
+    <Body style={main}>
+      <Container style={container}>
+        <Heading style={h1}>Your login link</Heading>
+        <Text style={text}>
+          Click the button below to log in to {siteName}. This link will expire
+          shortly.
+        </Text>
+        <Button className="dm-btn" style={button} href={confirmationUrl}>
+          Log In
+        </Button>
+        <Text style={footer}>
+          If you didn't request this link, you can safely ignore this email.
+        </Text>
       </Container>
     </Body>
   </Html>
 )
 
 export default MagicLinkEmail
+
+const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
+const container = { padding: '20px 25px' }
+const h1 = {
+  fontSize: '22px',
+  fontWeight: 'bold' as const,
+  color: '#000000',
+  margin: '0 0 20px',
+}
+const text = {
+  fontSize: '14px',
+  color: '#55575d',
+  lineHeight: '1.5',
+  margin: '0 0 25px',
+}
+const button = {
+  backgroundColor: '#000000',
+  color: '#ffffff',
+  fontSize: '14px',
+  border: '1px solid #000000',
+  borderRadius: '8px',
+  padding: '12px 20px',
+  textDecoration: 'none',
+}
+const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+// Rendered as a text child, which React may HTML-escape: keep this CSS free of >, &, and quotes.
+const darkModeCss = `
+  @media (prefers-color-scheme: dark) {
+    .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  }
+  [data-ogsc] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+  [data-ogsb] .dm-btn { background-color: #ffffff !important; color: #000000 !important; }
+`
