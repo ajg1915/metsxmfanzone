@@ -40,9 +40,49 @@ const EmailTemplateSettings = () => {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
+  const [templateKey, setTemplateKey] = useState("signup_confirmation");
+  const [templateOptions, setTemplateOptions] = useState<{ key: string; label: string }[]>([
+    { key: "signup_confirmation", label: "Signup confirmation" },
+  ]);
+  const [previewHtml, setPreviewHtml] = useState("");
+  const [previewSubject, setPreviewSubject] = useState("");
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewError, setPreviewError] = useState("");
+
+  const loadPreview = async () => {
+    setPreviewLoading(true);
+    setPreviewError("");
+    try {
+      const { data, error } = await supabase.functions.invoke("preview-email-template", {
+        body: { template: templateKey, brand: settings },
+      });
+      if (error) throw error;
+      if (!data?.html) throw new Error("No preview returned");
+      setPreviewHtml(data.html);
+      setPreviewSubject(data.subject || "");
+      if (Array.isArray(data.templates) && data.templates.length) {
+        setTemplateOptions(data.templates);
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Preview could not be loaded";
+      setPreviewError(message);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchSettings();
   }, []);
+
+  // Re-render the preview as the designer values change.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadPreview();
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateKey, settings]);
 
   const fetchSettings = async () => {
     const { data, error } = await supabase
