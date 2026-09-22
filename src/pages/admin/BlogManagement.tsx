@@ -239,6 +239,10 @@ export default function BlogManagement() {
                           </Button>
                         </>
                       )}
+                      <Button variant="ghost" size="sm" className="h-7 px-1.5" title="Share this article"
+                        onClick={() => setSharePost(post)}>
+                        <Share2 className="w-3 h-3 text-primary" />
+                      </Button>
                       <Button variant="ghost" size="sm" className="h-7 px-1.5" title="Copy link"
                         onClick={() => handleCopyLink(post)}>
                         <Copy className="w-3 h-3" />
@@ -256,7 +260,7 @@ export default function BlogManagement() {
                         </>
                       )}
                       <Button variant="ghost" size="sm" className="h-7 px-1.5" title="Edit"
-                        onClick={() => handleEdit(post)}>
+                        onClick={() => navigate(`/admin/blog/edit/${post.id}`)}>
                         <Edit className="w-3 h-3" />
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 px-1.5 text-red-400"
