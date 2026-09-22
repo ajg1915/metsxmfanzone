@@ -37,8 +37,8 @@ export const PLANS = [
     name: "Yearly",
     price: "$129.99",
     period: "per year",
-    description: "Best value — save 2 months",
-    features: ["Everything in Premium", "Save $20/year", "Priority support", "Early access to content", "VIP community badge"],
+    description: "One payment for a full year",
+    features: ["Everything in Monthly", "Simple yearly billing", "Priority support", "Early access to content", "VIP community badge"],
   },
 ];
 

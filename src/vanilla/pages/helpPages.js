@@ -379,17 +379,19 @@ const helpArticles = [
   {
     path: "/help/subscription-plans",
     title: "Subscription Plans Explained",
-    description: "Compare MetsXMFanZone subscription plans including Free, Premium, and Annual options. Find the right plan for you.",
+    description: "Compare MetsXMFanZone Free, Weekly, Monthly, and Yearly memberships.",
     heading: "Subscription Plans Explained",
     bodyHtml: `
       <h2>Available Plans</h2>
-      <p>MetsXMFanZone offers three subscription tiers to fit your needs:</p>
+      <p>MetsXMFanZone offers four membership choices:</p>
       <h3>Free Plan — $0/month</h3>
       <ul><li>Access to all blog articles</li><li>Community posting and comments</li><li>No live game streams</li></ul>
-      <h3>Premium Plan — $9.99/month</h3>
+      <h3>Weekly Plan — $3.99/week</h3>
+      <ul><li>Everything in Free plan</li><li>Access to live streams and replays</li><li>Premium content and HD viewing</li></ul>
+      <h3>Monthly Plan — $9.99/month</h3>
       <ul><li>Everything in Free plan</li><li>Access to all live game streams</li><li>HD and Full HD quality</li></ul>
-      <h3>Annual Plan — $129.99/year (Save $20)</h3>
-      <ul><li>Everything in Premium plan</li><li>2 months free compared to monthly</li><li>Exclusive annual member perks</li></ul>`,
+      <h3>Yearly Plan — $129.99/year</h3>
+      <ul><li>Everything in Monthly plan</li><li>One convenient yearly payment</li><li>Exclusive yearly member perks</li></ul>`,
   },
   {
     path: "/help/payment-methods",
@@ -409,11 +411,11 @@ const helpArticles = [
     heading: "Cancel or Change Subscription",
     bodyHtml: `
       <h2>Canceling Your Subscription</h2>
-      <p>You can cancel your Premium or Annual subscription at any time.</p>
+      <p>You can cancel your Weekly, Monthly, or Yearly membership at any time.</p>
       <h3>For PayPal Subscriptions</h3>
       <ol><li>Log in to your PayPal account</li><li>Go to Settings → Payments</li><li>Click "Manage automatic payments"</li><li>Find "MetsXMFanZone" and select "Cancel"</li></ol>
-      <h3>For Helcim Subscriptions</h3>
-      <ol><li>Log in to your MetsXMFanZone account</li><li>Go to your <a href="/dashboard">Dashboard</a></li><li>Navigate to Subscription settings</li><li>Click "Cancel Subscription"</li></ol>
+      <h3>From your Member Center</h3>
+      <ol><li>Log in to your MetsXMFanZone account</li><li>Go to your <a href="/dashboard">Member Center</a></li><li>Open membership settings</li><li>Select "Cancel membership"</li></ol>
       <h2>Refund Policy</h2>
       <p><strong>Important:</strong> We do not offer refunds for partial subscription periods. When you cancel, your subscription remains active until the end of your current billing cycle.</p>`,
   },

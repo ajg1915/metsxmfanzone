@@ -86,9 +86,6 @@ const SubscriptionPlans = () => {
                 </div>
 
                 <div className="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-lg border-2 border-green-500">
-                  <div className="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold mb-2">
-                    SAVE $20
-                  </div>
                   <h3 className="text-2xl font-bold text-primary mb-2">Yearly Plan</h3>
                   <p className="text-3xl font-bold text-primary mb-4">
                     $129.99<span className="text-lg text-muted-foreground">/year</span>
@@ -96,11 +93,11 @@ const SubscriptionPlans = () => {
                   <ul className="space-y-2 text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <span className="text-green-600">✓</span>
-                      <span>Everything in Premium plan</span>
+                       <span>Everything in Monthly plan</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-600">✓</span>
-                      <span>2 months free compared to monthly</span>
+                       <span>One convenient yearly payment</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-600">✓</span>

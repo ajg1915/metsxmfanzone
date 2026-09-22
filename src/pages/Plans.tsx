@@ -147,10 +147,10 @@ const Plans = () => {
       priceValue: 129.99,
       period: "per year",
       billingNote: "Billed annually",
-      description: "Best value - Save 2 months",
+      description: "One payment for a full year",
       features: [
         "Everything in Premium",
-        "Save $20/year",
+        "Simple yearly billing",
         "Priority support",
         "Early access to content",
         "Exclusive merchandise discounts",
@@ -173,7 +173,7 @@ const Plans = () => {
         "Free includes public news and community access. Weekly, Monthly, and Yearly include live streams, replays, highlights, and premium content.",
     },
     {
-      question: "Can I switch between monthly and yearly billing?",
+      question: "Can I switch between paid memberships?",
       answer:
         "Yes. Choose a different paid membership from your Member Center. Your new PayPal billing schedule starts with the new membership.",
     },
