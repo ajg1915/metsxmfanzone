@@ -539,7 +539,7 @@ const Navigation = () => {
               </SheetTrigger>
               <SheetContent
                 side="right"
-                className="flex w-[min(92vw,390px)] flex-col border-l border-border/30 bg-background p-0 text-foreground [&>button]:hidden"
+                className="flex w-[min(92vw,390px)] flex-col border-l border-primary/30 bg-menu-panel p-0 text-menu-panel-foreground [&>button]:hidden"
               >
                 <SheetHeader className="flex-row items-center justify-between border-b border-border/25 px-5 py-5 text-left">
                   <div className="flex min-w-0 items-center gap-3">
@@ -638,7 +638,7 @@ const Navigation = () => {
                           className="h-auto min-h-14 w-full justify-between rounded-none border-b border-border/15 px-1 py-3 text-left text-player-foreground hover:bg-transparent hover:text-primary"
                         >
                           <span>
-                            <span className="block text-lg font-bold text-primary">Mets Hub</span>
+                            <span className="block text-lg font-bold text-primary">More</span>
                             <span className="block text-[10px] font-normal text-muted-foreground">Schedule, roster, highlights and recaps</span>
                           </span>
                           <ChevronDown className={`h-5 w-5 text-primary transition-transform ${tvScheduleOpen ? "rotate-180" : ""}`} />
@@ -688,7 +688,7 @@ const Navigation = () => {
                   )}
                 </div>
 
-                <div className="border-t border-border/25 bg-background px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
+                <div className="border-t border-primary/25 bg-menu-panel px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
                   {user ? (
                     <Button type="button" variant="outline" onClick={async () => { await handleAuthClick(); }} className="h-12 w-full rounded-sm border-border/40 bg-transparent font-bold text-player-foreground hover:bg-muted">
                       <LogOut className="h-4 w-4" /> Sign Out

@@ -59,6 +59,10 @@ export default {
           DEFAULT: "hsl(var(--player))",
           foreground: "hsl(var(--player-foreground))",
         },
+        "menu-panel": {
+          DEFAULT: "hsl(var(--menu-panel))",
+          foreground: "hsl(var(--menu-panel-foreground))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
