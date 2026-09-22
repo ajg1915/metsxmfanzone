@@ -10,6 +10,7 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [trialEndsAt, setTrialEndsAt] = useState<Date | null>(null);
+  const [limitedAccess, setLimitedAccess] = useState(false);
 
 
   useEffect(() => {
@@ -45,12 +46,30 @@ export const useSubscription = () => {
 
         setIsAdmin(false);
 
+        const { data: accessEvents } = await supabase
+          .from("subscription_activity")
+          .select("action, created_at")
+          .eq("user_id", user.id)
+          .in("action", ["membership_cancelled", "account_cancelled_deleted", "access_restored"])
+          .order("created_at", { ascending: false });
+        const latestRestore = accessEvents?.find((event) => event.action === "access_restored")?.created_at;
+        const cancellationCount = (accessEvents || []).filter((event) =>
+          event.action !== "access_restored" && (!latestRestore || event.created_at > latestRestore)
+        ).length;
+        const isLimited = cancellationCount > 2;
+        setLimitedAccess(isLimited);
+        if (isLimited) {
+          setTier("free");
+          setTrialEndsAt(null);
+          setLoading(false);
+          return;
+        }
+
         // Check subscription status
         const { data, error } = await supabase
           .from("subscriptions")
           .select("plan_type, status, end_date, start_date")
           .eq("user_id", user.id)
-          .eq("status", "active")
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -58,7 +77,7 @@ export const useSubscription = () => {
         if (!error && data) {
           // Check if subscription is still valid
           const endDate = data.end_date ? new Date(data.end_date) : null;
-          const isActive = !endDate || endDate > new Date();
+          const isActive = data.status === "active" || (data.status === "cancelled" && !!endDate && endDate > new Date());
 
           if (isActive) {
             setTier(data.plan_type as SubscriptionTier);
@@ -84,12 +103,13 @@ export const useSubscription = () => {
 
   const hasAccess = (requiredTier: "free" | "premium") => {
     if (isAdmin) return true; // Admins always have full access
+    if (limitedAccess) return requiredTier === "free";
     if (requiredTier === "free") return true;
     if (tier === "weekly" || tier === "premium" || tier === "annual") return true;
     return false;
   };
 
-  const isPremium = isAdmin || tier === "weekly" || tier === "premium" || tier === "annual";
+  const isPremium = isAdmin || (!limitedAccess && (tier === "weekly" || tier === "premium" || tier === "annual"));
   // Trial members can browse the whole site, but streams are preview-only
   const isTrial = !isAdmin && tier === "trial";
 
@@ -101,6 +121,7 @@ export const useSubscription = () => {
     isTrial,
     trialEndsAt,
     isAdmin,
+    limitedAccess,
   };
 };
 

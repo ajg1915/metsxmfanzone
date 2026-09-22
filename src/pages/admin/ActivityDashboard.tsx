@@ -100,7 +100,7 @@ export default function ActivityDashboard() {
       setStats({
         totalLogs: decryptedLogs.length,
         adminAccesses: decryptedLogs.filter((l: ActivityLog) => l.log_type === "admin_data_access").length,
-        securityEvents: decryptedLogs.filter((l: ActivityLog) => l.log_type === "security").length,
+        securityEvents: decryptedLogs.filter((l: ActivityLog) => l.action === "member_login_success").length,
         recentActivity: decryptedLogs.filter((l: ActivityLog) => new Date(l.created_at) > oneHourAgo).length,
       });
       
@@ -231,7 +231,7 @@ export default function ActivityDashboard() {
       <AdminStatGrid>
         <AdminStat icon={Database} label="Total Logs" value={stats.totalLogs} />
         <AdminStat icon={Shield} label="Admin Access" value={stats.adminAccesses} tone="warning" />
-        <AdminStat icon={AlertCircle} label="Security Events" value={stats.securityEvents} tone="danger" />
+        <AdminStat icon={User} label="Member Logins" value={stats.securityEvents} tone="success" />
         <AdminStat icon={Clock} label="Last Hour" value={stats.recentActivity} tone="success" />
       </AdminStatGrid>
 

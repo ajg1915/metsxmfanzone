@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, Bell, UserPlus, CreditCard, MessageSquare, Loader2 } from "lucide-react";
+import { AlertTriangle, Bell, UserPlus, CreditCard, MessageSquare, Loader2, LogIn } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 type Item = {
   id: string;
-  type: "signup" | "subscription" | "contact" | "stream_issue";
+  type: "signup" | "login" | "subscription" | "contact" | "stream_issue";
   title: string;
   subtitle: string;
   created_at: string;
@@ -25,10 +25,17 @@ export function NotificationsBell() {
     setLoading(true);
     try {
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const [profilesRes, subsRes, contactsRes, issuesRes] = await Promise.all([
+      const [profilesRes, loginsRes, subsRes, contactsRes, issuesRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, full_name, email, created_at")
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("activity_logs")
+          .select("id, action, created_at, user_agent")
+          .eq("action", "member_login_success")
           .gte("created_at", since)
           .order("created_at", { ascending: false })
           .limit(10),
@@ -63,6 +70,16 @@ export function NotificationsBell() {
           subtitle: p.full_name || p.email || "New member",
           created_at: p.created_at,
           href: "/admin/user-management",
+        })
+      );
+      (loginsRes.data || []).forEach((event: any) =>
+        merged.push({
+          id: `login-${event.id}`,
+          type: "login",
+          title: "Member login",
+          subtitle: event.user_agent || "Verified member session",
+          created_at: event.created_at,
+          href: "/admin/activity",
         })
       );
       (subsRes.data || []).forEach((s: any) =>
@@ -113,7 +130,16 @@ export function NotificationsBell() {
   useEffect(() => {
     load();
     const t = setInterval(load, 60000);
-    return () => clearInterval(t);
+    const channel = supabase
+      .channel("admin-member-alerts")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, load)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "subscriptions" }, load)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "activity_logs" }, load)
+      .subscribe();
+    return () => {
+      clearInterval(t);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleOpen = (next: boolean) => {
@@ -125,7 +151,7 @@ export function NotificationsBell() {
   };
 
   const iconFor = (t: Item["type"]) =>
-    t === "signup" ? UserPlus : t === "subscription" ? CreditCard : t === "stream_issue" ? AlertTriangle : MessageSquare;
+    t === "signup" ? UserPlus : t === "login" ? LogIn : t === "subscription" ? CreditCard : t === "stream_issue" ? AlertTriangle : MessageSquare;
 
   return (
     <Popover open={open} onOpenChange={handleOpen}>

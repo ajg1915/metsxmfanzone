@@ -36,6 +36,8 @@ interface MemberRow {
   payment_method: string | null;
   amount: number | null;
   last_payment_date: string | null;
+  cancellation_count: number;
+  limited_access: boolean;
 }
 
 type StatusFilter = "all" | "active" | "pending" | "cancelled" | "none";
@@ -62,10 +64,11 @@ export default function MembersTab() {
   const fetchMembers = async () => {
     try {
       setLoading(true);
-      const [{ data: profiles }, { data: subscriptions }, { data: roles }] = await Promise.all([
+      const [{ data: profiles }, { data: subscriptions }, { data: roles }, { data: accessActivity }] = await Promise.all([
         supabase.from("profiles").select("id, email, full_name, phone_number, created_at").order("created_at", { ascending: false }),
         supabase.from("subscriptions").select("id, user_id, plan_type, status, end_date, payment_method, amount, last_payment_date").order("created_at", { ascending: false }),
         supabase.from("user_roles").select("user_id, role"),
+        supabase.from("subscription_activity").select("user_id, action, created_at").in("action", ["membership_cancelled", "account_cancelled_deleted", "access_restored"]).order("created_at", { ascending: false }),
       ]);
 
       const roleMap = new Map<string, string[]>();
@@ -73,6 +76,17 @@ export default function MembersTab() {
         const existing = roleMap.get(r.user_id) || [];
         existing.push(r.role);
         roleMap.set(r.user_id, existing);
+      });
+      const accessMap = new Map<string, number>();
+      const activityByUser = new Map<string, typeof accessActivity>();
+      (accessActivity || []).forEach((event) => {
+        activityByUser.set(event.user_id, [...(activityByUser.get(event.user_id) || []), event]);
+      });
+      activityByUser.forEach((events, userId) => {
+        const latestRestore = events?.find((event) => event.action === "access_restored")?.created_at;
+        accessMap.set(userId, (events || []).filter((event) =>
+          event.action !== "access_restored" && (!latestRestore || event.created_at > latestRestore)
+        ).length);
       });
 
       const rows: MemberRow[] = (profiles || []).map(p => {
@@ -92,6 +106,8 @@ export default function MembersTab() {
           payment_method: sub?.payment_method || null,
           amount: sub?.amount || null,
           last_payment_date: sub?.last_payment_date || null,
+          cancellation_count: accessMap.get(p.id) || 0,
+          limited_access: (accessMap.get(p.id) || 0) > 2,
         };
       });
       setMembers(rows);
@@ -171,7 +187,15 @@ export default function MembersTab() {
       return;
     }
     if (status === "cancelled") {
-      setPendingDelete(m);
+      setBusyId(m.user_id);
+      try {
+        const result = await supabase.functions.invoke("cancel-subscription", { body: { userId: m.user_id } });
+        if (result.error || (result.data as any)?.error) throw new Error((result.data as any)?.error || result.error?.message || "Cancellation failed");
+        toast({ title: "Membership cancelled", description: "PayPal renewal stopped and the member account was retained." });
+        fetchMembers();
+      } catch (e: any) {
+        toast({ title: "Cancellation failed", description: e.message, variant: "destructive" });
+      } finally { setBusyId(null); }
       return;
     }
     setBusyId(m.user_id);
@@ -298,6 +322,25 @@ export default function MembersTab() {
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     }
+  };
+
+  const restoreAccess = async (m: MemberRow) => {
+    if (!m.subscription_id) {
+      toast({ title: "No membership record", description: "Set a plan before restoring paid eligibility.", variant: "destructive" });
+      return;
+    }
+    setBusyId(m.user_id);
+    try {
+      const { error } = await supabase.from("subscription_activity").insert({
+        subscription_id: m.subscription_id, user_id: m.user_id, action: "access_restored",
+        details: { restored_by_admin: true }, performed_by: user?.id,
+      });
+      if (error) throw error;
+      toast({ title: "Access eligibility restored", description: "The cancellation safeguard has been reset for this member." });
+      fetchMembers();
+    } catch (e: any) {
+      toast({ title: "Restore failed", description: e.message, variant: "destructive" });
+    } finally { setBusyId(null); }
   };
 
   const deleteAccount = async (m: MemberRow) => {
@@ -437,6 +480,11 @@ export default function MembersTab() {
                         <p className={`font-medium truncate max-w-[220px] ${!decrypted ? "font-mono text-xs" : ""}`}>{dispName(m)}</p>
                         <p className={`truncate max-w-[220px] text-xs text-muted-foreground ${!decrypted ? "font-mono" : ""}`}>{dispEmail(m)}</p>
                         {m.phone_number && <p className={`truncate max-w-[220px] text-[10px] text-muted-foreground ${!decrypted ? "font-mono" : ""}`}>{dispPhone(m)}</p>}
+                         <div className="mt-1 flex flex-wrap gap-1">
+                           <Badge variant="outline" className="text-[9px]">{m.payment_method === "paypal" ? "PayPal linked" : "PayPal not linked"}</Badge>
+                           {m.cancellation_count > 0 && <Badge variant={m.limited_access ? "destructive" : "secondary"} className="text-[9px]">{m.cancellation_count} cancellation{m.cancellation_count === 1 ? "" : "s"}</Badge>}
+                           {m.limited_access && <Badge variant="destructive" className="text-[9px]">Limited access</Badge>}
+                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -543,6 +591,11 @@ export default function MembersTab() {
                             </DropdownMenuSub>
 
                             <DropdownMenuSeparator />
+                             {m.limited_access && (
+                               <DropdownMenuItem onClick={() => restoreAccess(m)} className="text-xs text-affirmative focus:text-affirmative">
+                                 <Unlock className="w-3.5 h-3.5 mr-2" /> Restore paid eligibility
+                               </DropdownMenuItem>
+                             )}
                             <DropdownMenuItem onClick={() => sendPasswordReset(m)} className="text-xs">
                               <KeyRound className="w-3.5 h-3.5 mr-2" /> Send password reset
                             </DropdownMenuItem>

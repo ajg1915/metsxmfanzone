@@ -45,7 +45,7 @@ export function AdminSidebar() {
   const isOpenSection = (title: string, items: typeof ADMIN_NAV[number]["items"]) => {
     if (query.trim()) return true;
     if (closedMap[title] !== undefined) return !closedMap[title];
-    return title === "Overview" || items.some((i) => isActive(i.url));
+    return title === "Dashboard" || items.some((i) => isActive(i.url));
   };
 
   const handleNavigate = () => {

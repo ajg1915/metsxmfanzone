@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { cancelPaypalAndDeleteAccount } from "../_shared/account-cleanup.ts";
+import { cancelPaypalAndRetainAccount } from "../_shared/account-cleanup.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,20 +31,31 @@ Deno.serve(async (req) => {
     if (!user) return json({ error: "Unauthorized" }, 401);
 
     let reason = "User requested cancellation";
+    let targetUserId = user.id;
     try {
       const body = await req.json();
       if (typeof body?.reason === "string" && body.reason.length <= 127) reason = body.reason;
+      if (typeof body?.userId === "string" && body.userId !== user.id) {
+        const adminCheck = createClient(SUPABASE_URL, SERVICE_KEY);
+        const { data: role } = await adminCheck.from("user_roles").select("role")
+          .eq("user_id", user.id).eq("role", "admin").maybeSingle();
+        if (!role) return json({ error: "Forbidden" }, 403);
+        targetUserId = body.userId;
+        reason = "Admin cancelled membership";
+      }
     } catch (_) { /* no body */ }
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
     try {
-      const result = await cancelPaypalAndDeleteAccount(admin, user.id, reason);
+       const result = await cancelPaypalAndRetainAccount(admin, targetUserId, reason);
       if (!result.paypalConfirmed) return json({ error: result.message }, 502);
       return json({
-        success: result.paypalConfirmed && result.accountDeleted,
+        success: result.paypalConfirmed,
         paypalCancelled: result.paypalConfirmed,
-        accountDeleted: result.accountDeleted,
+        accountRetained: result.accountRetained,
+        cancellationCount: result.cancellationCount,
+        limitedAccess: result.limitedAccess,
         message: result.message,
       });
     } catch (e) {

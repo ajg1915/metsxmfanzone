@@ -4,13 +4,15 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, AlertTriangle, ShieldCheck, Trash2, LifeBuoy } from "lucide-react";
+import { CheckCircle2, XCircle, AlertTriangle, ShieldCheck, UserCheck, LifeBuoy } from "lucide-react";
 
 export const CANCELLATION_RESULT_KEY = "mxfz_cancellation_result";
 
 export type CancellationResult = {
   paypalConfirmed: boolean;
-  accountDeleted: boolean;
+  accountRetained?: boolean;
+  cancellationCount?: number;
+  limitedAccess?: boolean;
   message?: string;
   error?: string;
   at?: string;
@@ -64,7 +66,7 @@ const CancellationStatus = () => {
     setLoaded(true);
   }, []);
 
-  const allDone = !!result?.paypalConfirmed && !!result?.accountDeleted;
+  const allDone = !!result?.paypalConfirmed && !!result?.accountRetained;
 
   return (
     <div className="min-h-screen bg-background">
@@ -121,15 +123,15 @@ const CancellationStatus = () => {
             />
 
             <StatusRow
-              ok={result.accountDeleted}
-              pendingLabel={result.paypalConfirmed ? "Pending" : "Not started"}
-              icon={<Trash2 className="w-5 h-5" />}
-              title="Account and data deleted"
-              okText="Your MetsXMFanZone account and associated data have been permanently removed."
+              ok={Boolean(result.accountRetained)}
+              pendingLabel={result.paypalConfirmed ? "Review" : "Not started"}
+              icon={<UserCheck className="w-5 h-5" />}
+              title="Account retained"
+              okText={`Your account and history remain available. Cancellation count: ${result.cancellationCount || 1}.`}
               failText={
                 result.paypalConfirmed
-                  ? "Billing was stopped, but your account could not be removed automatically."
-                  : "Account deletion was not attempted because billing was not confirmed cancelled."
+                  ? "Billing was stopped. Contact support if your account status does not update."
+                  : "Your account remains unchanged because PayPal did not confirm cancellation."
               }
             />
 
@@ -152,10 +154,10 @@ const CancellationStatus = () => {
                       </li>
                     </>
                   )}
-                  {result.paypalConfirmed && !result.accountDeleted && (
+                  {result.paypalConfirmed && !result.accountRetained && (
                     <li>
                       Your billing is stopped, so you will not be charged again. Contact support to
-                      finish removing your account.
+                       confirm your retained account status.
                     </li>
                   )}
                   <li>
@@ -170,7 +172,7 @@ const CancellationStatus = () => {
               <Button asChild variant="outline" className="flex-1">
                 <Link to="/">Go Home</Link>
               </Button>
-              {!result.accountDeleted && (
+               {result.accountRetained && (
                 <Button asChild className="flex-1">
                   <Link to="/dashboard">Back to Dashboard</Link>
                 </Button>
