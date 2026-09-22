@@ -244,93 +244,59 @@ const EmailTemplateSettings = () => {
           </Card>
         </div>
 
-        {/* Live Preview */}
-        <Card className="h-fit sticky top-4">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Live Preview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div
-              className="rounded-lg overflow-hidden"
-              style={{ backgroundColor: settings.body_bg_color, padding: "24px 12px" }}
-            >
-              {/* Logo */}
-              <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                <img
-                  src={settings.logo_url}
-                  alt="Logo"
-                  style={{
-                    width: `${settings.logo_width}px`,
-                    height: `${settings.logo_width}px`,
-                    borderRadius: "12px",
-                    objectFit: "contain",
-                  }}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-              </div>
-
-              {/* Card */}
-              <div
-                style={{
-                  backgroundColor: settings.card_bg_color,
-                  borderRadius: "16px",
-                  padding: "28px 24px",
-                  border: `1px solid ${settings.primary_color}33`,
-                }}
+        {/* Live Preview — renders the real email HTML */}
+        <Card className="h-fit lg:sticky lg:top-4">
+          <CardHeader className="pb-3 space-y-3">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-sm">Live Preview</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-[11px]"
+                onClick={loadPreview}
+                disabled={previewLoading}
               >
-                <h2
-                  style={{
-                    color: settings.heading_color,
-                    fontSize: "20px",
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    margin: "0 0 16px",
-                  }}
-                >
-                  Welcome to the Fan Zone! 🏟️
-                </h2>
-                <p
-                  style={{
-                    color: settings.text_color,
-                    fontSize: "14px",
-                    lineHeight: "1.6",
-                    margin: "0 0 16px",
-                  }}
-                >
-                  Hey there! Thanks for signing up for MetsXMFanZone. You're one step away
-                  from joining the ultimate Mets fan community.
-                </p>
-                <div style={{ textAlign: "center", margin: "24px 0" }}>
-                  <span
-                    style={{
-                      backgroundColor: settings.primary_color,
-                      color: "#ffffff",
-                      fontSize: "15px",
-                      fontWeight: "bold",
-                      borderRadius: settings.button_border_radius,
-                      padding: "12px 28px",
-                      display: "inline-block",
-                    }}
-                  >
-                    Verify My Email
-                  </span>
-                </div>
-              </div>
-
-              {/* Footer */}
-              <p
-                style={{
-                  color: "#4b5563",
-                  fontSize: "11px",
-                  textAlign: "center",
-                  marginTop: "20px",
-                }}
-              >
-                {settings.footer_text}
-              </p>
+                <RotateCcw className="w-3 h-3 mr-1" />
+                {previewLoading ? "Loading..." : "Refresh"}
+              </Button>
             </div>
+            <div>
+              <Label className="text-xs">Email to preview</Label>
+              <select
+                value={templateKey}
+                onChange={(e) => setTemplateKey(e.target.value)}
+                className="mt-1 w-full h-8 rounded-md border border-input bg-background px-2 text-xs"
+              >
+                {templateOptions.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {previewSubject && (
+              <div className="rounded-md bg-muted/60 px-3 py-2 text-[11px] leading-relaxed">
+                <div className="text-muted-foreground">From: noreply@metsxmfanzone.com</div>
+                <div className="font-semibold">Subject: {previewSubject}</div>
+              </div>
+            )}
+            {previewError ? (
+              <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-4 text-xs text-destructive">
+                {previewError}
+              </div>
+            ) : (
+              <iframe
+                title="Email preview"
+                srcDoc={previewHtml}
+                sandbox=""
+                className="w-full h-[560px] rounded-lg border border-border bg-black"
+              />
+            )}
+            <p className="text-[11px] text-muted-foreground">
+              This is the exact email members receive, using your current colors and logo.
+            </p>
           </CardContent>
         </Card>
       </div>
