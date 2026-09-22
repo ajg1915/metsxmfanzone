@@ -156,7 +156,20 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const templateKey = typeof body?.template === "string" ? body.template : "signup_confirmation";
-    const fragment = TEMPLATES[templateKey] ?? TEMPLATES.signup_confirmation;
+
+    // "custom" renders an admin-composed email inside the same branded shell,
+    // so the preview is byte-for-byte what recipients receive.
+    const customSubject = typeof body?.subject === "string" ? body.subject.trim() : "";
+    const customHeading = typeof body?.heading === "string" ? body.heading.trim() : "";
+    const fragment: Fragment = templateKey === "custom"
+      ? {
+        label: "Custom email",
+        subject: customSubject || "(No subject)",
+        preheader: customSubject || "MetsXMFanZone",
+        heading: customHeading,
+        content: sanitizeHtml(typeof body?.content === "string" ? body.content : ""),
+      }
+      : TEMPLATES[templateKey] ?? TEMPLATES.signup_confirmation;
 
     // Unsaved designer values can be previewed by passing them in.
     const overrides = (body?.brand ?? {}) as Partial<EmailBrand>;
