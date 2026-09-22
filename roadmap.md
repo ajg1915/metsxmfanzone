@@ -6,3 +6,5 @@
 - [x] Add viewer issue tickets with AI triage and admin alerts using the private health-report queue
 - [x] Add an admin stream-issues section matching the article management UI
 - [ ] Verify playback, rotation, casting controls, ticket submission, and admin visibility
+
+- [ ] Redesign only the mobile menu for clearer navigation
