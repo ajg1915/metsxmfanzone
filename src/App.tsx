@@ -52,6 +52,7 @@ const WelcomeScreenManagement = lazyWithRetry(() => import("./pages/admin/Welcom
 const PrivatePlayer = lazyWithRetry(() => import("./pages/admin/PrivatePlayer"), "page-admin-private-player");
 const PrivateLivePlayer = lazyWithRetry(() => import("./pages/PrivateLivePlayer"), "page-private-live-player");
 const MetsXMPlayer = lazyWithRetry(() => import("./pages/MetsXMPlayer"), "page-metsxm-player");
+const EventsManagement = lazyWithRetry(() => import("./pages/admin/EventsManagement"), "page-admin-events-management");
 const BlogManagement = lazyWithRetry(() => import("./pages/admin/BlogManagement"), "page-admin-blog-management");
 const ArticleEditor = lazyWithRetry(() => import("./pages/admin/ArticleEditor"), "page-admin-article-editor");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
@@ -395,9 +396,9 @@ const AppContent = () => {
               <Route path="feedbacks" element={<FeedbackManagement />} />
               <Route path="posts" element={<PostsManagement />} />
               <Route path="business-ads" element={<BusinessAdsManagement />} />
-              <Route path="roles" element={<UserManagement />} />
+              <Route path="roles" element={<UserRoles />} />
               <Route path="user-management" element={<UserManagement />} />
-              <Route path="subscriptions" element={<UserManagement />} />
+              <Route path="subscriptions" element={<SubscriptionManagement />} />
               <Route path="trials" element={<TrialManagement />} />
               <Route path="backgrounds" element={<BackgroundManagement />} />
               <Route path="activity" element={<ActivityDashboard />} />
