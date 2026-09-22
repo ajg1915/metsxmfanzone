@@ -187,7 +187,15 @@ export default function MembersTab() {
       return;
     }
     if (status === "cancelled") {
-      setPendingDelete(m);
+      setBusyId(m.user_id);
+      try {
+        const result = await supabase.functions.invoke("cancel-subscription", { body: { userId: m.user_id } });
+        if (result.error || (result.data as any)?.error) throw new Error((result.data as any)?.error || result.error?.message || "Cancellation failed");
+        toast({ title: "Membership cancelled", description: "PayPal renewal stopped and the member account was retained." });
+        fetchMembers();
+      } catch (e: any) {
+        toast({ title: "Cancellation failed", description: e.message, variant: "destructive" });
+      } finally { setBusyId(null); }
       return;
     }
     setBusyId(m.user_id);
