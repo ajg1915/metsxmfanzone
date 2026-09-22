@@ -8,15 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Bot, Send, Loader2, Users, UserCheck, UserX, CreditCard, Shield,
-  Sparkles, RefreshCw, UserPlus,
+  Bot, Send, Loader2, Users, CreditCard, Shield,
+  Sparkles, UserPlus,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
 import RolesTab from "@/components/admin/RolesTab";
 import MembersTab from "@/components/admin/MembersTab";
 import SignupsTab from "@/components/admin/SignupsTab";
-import { maskEmail, maskSensitiveField } from "@/utils/secureDataVault";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 interface MemberRow {
@@ -43,7 +42,6 @@ const UserManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [members, setMembers] = useState<MemberRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const [command, setCommand] = useState("");
   const [aiMessages, setAiMessages] = useState<AIMessage[]>([]);
   const [aiProcessing, setAiProcessing] = useState(false);
@@ -60,7 +58,6 @@ const UserManagement = () => {
 
   const fetchMembers = async () => {
     try {
-      setLoading(true);
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, email, full_name, created_at")
@@ -102,7 +99,7 @@ const UserManagement = () => {
     } catch (error) {
       console.error("Error fetching members:", error);
     } finally {
-      setLoading(false);
+      // The active tab owns its loading presentation.
     }
   };
 
@@ -156,18 +153,6 @@ const UserManagement = () => {
   ];
 
   const totalMembers = members.length;
-  const activeMembers = members.filter(m => m.status === "active").length;
-  const inactiveMembers = members.filter(m => m.status !== "active").length;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active": return "bg-affirmative text-white";
-      case "pending": return "bg-yellow-500 text-white";
-      case "cancelled": return "bg-destructive text-destructive-foreground";
-      default: return "bg-muted text-muted-foreground";
-    }
-  };
-
   return (
     <AdminPage>
       <AdminPageHeader
