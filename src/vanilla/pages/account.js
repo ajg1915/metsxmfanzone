@@ -8,6 +8,14 @@ export const CANCELLATION_RESULT_KEY = "mxfz_cancellation_result";
 
 export const PLANS = [
   {
+    id: "free",
+    name: "Free",
+    price: "$0",
+    period: "forever",
+    description: "News, community, and your member profile",
+    features: ["Public Mets news", "Community access", "Member profile", "No payment required"],
+  },
+  {
     id: "weekly",
     name: "Weekly",
     price: "$3.99",
@@ -17,7 +25,7 @@ export const PLANS = [
   },
   {
     id: "premium",
-    name: "Premium",
+    name: "Monthly",
     price: "$9.99",
     period: "per month",
     description: "Most popular for true fans",
@@ -26,11 +34,11 @@ export const PLANS = [
   },
   {
     id: "annual",
-    name: "Annual",
+    name: "Yearly",
     price: "$129.99",
     period: "per year",
-    description: "Best value — save 2 months",
-    features: ["Everything in Premium", "Save $20/year", "Priority support", "Early access to content", "VIP community badge"],
+    description: "One payment for a full year",
+    features: ["Everything in Monthly", "Simple yearly billing", "Priority support", "Early access to content", "VIP community badge"],
   },
 ];
 
@@ -64,7 +72,7 @@ export const renderPlans = async (root, pathname = "/plans") => {
           <p class="form-note">${escapeHtml(plan.description)}</p>
           <ul>${plan.features.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
           <button class="button primary" type="button" data-plan="${plan.id}">
-            ${state.user ? "Continue with PayPal" : "Sign in to join"}
+            ${state.user ? (plan.id === "free" ? "Choose Free" : "Continue with PayPal") : "Create account to join"}
           </button>
         </article>`,
       ).join("")}
@@ -81,16 +89,23 @@ export const renderPlans = async (root, pathname = "/plans") => {
   root.querySelectorAll("[data-plan]").forEach((button) => {
     button.addEventListener("click", async () => {
       if (!state.user) {
-        window.location.assign("/auth?next=/plans");
+        localStorage.setItem("pending_membership_selection", "true");
+        window.location.assign("/auth?mode=signup");
         return;
       }
       button.disabled = true;
       error.hidden = true;
       try {
-        const { data, error: invokeError } = await backend.functions.invoke("create-paypal-order", {
-          body: { planType: button.dataset.plan, promoCode: null, returnOrigin: window.location.origin },
+        const functionName = button.dataset.plan === "free" ? "activate-free-membership" : "create-paypal-order";
+        const { data, error: invokeError } = await backend.functions.invoke(functionName, {
+          body: button.dataset.plan === "free" ? {} : { planType: button.dataset.plan, promoCode: null, returnOrigin: window.location.origin },
         });
         if (invokeError) throw invokeError;
+        if (button.dataset.plan === "free" && data?.success) {
+          localStorage.removeItem("pending_membership_selection");
+          window.location.assign("/dashboard");
+          return;
+        }
         if (!data?.approvalUrl) throw new Error("Payment could not be started. Please try again.");
         window.location.href = data.approvalUrl;
       } catch (failure) {

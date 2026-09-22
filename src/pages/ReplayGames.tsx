@@ -58,7 +58,7 @@ const ReplayGames = () => {
     }
   };
 
-  const canWatch = isAdmin || tier === "premium" || tier === "annual";
+  const canWatch = isAdmin || tier === "weekly" || tier === "premium" || tier === "annual";
 
   const handleGameSelect = (game: ReplayGame) => {
     if (!user) { navigate("/auth"); return; }

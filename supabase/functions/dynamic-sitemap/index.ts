@@ -47,7 +47,6 @@ const staticPages = [
   { url: "/payment-error", changefreq: "monthly", priority: "0.4" },
   // Help center sub-pages
   { url: "/help/create-account", changefreq: "monthly", priority: "0.5" },
-  { url: "/help/biometric-login", changefreq: "monthly", priority: "0.5" },
   { url: "/help/navigate-platform", changefreq: "monthly", priority: "0.5" },
   { url: "/help/watch-streams", changefreq: "monthly", priority: "0.5" },
   { url: "/help/community-guidelines", changefreq: "monthly", priority: "0.5" },

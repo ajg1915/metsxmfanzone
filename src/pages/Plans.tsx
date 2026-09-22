@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, AlertCircle, CreditCard, ShieldCheck } from "lucide-react";
+import { Check, AlertCircle, CreditCard, Loader2, ShieldCheck } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -17,19 +17,23 @@ import {
 import CheckoutModal from "@/components/CheckoutModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Plans = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { toast } = useToast();
   const { tier, loading: subscriptionLoading } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [activatingFree, setActivatingFree] = useState(false);
 
   
   // Check if user must select a plan (coming from signup)
   const pendingPlan = localStorage.getItem("pending_signup_plan");
-  const mustSelectPlan = searchParams.get("required") === "true" || !!pendingPlan;
+  const mustSelectPlan = searchParams.get("required") === "true" || !!pendingPlan || localStorage.getItem("pending_membership_selection") === "true";
   const [hasPlanSelected, setHasPlanSelected] = useState(false);
   
   // Block navigation if plan selection is required
@@ -50,7 +54,28 @@ const Plans = () => {
     }
   }, [mustSelectPlan, hasPlanSelected]);
 
-  const handleSelectPlan = (planId: string) => {
+  const handleSelectPlan = async (planId: string) => {
+    if (!user) {
+      localStorage.setItem("pending_membership_selection", "true");
+      navigate("/auth?mode=signup");
+      return;
+    }
+
+    if (planId === "free") {
+      setActivatingFree(true);
+      const { data, error } = await supabase.functions.invoke("activate-free-membership", { body: {} });
+      setActivatingFree(false);
+      if (error || data?.error) {
+        toast({ title: "Membership could not be activated", description: "Please try again.", variant: "destructive" });
+        return;
+      }
+      localStorage.removeItem("pending_membership_selection");
+      localStorage.removeItem("pending_signup_plan");
+      setHasPlanSelected(true);
+      navigate("/dashboard", { replace: true });
+      return;
+    }
+
     setSelectedPlan(planId);
     setCheckoutOpen(true);
   };
@@ -70,8 +95,32 @@ const Plans = () => {
 
   const allPlans = [
     {
+      id: "free",
+      name: "Free",
+      price: "$0",
+      priceValue: 0,
+      period: "forever",
+      billingNote: "No payment required",
+      description: "Start with the fan essentials",
+      features: ["Public Mets news", "Community access", "Member profile", "Membership notifications"],
+      cta: "Choose Free",
+      popular: false,
+    },
+    {
+      id: "weekly",
+      name: "Weekly",
+      price: "$3.99",
+      priceValue: 3.99,
+      period: "per week",
+      billingNote: "Billed weekly through PayPal",
+      description: "Full access with a shorter commitment",
+      features: ["All live streams", "Full game replays", "All highlights", "Community access", "HD streaming"],
+      cta: "Choose Weekly",
+      popular: false,
+    },
+    {
       id: "premium",
-      name: "Premium",
+      name: "Monthly",
       price: "$9.99",
       priceValue: 9.99,
       period: "per month",
@@ -88,27 +137,27 @@ const Plans = () => {
         "Multi-device access",
       ],
       notIncluded: [],
-      cta: "Subscribe to Premium",
+      cta: "Choose Monthly",
       popular: true,
     },
     {
       id: "annual",
-      name: "Annual",
+      name: "Yearly",
       price: "$129.99",
       priceValue: 129.99,
       period: "per year",
       billingNote: "Billed annually",
-      description: "Best value - Save 2 months",
+      description: "One payment for a full year",
       features: [
         "Everything in Premium",
-        "Save $20/year",
+        "Simple yearly billing",
         "Priority support",
         "Early access to content",
         "Exclusive merchandise discounts",
         "VIP community badge",
       ],
       notIncluded: [],
-      cta: "Subscribe to Annual",
+      cta: "Choose Yearly",
       popular: false,
     },
   ];
@@ -119,14 +168,14 @@ const Plans = () => {
 
   const faqs = [
     {
-      question: "What's the difference between Premium and Annual plans?",
+      question: "What is included with each membership?",
       answer:
-        "Both plans give you full access to all live streams, replays, HD quality, ad-free experience, and exclusive content. The Annual plan saves you $20/year compared to monthly billing and includes priority support, early access, and VIP perks.",
+        "Free includes public news and community access. Weekly, Monthly, and Yearly include live streams, replays, highlights, and premium content.",
     },
     {
-      question: "Can I switch between monthly and yearly billing?",
+      question: "Can I switch between paid memberships?",
       answer:
-        "Yes! You can switch between monthly and annual billing anytime. When you switch to annual, you'll save the equivalent of 2 months compared to monthly billing.",
+        "Yes. Choose a different paid membership from your Member Center. Your new PayPal billing schedule starts with the new membership.",
     },
     {
       question: "What payment methods do you accept?",
@@ -146,7 +195,7 @@ const Plans = () => {
     {
       question: "Can I watch on multiple devices?",
       answer:
-        "Premium and Annual plans allow streaming on up to 2 devices simultaneously. Accounts found accessing from more than 2 devices may be restricted.",
+        "Weekly, Monthly, and Yearly memberships allow streaming on up to 2 devices simultaneously. Accounts found accessing from more than 2 devices may be restricted.",
     },
   ];
 
@@ -169,7 +218,7 @@ const Plans = () => {
                 <div>
                   <h3 className="font-semibold text-foreground">Please Select a Plan</h3>
                    <p className="text-sm text-muted-foreground">
-                    To complete your account setup, please select a subscription plan below.
+                     Complete your setup with Free, Weekly, Monthly, or Yearly membership.
                   </p>
                 </div>
               </div>
@@ -182,13 +231,13 @@ const Plans = () => {
                 Choose Your Plan
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-                One membership unlocks live games, replays, community access, and exclusive Mets content.
+                 Start free for news and community, or choose a paid plan for live streams and premium content.
               </p>
             </div>
 
             {/* Plans Grid */}
 
-            <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-12 max-w-4xl mx-auto">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 sm:gap-5 mb-12 max-w-6xl mx-auto">
               {plans.map((plan) => (
                 <Card
                   key={plan.id}
@@ -220,9 +269,10 @@ const Plans = () => {
                     <Button
                       className="w-full mb-6"
                       variant={plan.popular ? "default" : "outline"}
-                      onClick={() => handleSelectPlan(plan.id)}
+                      onClick={() => void handleSelectPlan(plan.id)}
+                      disabled={tier === plan.id || (plan.id === "free" && activatingFree)}
                     >
-                      <CreditCard className="mr-2 h-4 w-4" />{tier === plan.id ? "Current plan" : plan.cta}
+                      {plan.id === "free" && activatingFree ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}{tier === plan.id ? "Current plan" : plan.cta}
                     </Button>
 
                     <div className="space-y-3">

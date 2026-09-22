@@ -262,7 +262,7 @@ export default function SubscriptionsTab() {
   };
 
   const getPlanPrice = (planType: string) => {
-    switch (planType) { case "premium": return "$9.99/mo"; case "annual": return "$129.99/yr"; default: return "Free"; }
+    switch (planType) { case "weekly": return "$3.99/wk"; case "premium": return "$9.99/mo"; case "annual": return "$129.99/yr"; default: return "Free"; }
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading...</p></div>;

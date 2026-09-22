@@ -204,7 +204,7 @@ const Navigation = () => {
     checkAdminAndProfile();
   }, [user]);
 
-  const isPremium = isAdmin || tier === "premium" || tier === "annual";
+  const isPremium = isAdmin || tier === "weekly" || tier === "premium" || tier === "annual";
 
   const handleProtectedNavigation = (path: string) => {
     if (!user) {

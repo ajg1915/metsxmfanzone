@@ -130,11 +130,11 @@ const SortableStreamCard = ({
                 FREE PREVIEW
               </Badge>
             ) : (
-              isProStream && !isAdmin && tier !== "premium" && tier !== "annual" && (
+              isProStream && !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
                 <PremiumBadge size="sm" />
               )
             )}
-            {isSpringTraining && !isAdmin && tier !== "premium" && tier !== "annual" && (
+            {isSpringTraining && !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
               <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
                 FREE
               </Badge>
@@ -373,7 +373,7 @@ const LiveStreamsSection = () => {
       else navigate(getStreamPageUrl(stream));
       return;
     }
-    if (isAdmin || tier === "premium" || tier === "annual" || isGuestPreviewStream(stream)) {
+    if (isAdmin || tier === "weekly" || tier === "premium" || tier === "annual" || isGuestPreviewStream(stream)) {
       navigate(getStreamPageUrl(stream));
     } else {
       navigate("/pricing");

@@ -48,7 +48,7 @@ const CreateAccount = () => {
                 <ul className="space-y-2 text-muted-foreground">
                   <li>Provide your email address</li>
                   <li>Create a secure password</li>
-                  <li>Confirm your password</li>
+                  <li>Add your phone number and notification preference</li>
                 </ul>
               </div>
 
@@ -62,10 +62,13 @@ const CreateAccount = () => {
                     <strong>Free Plan:</strong> Access to basic content and community features
                   </li>
                   <li>
-                    <strong>Premium Plan ($9.99/month):</strong> All premium features including live streams and replays
+                    <strong>Weekly Plan ($3.99/week):</strong> Full access with weekly PayPal billing
                   </li>
                   <li>
-                    <strong>Annual Plan ($129.99/year):</strong> All premium features with significant savings
+                    <strong>Monthly Plan ($9.99/month):</strong> Live streams, replays, and premium content
+                  </li>
+                  <li>
+                    <strong>Yearly Plan ($129.99/year):</strong> Full access with yearly PayPal billing
                   </li>
                 </ul>
               </div>

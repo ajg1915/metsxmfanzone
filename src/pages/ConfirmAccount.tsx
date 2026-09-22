@@ -175,8 +175,8 @@ export default function ConfirmAccount() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        let planType = hasPendingPlan || "pending_paid_signup";
-        let amount = planType === "annual" ? "$129.99" : "$9.99";
+        let planType = hasPendingPlan || "membership_selection_pending";
+        let amount = planType === "annual" ? "$129.99" : planType === "weekly" ? "$3.99" : planType === "premium" ? "$9.99" : "$0";
         let paymentMethod = pendingPaymentMethod || user.user_metadata?.preferred_payment_method || "paypal";
 
         const { data: sub } = await supabase
@@ -187,9 +187,9 @@ export default function ConfirmAccount() {
           .limit(1)
           .maybeSingle();
 
-        if (sub && (sub.plan_type === "premium" || sub.plan_type === "annual")) {
+        if (sub && ["free", "weekly", "premium", "annual"].includes(sub.plan_type)) {
           planType = sub.plan_type;
-          amount = sub.amount ? `$${Number(sub.amount).toFixed(2)}` : planType === "annual" ? "$129.99" : "$9.99";
+          amount = sub.amount ? `$${Number(sub.amount).toFixed(2)}` : planType === "annual" ? "$129.99" : planType === "weekly" ? "$3.99" : planType === "premium" ? "$9.99" : "$0";
           paymentMethod = sub.payment_method || paymentMethod;
         }
 
@@ -200,7 +200,7 @@ export default function ConfirmAccount() {
               userId: user.id,
               planType,
               amount,
-              source: `${planType === "premium" || planType === "annual" ? `${planType.charAt(0).toUpperCase() + planType.slice(1)} (${paymentMethod})` : `Pending Paid Signup (${paymentMethod})`}`,
+              source: `New account · membership selection pending`,
             },
           });
         } catch (notifyErr) {
@@ -214,13 +214,8 @@ export default function ConfirmAccount() {
   }, [verificationState]);
   
   const handleContinueAfterConfirmation = () => {
-    if (hasPendingPlan) {
-      localStorage.removeItem("pending_signup_plan");
-      localStorage.removeItem("pending_signup_payment_method");
-      navigate("/pricing?required=true");
-    } else {
-      navigate("/auth?mode=login");
-    }
+    localStorage.setItem("pending_membership_selection", "true");
+    navigate("/auth?mode=login");
   };
 
   // Show success state
@@ -238,16 +233,13 @@ export default function ConfirmAccount() {
             </CardHeader>
             <CardContent className="space-y-6 text-center">
               <p className="text-muted-foreground">
-                {hasPendingPlan 
-                  ? "Your account is verified. Complete your paid plan signup to continue."
-                  : "Your account has been successfully verified. You can now log in and start enjoying MetsXMFanZone!"
-                }
+                 Your account is verified. Sign in, then choose Free, Weekly, Monthly, or Yearly membership.
               </p>
               <Button
                 onClick={handleContinueAfterConfirmation}
                 className="w-full"
               >
-                {hasPendingPlan ? "Select Your Plan" : "Continue to Login"}
+                 Continue to Sign In
               </Button>
             </CardContent>
           </Card>

@@ -44,13 +44,14 @@ const helpArticles = [
       <h3>Step 1: Navigate to Sign Up</h3>
       <p>Click the "Sign Up" button in the top right corner of the website or navigate directly to the authentication page.</p>
       <h3>Step 2: Enter Your Information</h3>
-      <ul><li>Provide your email address</li><li>Create a secure password</li><li>Confirm your password</li></ul>
+      <ul><li>Provide your name and email address</li><li>Create a secure password</li><li>Add your phone number and notification preference</li></ul>
       <h3>Step 3: Select Your Plan</h3>
       <p>After creating your account, you'll be prompted to choose a subscription plan:</p>
       <ul>
         <li><strong>Free Plan:</strong> Access to basic content and community features</li>
-        <li><strong>Premium Plan ($9.99/month):</strong> All premium features including live streams and replays</li>
-        <li><strong>Annual Plan ($129.99/year):</strong> All premium features with significant savings</li>
+        <li><strong>Weekly Plan ($3.99/week):</strong> Full access with weekly PayPal billing</li>
+        <li><strong>Monthly Plan ($9.99/month):</strong> Live streams, replays, and premium content</li>
+        <li><strong>Yearly Plan ($129.99/year):</strong> Full access with yearly PayPal billing</li>
       </ul>
       <h3>Step 4: Complete Payment (for paid plans)</h3>
       <p>Complete the checkout process through PayPal to activate your subscription.</p>
@@ -58,52 +59,6 @@ const helpArticles = [
       <p>Once your account is set up, you can immediately start accessing content based on your plan tier.</p>
       <h2>Troubleshooting</h2>
       <p>If you encounter any issues during account creation, please visit our <a href="/contact">Contact</a> page for assistance.</p>`,
-  },
-  {
-    path: "/help/biometric-login",
-    title: "How to Login with Biometrics",
-    description: "Learn how to register and use biometric login (fingerprint, Face ID, Windows Hello) for faster, more secure sign-in to MetsXMFanZone.",
-    heading: "Biometric Login Guide",
-    bodyHtml: `
-      <h2>What is Biometric Login?</h2>
-      <p>Biometric login allows you to sign in to MetsXMFanZone using your device's built-in security features like fingerprint sensors (Touch ID), facial recognition (Face ID), or Windows Hello. It's faster and more secure than entering your password every time.</p>
-      <h2>Part 1: Register Your Biometric (First-Time Setup)</h2>
-      <p>Before you can use biometric login, you need to register your fingerprint or Face ID from your account dashboard.</p>
-      <h3>Step 1: Sign In with Your Password</h3>
-      <p>First, sign in to your MetsXMFanZone account using your email and password as you normally would.</p>
-      <h3>Step 2: Go to Your Dashboard</h3>
-      <p>Once signed in, navigate to your <a href="/dashboard">Dashboard</a> by clicking on your profile or the Dashboard link in the navigation menu.</p>
-      <h3>Step 3: Find the Biometric Login Section</h3>
-      <p>Scroll down to find the "Biometric Login" card. This section shows your registered passkeys and allows you to add new ones.</p>
-      <h3>Step 4: Click "Add Passkey"</h3>
-      <p>Click the "Add Passkey" button to start the registration process. Your browser will prompt you to use your device's biometric sensor.</p>
-      <h3>Step 5: Complete the Biometric Scan</h3>
-      <p>Follow your device's prompts to scan your fingerprint or face. Once complete, your passkey will be saved and you'll see a success message.</p>
-      <h2>Part 2: Sign In with Biometrics</h2>
-      <h3>Step 1: Go to the Login Page</h3>
-      <p>Navigate to the <a href="/auth?mode=login">Sign In page</a>.</p>
-      <h3>Step 2: Click "Sign in with Biometrics"</h3>
-      <p>Below the regular login form, you'll see a "Sign in with Biometrics" button. Click it to start the biometric login process.</p>
-      <h3>Step 3: Enter Your Email</h3>
-      <p>Enter the email address associated with your account. This helps us find your registered passkey.</p>
-      <h3>Step 4: Authenticate with Your Biometric</h3>
-      <p>Your device will prompt you to scan your fingerprint or use Face ID. Complete the scan to verify your identity.</p>
-      <h3>Step 5: Complete 2FA Verification</h3>
-      <p>For additional security, you'll receive a 6-digit verification code via email. Enter this code to complete your login.</p>
-      <h2>Managing Your Passkeys</h2>
-      <ul>
-        <li><strong>View passkeys:</strong> See all devices where you've registered biometric login</li>
-        <li><strong>Add more devices:</strong> Register additional devices for convenience</li>
-        <li><strong>Remove passkeys:</strong> Delete passkeys from devices you no longer use</li>
-      </ul>
-      <h2>Troubleshooting</h2>
-      <h4>"No passkeys found" error</h4>
-      <p>This means you haven't registered a passkey yet. Sign in with your password first, then go to your Dashboard to register your biometric.</p>
-      <h4>"RP ID is invalid" error</h4>
-      <p>This can happen if you're trying to use a passkey registered on a different domain. Make sure you're accessing MetsXMFanZone from the same URL where you registered your passkey.</p>
-      <h4>Biometric not working on my device</h4>
-      <p>Ensure your device supports WebAuthn/Passkeys and that you're using a modern browser. Some older devices or browsers may not support biometric login.</p>
-      <p>If you continue to experience issues, please visit our <a href="/contact">Contact</a> page for assistance.</p>`,
   },
   {
     path: "/help/navigate-platform",
@@ -424,17 +379,19 @@ const helpArticles = [
   {
     path: "/help/subscription-plans",
     title: "Subscription Plans Explained",
-    description: "Compare MetsXMFanZone subscription plans including Free, Premium, and Annual options. Find the right plan for you.",
+    description: "Compare MetsXMFanZone Free, Weekly, Monthly, and Yearly memberships.",
     heading: "Subscription Plans Explained",
     bodyHtml: `
       <h2>Available Plans</h2>
-      <p>MetsXMFanZone offers three subscription tiers to fit your needs:</p>
+      <p>MetsXMFanZone offers four membership choices:</p>
       <h3>Free Plan — $0/month</h3>
       <ul><li>Access to all blog articles</li><li>Community posting and comments</li><li>No live game streams</li></ul>
-      <h3>Premium Plan — $9.99/month</h3>
+      <h3>Weekly Plan — $3.99/week</h3>
+      <ul><li>Everything in Free plan</li><li>Access to live streams and replays</li><li>Premium content and HD viewing</li></ul>
+      <h3>Monthly Plan — $9.99/month</h3>
       <ul><li>Everything in Free plan</li><li>Access to all live game streams</li><li>HD and Full HD quality</li></ul>
-      <h3>Annual Plan — $129.99/year (Save $20)</h3>
-      <ul><li>Everything in Premium plan</li><li>2 months free compared to monthly</li><li>Exclusive annual member perks</li></ul>`,
+      <h3>Yearly Plan — $129.99/year</h3>
+      <ul><li>Everything in Monthly plan</li><li>One convenient yearly payment</li><li>Exclusive yearly member perks</li></ul>`,
   },
   {
     path: "/help/payment-methods",
@@ -454,11 +411,11 @@ const helpArticles = [
     heading: "Cancel or Change Subscription",
     bodyHtml: `
       <h2>Canceling Your Subscription</h2>
-      <p>You can cancel your Premium or Annual subscription at any time.</p>
+      <p>You can cancel your Weekly, Monthly, or Yearly membership at any time.</p>
       <h3>For PayPal Subscriptions</h3>
       <ol><li>Log in to your PayPal account</li><li>Go to Settings → Payments</li><li>Click "Manage automatic payments"</li><li>Find "MetsXMFanZone" and select "Cancel"</li></ol>
-      <h3>For Helcim Subscriptions</h3>
-      <ol><li>Log in to your MetsXMFanZone account</li><li>Go to your <a href="/dashboard">Dashboard</a></li><li>Navigate to Subscription settings</li><li>Click "Cancel Subscription"</li></ol>
+      <h3>From your Member Center</h3>
+      <ol><li>Log in to your MetsXMFanZone account</li><li>Go to your <a href="/dashboard">Member Center</a></li><li>Open membership settings</li><li>Select "Cancel membership"</li></ol>
       <h2>Refund Policy</h2>
       <p><strong>Important:</strong> We do not offer refunds for partial subscription periods. When you cancel, your subscription remains active until the end of your current billing cycle.</p>`,
   },
@@ -519,7 +476,6 @@ const helpCenter = {
         description: "Learn the basics of MetsXMFanZone",
         articles: [
           ["How to create an account", "/help/create-account"],
-          ["Login with biometrics (fingerprint/Face ID)", "/help/biometric-login"],
           ["Navigating the platform", "/help/navigate-platform"],
           ["Watching live streams", "/help/watch-streams"],
           ["Community guidelines", "/help/community-guidelines"],

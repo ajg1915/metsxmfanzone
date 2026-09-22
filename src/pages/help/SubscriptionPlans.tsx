@@ -12,7 +12,7 @@ const SubscriptionPlans = () => {
         <title>Subscription Plans Explained - MetsXMFanZone Help</title>
         <meta
           name="description"
-          content="Compare MetsXMFanZone subscription plans including Free, Premium, and Annual options. Find the right plan for you."
+          content="Compare MetsXMFanZone Free, Weekly, Monthly, and Yearly memberships."
         />
         <link rel="canonical" href="https://www.metsxmfanzone.com/help/subscription-plans" />
       </Helmet>
@@ -32,7 +32,7 @@ const SubscriptionPlans = () => {
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-primary border-b pb-3">Available Plans</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  MetsXMFanZone offers three subscription tiers to fit your needs:
+                  MetsXMFanZone offers four membership choices:
                 </p>
               </div>
 
@@ -58,8 +58,14 @@ const SubscriptionPlans = () => {
                   </ul>
                 </div>
 
+                <div className="p-6 rounded-lg border-2 border-border bg-card">
+                  <h3 className="text-2xl font-bold text-primary mb-2">Weekly Plan</h3>
+                  <p className="text-3xl font-bold text-primary mb-4">$3.99<span className="text-lg text-muted-foreground">/week</span></p>
+                  <ul className="space-y-2 text-muted-foreground"><li>✓ Everything in Free</li><li>✓ Live streams and game replays</li><li>✓ Premium content and HD viewing</li></ul>
+                </div>
+
                 <div className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border-2 border-primary">
-                  <h3 className="text-2xl font-bold text-primary mb-2">Premium Plan</h3>
+                  <h3 className="text-2xl font-bold text-primary mb-2">Monthly Plan</h3>
                   <p className="text-3xl font-bold text-primary mb-4">
                     $9.99<span className="text-lg text-muted-foreground">/month</span>
                   </p>
@@ -80,21 +86,18 @@ const SubscriptionPlans = () => {
                 </div>
 
                 <div className="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-lg border-2 border-green-500">
-                  <div className="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold mb-2">
-                    SAVE $20
-                  </div>
-                  <h3 className="text-2xl font-bold text-primary mb-2">Annual Plan</h3>
+                  <h3 className="text-2xl font-bold text-primary mb-2">Yearly Plan</h3>
                   <p className="text-3xl font-bold text-primary mb-4">
                     $129.99<span className="text-lg text-muted-foreground">/year</span>
                   </p>
                   <ul className="space-y-2 text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <span className="text-green-600">✓</span>
-                      <span>Everything in Premium plan</span>
+                       <span>Everything in Monthly plan</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-600">✓</span>
-                      <span>2 months free compared to monthly</span>
+                       <span>One convenient yearly payment</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-600">✓</span>

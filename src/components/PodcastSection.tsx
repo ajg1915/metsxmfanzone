@@ -48,7 +48,7 @@ const EqualizerBars = ({ animate = true }: { animate?: boolean }) => (
 const PodcastSection = () => {
   const { tier, isAdmin } = useSubscription();
   const [podcasts, setPodcasts] = useState<PodcastEpisode[]>([]);
-  const isPremium = isAdmin || tier === "premium" || tier === "annual";
+  const isPremium = isAdmin || tier === "weekly" || tier === "premium" || tier === "annual";
 
   useEffect(() => {
     fetchPodcasts();

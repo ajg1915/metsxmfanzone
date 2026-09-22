@@ -145,7 +145,7 @@ const RegularSeasonSeriesSection = () => {
       return;
     }
 
-    if (isAdmin || tier === "premium" || tier === "annual") {
+    if (isAdmin || tier === "weekly" || tier === "premium" || tier === "annual") {
       navigate("/metsxmfanzone");
     } else {
       navigate("/plans");
@@ -276,7 +276,7 @@ const RegularSeasonSeriesSection = () => {
                         FREE PREVIEW
                       </Badge>
                     ) : (
-                      !isAdmin && tier !== "premium" && tier !== "annual" && (
+                      !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
                         <PremiumBadge size="sm" />
                       )
                     )}

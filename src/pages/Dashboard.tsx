@@ -9,7 +9,6 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import OnboardingWalkthrough from "@/components/OnboardingWalkthrough";
 import NotificationPreferencesCard from "@/components/NotificationPreferencesCard";
-import PasskeyManager from "@/components/PasskeyManager";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,15 +25,15 @@ import { CANCELLATION_RESULT_KEY } from "@/pages/CancellationStatus";
 type MemberPlan = "free" | "trial" | "weekly" | "premium" | "annual";
 
 const PLAN_LABELS: Record<MemberPlan, string> = {
-  free: "No paid plan",
+  free: "Free",
   trial: "Trial",
   weekly: "Weekly",
-  premium: "Premium",
-  annual: "Annual",
+  premium: "Monthly",
+  annual: "Yearly",
 };
 
 const PLAN_PRICES: Record<MemberPlan, string> = {
-  free: "Not subscribed",
+  free: "$0 · Basic access",
   trial: "Complimentary access",
   weekly: "$3.99 / week",
   premium: "$9.99 / month",
@@ -172,7 +171,7 @@ const Dashboard = () => {
   const dateLabel = status === "cancelled" ? "Access through" : plan === "trial" ? "Trial ends" : "Next billing";
   const quickLinks = [
     { label: "Watch Live", description: "Live games and events", icon: Tv, href: "/metsxmfanzone", locked: !accessActive },
-    { label: "Community", description: "Talk with Mets fans", icon: MessageSquarePlus, href: "/community", locked: !accessActive },
+    { label: "Community", description: "Talk with Mets fans", icon: MessageSquarePlus, href: "/community", locked: false },
     { label: "Articles", description: "Latest stories", icon: BookOpen, href: "/blog", locked: false },
     { label: "Podcasts", description: "Listen to new shows", icon: Mic, href: "/podcast", locked: !accessActive },
   ];
@@ -266,9 +265,8 @@ const Dashboard = () => {
             </div>
           </section>
 
-          <section className="grid gap-4 p-0 lg:grid-cols-2">
+          <section className="p-0">
             <div className="overflow-hidden rounded-lg border border-border/50 bg-card/70 [&>*]:border-0 [&>*]:bg-transparent"><NotificationPreferencesCard /></div>
-            <div className="overflow-hidden rounded-lg border border-border/50 bg-card/70 [&>*]:border-0 [&>*]:bg-transparent"><PasskeyManager /></div>
           </section>
 
           <div className="flex flex-wrap gap-3 border-t border-border/40 pt-4 text-xs">
