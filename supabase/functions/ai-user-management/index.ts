@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { cancelPaypalAndDeleteAccount } from "../_shared/account-cleanup.ts";
+import { cancelPaypalAndDeleteAccount, cancelPaypalAndRetainAccount } from "../_shared/account-cleanup.ts";
 import { generateCloudflareText } from "../_shared/cloudflareAi.ts";
 
 const corsHeaders = {
@@ -259,25 +259,25 @@ async function executeAction(client: any, action: any, adminId: string) {
           .select("user_id")
           .eq("id", action.subscription_id)
           .maybeSingle();
-        const result = await cancelPaypalAndDeleteAccount(
+        const result = await cancelPaypalAndRetainAccount(
           client,
           sub?.user_id || action.user_id,
           "Admin AI cancelled subscription",
         );
-        if (!result.paypalConfirmed || !result.accountDeleted) {
-          throw new Error(result.message || "Cancellation cleanup failed");
+        if (!result.paypalConfirmed) {
+          throw new Error(result.message || "Cancellation failed");
         }
       } else {
-        const result = await cancelPaypalAndDeleteAccount(
+        const result = await cancelPaypalAndRetainAccount(
           client,
           action.user_id,
           "Admin AI cancelled subscription",
         );
-        if (!result.paypalConfirmed || !result.accountDeleted) {
-          throw new Error(result.message || "Cancellation cleanup failed");
+        if (!result.paypalConfirmed) {
+          throw new Error(result.message || "Cancellation failed");
         }
       }
-      return { message: "PayPal billing cancelled and account deleted" };
+      return { message: "PayPal billing cancelled and member account retained" };
     }
 
     case "extend_subscription": {

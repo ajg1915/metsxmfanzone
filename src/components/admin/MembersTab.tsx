@@ -78,13 +78,15 @@ export default function MembersTab() {
         roleMap.set(r.user_id, existing);
       });
       const accessMap = new Map<string, number>();
+      const activityByUser = new Map<string, typeof accessActivity>();
       (accessActivity || []).forEach((event) => {
-        if (accessMap.has(event.user_id)) return;
-        if (event.action === "access_restored") {
-          accessMap.set(event.user_id, 0);
-          return;
-        }
-        accessMap.set(event.user_id, (accessActivity || []).filter((candidate) => candidate.user_id === event.user_id && candidate.action !== "access_restored").length);
+        activityByUser.set(event.user_id, [...(activityByUser.get(event.user_id) || []), event]);
+      });
+      activityByUser.forEach((events, userId) => {
+        const latestRestore = events?.find((event) => event.action === "access_restored")?.created_at;
+        accessMap.set(userId, (events || []).filter((event) =>
+          event.action !== "access_restored" && (!latestRestore || event.created_at > latestRestore)
+        ).length);
       });
 
       const rows: MemberRow[] = (profiles || []).map(p => {

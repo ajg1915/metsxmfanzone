@@ -12,7 +12,7 @@
   - Use a much darker menu; avoid light or bright-blue menu backgrounds
 
   - Selected direction: Midnight core minimalist (third option)
-- [ ] Redesign login and registration for all screen sizes
+- [x] Redesign login and registration for all screen sizes
 - [x] Add admin signup/login activity visibility and alerts
-- [ ] Streamline member access, PayPal linkage, cancellation warnings, and repeat-cancellation limits
+- [x] Streamline member access, PayPal linkage, cancellation warnings, and repeat-cancellation limits
 - [x] Condense admin navigation and group infrequent tools under More
