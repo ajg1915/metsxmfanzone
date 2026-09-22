@@ -254,18 +254,19 @@ export default function NewsletterGenerator() {
 
     try {
       const fullHtml = generateNewsletterHtml(subject, generatedContent);
-      
-      const { error } = await supabase.functions.invoke("send-user-email", {
-        body: {
+
+      // If the edge function fails, fall back to the Vercel /api/send-email route.
+      await invokeEmailFunction(
+        "send-user-email",
+        {
           subject: `[TEST] ${subject}`,
           content: fullHtml,
           recipientType: "specific",
           specificEmails: [testEmail],
           useTestSender: true,
         },
-      });
-
-      if (error) throw error;
+        { to: testEmail, subject: `[TEST] ${subject}`, html: fullHtml },
+      );
 
       toast({
         title: "Test Email Sent!",
