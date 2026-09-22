@@ -57,8 +57,11 @@ const sendDirectlyThroughResend = async ({
 
   const responseBody = await response.text();
   if (!response.ok) {
-    console.error("Confirmation email provider rejected the request", { status: response.status });
-    throw new Error(`Email provider rejected the request (${response.status})`);
+    console.error("Confirmation email provider rejected the request", {
+      status: response.status,
+      details: responseBody,
+    });
+    throw new Error(`Email provider rejected the request (${response.status}): ${responseBody}`);
   }
 
   try {
