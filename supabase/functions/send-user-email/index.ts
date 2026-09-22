@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { escapeHtml, sanitizeHtml } from "../_shared/sanitize-html.ts";
+import { queueTransactionalEmail } from "../_shared/queue-email.ts";
 
 
 const corsHeaders = {
@@ -10,11 +11,6 @@ const corsHeaders = {
   "X-Frame-Options": "DENY",
 };
 
-const VERIFIED_EMAIL_DOMAIN = "notify.metsxmfanzone.com";
-const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`;
-const EMAIL_QUEUE_NAME = "transactional_emails";
-
-
 const getTemplateName = (recipientType: EmailRequest["recipientType"], useTestSender: boolean) => {
   if (useTestSender) return "manual_campaign_test";
   switch (recipientType) {
@@ -24,66 +20,6 @@ const getTemplateName = (recipientType: EmailRequest["recipientType"], useTestSe
       return "manual_campaign_subscribers";
     default:
       return "manual_campaign_specific";
-  }
-};
-
-const getOrCreateUnsubscribeToken = async (
-  supabase: ReturnType<typeof createClient>,
-  email: string,
-): Promise<string> => {
-  const normalizedEmail = email.trim().toLowerCase();
-  const { data: existing } = await supabase
-    .from("email_unsubscribe_tokens")
-    .select("token")
-    .eq("email", normalizedEmail)
-    .maybeSingle();
-  if (existing?.token) return existing.token;
-  const token = crypto.randomUUID();
-  await supabase.from("email_unsubscribe_tokens").insert({ email: normalizedEmail, token });
-  return token;
-};
-
-const queueEmail = async (
-  supabase: ReturnType<typeof createClient>,
-  to: string,
-  subject: string,
-  html: string,
-  templateName: string,
-) => {
-  const messageId = crypto.randomUUID();
-  const unsubscribeToken = await getOrCreateUnsubscribeToken(supabase, to);
-
-  const payload = {
-    to,
-    from: VERIFIED_FROM_ADDRESS,
-    sender_domain: VERIFIED_EMAIL_DOMAIN,
-    subject,
-    html,
-    text: subject,
-    purpose: "transactional",
-    label: templateName,
-    idempotency_key: `${templateName}:${to.toLowerCase()}:${messageId}`,
-    message_id: messageId,
-    unsubscribe_token: unsubscribeToken,
-    queued_at: new Date().toISOString(),
-  };
-
-  const { error: queueError } = await supabase.rpc("enqueue_email", {
-    queue_name: EMAIL_QUEUE_NAME,
-    payload,
-  });
-
-  if (queueError) throw queueError;
-
-  const { error: logError } = await supabase.from("email_send_log").insert({
-    message_id: messageId,
-    template_name: templateName,
-    recipient_email: to,
-    status: "pending",
-  });
-
-  if (logError) {
-    console.error("Failed to log queued email:", logError.message);
   }
 };
 
