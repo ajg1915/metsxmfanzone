@@ -171,28 +171,61 @@ const Auth = () => {
       const contact = contactSchema.parse({ phoneNumber, agreeToTerms: agreeToTerms as true });
       const normalizedEmail = validateEmail(account.email);
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke("register-member", {
-        body: {
+      const metadata = {
+        full_name: account.fullName.trim(),
+        phone_number: contact.phoneNumber.trim(),
+        sms_notifications_enabled: smsOptIn,
+        preferred_payment_method: "paypal",
+      };
+
+      let userId: string | null = null;
+      let registrationError: string | null = null;
+
+      try {
+        const { data, error } = await supabase.functions.invoke("register-member", {
+          body: {
+            email: normalizedEmail,
+            password: account.password,
+            fullName: account.fullName.trim(),
+            phoneNumber: contact.phoneNumber.trim(),
+            smsOptIn,
+          },
+        });
+        if (error) {
+          const details = typeof (error as { context?: { text?: () => Promise<string> } }).context?.text === "function"
+            ? await (error as { context: { text: () => Promise<string> } }).context.text()
+            : "";
+          try { registrationError = JSON.parse(details)?.error || null; } catch { registrationError = null; }
+          if (registrationError) throw new Error(registrationError);
+        } else if (data?.userId) {
+          userId = data.userId;
+        } else if (data?.error) {
+          throw new Error(data.error);
+        }
+      } catch (invokeError) {
+        // The registration function may be unreachable (not deployed / network blocked).
+        // Only surface a real validation message; otherwise fall back to standard sign-up.
+        if (registrationError) throw invokeError;
+      }
+
+      if (!userId) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email: normalizedEmail,
           password: account.password,
-          fullName: account.fullName.trim(),
-          phoneNumber: contact.phoneNumber.trim(),
-          smsOptIn,
-        },
-      });
-      if (error) {
-        const details = typeof (error as { context?: { text?: () => Promise<string> } }).context?.text === "function"
-          ? await (error as { context: { text: () => Promise<string> } }).context.text()
-          : "";
-        let message = "Account could not be created";
-        try { message = JSON.parse(details)?.error || message; } catch { /* keep default */ }
-        throw new Error(message);
+          options: {
+            emailRedirectTo: `${window.location.origin}/confirm-account`,
+            data: metadata,
+          },
+        });
+        if (signUpError) throw new Error(signUpError.message);
+        userId = signUpData.user?.id ?? null;
+        if (!userId) throw new Error("Account could not be created");
       }
-      if (!data?.userId) throw new Error(data?.error || "Account could not be created");
 
       await supabase.functions.invoke("send-email-confirmation", {
-        body: { email: normalizedEmail, name: account.fullName.trim(), userId: data.userId },
+        body: { email: normalizedEmail, name: account.fullName.trim(), userId },
       }).catch(() => undefined);
+
 
       localStorage.removeItem(SIGNUP_DRAFT_KEY);
       localStorage.setItem("pending_membership_selection", "true");
