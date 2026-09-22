@@ -4,6 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 interface Props {
   memberName?: string
@@ -26,6 +27,7 @@ const Email = (p: Props) => (
     <Preview>New free t-shirt claim — ship to {p.shippingName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <BrandHeader />
         <Heading style={h1}>New Free T-Shirt Claim</Heading>
         <Text style={text}>
           <strong>{p.memberName || p.memberEmail}</strong> ({p.memberEmail}) just claimed
@@ -48,6 +50,7 @@ const Email = (p: Props) => (
         <Text style={text}>
           <a href={p.adminUrl} style={{ color: '#002D72' }}>Manage in admin panel →</a>
         </Text>
+        <BrandFooter />
       </Container>
     </Body>
   </Html>

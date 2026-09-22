@@ -4,6 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Button, Section,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 const SITE_NAME = 'MetsXMFanZone'
 
@@ -21,6 +22,7 @@ const NotificationEmail = ({ name, title, message, actionUrl, actionLabel }: Not
     <Preview>{title || `Update from ${SITE_NAME}`}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <BrandHeader />
         <Heading style={h1}>{title || 'Notification'}</Heading>
         {name && <Text style={text}>Hi {name},</Text>}
         <Text style={text}>{message || `You have a new update from ${SITE_NAME}.`}</Text>
@@ -29,7 +31,7 @@ const NotificationEmail = ({ name, title, message, actionUrl, actionLabel }: Not
             <Button href={actionUrl} style={button}>{actionLabel || 'View details'}</Button>
           </Section>
         )}
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <BrandFooter />
       </Container>
     </Body>
   </Html>

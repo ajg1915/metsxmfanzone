@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendTemplateEmail } from "../_shared/transactional-email-templates/send-email.ts";
+import { queueTransactionalEmail } from "../_shared/queue-email.ts";
+import { renderBrandedEmailFor, escapeHtml } from "../_shared/email-brand.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,19 +45,35 @@ const sendNotifications = async (
           .map((r: any) => r.email)
           .filter((e: string) => !!e);
 
+        const gamedayUrl = linkUrl.startsWith('http') ? linkUrl : `https://metsxmfanzone.com${linkUrl}`;
+        const gamedayLabelMap: Record<string, string> = {
+          pregame_20min: '20 MINUTES TO FIRST PITCH',
+          pregame_5min: '5 MINUTES TO FIRST PITCH',
+        };
+        const gamedayLabel = gamedayLabelMap[triggerType] || 'GAMEDAY ALERT';
+        const gamedayContent = `
+          <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:1px;color:#FF5910;text-align:center;">${escapeHtml(gamedayLabel)}</p>
+          <p style="margin:0 0 16px;">${escapeHtml(message)}</p>
+          ${opponent ? `<p style="margin:4px 0;"><strong>Opponent:</strong> ${escapeHtml(opponent)}</p>` : ''}
+          ${timeStr ? `<p style="margin:4px 0;"><strong>First Pitch:</strong> ${escapeHtml(timeStr)} ET</p>` : ''}
+          ${venue ? `<p style="margin:4px 0;"><strong>Venue:</strong> ${escapeHtml(venue)}</p>` : ''}`;
+        const gamedayText = `${title}\n\n${message}\n${opponent ? `Opponent: ${opponent}\n` : ''}${timeStr ? `First Pitch: ${timeStr} ET\n` : ''}${venue ? `Venue: ${venue}\n` : ''}\n${gamedayUrl}`;
+        const gamedayHtml = await renderBrandedEmailFor(supabase, {
+          preheader: title,
+          heading: title,
+          content: gamedayContent,
+          cta: { label: 'Watch Live', url: gamedayUrl },
+        });
+
         for (const to of emails) {
           try {
-            await sendTemplateEmail('gameday-alert', to, {
+            await queueTransactionalEmail(supabase, {
+              to,
+              subject: title,
+              html: gamedayHtml,
+              text: gamedayText,
+              label: 'gameday_alert',
               idempotencyKey: `gameday-${triggerType}-${todayET}-${to}`,
-              templateData: {
-                title,
-                message,
-                opponent,
-                gameTime: timeStr,
-                venue,
-                linkUrl,
-                triggerType,
-              },
             });
           } catch (e) {
             console.error(`Email send failed for ${to}:`, e);

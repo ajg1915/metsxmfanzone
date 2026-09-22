@@ -4,6 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Button, Section, Hr,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 const SITE_NAME = 'MetsXMFanZone'
 
@@ -19,6 +20,7 @@ const Email = ({ name, claimUrl, optOutUrl }: Props) => (
     <Preview>You've earned a free {SITE_NAME} T-Shirt!</Preview>
     <Body style={main}>
       <Container style={container}>
+        <BrandHeader />
         <Heading style={h1}>You earned a free T-Shirt! 🎉</Heading>
         <Text style={text}>
           {name ? `Hey ${name},` : 'Hey there,'} thanks for being an active {SITE_NAME} member
@@ -36,7 +38,7 @@ const Email = ({ name, claimUrl, optOutUrl }: Props) => (
           Not interested?{' '}
           <a href={optOutUrl} style={link}>Opt out of this gift</a>.
         </Text>
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <BrandFooter />
       </Container>
     </Body>
   </Html>

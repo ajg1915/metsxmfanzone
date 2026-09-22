@@ -4,6 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Button, Section,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 const SITE_NAME = 'MetsXMFanZone'
 const SITE_URL = 'https://www.metsxmfanzone.com'
@@ -18,6 +19,7 @@ const WelcomeEmail = ({ name }: WelcomeProps) => (
     <Preview>Welcome to {SITE_NAME} — let's go Mets!</Preview>
     <Body style={main}>
       <Container style={container}>
+        <BrandHeader />
         <Heading style={h1}>Welcome{name ? `, ${name}` : ''}!</Heading>
         <Text style={text}>
           Thanks for joining {SITE_NAME} — your home for Mets streams, gameday alerts,
@@ -30,7 +32,7 @@ const WelcomeEmail = ({ name }: WelcomeProps) => (
           Stick around for live game alerts, exclusive content, and community discussions.
           Let's go Mets!
         </Text>
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <BrandFooter />
       </Container>
     </Body>
   </Html>

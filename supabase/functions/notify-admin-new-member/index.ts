@@ -1,4 +1,5 @@
 import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
+import { renderBrandedEmailFor } from '../_shared/email-brand.ts'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -66,20 +67,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const logoUrl = "https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png";
     const dashboardUrl = "https://metsxmfanzone.com/admin/subscriptions";
     const now = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
 
-    const emailHtml = `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin: 0; padding: 0; background-color: #002D72; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
-  <div style="max-width: 400px; margin: 0 auto; padding: 20px;">
-    <div style="text-align: center; padding: 15px 0;">
-      <img src="${logoUrl}" alt="MetsXMFanZone" style="width: 85px; height: auto; border-radius: 12px;" />
-      <h2 style="color: #FF4500; margin: 8px 0 0 0; font-size: 18px;">🎉 New Member Alert!</h2>
-    </div>
-    <div style="background: linear-gradient(180deg, #1a1f2e 0%, #0f1420 100%); border: 1px solid rgba(255, 69, 0, 0.3); border-radius: 12px; padding: 24px;">
+    const emailContent = `
       <div style="background: linear-gradient(135deg, #002D72, #FF4500); border-radius: 8px; padding: 16px; margin-bottom: 16px; text-align: center;">
         <p style="color: white; font-size: 24px; margin: 0;">🏟️</p>
         <p style="color: white; font-size: 16px; font-weight: bold; margin: 8px 0 0 0;">New Fan Joined!</p>
@@ -91,15 +82,14 @@ Deno.serve(async (req) => {
         <tr><td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Amount</td><td style="padding: 8px 0; color: #10B981; font-size: 13px; font-weight: bold; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${safeAmount}</td></tr>
         <tr><td style="padding: 8px 0; color: #9CA3AF; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1);">Source</td><td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.1);">${safeSource}</td></tr>
         <tr><td style="padding: 8px 0; color: #9CA3AF; font-size: 13px;">Date</td><td style="padding: 8px 0; color: #F9FAFB; font-size: 13px; text-align: right;">${now} ET</td></tr>
-      </table>
-      <div style="text-align: center; margin-top: 20px;">
-        <a href="${dashboardUrl}" style="display: inline-block; background: linear-gradient(135deg, #FF4500, #FF6A33); color: white; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 13px;">View in Admin Dashboard</a>
-      </div>
-    </div>
-    <p style="color: #6B7280; font-size: 10px; text-align: center; margin-top: 15px;">© ${new Date().getFullYear()} <span style="color: #FF4500;">MetsXMFanZone</span> — Admin Notification</p>
-  </div>
-</body>
-</html>`;
+      </table>`;
+
+    const emailHtml = await renderBrandedEmailFor(supabase, {
+      preheader: "A new fan just joined MetsXMFanZone!",
+      heading: "🎉 New Member Alert!",
+      content: emailContent,
+      cta: { label: "View in Admin Dashboard", url: dashboardUrl },
+    });
 
     const subject = `🎉 New ${safePlanType} Member: ${memberName} — MetsXMFanZone`;
 

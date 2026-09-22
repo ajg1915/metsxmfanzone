@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { createServiceClient, queueTransactionalEmail } from "../_shared/queue-email.ts";
+import { renderBrandedEmailFor } from "../_shared/email-brand.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -61,6 +62,13 @@ Deno.serve(async (req) => {
     const safeAgent = escapeHtml(userAgent);
     const time = escapeHtml(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
 
+    const adminHtml = await renderBrandedEmailFor(service, {
+      preheader: "A member just signed in to MetsXMFanZone.",
+      heading: "Member login",
+      content: `<p style="margin:0 0 8px;"><strong>${safeName}</strong> signed in at ${time} ET.</p><p style="color:#8b93a1;font-size:12px;margin:0;">${safeAgent}</p>`,
+      cta: { label: "View activity", url: "https://metsxmfanzone.com/admin/activity" },
+    });
+
     for (const admin of admins || []) {
       if (!admin.email) continue;
       await queueTransactionalEmail(service, {
@@ -68,7 +76,7 @@ Deno.serve(async (req) => {
         subject: "Member login — MetsXMFanZone",
         label: "admin_member_login",
         idempotencyKey: `admin-member-login:${user.id}:${admin.email.toLowerCase()}:${Math.floor(Date.now() / 300000)}`,
-        html: `<div style="font-family:Arial,sans-serif;background:#07111f;color:#f8fafc;padding:24px"><h2 style="color:#ff5910">Member login</h2><p><strong>${safeName}</strong> signed in at ${time} ET.</p><p style="color:#94a3b8;font-size:12px">${safeAgent}</p><a href="https://metsxmfanzone.com/admin/activity" style="color:#ff5910">View activity</a></div>`,
+        html: adminHtml,
       });
     }
 

@@ -4,6 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text, Hr, Section,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 const SITE_NAME = 'MetsXMFanZone'
 
@@ -21,6 +22,7 @@ const OrderConfirmationEmail = ({ name, orderId, items, total, shippingAddress }
     <Preview>Your {SITE_NAME} order is confirmed</Preview>
     <Body style={main}>
       <Container style={container}>
+        <BrandHeader />
         <Heading style={h1}>Order Confirmed!</Heading>
         <Text style={text}>
           {name ? `Hi ${name}, t` : 'T'}hanks for your order. We've received it and will
@@ -56,7 +58,7 @@ const OrderConfirmationEmail = ({ name, orderId, items, total, shippingAddress }
         )}
         <Hr style={hr} />
         <Text style={footer}>Questions? Reply to this email and we'll help out.</Text>
-        <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <BrandFooter />
       </Container>
     </Body>
   </Html>
