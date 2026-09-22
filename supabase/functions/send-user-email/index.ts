@@ -122,7 +122,8 @@ Deno.serve(async (req) => {
       throw new Error("Admin access required");
     }
 
-    const { subject, content, recipientType, specificEmails, useTestSender }: EmailRequest = await req.json();
+    const { subject, content, recipientType, specificEmails, useTestSender, rawHtml }: EmailRequest =
+      await req.json();
 
     if (!subject || !content) {
       throw new Error("Subject and content are required");
