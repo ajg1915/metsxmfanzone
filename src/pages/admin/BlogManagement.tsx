@@ -1,26 +1,18 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToR2 } from "@/lib/r2Upload";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
-  Plus, Edit, Trash2, FileText, Music, Copy, CheckCircle,
-  XCircle, Clock, Loader2, Eye, Search, CalendarClock, Code2,
+  Plus, Edit, Trash2, FileText, Copy, CheckCircle,
+  XCircle, Clock, Eye, Search, CalendarClock, Code2, Share2,
 } from "lucide-react";
-import { z } from "zod";
-import { validateFile, generateSafeFilename } from "@/utils/fileValidation";
-import RichTextEditor from "@/components/admin/RichTextEditor";
+import BlogShareDialog from "@/components/admin/BlogShareDialog";
 
 const blogPostSchema = z.object({
   title: z.string().trim().min(3, "Title must be at least 3 characters").max(200),
