@@ -168,7 +168,7 @@ export const renderDashboard = async (root) => {
             : '<a class="button primary" href="/pricing">Choose a plan</a>'
         }
         <p class="form-error" id="cancel-error" role="alert" hidden></p>
-        ${isActive ? '<p class="form-note">Cancelling stops all future PayPal charges immediately and permanently deletes your account and data.</p>' : ""}
+        ${isActive ? '<p class="form-note">Cancelling stops PayPal renewal while keeping your account and history. More than two cancellations limits paid access.</p>' : ""}
       </section>
       <section class="content-width card-panel">
         <h2>Quick links</h2>
