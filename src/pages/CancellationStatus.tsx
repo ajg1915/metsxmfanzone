@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, AlertTriangle, ShieldCheck, UserCheck, LifeBuoy } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const CANCELLATION_RESULT_KEY = "mxfz_cancellation_result";
 
@@ -55,16 +57,32 @@ const StatusRow = ({
 const CancellationStatus = () => {
   const [result, setResult] = useState<CancellationResult | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
+    const loadResult = async () => {
     try {
       const raw = sessionStorage.getItem(CANCELLATION_RESULT_KEY);
-      if (raw) setResult(JSON.parse(raw) as CancellationResult);
+      if (raw) {
+        setResult(JSON.parse(raw) as CancellationResult);
+        setLoaded(true);
+        return;
+      }
     } catch (_) {
       /* ignore malformed state */
     }
+    if (user) {
+      const { data } = await supabase.from("subscription_activity")
+        .select("action, created_at").eq("user_id", user.id)
+        .eq("action", "membership_cancelled").order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (data) {
+        setResult({ paypalConfirmed: true, accountRetained: true, at: data.created_at });
+      }
+    }
     setLoaded(true);
-  }, []);
+    };
+    void loadResult();
+  }, [user]);
 
   const allDone = !!result?.paypalConfirmed && !!result?.accountRetained;
 

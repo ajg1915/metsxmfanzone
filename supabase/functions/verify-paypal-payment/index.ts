@@ -83,19 +83,23 @@ Deno.serve(async (req) => {
     }
 
     // Find our subscription record
-    const { data: subscription } = await supabase
+    const { data: subscription, error: subscriptionError } = await supabase
       .from('subscriptions')
       .select('id, user_id, plan_type, status, amount, currency')
       .eq('paypal_subscription_id', paypalSubId)
-      .single();
+      .maybeSingle();
+
+    if (subscriptionError) throw new Error('Unable to verify subscription record');
 
     if (!subscription) {
       // Also try matching by paypal_order_id for backward compatibility
-      const { data: legacySub } = await supabase
+      const { data: legacySub, error: legacyError } = await supabase
         .from('subscriptions')
         .select('id, user_id, plan_type, status, amount, currency')
         .eq('paypal_order_id', paypalSubId)
-        .single();
+        .maybeSingle();
+
+      if (legacyError) throw new Error('Unable to verify legacy subscription record');
       
       if (!legacySub) {
         throw new Error('Subscription not found');

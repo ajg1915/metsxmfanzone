@@ -172,13 +172,14 @@ const UserManagement = () => {
     <AdminPage>
       <AdminPageHeader
         icon={Bot}
-        title="AI User Management"
+        title="Members"
         count={totalMembers}
-        description="Tell the AI what to do — it handles members, subscriptions & roles automatically"
+        description="Manage membership access, PayPal status, signups, transactions, and roles"
       />
 
-      {/* AI Command Bar */}
-      <Card className="border-primary/20 bg-card/80 backdrop-blur">
+      <details className="group rounded-lg border border-border/40 bg-card/70">
+        <summary className="flex cursor-pointer list-none items-center gap-2 p-3 text-xs font-semibold"><Bot className="h-4 w-4 text-primary" />AI member assistant<span className="ml-auto text-muted-foreground group-open:rotate-90">›</span></summary>
+      <Card className="border-0 bg-transparent shadow-none">
         <CardContent className="pt-4 pb-3">
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -269,40 +270,26 @@ const UserManagement = () => {
           </CardContent>
         </Card>
       )}
+      </details>
 
       {/* Tabs: Members / Signups / Transactions / Roles */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 max-w-3xl">
-          <TabsTrigger value="members" className="gap-1.5 text-xs">
-            <Users className="w-3.5 h-3.5" />Members
+        <TabsList className="grid w-full grid-cols-4 max-w-3xl h-auto p-1">
+          <TabsTrigger value="members" className="gap-1 text-[10px] sm:text-xs px-1.5">
+            <Users className="hidden sm:block w-3.5 h-3.5" />Members
           </TabsTrigger>
-          <TabsTrigger value="signups" className="gap-1.5 text-xs">
-            <UserPlus className="w-3.5 h-3.5" />Signups
+          <TabsTrigger value="signups" className="gap-1 text-[10px] sm:text-xs px-1.5">
+            <UserPlus className="hidden sm:block w-3.5 h-3.5" />Signups
           </TabsTrigger>
-          <TabsTrigger value="transactions" className="gap-1.5 text-xs">
-            <CreditCard className="w-3.5 h-3.5" />Transactions
+          <TabsTrigger value="transactions" className="gap-1 text-[10px] sm:text-xs px-1.5">
+            <CreditCard className="hidden sm:block w-3.5 h-3.5" />Billing
           </TabsTrigger>
-          <TabsTrigger value="roles" className="gap-1.5 text-xs">
-            <Shield className="w-3.5 h-3.5" />Roles
+          <TabsTrigger value="roles" className="gap-1 text-[10px] sm:text-xs px-1.5">
+            <Shield className="hidden sm:block w-3.5 h-3.5" />Roles
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="members">
-          {/* Quick stats from the live members fetch */}
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            <Card><CardContent className="pt-4 pb-3 flex items-center justify-between">
-              <div><p className="text-xs text-muted-foreground">Total</p><p className="text-xl font-bold">{totalMembers}</p></div>
-              <Users className="w-6 h-6 text-primary opacity-40" />
-            </CardContent></Card>
-            <Card><CardContent className="pt-4 pb-3 flex items-center justify-between">
-              <div><p className="text-xs text-muted-foreground">Active</p><p className="text-xl font-bold text-affirmative">{activeMembers}</p></div>
-              <UserCheck className="w-6 h-6 text-affirmative opacity-40" />
-            </CardContent></Card>
-            <Card><CardContent className="pt-4 pb-3 flex items-center justify-between">
-              <div><p className="text-xs text-muted-foreground">Inactive</p><p className="text-xl font-bold text-destructive">{inactiveMembers}</p></div>
-              <UserX className="w-6 h-6 text-destructive opacity-40" />
-            </CardContent></Card>
-          </div>
           <MembersTab />
         </TabsContent>
 

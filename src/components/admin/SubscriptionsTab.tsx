@@ -17,6 +17,7 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
+import { maskEmail } from "@/utils/secureDataVault";
 
 interface UserSubscription {
   id: string;
@@ -76,7 +77,6 @@ export default function SubscriptionsTab() {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentNotes, setPaymentNotes] = useState("");
   const [extendDays, setExtendDays] = useState("30");
-  const [cancelType, setCancelType] = useState<"immediate" | "pending">("pending");
   const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
@@ -90,8 +90,9 @@ export default function SubscriptionsTab() {
       if (error) throw error;
 
       const userIds = [...new Set(subs?.map(s => s.user_id) || [])];
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from("profiles").select("id, email").in("id", userIds);
+      if (profilesError) throw profilesError;
 
       const emailMap = new Map(profiles?.map(p => [p.id, p.email]) || []);
       setSubscriptions(subs?.map(sub => ({ ...sub, email: emailMap.get(sub.user_id) || "Unknown" })) || []);
@@ -106,11 +107,19 @@ export default function SubscriptionsTab() {
   const fetchSubscriptionDetails = async (sub: UserSubscription) => {
     setSelectedSubscription(sub);
     setShowDetailSheet(true);
-    const { data: payments } = await supabase
+    const { data: payments, error: paymentsError } = await supabase
       .from("subscription_payments").select("*").eq("subscription_id", sub.id).order("payment_date", { ascending: false });
+    if (paymentsError) {
+      toast({ title: "Error", description: "Payment history could not be loaded", variant: "destructive" });
+      return;
+    }
     setPaymentHistory(payments || []);
-    const { data: activity } = await supabase
+    const { data: activity, error: activityError } = await supabase
       .from("subscription_activity").select("*").eq("subscription_id", sub.id).order("created_at", { ascending: false });
+    if (activityError) {
+      toast({ title: "Error", description: "Membership activity could not be loaded", variant: "destructive" });
+      return;
+    }
     setActivityHistory(activity || []);
   };
 
@@ -119,19 +128,22 @@ export default function SubscriptionsTab() {
     setIsProcessing(true);
     try {
       const amount = parseFloat(paymentAmount);
-      await supabase.from("subscription_payments").insert({
+      const paymentResult = await supabase.from("subscription_payments").insert({
         subscription_id: selectedSubscription.id, user_id: selectedSubscription.user_id,
         amount, currency: selectedSubscription.currency || "USD", payment_method: paymentMethod,
         payment_date: new Date().toISOString(), status: "completed", notes: paymentNotes || null, recorded_by: user?.id,
       });
-      await supabase.from("subscriptions").update({
+      if (paymentResult.error) throw paymentResult.error;
+      const subscriptionResult = await supabase.from("subscriptions").update({
         last_payment_date: new Date().toISOString(), last_payment_amount: amount,
         payment_method: paymentMethod, total_payments_received: (selectedSubscription.total_payments_received || 0) + 1, status: "active",
       }).eq("id", selectedSubscription.id);
-      await supabase.from("subscription_activity").insert({
+      if (subscriptionResult.error) throw subscriptionResult.error;
+      const activityResult = await supabase.from("subscription_activity").insert({
         subscription_id: selectedSubscription.id, user_id: selectedSubscription.user_id,
         action: "payment_recorded", details: { amount, method: paymentMethod, notes: paymentNotes }, performed_by: user?.id,
       });
+      if (activityResult.error) throw activityResult.error;
       toast({ title: "Success", description: `Payment of $${amount} recorded` });
       setShowMarkAsPaidDialog(false);
       setPaymentAmount("");
@@ -149,15 +161,15 @@ export default function SubscriptionsTab() {
     if (!selectedSubscription) return;
     setIsProcessing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("delete-user-account", {
-        body: { user_id: selectedSubscription.user_id },
+      const { data, error } = await supabase.functions.invoke("cancel-subscription", {
+        body: { userId: selectedSubscription.user_id },
       });
       if (error || (data as any)?.error) {
-        throw new Error((data as any)?.error || error?.message || "Failed to cancel and delete account");
+        throw new Error("cancel_failed");
       }
       toast({
-        title: "Account deleted",
-        description: "PayPal billing was cancelled first, then the member account was removed.",
+        title: "Membership cancelled",
+        description: "PayPal renewal stopped and the member account was retained.",
       });
       setShowCancelDialog(false);
       fetchSubscriptions();
@@ -173,7 +185,8 @@ export default function SubscriptionsTab() {
     if (!selectedSubscription) return;
     setIsProcessing(true);
     try {
-      await supabase.from("subscriptions").update({ cancellation_status: null, cancellation_requested_at: null }).eq("id", selectedSubscription.id);
+      const { error } = await supabase.from("subscriptions").update({ cancellation_status: null, cancellation_requested_at: null }).eq("id", selectedSubscription.id);
+      if (error) throw error;
       toast({ title: "Success", description: "Cancellation undone" });
       fetchSubscriptions();
       fetchSubscriptionDetails({ ...selectedSubscription, cancellation_status: null });
@@ -189,14 +202,16 @@ export default function SubscriptionsTab() {
     setIsProcessing(true);
     try {
       const days = parseInt(extendDays);
-      const currentEnd = selectedSubscription.end_date ? new Date(selectedSubscription.end_date) : new Date();
-      const newEnd = new Date(currentEnd);
+      const currentEnd = selectedSubscription.end_date ? new Date(selectedSubscription.end_date) : null;
+      const newEnd = currentEnd && currentEnd > new Date() ? new Date(currentEnd) : new Date();
       newEnd.setDate(newEnd.getDate() + days);
-      await supabase.from("subscriptions").update({ end_date: newEnd.toISOString(), status: "active" }).eq("id", selectedSubscription.id);
-      await supabase.from("subscription_activity").insert({
+      const { error } = await supabase.from("subscriptions").update({ end_date: newEnd.toISOString(), status: "active" }).eq("id", selectedSubscription.id);
+      if (error) throw error;
+      const activityResult = await supabase.from("subscription_activity").insert({
         subscription_id: selectedSubscription.id, user_id: selectedSubscription.user_id,
         action: "subscription_extended", details: { days_added: days, new_end_date: newEnd.toISOString() }, performed_by: user?.id,
       });
+      if (activityResult.error) throw activityResult.error;
       toast({ title: "Success", description: `Extended by ${days} days` });
       setShowExtendDialog(false);
       setExtendDays("30");
@@ -217,13 +232,15 @@ export default function SubscriptionsTab() {
       else if (sub.plan_type === "premium") endDate.setMonth(endDate.getMonth() + 1);
       else endDate.setDate(endDate.getDate() + 30);
 
-      await supabase.from("subscriptions").update({
+      const { error } = await supabase.from("subscriptions").update({
         status: "active", start_date: new Date().toISOString(), end_date: endDate.toISOString(),
       }).eq("id", sub.id);
-      await supabase.from("subscription_activity").insert({
+      if (error) throw error;
+      const activityResult = await supabase.from("subscription_activity").insert({
         subscription_id: sub.id, user_id: sub.user_id,
         action: "manually_activated", details: { plan_type: sub.plan_type }, performed_by: user?.id,
       });
+      if (activityResult.error) throw activityResult.error;
       toast({ title: "Activated!", description: `${sub.plan_type} activated for ${sub.email}` });
       fetchSubscriptions();
     } catch (error) {
@@ -253,7 +270,7 @@ export default function SubscriptionsTab() {
   return (
     <div className="space-y-6 mt-4">
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Active</p><p className="text-2xl font-bold text-affirmative">{subscriptions.filter(s => s.status === "active" && !s.cancellation_status).length}</p></div><Check className="w-8 h-8 text-affirmative opacity-50" /></div></CardContent></Card>
         <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Pending Cancel</p><p className="text-2xl font-bold text-warning">{subscriptions.filter(s => s.cancellation_status === "pending").length}</p></div><Clock className="w-8 h-8 text-warning opacity-50" /></div></CardContent></Card>
         <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Cancelled</p><p className="text-2xl font-bold text-destructive">{subscriptions.filter(s => s.status === "cancelled").length}</p></div><Ban className="w-8 h-8 text-destructive opacity-50" /></div></CardContent></Card>
@@ -264,8 +281,8 @@ export default function SubscriptionsTab() {
       <Card>
         <CardHeader><CardTitle>All Subscriptions</CardTitle></CardHeader>
         <CardContent>
-          {subscriptions.length === 0 ? <p className="text-center py-8 text-muted-foreground">No subscriptions found</p> : (
-            <div className="overflow-x-auto">
+          {subscriptions.length === 0 ? <p className="text-center py-8 text-muted-foreground">No subscriptions found</p> : (<div>
+            <div className="hidden md:block overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -276,7 +293,7 @@ export default function SubscriptionsTab() {
                 <TableBody>
                   {subscriptions.map(sub => (
                     <TableRow key={sub.id} className="cursor-pointer hover:bg-muted/50" onClick={() => fetchSubscriptionDetails(sub)}>
-                      <TableCell><div className="flex items-center gap-2"><Mail className="w-4 h-4 text-muted-foreground" /><span className="font-medium">{sub.email}</span></div></TableCell>
+                       <TableCell><div className="flex items-center gap-2"><Mail className="w-4 h-4 text-muted-foreground" /><span className="font-mono text-xs font-medium">{maskEmail(sub.email)}</span></div></TableCell>
                       <TableCell><p className="font-medium capitalize">{sub.plan_type}</p><p className="text-xs text-muted-foreground">{getPlanPrice(sub.plan_type)}</p></TableCell>
                       <TableCell>{getStatusBadge(sub)}</TableCell>
                       <TableCell><span className="capitalize text-sm">{sub.payment_method || "—"}</span></TableCell>
@@ -297,7 +314,15 @@ export default function SubscriptionsTab() {
                 </TableBody>
               </Table>
             </div>
-          )}
+            <div className="space-y-2 md:hidden">
+              {subscriptions.map(sub => (
+                <button key={sub.id} type="button" onClick={() => fetchSubscriptionDetails(sub)} className="w-full rounded-lg border border-border/40 bg-card p-3 text-left">
+                  <div className="flex items-start justify-between gap-2"><div className="min-w-0"><p className="truncate font-mono text-xs font-semibold">{maskEmail(sub.email)}</p><p className="text-xs capitalize text-muted-foreground">{sub.plan_type} · {getPlanPrice(sub.plan_type)}</p></div>{getStatusBadge(sub)}</div>
+                  <div className="mt-3 grid grid-cols-2 gap-2 border-t border-border/30 pt-2 text-[10px]"><div><p className="text-muted-foreground">Payment</p><p className="capitalize">{sub.payment_method || "Not linked"}</p></div><div><p className="text-muted-foreground">Renews / ends</p><p>{sub.end_date ? new Date(sub.end_date).toLocaleDateString() : "—"}</p></div></div>
+                </button>
+              ))}
+            </div>
+          </div>)}
         </CardContent>
       </Card>
 
@@ -309,7 +334,7 @@ export default function SubscriptionsTab() {
               <SheetTitle>Subscription Overview</SheetTitle>
               {selectedSubscription && getStatusBadge(selectedSubscription)}
             </div>
-            <SheetDescription>{selectedSubscription?.email}</SheetDescription>
+            <SheetDescription className="font-mono">{selectedSubscription ? maskEmail(selectedSubscription.email) : ""}</SheetDescription>
           </SheetHeader>
           {selectedSubscription && (
             <div className="mt-6 space-y-6">
@@ -374,16 +399,7 @@ export default function SubscriptionsTab() {
       {/* Cancel Dialog */}
       <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <DialogContent><DialogHeader><DialogTitle>Cancel Subscription</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-              <input type="radio" name="cancelType" value="pending" checked={cancelType === "pending"} onChange={() => setCancelType("pending")} />
-              <div><p className="font-medium">Cancel and delete account</p><p className="text-sm text-muted-foreground">PayPal billing is stopped, then the member account is removed</p></div>
-            </label>
-            <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-              <input type="radio" name="cancelType" value="immediate" checked={cancelType === "immediate"} onChange={() => setCancelType("immediate")} />
-              <div><p className="font-medium">Immediate removal</p><p className="text-sm text-muted-foreground">Same cleanup, no end-of-period access</p></div>
-            </label>
-          </div>
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm"><p className="font-semibold">Stop PayPal renewal?</p><p className="mt-1 text-muted-foreground">The member account and history will remain. Paid access continues through the current billing period.</p></div>
           <DialogFooter><Button variant="outline" onClick={() => setShowCancelDialog(false)}>Back</Button><Button variant="destructive" onClick={handleCancelSubscription} disabled={isProcessing}>{isProcessing ? "Cancelling..." : "Confirm Cancel"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>

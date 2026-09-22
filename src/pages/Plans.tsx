@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, AlertCircle } from "lucide-react";
+import { Check, AlertCircle, CreditCard, ShieldCheck } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -17,46 +17,14 @@ import {
 import CheckoutModal from "@/components/CheckoutModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 const Plans = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { tier, loading: subscriptionLoading } = useSubscription();
-  const { config: trialConfig, activeWindow } = useFreeTrialConfig();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [claimingTrial, setClaimingTrial] = useState(false);
-
-  const trialAvailable = trialConfig.enabled || !!activeWindow;
-  const trialDays = activeWindow ? activeWindow.grantDays : trialConfig.trialDays;
-  const previewMinutes = trialConfig.streamPreviewMinutes;
-
-  const handleClaimTrial = async () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    setClaimingTrial(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("claim-free-trial", { body: {} });
-      if (error) throw error;
-      if ((data as any)?.error) {
-        toast.error((data as any).error);
-        return;
-      }
-      localStorage.removeItem("pending_signup_plan");
-      toast.success(`Your ${trialDays}-day free access is active!`);
-      window.location.href = "/";
-    } catch (e) {
-      toast.error("Could not start your free access. Please try again.");
-    } finally {
-      setClaimingTrial(false);
-    }
-  };
 
   
   // Check if user must select a plan (coming from signup)
@@ -101,28 +69,6 @@ const Plans = () => {
   };
 
   const allPlans = [
-    {
-      id: "weekly",
-      name: "Weekly",
-      price: "$3.99",
-      priceValue: 3.99,
-      period: "per week",
-      billingNote: "Billed weekly",
-      description: "Budget-friendly full access",
-      features: [
-        "Full access to everything",
-        "All live streams",
-        "Full game replays",
-        "All highlights",
-        "Community forum access",
-        "Ad-free experience",
-        "HD streaming",
-        "Cancel anytime",
-      ],
-      notIncluded: [],
-      cta: "Subscribe Weekly",
-      popular: false,
-    },
     {
       id: "premium",
       name: "Premium",
@@ -214,7 +160,7 @@ const Plans = () => {
       />
       {!mustSelectPlan && <Navigation />}
       <main className={mustSelectPlan ? "pt-8" : "pt-12"}>
-        <section className="py-8 sm:py-16">
+        <section className="py-6 sm:py-12">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
             {/* Required Plan Selection Banner */}
             {mustSelectPlan && (
@@ -230,55 +176,23 @@ const Plans = () => {
             )}
             
             {/* Header */}
-            <div className="text-center mb-10">
+            <div className="text-center mb-8">
+              <Badge variant="outline" className="mb-3">PayPal membership</Badge>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
                 Choose Your Plan
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-                Get unlimited access to live games, replays, highlights, and exclusive Mets content
+                One membership unlocks live games, replays, community access, and exclusive Mets content.
               </p>
             </div>
 
-            {/* Free Trial / Promo Card */}
-            {trialAvailable && tier === "free" && (
-              <Card className="mb-8 border-primary/40 bg-card/90 backdrop-blur">
-                <CardContent className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <Badge className="bg-primary text-primary-foreground">
-                        {activeWindow ? activeWindow.name || "Limited Time Offer" : "Free Trial"}
-                      </Badge>
-                    </div>
-                    <h2 className="text-lg sm:text-xl font-bold text-foreground">
-                      {trialDays}-day free {activeWindow && activeWindow.grantPlan !== "trial"
-                        ? `${activeWindow.grantPlan} membership`
-                        : "explorer pass"}
-                    </h2>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {activeWindow && activeWindow.grantPlan !== "trial"
-                        ? "Full access to every stream and feature — no payment required."
-                        : `Explore the entire site free. Live streams are limited to a ${previewMinutes}-minute preview.`}
-                    </p>
-                  </div>
-                  <Button
-                    size="lg"
-                    onClick={handleClaimTrial}
-                    disabled={claimingTrial}
-                    className="w-full sm:w-auto"
-                  >
-                    {claimingTrial ? "Starting..." : "Start Free"}
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Plans Grid */}
 
-            <div className="grid md:grid-cols-3 gap-6 mb-16">
+            <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-12 max-w-4xl mx-auto">
               {plans.map((plan) => (
                 <Card
                   key={plan.id}
-                  className={`relative transition-all hover:shadow-lg ${
+                  className={`relative overflow-hidden transition-colors bg-card/90 ${
                     plan.popular ? "border-primary ring-2 ring-primary/20" : "border-border"
                   }`}
                 >
@@ -287,8 +201,8 @@ const Plans = () => {
                       MOST POPULAR
                     </Badge>
                   )}
-                  <CardContent className="p-6 pt-8">
-                    <div className="text-center mb-6">
+                  <CardContent className="p-5 sm:p-7 pt-8">
+                    <div className="text-left mb-6">
                       <h3 className="text-xl font-semibold text-foreground mb-2">{plan.name}</h3>
                       <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
                       <div className="mb-2">
@@ -308,7 +222,7 @@ const Plans = () => {
                       variant={plan.popular ? "default" : "outline"}
                       onClick={() => handleSelectPlan(plan.id)}
                     >
-                      {plan.cta}
+                      <CreditCard className="mr-2 h-4 w-4" />{tier === plan.id ? "Current plan" : plan.cta}
                     </Button>
 
                     <div className="space-y-3">
@@ -321,6 +235,14 @@ const Plans = () => {
                     </div>
                   </CardContent>
                 </Card>
+              ))}
+            </div>
+
+            <div className="mb-12 grid gap-3 sm:grid-cols-3 max-w-4xl mx-auto">
+              {["Secure PayPal checkout", "Cancel from Member Center", "Access on up to 2 devices"].map((label) => (
+                <div key={label} className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 p-3 text-sm">
+                  <ShieldCheck className="h-4 w-4 shrink-0 text-primary" />{label}
+                </div>
               ))}
             </div>
 
