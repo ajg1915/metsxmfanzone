@@ -1,6 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { escapeHtml, sanitizeHtml } from "../_shared/sanitize-html.ts";
-import { queueTransactionalEmail } from "../_shared/queue-email.ts";
 import { renderBrandedEmailFor } from "../_shared/email-brand.ts";
 
 
@@ -31,6 +30,59 @@ interface EmailRequest {
   specificEmails?: string[];
   useTestSender?: boolean;
 }
+
+const sendDirectlyThroughResend = async ({
+  to,
+  subject,
+  html,
+  label,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+  label: string;
+}) => {
+  const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+  const resendApiKey = Deno.env.get("RESEND_API_KEY_1") ?? Deno.env.get("RESEND_API_KEY");
+  if (!lovableApiKey || !resendApiKey) {
+    throw new Error("Email service is not configured");
+  }
+
+  const normalizedTo = to.trim().toLowerCase();
+  const response = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${lovableApiKey}`,
+      "X-Connection-Api-Key": resendApiKey,
+      "Idempotency-Key": `${label}:${normalizedTo}:${crypto.randomUUID()}`,
+    },
+    body: JSON.stringify({
+      from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+      to: [normalizedTo],
+      subject,
+      html,
+      text: subject,
+      reply_to: "support@metsxmfanzone.com",
+      headers: {
+        "List-Unsubscribe": `<https://metsxmfanzone.com/unsubscribe?email=${encodeURIComponent(normalizedTo)}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    }),
+  });
+
+  const responseBody = await response.text();
+  if (!response.ok) {
+    console.error("Campaign email provider rejected the request", { status: response.status });
+    throw new Error(`Email provider rejected the request (${response.status})`);
+  }
+
+  try {
+    return (JSON.parse(responseBody) as { id?: string }).id ?? crypto.randomUUID();
+  } catch {
+    return crypto.randomUUID();
+  }
+};
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -142,7 +194,7 @@ Deno.serve(async (req) => {
           content: personalizedContent,
         });
 
-        await queueTransactionalEmail(supabase, {
+        await sendDirectlyThroughResend({
           to: recipient.email,
           subject,
           html: brandedHtml,
