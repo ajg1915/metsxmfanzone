@@ -400,7 +400,6 @@ const Auth = () => {
 
             <div className="mt-5 border-t border-border/30 pt-4 text-center text-sm">
               {forgotPassword ? <Button variant="link" onClick={() => setForgotPassword(false)}>Back to sign in</Button> : !isRecovery && <Button variant="link" asChild><Link to={isSignup ? "/auth?mode=login" : "/auth?mode=signup"}>{isSignup ? "Already have an account? Sign in" : "New member? Create an account"}</Link></Button>}
-              {!isSignup && !isRecovery && !forgotPassword && <Link to="/admin" className="mt-1 block text-[11px] text-muted-foreground hover:text-primary">Admin sign in</Link>}
             </div>
           </div>
         </section>
