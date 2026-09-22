@@ -1,4 +1,5 @@
 import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
+import { renderBrandedEmailFor, escapeHtml } from '../_shared/email-brand.ts'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,77 +14,47 @@ const getPlanName = (planType: string) => {
   }
 };
 
-const generateExpiringEmailHtml = (userName: string, planName: string, daysLeft: number, endDate: string) => {
+const generateExpiringEmailHtml = async (supabase: any, userName: string, planName: string, daysLeft: number, endDate: string) => {
   const formattedDate = new Date(endDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-  return `<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin: 0; padding: 0;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f5" style="background-color: #f4f4f5;">
-    <tr><td align="center" style="padding: 20px;">
-      <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
-        <tr><td bgcolor="#002D72" style="background: linear-gradient(135deg, #002D72 0%, #FF5910 100%); padding: 30px; text-align: center;">
-          <img src="https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png" alt="MetsXMFanZone" style="width: 85px; height: auto; margin-bottom: 8px; border-radius: 12px;" />
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">MetsXMFanZone</h1>
-        </td></tr>
-        <tr><td style="padding: 30px;">
-          <h2 style="color: #002D72; margin-top: 0;">Hi ${userName || "Fan"}!</h2>
-          <p style="color: #374151; font-size: 16px; line-height: 1.6;">Your <strong>${planName}</strong> subscription is expiring ${daysLeft === 1 ? "tomorrow" : `in ${daysLeft} days`}.</p>
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FFF7ED" style="background-color: #FFF7ED; border-left: 4px solid #FF5910; border-radius: 0 8px 8px 0; margin: 20px 0;">
-            <tr><td style="padding: 15px;"><p style="margin: 0; color: #9A3412; font-weight: 500;">Expiration Date: ${formattedDate}</p></td></tr>
-          </table>
-          <p style="color: #374151; font-size: 16px; line-height: 1.6;">Renew now to keep your access to:</p>
-          <ul style="color: #374151; font-size: 15px; line-height: 1.8;">
-            <li>Ad-free live streams &amp; podcasts</li>
-            <li>Exclusive Mets content &amp; highlights</li>
-            <li>Premium community features</li>
-            <li>Early access to new features</li>
-          </ul>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="https://www.metsxmfanzone.com/plans" style="display: inline-block; background-color: #FF5910; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600; font-size: 16px;">Renew My Subscription</a>
-          </div>
-        </td></tr>
-        <tr><td bgcolor="#f9fafb" style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
-          <p style="color: #9CA3AF; font-size: 12px; margin: 0;">&copy; 2026 MetsXMFanZone. All rights reserved.</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+  const safeName = escapeHtml(userName || "Fan");
+  const safePlan = escapeHtml(planName);
+  const safeDate = escapeHtml(formattedDate);
+  const daysText = daysLeft === 1 ? "tomorrow" : `in ${daysLeft} days`;
+
+  return await renderBrandedEmailFor(supabase, {
+    preheader: `Your ${planName} subscription is expiring ${daysText}.`,
+    heading: `Hi ${safeName}!`,
+    content: `
+      <p style="margin:0 0 16px;">Your <strong>${safePlan}</strong> subscription is expiring ${daysText}.</p>
+      <div style="background:#3a2200;border-left:4px solid #FF5910;border-radius:0 8px 8px 0;padding:15px;margin:0 0 16px;">
+        <p style="margin:0;color:#FFD9B3;font-weight:600;">Expiration Date: ${safeDate}</p>
+      </div>
+      <p style="margin:0 0 8px;">Renew now to keep your access to:</p>
+      <ul style="margin:0;padding-left:18px;">
+        <li>Ad-free live streams &amp; podcasts</li>
+        <li>Exclusive Mets content &amp; highlights</li>
+        <li>Premium community features</li>
+        <li>Early access to new features</li>
+      </ul>`,
+    cta: { label: "Renew My Subscription", url: "https://www.metsxmfanzone.com/plans" },
+  });
 };
 
-const generateExpiredEmailHtml = (userName: string, planName: string) => {
-  return `<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin: 0; padding: 0;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f5" style="background-color: #f4f4f5;">
-    <tr><td align="center" style="padding: 20px;">
-      <table width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="max-width: 600px; width: 100%; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">
-        <tr><td bgcolor="#002D72" style="background: linear-gradient(135deg, #002D72 0%, #FF5910 100%); padding: 30px; text-align: center;">
-          <img src="https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png" alt="MetsXMFanZone" style="width: 85px; height: auto; margin-bottom: 8px; border-radius: 12px;" />
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">MetsXMFanZone</h1>
-        </td></tr>
-        <tr><td style="padding: 30px;">
-          <h2 style="color: #002D72; margin-top: 0;">Hi ${userName || "Fan"}!</h2>
-          <p style="color: #374151; font-size: 16px; line-height: 1.6;">Your <strong>${planName}</strong> subscription has expired.</p>
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#FEF2F2" style="background-color: #FEF2F2; border-left: 4px solid #DC2626; border-radius: 0 8px 8px 0; margin: 20px 0;">
-            <tr><td style="padding: 15px;"><p style="margin: 0; color: #991B1B; font-weight: 500;">Your premium access has ended. You've been moved to the free plan.</p></td></tr>
-          </table>
-          <p style="color: #374151; font-size: 16px; line-height: 1.6;">We'll miss having you as a premium member!</p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="https://www.metsxmfanzone.com/plans" style="display: inline-block; background-color: #FF5910; color: #ffffff; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600; font-size: 16px;">Reactivate My Subscription</a>
-          </div>
-        </td></tr>
-        <tr><td bgcolor="#f9fafb" style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
-          <p style="color: #9CA3AF; font-size: 12px; margin: 0;">&copy; 2026 MetsXMFanZone. All rights reserved.</p>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+const generateExpiredEmailHtml = async (supabase: any, userName: string, planName: string) => {
+  const safeName = escapeHtml(userName || "Fan");
+  const safePlan = escapeHtml(planName);
+
+  return await renderBrandedEmailFor(supabase, {
+    preheader: `Your ${planName} subscription has expired.`,
+    heading: `Hi ${safeName}!`,
+    content: `
+      <p style="margin:0 0 16px;">Your <strong>${safePlan}</strong> subscription has expired.</p>
+      <div style="background:#3a1414;border-left:4px solid #DC2626;border-radius:0 8px 8px 0;padding:15px;margin:0 0 16px;">
+        <p style="margin:0;color:#FCA5A5;font-weight:500;">Your premium access has ended. You've been moved to the free plan.</p>
+      </div>
+      <p style="margin:0;">We'll miss having you as a premium member!</p>`,
+    cta: { label: "Reactivate My Subscription", url: "https://www.metsxmfanzone.com/plans" },
+  });
 };
 
 Deno.serve(async (req) => {
@@ -128,25 +99,25 @@ Deno.serve(async (req) => {
         if (endDate <= now) {
           notificationType = "expired";
           emailSubject = "Your MetsXMFanZone subscription has expired";
-          emailHtml = generateExpiredEmailHtml(profile.full_name || "", planName);
+          emailHtml = await generateExpiredEmailHtml(supabase, profile.full_name || "", planName);
           await supabase.from("subscriptions").update({ status: "expired" }).eq("id", sub.id);
         } else if (endDate <= oneDayFromNow) {
           notificationType = "expiring_1_day";
           emailSubject = "⚠️ Your subscription expires tomorrow!";
-          emailHtml = generateExpiringEmailHtml(profile.full_name || "", planName, 1, sub.end_date);
+          emailHtml = await generateExpiringEmailHtml(supabase, profile.full_name || "", planName, 1, sub.end_date);
         } else if (endDate <= threeDaysFromNow) {
           notificationType = "expiring_3_days";
           emailSubject = "Your subscription expires in 3 days";
-          emailHtml = generateExpiringEmailHtml(profile.full_name || "", planName, 3, sub.end_date);
+          emailHtml = await generateExpiringEmailHtml(supabase, profile.full_name || "", planName, 3, sub.end_date);
         } else if (endDate <= sevenDaysFromNow) {
           notificationType = "expiring_7_days";
           emailSubject = "Your subscription expires in 7 days";
-          emailHtml = generateExpiringEmailHtml(profile.full_name || "", planName, 7, sub.end_date);
+          emailHtml = await generateExpiringEmailHtml(supabase, profile.full_name || "", planName, 7, sub.end_date);
         }
       } else if (sub.status === "expired" && endDate <= now) {
         notificationType = "expired";
         emailSubject = "Your MetsXMFanZone subscription has expired";
-        emailHtml = generateExpiredEmailHtml(profile.full_name || "", planName);
+        emailHtml = await generateExpiredEmailHtml(supabase, profile.full_name || "", planName);
       }
 
       if (!notificationType) continue;
