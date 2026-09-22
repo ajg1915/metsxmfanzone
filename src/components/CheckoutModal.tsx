@@ -47,7 +47,8 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
         variant: "destructive",
       });
       onOpenChange(false);
-      navigate("/auth");
+        localStorage.setItem("pending_signup_plan", plan.id);
+        navigate("/auth?mode=signup");
       return;
     }
 

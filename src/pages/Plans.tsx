@@ -17,11 +17,14 @@ import {
 import CheckoutModal from "@/components/CheckoutModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Plans = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const { toast } = useToast();
   const { tier, loading: subscriptionLoading } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -62,7 +65,10 @@ const Plans = () => {
       setActivatingFree(true);
       const { data, error } = await supabase.functions.invoke("activate-free-membership", { body: {} });
       setActivatingFree(false);
-      if (error || data?.error) return;
+      if (error || data?.error) {
+        toast({ title: "Membership could not be activated", description: "Please try again.", variant: "destructive" });
+        return;
+      }
       localStorage.removeItem("pending_membership_selection");
       localStorage.removeItem("pending_signup_plan");
       setHasPlanSelected(true);
@@ -162,14 +168,14 @@ const Plans = () => {
 
   const faqs = [
     {
-      question: "What's the difference between Premium and Annual plans?",
+      question: "What is included with each membership?",
       answer:
-        "Both plans give you full access to all live streams, replays, HD quality, ad-free experience, and exclusive content. The Annual plan saves you $20/year compared to monthly billing and includes priority support, early access, and VIP perks.",
+        "Free includes public news and community access. Weekly, Monthly, and Yearly include live streams, replays, highlights, and premium content.",
     },
     {
       question: "Can I switch between monthly and yearly billing?",
       answer:
-        "Yes! You can switch between monthly and annual billing anytime. When you switch to annual, you'll save the equivalent of 2 months compared to monthly billing.",
+        "Yes. Choose a different paid membership from your Member Center. Your new PayPal billing schedule starts with the new membership.",
     },
     {
       question: "What payment methods do you accept?",
@@ -189,7 +195,7 @@ const Plans = () => {
     {
       question: "Can I watch on multiple devices?",
       answer:
-        "Premium and Annual plans allow streaming on up to 2 devices simultaneously. Accounts found accessing from more than 2 devices may be restricted.",
+        "Weekly, Monthly, and Yearly memberships allow streaming on up to 2 devices simultaneously. Accounts found accessing from more than 2 devices may be restricted.",
     },
   ];
 

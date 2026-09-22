@@ -13,7 +13,6 @@ const HelpCenter = () => {
       description: "Learn the basics of MetsXMFanZone",
       articles: [
         { title: "How to create an account", path: "/help/create-account" },
-        { title: "Login with biometrics (fingerprint/Face ID)", path: "/help/biometric-login" },
         { title: "Navigating the platform", path: "/help/navigate-platform" },
         { title: "Watching live streams", path: "/help/watch-streams" },
         { title: "Community guidelines", path: "/help/community-guidelines" },

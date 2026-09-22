@@ -210,7 +210,7 @@ const Auth = () => {
     event.preventDefault();
     if (honeypot) return;
     try {
-      const validated = z.object({ email: z.string().email(), password: z.string().min(6) }).parse({ email, password });
+      const validated = { email: z.string().email().parse(email), password: z.string().min(6).parse(password) };
       setLoading(true);
       const signIn = () => withTimeout(supabase.auth.signInWithPassword(validated), 12000, "Email login timed out");
       let { data, error } = await signIn();

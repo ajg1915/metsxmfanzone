@@ -135,7 +135,6 @@ const GameNotifications = lazyWithRetry(() => import("./pages/admin/GameNotifica
 const GameAlertsManagement = lazyWithRetry(() => import("./pages/admin/GameAlertsManagement"), "page-admin-game-alerts-management");
 const WriterRegister = lazyWithRetry(() => import("./pages/WriterRegister"), "page-writer-register");
 const CreateAccount = lazyWithRetry(() => import("./pages/help/CreateAccount"), "page-help-create-account");
-const BiometricLogin = lazyWithRetry(() => import("./pages/help/BiometricLogin"), "page-help-biometric-login");
 const NavigatePlatform = lazyWithRetry(() => import("./pages/help/NavigatePlatform"), "page-help-navigate-platform");
 const WatchStreams = lazyWithRetry(() => import("./pages/help/WatchStreams"), "page-help-watch-streams");
 const CommunityGuidelines = lazyWithRetry(() => import("./pages/help/CommunityGuidelines"), "page-help-community-guidelines");
@@ -339,7 +338,6 @@ const AppContent = () => {
             <Route path="/blog/rss" element={<BlogRSS />} />
             <Route path="/help-center" element={<HelpCenter />} />
             <Route path="/help/create-account" element={<CreateAccount />} />
-            <Route path="/help/biometric-login" element={<BiometricLogin />} />
             <Route path="/help/navigate-platform" element={<NavigatePlatform />} />
             <Route path="/help/watch-streams" element={<WatchStreams />} />
             <Route path="/help/community-guidelines" element={<CommunityGuidelines />} />
