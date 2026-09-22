@@ -29,6 +29,8 @@ interface EmailRequest {
   recipientType: "all_users" | "subscribers" | "specific";
   specificEmails?: string[];
   useTestSender?: boolean;
+  /** When true, content is already a full branded HTML document and is sent as-is. */
+  rawHtml?: boolean;
 }
 
 const sendDirectlyThroughResend = async ({
