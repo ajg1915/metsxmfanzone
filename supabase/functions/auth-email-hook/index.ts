@@ -16,7 +16,7 @@ const corsHeaders = {
 
 // Configuration
 const SITE_NAME = "MetsXMFanZone"
-const SENDER_DOMAIN = "notify.metsxmfanzone.com"
+const SENDER_DOMAIN = "metsxmfanzone.com"
 const ROOT_DOMAIN = "metsxmfanzone.com"
 const FROM_DOMAIN = "metsxmfanzone.com"
 const SITE_URL = `https://${ROOT_DOMAIN}`
