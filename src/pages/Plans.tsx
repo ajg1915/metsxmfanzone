@@ -63,16 +63,39 @@ const Plans = () => {
 
     if (planId === "free") {
       setActivatingFree(true);
-      const { data, error } = await supabase.functions.invoke("activate-free-membership", { body: {} });
+      const { data, error } = await supabase.functions.invoke("create-paypal-free-link", {
+        body: { returnOrigin: window.location.origin },
+      });
       setActivatingFree(false);
+
       if (error || data?.error) {
-        toast({ title: "Membership could not be activated", description: "Please try again.", variant: "destructive" });
+        toast({
+          title: "PayPal link could not be started",
+          description: "Please try again in a moment.",
+          variant: "destructive",
+        });
         return;
       }
-      localStorage.removeItem("pending_membership_selection");
-      localStorage.removeItem("pending_signup_plan");
+
+      if (data?.alreadyPaid) {
+        localStorage.removeItem("pending_membership_selection");
+        localStorage.removeItem("pending_signup_plan");
+        setHasPlanSelected(true);
+        navigate("/dashboard", { replace: true });
+        return;
+      }
+
+      if (!data?.approvalUrl) {
+        toast({
+          title: "PayPal link could not be started",
+          description: "Please try again in a moment.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setHasPlanSelected(true);
-      navigate("/dashboard", { replace: true });
+      window.location.href = data.approvalUrl;
       return;
     }
 
@@ -100,9 +123,9 @@ const Plans = () => {
       price: "$0",
       priceValue: 0,
       period: "forever",
-      billingNote: "No payment required",
+      billingNote: "PayPal link required - $0.00 charged",
       description: "Start with the fan essentials",
-      features: ["Public Mets news", "Community access", "Member profile", "Membership notifications"],
+      features: ["PayPal account linked, never charged", "Public Mets news", "Community access", "Member profile", "Membership notifications"],
       cta: "Choose Free",
       popular: false,
     },
@@ -171,6 +194,11 @@ const Plans = () => {
       question: "What is included with each membership?",
       answer:
         "Free includes public news and community access. Weekly, Monthly, and Yearly include live streams, replays, highlights, and premium content.",
+    },
+    {
+      question: "Why does the Free membership need PayPal?",
+      answer:
+        "Every membership, including Free, must be linked to a PayPal account before access is turned on. PayPal asks you to approve a $0.00 agreement - nothing is charged while you stay on Free, and upgrading later takes one confirmation.",
     },
     {
       question: "Can I switch between paid memberships?",

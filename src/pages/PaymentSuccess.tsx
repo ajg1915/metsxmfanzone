@@ -35,12 +35,15 @@ const PaymentSuccess = () => {
 
         if (result.error) throw result.error;
 
+        const confirmedPlan = result.data?.subscription?.plan_type || 'premium';
         setStatus('success');
-        setPlanType(result.data?.subscription?.plan_type || 'premium');
-        
+        setPlanType(confirmedPlan);
+
         toast({
-          title: "Payment Successful! 🎉",
-          description: "Your subscription is now active. Welcome to the premium experience!",
+          title: confirmedPlan === 'free' ? "PayPal Linked! 🎉" : "Payment Successful! 🎉",
+          description: confirmedPlan === 'free'
+            ? "Your PayPal account is linked and your free membership is active. You were not charged."
+            : "Your subscription is now active. Welcome to the premium experience!",
         });
 
         setTimeout(() => navigate('/'), 5000);
@@ -96,10 +99,12 @@ const PaymentSuccess = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-green-500 mb-2">
-                    Payment Successful!
+                    {planType === 'free' ? 'PayPal Linked!' : 'Payment Successful!'}
                   </h2>
                   <p className="text-muted-foreground">
-                    Your {planType} subscription is now active
+                    {planType === 'free'
+                      ? 'Your free membership is active and your PayPal account is linked. You were not charged.'
+                      : `Your ${planType} subscription is now active`}
                   </p>
                 </div>
                 <div className="bg-primary/10 rounded-lg p-4 space-y-2 text-sm">

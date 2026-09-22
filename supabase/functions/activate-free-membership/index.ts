@@ -38,27 +38,20 @@ Deno.serve(async (req) => {
     const paid = active?.find((item) => ["weekly", "premium", "annual"].includes(item.plan_type));
     if (paid) return json({ success: true, planType: paid.plan_type, alreadyPaid: true });
 
-    const existingFree = active?.find((item) => item.plan_type === "free");
-    if (!existingFree) {
-      const { error: insertError } = await service.from("subscriptions").insert({
-        user_id: user.id,
-        plan_type: "free",
-        status: "active",
-        amount: 0,
-        currency: "USD",
-        start_date: new Date().toISOString(),
-        end_date: null,
-      });
-      if (insertError) throw insertError;
-    }
+    // Free membership requires a linked PayPal account (no charge).
+    // This function only confirms an already-linked free membership.
+    const { data: linkedFree, error: linkedError } = await service.from("subscriptions")
+      .select("id,paypal_subscription_id,status")
+      .eq("user_id", user.id)
+      .eq("plan_type", "free")
+      .eq("status", "active")
+      .not("paypal_subscription_id", "is", null)
+      .maybeSingle();
+    if (linkedError) throw linkedError;
 
-    await service.from("activity_logs").insert({
-      user_id: user.id,
-      action: "free_membership_activated",
-      log_type: "subscription",
-      resource_type: "membership",
-      details: { plan_type: "free", source: "member_selection" },
-    });
+    if (!linkedFree) {
+      return json({ error: "PayPal link required", requiresPaypalLink: true }, 400);
+    }
 
     return json({ success: true, planType: "free" });
   } catch (error) {
