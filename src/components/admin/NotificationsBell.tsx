@@ -130,7 +130,16 @@ export function NotificationsBell() {
   useEffect(() => {
     load();
     const t = setInterval(load, 60000);
-    return () => clearInterval(t);
+    const channel = supabase
+      .channel("admin-member-alerts")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "profiles" }, load)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "subscriptions" }, load)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "activity_logs" }, load)
+      .subscribe();
+    return () => {
+      clearInterval(t);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleOpen = (next: boolean) => {

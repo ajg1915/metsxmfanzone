@@ -133,23 +133,25 @@ export async function cancelPaypalAndRetainAccount(
     .gte("created_at", recentCutoff);
 
   if (subs && subs.length > 0) {
-    await admin.from("subscriptions").update({
+    const { error: updateError } = await admin.from("subscriptions").update({
       status: "cancelled",
       cancellation_status: "cancelled",
       cancellation_requested_at: nowIso,
       updated_at: nowIso,
     }).in("id", subs.map((s) => s.id));
+    if (updateError) throw updateError;
 
     if (!recentCount) {
       const subscriptionId = subs[0]?.id;
       if (subscriptionId) {
-        await admin.from("subscription_activity").insert({
+        const { error: activityError } = await admin.from("subscription_activity").insert({
           subscription_id: subscriptionId,
           user_id: userId,
           action: "membership_cancelled",
           details: { reason, paypal_confirmed: true, account_retained: true },
           performed_by: userId,
         });
+        if (activityError) throw activityError;
       }
     }
   }

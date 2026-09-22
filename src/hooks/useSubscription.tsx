@@ -77,7 +77,7 @@ export const useSubscription = () => {
         if (!error && data) {
           // Check if subscription is still valid
           const endDate = data.end_date ? new Date(data.end_date) : null;
-          const isActive = ["active", "cancelled"].includes(data.status) && (!endDate || endDate > new Date());
+          const isActive = data.status === "active" || (data.status === "cancelled" && !!endDate && endDate > new Date());
 
           if (isActive) {
             setTier(data.plan_type as SubscriptionTier);
