@@ -638,7 +638,7 @@ const Navigation = () => {
                           className="h-auto min-h-14 w-full justify-between rounded-none border-b border-border/15 px-1 py-3 text-left text-player-foreground hover:bg-transparent hover:text-primary"
                         >
                           <span>
-                            <span className="block text-lg font-bold text-primary">Mets Hub</span>
+                            <span className="block text-lg font-bold text-primary">More</span>
                             <span className="block text-[10px] font-normal text-muted-foreground">Schedule, roster, highlights and recaps</span>
                           </span>
                           <ChevronDown className={`h-5 w-5 text-primary transition-transform ${tvScheduleOpen ? "rotate-180" : ""}`} />

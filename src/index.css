@@ -15,6 +15,10 @@ All colors MUST be HSL.
     --card: 212 57% 11%;
     --card-foreground: 0 0% 98%;
 
+    /* Menu sidebar — royal blue */
+    --menu-panel: 222 62% 22%;
+    --menu-panel-foreground: 210 20% 97%;
+
     --player: 0 0% 0%;
     --player-foreground: 0 0% 100%;
 
