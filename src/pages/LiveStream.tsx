@@ -39,7 +39,8 @@ const LiveStream = () => {
         ? await query.eq("id", streamId).maybeSingle()
         : await query
             .contains("assigned_pages", [streamId])
-            .order("status", { ascending: false })
+            .eq("status", "live")
+            .order("scheduled_start", { ascending: false })
             .limit(1)
             .maybeSingle();
 
@@ -58,7 +59,8 @@ const LiveStream = () => {
         ? await publicQuery.eq("id", streamId).maybeSingle()
         : await publicQuery
             .contains("assigned_pages", [streamId])
-            .order("status", { ascending: false })
+            .eq("status", "live")
+            .order("scheduled_start", { ascending: false })
             .limit(1)
             .maybeSingle();
 

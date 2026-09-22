@@ -109,7 +109,7 @@ const getWatchPage = (pages: string[] | null | undefined) => {
   return 'own';
 };
 
-function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, onSelectWatchPage }: {
+function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, onSelectWatchPage, onToggleLive }: {
   stream: LiveStream;
   onEdit: (s: LiveStream) => void;
   onDelete: (id: string) => void;
@@ -119,6 +119,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
   isFreeGame: boolean;
   onToggleFree: (id: string, free: boolean) => void;
   onSelectWatchPage: (id: string, page: string) => void;
+  onToggleLive: (stream: LiveStream) => void;
 }) {
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: stream.id });
@@ -190,6 +191,15 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
           />
         </div>
         <div className="flex gap-2">
+          <Button
+            variant={stream.status === "live" ? "secondary" : "default"}
+            size="sm"
+            onClick={() => onToggleLive(stream)}
+            className="flex-1 h-7 text-xs"
+          >
+            <Radio className="w-3 h-3 mr-1" />
+            {stream.status === "live" ? "End Live" : "Go Live"}
+          </Button>
           <Button variant="outline" size="sm" onClick={() => onEdit(stream)} className="flex-1 h-7 text-xs">
             <Edit className="w-3 h-3 mr-1" /> Edit
           </Button>
@@ -222,6 +232,27 @@ export default function LiveStreamManagement() {
     }
     setStreams(prev => prev.map(s => (s.id === id ? { ...s, assigned_pages: next } : s)));
     toast({ title: "Watch page updated", description: WATCH_PAGE_OPTIONS.find(o => o.value === page)?.label });
+  };
+
+  const handleToggleLive = async (stream: LiveStream) => {
+    const goingLive = stream.status !== "live";
+    const now = new Date().toISOString();
+    const updates = goingLive
+      ? { status: "live" as const, published: true, actual_start: now, actual_end: null }
+      : { status: "ended" as const, actual_end: now };
+
+    const { error } = await supabase.from("live_streams").update(updates).eq("id", stream.id);
+    if (error) {
+      toast({ title: "Could not update live status", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    if (goingLive) await sendLiveNotification(stream.title, stream.id);
+    setStreams(prev => prev.map(item => item.id === stream.id ? { ...item, ...updates } : item));
+    toast({
+      title: goingLive ? "Stream is live" : "Stream ended",
+      description: goingLive ? `${stream.title} is published in Live Streams now.` : stream.title,
+    });
   };
 
 
@@ -331,7 +362,7 @@ export default function LiveStreamManagement() {
     scheduled_start: "",
     scheduled_end: "",
     assigned_pages: [] as string[],
-    published: false,
+    published: true,
   });
 
   const fetchMediaLibrary = async () => {
@@ -456,8 +487,14 @@ export default function LiveStreamManagement() {
     try {
       const streamData = {
         ...formData,
+        published: formData.status === "live" ? true : formData.published,
+        assigned_pages: formData.assigned_pages.includes("live")
+          ? formData.assigned_pages
+          : [...formData.assigned_pages, "live"],
         scheduled_start: formData.scheduled_start || null,
-        scheduled_end: formData.scheduled_end || null,
+        scheduled_end: formData.status === "live" && formData.scheduled_end && new Date(formData.scheduled_end) <= new Date()
+          ? null
+          : formData.scheduled_end || null,
         actual_start: formData.status === 'live' ? new Date().toISOString() : null,
       };
 
@@ -567,7 +604,7 @@ export default function LiveStreamManagement() {
       scheduled_start: "",
       scheduled_end: "",
       assigned_pages: [],
-      published: false,
+      published: true,
     });
   };
 
@@ -923,10 +960,32 @@ export default function LiveStreamManagement() {
                 </div>
 
                 <div>
-                  <Label htmlFor="assigned_pages">Assign to Pages *</Label>
+                  <Label htmlFor="watch_page">Watch Page *</Label>
+                  <Select
+                    value={getWatchPage(formData.assigned_pages)}
+                    onValueChange={(page) => {
+                      const destinations = ['metsxmfanzone', 'metsxmfanzone-2', 'pix11-network'];
+                      const kept = formData.assigned_pages.filter(item => !destinations.includes(item));
+                      const assignedPages = page === 'own' ? kept : [...kept, page];
+                      setFormData({ ...formData, assigned_pages: assignedPages.includes('live') ? assignedPages : [...assignedPages, 'live'] });
+                    }}
+                  >
+                    <SelectTrigger id="watch_page">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WATCH_PAGE_OPTIONS.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Choose Stream 2 to show this game there. Paste the PIX11 M3U8 URL above as its video source.
+                  </p>
+                  <Label className="mt-4 block">Also Show In</Label>
                   <div className="space-y-2 mt-2">
                     {(() => {
-                      const defaultPages = ['guide', 'live', 'metsxmfanzone', 'metsxmfanzone-2', 'mlb-network', 'sny-tv', 'msg-network', 'espn-network', 'pix11-network', 'regular-season-games', 'replay-games'];
+                      const defaultPages = ['guide', 'live', 'mlb-network', 'sny-tv', 'msg-network', 'espn-network', 'regular-season-games', 'replay-games'];
                       const customPages = formData.assigned_pages.filter(p => !defaultPages.includes(p));
                       const allPages = [...defaultPages, ...customPages];
                       return allPages.map((page) => (
@@ -1062,6 +1121,7 @@ export default function LiveStreamManagement() {
                   isFreeGame={freeStreams.isFree(stream.id)}
                   onToggleFree={handleToggleFree}
                   onSelectWatchPage={handleSelectWatchPage}
+                  onToggleLive={handleToggleLive}
 
 
                 />
