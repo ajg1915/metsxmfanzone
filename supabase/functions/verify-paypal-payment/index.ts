@@ -83,19 +83,23 @@ Deno.serve(async (req) => {
     }
 
     // Find our subscription record
-    const { data: subscription } = await supabase
+    const { data: subscription, error: subscriptionError } = await supabase
       .from('subscriptions')
       .select('id, user_id, plan_type, status, amount, currency')
       .eq('paypal_subscription_id', paypalSubId)
-      .single();
+      .maybeSingle();
+
+    if (subscriptionError) throw new Error('Unable to verify subscription record');
 
     if (!subscription) {
       // Also try matching by paypal_order_id for backward compatibility
-      const { data: legacySub } = await supabase
+      const { data: legacySub, error: legacyError } = await supabase
         .from('subscriptions')
         .select('id, user_id, plan_type, status, amount, currency')
         .eq('paypal_order_id', paypalSubId)
-        .single();
+        .maybeSingle();
+
+      if (legacyError) throw new Error('Unable to verify legacy subscription record');
       
       if (!legacySub) {
         throw new Error('Subscription not found');
@@ -141,11 +145,13 @@ Deno.serve(async (req) => {
 
     // Send confirmation email
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('email, full_name')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
+
+      if (profileError) throw new Error('Unable to load confirmation profile');
 
       await supabase.functions.invoke('send-confirmation-email', {
         body: {
@@ -153,9 +159,9 @@ Deno.serve(async (req) => {
           email: profile?.email || user.email,
           name: profile?.full_name,
           planType: subscription.plan_type,
-          amount: subscription.amount?.toString() || (subscription.plan_type === 'annual' ? '129.99' : subscription.plan_type === 'weekly' ? '3.99' : '9.99'),
+          amount: subscription.amount?.toString() || (subscription.plan_type === 'annual' ? '129.99' : '9.99'),
           transactionDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-          subscriptionId: paypalSubId,
+          subscriptionId: 'PayPal membership',
         },
       });
     } catch (emailError) {

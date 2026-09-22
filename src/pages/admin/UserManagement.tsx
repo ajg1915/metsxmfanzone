@@ -8,15 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Bot, Send, Loader2, Users, UserCheck, UserX, CreditCard, Shield,
-  Sparkles, RefreshCw, UserPlus,
+  Bot, Send, Loader2, Users, CreditCard, Shield,
+  Sparkles, UserPlus,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
 import RolesTab from "@/components/admin/RolesTab";
 import MembersTab from "@/components/admin/MembersTab";
 import SignupsTab from "@/components/admin/SignupsTab";
-import { maskEmail, maskSensitiveField } from "@/utils/secureDataVault";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 interface MemberRow {
@@ -43,7 +42,6 @@ const UserManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [members, setMembers] = useState<MemberRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const [command, setCommand] = useState("");
   const [aiMessages, setAiMessages] = useState<AIMessage[]>([]);
   const [aiProcessing, setAiProcessing] = useState(false);
@@ -60,7 +58,6 @@ const UserManagement = () => {
 
   const fetchMembers = async () => {
     try {
-      setLoading(true);
       const { data: profiles } = await supabase
         .from("profiles")
         .select("id, email, full_name, created_at")
@@ -102,7 +99,7 @@ const UserManagement = () => {
     } catch (error) {
       console.error("Error fetching members:", error);
     } finally {
-      setLoading(false);
+      // The active tab owns its loading presentation.
     }
   };
 
@@ -156,29 +153,18 @@ const UserManagement = () => {
   ];
 
   const totalMembers = members.length;
-  const activeMembers = members.filter(m => m.status === "active").length;
-  const inactiveMembers = members.filter(m => m.status !== "active").length;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active": return "bg-affirmative text-white";
-      case "pending": return "bg-yellow-500 text-white";
-      case "cancelled": return "bg-destructive text-destructive-foreground";
-      default: return "bg-muted text-muted-foreground";
-    }
-  };
-
   return (
     <AdminPage>
       <AdminPageHeader
         icon={Bot}
-        title="AI User Management"
+        title="Members"
         count={totalMembers}
-        description="Tell the AI what to do — it handles members, subscriptions & roles automatically"
+        description="Manage membership access, PayPal status, signups, transactions, and roles"
       />
 
-      {/* AI Command Bar */}
-      <Card className="border-primary/20 bg-card/80 backdrop-blur">
+      <details className="group rounded-lg border border-border/40 bg-card/70">
+        <summary className="flex cursor-pointer list-none items-center gap-2 p-3 text-xs font-semibold"><Bot className="h-4 w-4 text-primary" />AI member assistant<span className="ml-auto text-muted-foreground group-open:rotate-90">›</span></summary>
+      <Card className="border-0 bg-transparent shadow-none">
         <CardContent className="pt-4 pb-3">
           <div className="flex gap-2">
             <div className="relative flex-1">
@@ -269,40 +255,26 @@ const UserManagement = () => {
           </CardContent>
         </Card>
       )}
+      </details>
 
       {/* Tabs: Members / Signups / Transactions / Roles */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 max-w-3xl">
-          <TabsTrigger value="members" className="gap-1.5 text-xs">
-            <Users className="w-3.5 h-3.5" />Members
+        <TabsList className="grid w-full grid-cols-4 max-w-3xl h-auto p-1">
+          <TabsTrigger value="members" className="gap-1 text-[10px] sm:text-xs px-1.5">
+            <Users className="hidden sm:block w-3.5 h-3.5" />Members
           </TabsTrigger>
-          <TabsTrigger value="signups" className="gap-1.5 text-xs">
-            <UserPlus className="w-3.5 h-3.5" />Signups
+          <TabsTrigger value="signups" className="gap-1 text-[10px] sm:text-xs px-1.5">
+            <UserPlus className="hidden sm:block w-3.5 h-3.5" />Signups
           </TabsTrigger>
-          <TabsTrigger value="transactions" className="gap-1.5 text-xs">
-            <CreditCard className="w-3.5 h-3.5" />Transactions
+          <TabsTrigger value="transactions" className="gap-1 text-[10px] sm:text-xs px-1.5">
+            <CreditCard className="hidden sm:block w-3.5 h-3.5" />Billing
           </TabsTrigger>
-          <TabsTrigger value="roles" className="gap-1.5 text-xs">
-            <Shield className="w-3.5 h-3.5" />Roles
+          <TabsTrigger value="roles" className="gap-1 text-[10px] sm:text-xs px-1.5">
+            <Shield className="hidden sm:block w-3.5 h-3.5" />Roles
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="members">
-          {/* Quick stats from the live members fetch */}
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            <Card><CardContent className="pt-4 pb-3 flex items-center justify-between">
-              <div><p className="text-xs text-muted-foreground">Total</p><p className="text-xl font-bold">{totalMembers}</p></div>
-              <Users className="w-6 h-6 text-primary opacity-40" />
-            </CardContent></Card>
-            <Card><CardContent className="pt-4 pb-3 flex items-center justify-between">
-              <div><p className="text-xs text-muted-foreground">Active</p><p className="text-xl font-bold text-affirmative">{activeMembers}</p></div>
-              <UserCheck className="w-6 h-6 text-affirmative opacity-40" />
-            </CardContent></Card>
-            <Card><CardContent className="pt-4 pb-3 flex items-center justify-between">
-              <div><p className="text-xs text-muted-foreground">Inactive</p><p className="text-xl font-bold text-destructive">{inactiveMembers}</p></div>
-              <UserX className="w-6 h-6 text-destructive opacity-40" />
-            </CardContent></Card>
-          </div>
           <MembersTab />
         </TabsContent>
 

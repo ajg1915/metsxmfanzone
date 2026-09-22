@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
 import { maskEmail, maskSensitiveField, vaultAuthHeaders } from "@/utils/secureDataVault";
+import { AdminList, AdminListCard, AdminRow } from "@/components/admin/AdminUI";
 
 interface MemberRow {
   user_id: string;
@@ -64,12 +65,18 @@ export default function MembersTab() {
   const fetchMembers = async () => {
     try {
       setLoading(true);
-      const [{ data: profiles }, { data: subscriptions }, { data: roles }, { data: accessActivity }] = await Promise.all([
+      const [profilesResult, subscriptionsResult, rolesResult, activityResult] = await Promise.all([
         supabase.from("profiles").select("id, email, full_name, phone_number, created_at").order("created_at", { ascending: false }),
         supabase.from("subscriptions").select("id, user_id, plan_type, status, end_date, payment_method, amount, last_payment_date").order("created_at", { ascending: false }),
         supabase.from("user_roles").select("user_id, role"),
         supabase.from("subscription_activity").select("user_id, action, created_at").in("action", ["membership_cancelled", "account_cancelled_deleted", "access_restored"]).order("created_at", { ascending: false }),
       ]);
+      const firstError = profilesResult.error || subscriptionsResult.error || rolesResult.error || activityResult.error;
+      if (firstError) throw firstError;
+      const profiles = profilesResult.data;
+      const subscriptions = subscriptionsResult.data;
+      const roles = rolesResult.data;
+      const accessActivity = activityResult.data;
 
       const roleMap = new Map<string, string[]>();
       roles?.forEach(r => {
@@ -169,9 +176,11 @@ export default function MembersTab() {
         end_date: months > 0 ? end.toISOString() : new Date().toISOString(),
       };
       if (m.subscription_id) {
-        await supabase.from("subscriptions").update(payload).eq("id", m.subscription_id);
+        const { error } = await supabase.from("subscriptions").update(payload).eq("id", m.subscription_id);
+        if (error) throw error;
       } else {
-        await supabase.from("subscriptions").insert({ user_id: m.user_id, ...payload });
+        const { error } = await supabase.from("subscriptions").insert({ user_id: m.user_id, ...payload });
+        if (error) throw error;
       }
       await logActivity(m, "plan_changed", { new_plan: plan });
       toast({ title: "Plan updated", description: `Set to ${plan}` });
@@ -202,7 +211,8 @@ export default function MembersTab() {
     try {
       const update: any = { status };
       if (status === "cancelled") update.end_date = new Date().toISOString();
-      await supabase.from("subscriptions").update(update).eq("id", m.subscription_id);
+      const { error } = await supabase.from("subscriptions").update(update).eq("id", m.subscription_id);
+      if (error) throw error;
       await logActivity(m, "status_changed", { new_status: status });
       toast({ title: "Status updated", description: `Now ${status}` });
       fetchMembers();
@@ -220,7 +230,8 @@ export default function MembersTab() {
       const current = m.end_date ? new Date(m.end_date) : null;
       const base = current && current > new Date() ? current : new Date();
       base.setDate(base.getDate() + days);
-      await supabase.from("subscriptions").update({ end_date: base.toISOString(), status: "active" }).eq("id", m.subscription_id);
+      const { error } = await supabase.from("subscriptions").update({ end_date: base.toISOString(), status: "active" }).eq("id", m.subscription_id);
+      if (error) throw error;
       await logActivity(m, "extended", { days, new_end_date: base.toISOString() });
       toast({ title: "Extended", description: `+${days} days · ends ${base.toLocaleDateString()}` });
       fetchMembers();
@@ -244,9 +255,11 @@ export default function MembersTab() {
         end_date: end.toISOString(),
       };
       if (m.subscription_id) {
-        await supabase.from("subscriptions").update(payload).eq("id", m.subscription_id);
+        const { error } = await supabase.from("subscriptions").update(payload).eq("id", m.subscription_id);
+        if (error) throw error;
       } else {
-        await supabase.from("subscriptions").insert({ user_id: m.user_id, ...payload });
+        const { error } = await supabase.from("subscriptions").insert({ user_id: m.user_id, ...payload });
+        if (error) throw error;
       }
       await logActivity(m, "trial_granted", { days, ends: end.toISOString() });
       toast({ title: "Trial granted", description: `${days}-day trial · ends ${end.toLocaleDateString()}` });
@@ -278,14 +291,16 @@ export default function MembersTab() {
     setBusyId(m.user_id);
     try {
       const amt = planPrice(m.plan_type);
-      await supabase.from("subscription_payments").insert({
+      const paymentResult = await supabase.from("subscription_payments").insert({
         subscription_id: m.subscription_id, user_id: m.user_id, amount: amt, currency: "USD",
         payment_method: m.payment_method || "manual", payment_date: new Date().toISOString(),
         status: "completed", recorded_by: user?.id,
       });
-      await supabase.from("subscriptions").update({
+      if (paymentResult.error) throw paymentResult.error;
+      const subscriptionResult = await supabase.from("subscriptions").update({
         last_payment_date: new Date().toISOString(), last_payment_amount: amt, status: "active",
       }).eq("id", m.subscription_id);
+      if (subscriptionResult.error) throw subscriptionResult.error;
       await logActivity(m, "payment_recorded", { amount: amt });
       toast({ title: "Payment recorded", description: `$${amt}` });
       fetchMembers();
@@ -298,10 +313,12 @@ export default function MembersTab() {
     setBusyId(m.user_id);
     try {
       if (m.roles.includes(role)) {
-        await supabase.from("user_roles").delete().eq("user_id", m.user_id).eq("role", role as any);
+        const { error } = await supabase.from("user_roles").delete().eq("user_id", m.user_id).eq("role", role as any);
+        if (error) throw error;
         toast({ title: "Role removed", description: role });
       } else {
-        await supabase.from("user_roles").insert({ user_id: m.user_id, role: role as any });
+        const { error } = await supabase.from("user_roles").insert({ user_id: m.user_id, role: role as any });
+        if (error) throw error;
         toast({ title: "Role added", description: role });
       }
       fetchMembers();
@@ -385,6 +402,35 @@ export default function MembersTab() {
     return <Badge className={`text-[10px] ${map[s] || "bg-muted text-muted-foreground"}`}>{s}</Badge>;
   };
 
+  const memberActions = (m: MemberRow) => (
+    <div className="flex items-center justify-end gap-1">
+      {busyId === m.user_id && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8" aria-label={`Manage ${dispName(m)}`}><MoreHorizontal className="w-4 h-4" /></Button></DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56 bg-popover">
+          <DropdownMenuLabel className="text-xs">Manage member</DropdownMenuLabel><DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => markPaid(m)} className="text-xs"><DollarSign className="w-3.5 h-3.5 mr-2" />Mark as paid</DropdownMenuItem>
+          <DropdownMenuSub><DropdownMenuSubTrigger className="text-xs"><CalendarPlus className="w-3.5 h-3.5 mr-2" />Extend membership</DropdownMenuSubTrigger><DropdownMenuSubContent className="bg-popover">
+            {[7, 30, 90, 365].map(days => <DropdownMenuItem key={days} onClick={() => extend(m, days)} className="text-xs">+ {days === 365 ? "1 year" : `${days} days`}</DropdownMenuItem>)}
+            <DropdownMenuSeparator /><DropdownMenuItem onClick={() => { setCustomDays("30"); setCustomTarget({ member: m, mode: "extend" }); }} className="text-xs">Custom…</DropdownMenuItem>
+          </DropdownMenuSubContent></DropdownMenuSub>
+          <DropdownMenuSub><DropdownMenuSubTrigger className="text-xs"><Timer className="w-3.5 h-3.5 mr-2" />Grant trial</DropdownMenuSubTrigger><DropdownMenuSubContent className="bg-popover">
+            {[2, 7, 14, 30].map(days => <DropdownMenuItem key={days} onClick={() => grantTrial(m, days)} className="text-xs">{days}-day trial</DropdownMenuItem>)}
+            <DropdownMenuSeparator /><DropdownMenuItem onClick={() => { setCustomDays("14"); setCustomTarget({ member: m, mode: "trial" }); }} className="text-xs">Custom…</DropdownMenuItem>
+          </DropdownMenuSubContent></DropdownMenuSub>
+          <DropdownMenuSub><DropdownMenuSubTrigger className="text-xs"><ShieldPlus className="w-3.5 h-3.5 mr-2" />Toggle role</DropdownMenuSubTrigger><DropdownMenuSubContent className="bg-popover">
+            {["admin", "writer", "moderator", "user"].map(role => <DropdownMenuItem key={role} onClick={() => toggleRole(m, role)} className="text-xs capitalize">{m.roles.includes(role) ? <Check className="w-3.5 h-3.5 mr-2 text-affirmative" /> : <span className="w-3.5 h-3.5 mr-2" />}{role}</DropdownMenuItem>)}
+          </DropdownMenuSubContent></DropdownMenuSub>
+          <DropdownMenuSeparator />
+          {m.limited_access && <DropdownMenuItem onClick={() => restoreAccess(m)} className="text-xs text-affirmative"><Unlock className="w-3.5 h-3.5 mr-2" />Restore paid eligibility</DropdownMenuItem>}
+          <DropdownMenuItem onClick={() => sendPasswordReset(m)} className="text-xs"><KeyRound className="w-3.5 h-3.5 mr-2" />Send password reset</DropdownMenuItem>
+          {m.status === "active" && <DropdownMenuItem onClick={() => changeStatus(m, "cancelled")} className="text-xs text-destructive"><Ban className="w-3.5 h-3.5 mr-2" />Cancel subscription</DropdownMenuItem>}
+          {m.user_id !== user?.id && <><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setPendingDelete(m)} className="text-xs text-destructive"><Trash2 className="w-3.5 h-3.5 mr-2" />Delete account</DropdownMenuItem></>}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+
   if (loading) return <div className="flex items-center justify-center min-h-[300px]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
@@ -454,8 +500,31 @@ export default function MembersTab() {
         </CardContent>
       </Card>
 
-      {/* Members Table */}
-      <Card>
+      {/* Members on phones */}
+      <div className="md:hidden">
+        <AdminList>
+          {filtered.map(m => (
+            <AdminListCard key={m.user_id} highlight={m.limited_access}>
+              <AdminRow
+                title={dispName(m)}
+                meta={dispEmail(m)}
+                badges={<>{statusBadge(m.status)}<Badge variant="outline" className="text-[9px] capitalize">{m.plan_type}</Badge></>}
+                actions={memberActions(m)}
+                body={<div className="mt-2 grid grid-cols-2 gap-2 border-t border-border/30 pt-2 text-[10px]">
+                  <div><p className="text-muted-foreground">PayPal</p><p className="font-medium">{m.payment_method === "paypal" ? "Linked" : "Not linked"}</p></div>
+                  <div><p className="text-muted-foreground">Renews / ends</p><p className="font-medium">{m.end_date ? new Date(m.end_date).toLocaleDateString() : "—"}</p></div>
+                  <div><p className="text-muted-foreground">Cancellations</p><p className="font-medium">{m.cancellation_count}{m.limited_access ? " · Limited" : ""}</p></div>
+                  <div><p className="text-muted-foreground">Roles</p><p className="font-medium capitalize">{m.roles.join(", ") || "member"}</p></div>
+                </div>}
+              />
+            </AdminListCard>
+          ))}
+          {filtered.length === 0 && <p className="py-8 text-center text-xs text-muted-foreground">No members match these filters.</p>}
+        </AdminList>
+      </div>
+
+      {/* Members on tablets and desktops */}
+      <Card className="hidden md:block">
         <CardHeader className="pb-2"><CardTitle className="text-base">Members</CardTitle></CardHeader>
         <CardContent className="px-0">
           <div className="overflow-x-auto">
@@ -534,86 +603,7 @@ export default function MembersTab() {
                     <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                       {m.joined_date ? new Date(m.joined_date).toLocaleDateString() : "—"}
                     </TableCell>
-                    <TableCell className="text-right pr-3">
-                      <div className="flex items-center justify-end gap-1">
-                        {busyId === m.user_id && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="w-4 h-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-56 bg-popover">
-                            <DropdownMenuLabel className="text-xs">Manage member</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
-
-                            <DropdownMenuItem onClick={() => markPaid(m)} className="text-xs">
-                              <DollarSign className="w-3.5 h-3.5 mr-2" /> Mark as paid
-                            </DropdownMenuItem>
-
-                            <DropdownMenuSub>
-                              <DropdownMenuSubTrigger className="text-xs"><CalendarPlus className="w-3.5 h-3.5 mr-2" /> Extend membership</DropdownMenuSubTrigger>
-                              <DropdownMenuSubContent className="bg-popover">
-                                <DropdownMenuItem onClick={() => extend(m, 7)} className="text-xs">+ 7 days</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => extend(m, 30)} className="text-xs">+ 30 days</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => extend(m, 90)} className="text-xs">+ 90 days</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => extend(m, 365)} className="text-xs">+ 1 year</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => { setCustomDays("30"); setCustomTarget({ member: m, mode: "extend" }); }} className="text-xs">
-                                  Custom…
-                                </DropdownMenuItem>
-                              </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-
-                            <DropdownMenuSub>
-                              <DropdownMenuSubTrigger className="text-xs"><Timer className="w-3.5 h-3.5 mr-2" /> Grant / extend trial</DropdownMenuSubTrigger>
-                              <DropdownMenuSubContent className="bg-popover">
-                                <DropdownMenuItem onClick={() => grantTrial(m, 2)} className="text-xs">2-day trial</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => grantTrial(m, 7)} className="text-xs">7-day trial</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => grantTrial(m, 14)} className="text-xs">14-day trial</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => grantTrial(m, 30)} className="text-xs">30-day trial</DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => { setCustomDays("14"); setCustomTarget({ member: m, mode: "trial" }); }} className="text-xs">
-                                  Custom…
-                                </DropdownMenuItem>
-                              </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-
-
-                            <DropdownMenuSub>
-                              <DropdownMenuSubTrigger className="text-xs"><ShieldPlus className="w-3.5 h-3.5 mr-2" /> Toggle role</DropdownMenuSubTrigger>
-                              <DropdownMenuSubContent className="bg-popover">
-                                {["admin", "writer", "moderator", "user"].map(r => (
-                                  <DropdownMenuItem key={r} onClick={() => toggleRole(m, r)} className="text-xs capitalize">
-                                    {m.roles.includes(r) ? <Check className="w-3.5 h-3.5 mr-2 text-affirmative" /> : <span className="w-3.5 h-3.5 mr-2" />}
-                                    {r}
-                                  </DropdownMenuItem>
-                                ))}
-                              </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-
-                            <DropdownMenuSeparator />
-                             {m.limited_access && (
-                               <DropdownMenuItem onClick={() => restoreAccess(m)} className="text-xs text-affirmative focus:text-affirmative">
-                                 <Unlock className="w-3.5 h-3.5 mr-2" /> Restore paid eligibility
-                               </DropdownMenuItem>
-                             )}
-                            <DropdownMenuItem onClick={() => sendPasswordReset(m)} className="text-xs">
-                              <KeyRound className="w-3.5 h-3.5 mr-2" /> Send password reset
-                            </DropdownMenuItem>
-                            {m.status === "active" && (
-                              <DropdownMenuItem onClick={() => changeStatus(m, "cancelled")} className="text-xs text-destructive focus:text-destructive">
-                                <Ban className="w-3.5 h-3.5 mr-2" /> Cancel subscription
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            {m.user_id !== user?.id && (
-                              <DropdownMenuItem onClick={() => setPendingDelete(m)} className="text-xs text-destructive focus:text-destructive">
-                                <Trash2 className="w-3.5 h-3.5 mr-2" /> Delete account
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
+                    <TableCell className="text-right pr-3">{memberActions(m)}</TableCell>
                   </TableRow>
                 ))}
                 {filtered.length === 0 && (

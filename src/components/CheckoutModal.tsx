@@ -6,9 +6,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Tag, X, Shield, ArrowLeft } from "lucide-react";
+import { Shield, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 import { useToast } from "@/hooks/use-toast";
@@ -36,9 +35,6 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [showPromoCode, setShowPromoCode] = useState(false);
-  const [promoCode, setPromoCode] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSubscribe = async () => {
@@ -75,46 +71,29 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
       });
 
       const { data, error } = await supabase.functions.invoke("create-paypal-order", {
-        body: { planType: plan.id, promoCode: appliedPromo, returnOrigin: window.location.origin },
+        body: { planType: plan.id, promoCode: null, returnOrigin: window.location.origin },
       });
 
-      if (error) throw error;
+      if (error || data?.error) throw new Error("checkout_failed");
 
       if (data?.approvalUrl) {
         window.location.href = data.approvalUrl;
       } else {
         toast({
-          title: "Error",
-          description: "Failed to create payment session. Please try again.",
+          title: "Transaction could not be completed",
+          description: "Please try again in a moment.",
           variant: "destructive",
         });
       }
-    } catch (error) {
-      console.error("Error creating payment:", error);
+    } catch {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to initiate payment. Please try again.",
+        title: "Transaction could not be completed",
+        description: "Please try again or contact support.",
         variant: "destructive",
       });
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  const handleApplyPromo = () => {
-    if (promoCode.trim()) {
-      setAppliedPromo(promoCode.trim().toUpperCase());
-      toast({
-        title: "Promo Code Applied",
-        description: `Code "${promoCode.toUpperCase()}" has been applied`,
-      });
-      setShowPromoCode(false);
-    }
-  };
-
-  const handleRemovePromo = () => {
-    setAppliedPromo(null);
-    setPromoCode("");
   };
 
   if (!plan) return null;
@@ -157,73 +136,12 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
 
           <Separator />
 
-          {/* Promo Code Section */}
-          <div>
-            {appliedPromo ? (
-              <div className="flex items-center justify-between bg-primary/10 p-3 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">{appliedPromo}</span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRemovePromo}
-                  className="h-7 w-7 p-0"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            ) : showPromoCode ? (
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Enter promo code"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    className="h-10"
-                    onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-                  />
-                  <Button onClick={handleApplyPromo} className="h-10 px-4">
-                    Apply
-                  </Button>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowPromoCode(false)}
-                  className="text-xs text-muted-foreground"
-                >
-                  Cancel
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowPromoCode(true)}
-                className="w-full justify-start h-10"
-              >
-                <Tag className="w-4 h-4 mr-2" />
-                Add promotion code
-              </Button>
-            )}
-          </div>
-
-          <Separator />
-
           {/* Order Summary */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
               <span className="text-foreground">{plan.price}</span>
             </div>
-            {appliedPromo && (
-              <div className="flex justify-between text-sm">
-                <span className="text-primary">Promo discount</span>
-                <span className="text-primary">-$0.00</span>
-              </div>
-            )}
             <Separator className="my-2" />
             <div className="flex justify-between font-semibold text-base">
               <span className="text-foreground">Total due today</span>
