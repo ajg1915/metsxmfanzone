@@ -49,7 +49,12 @@ Deno.serve(async (req) => {
         to: Array.isArray(to) ? to : [to],
         subject,
         html,
-        text,
+        text: text ?? undefined,
+        reply_to: 'support@metsxmfanzone.com',
+        headers: {
+          'List-Unsubscribe': '<https://metsxmfanzone.com/unsubscribe>',
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       }),
     })
 
