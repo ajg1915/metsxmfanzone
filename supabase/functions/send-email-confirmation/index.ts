@@ -1,4 +1,5 @@
 import { createServiceClient, queueTransactionalEmail } from "../_shared/queue-email.ts";
+import { renderBrandedEmailFor } from "../_shared/email-brand.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -134,7 +135,7 @@ Deno.serve(async (req) => {
     const result = await queueTransactionalEmail(supabase, {
       to: normalizedEmail,
       subject: "Confirm Your MetsXMFanZone Account",
-      html: buildEmailHtml({ confirmationLink, recipientName }),
+      html: await buildEmailHtml({ supabase, confirmationLink, recipientName }),
       text: buildEmailText({ confirmationLink, recipientName }),
       label: "signup_confirmation",
       metadata: {
