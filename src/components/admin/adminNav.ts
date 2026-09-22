@@ -2,7 +2,7 @@ import {
   Home, FileText, Video, Radio, Bell, Mic, TrendingUp,
   MessageSquare, Users, Mail, Palette,
   Megaphone, BookOpen, Trophy, UserCog, Send, Wallpaper, ShoppingBag,
-  Activity, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
+  Activity, AlertTriangle, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
   ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift, Bot,
 } from "lucide-react";
 
@@ -36,6 +36,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
     items: [
       { title: "Live Streams", url: "/admin/live-streams", icon: Radio },
       { title: "Stream Health", url: "/admin/stream-health", icon: HeartPulse },
+      { title: "Stream Issues", url: "/admin/stream-issues", icon: AlertTriangle },
       { title: "Feed Health", url: "/admin/feed-health", icon: Activity },
       { title: "Stream Tester", url: "/admin/stream-tester", icon: Activity },
       { title: "Private Player", url: "/admin/private-player", icon: Monitor },

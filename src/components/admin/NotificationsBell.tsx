@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, UserPlus, CreditCard, MessageSquare, Loader2 } from "lucide-react";
+import { AlertTriangle, Bell, UserPlus, CreditCard, MessageSquare, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 type Item = {
   id: string;
-  type: "signup" | "subscription" | "contact";
+  type: "signup" | "subscription" | "contact" | "stream_issue";
   title: string;
   subtitle: string;
   created_at: string;
@@ -25,7 +25,7 @@ export function NotificationsBell() {
     setLoading(true);
     try {
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const [profilesRes, subsRes, contactsRes] = await Promise.all([
+      const [profilesRes, subsRes, contactsRes, issuesRes] = await Promise.all([
         supabase
           .from("profiles")
           .select("id, full_name, email, created_at")
@@ -41,6 +41,14 @@ export function NotificationsBell() {
         supabase
           .from("contact_submissions")
           .select("id, name, subject, created_at")
+          .gte("created_at", since)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        supabase
+          .from("stream_health_reports")
+          .select("id, issue_type, severity, description, created_at")
+          .ilike("description", "[Viewer ticket]%")
+          .eq("resolved", false)
           .gte("created_at", since)
           .order("created_at", { ascending: false })
           .limit(10),
@@ -77,6 +85,16 @@ export function NotificationsBell() {
           href: "/admin/contact-submissions",
         })
       );
+      (issuesRes.data || []).forEach((issue: any) =>
+        merged.push({
+          id: `stream-${issue.id}`,
+          type: "stream_issue",
+          title: `${issue.severity} stream issue`,
+          subtitle: issue.issue_type,
+          created_at: issue.created_at,
+          href: "/admin/stream-issues",
+        })
+      );
 
       merged.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
       const top = merged.slice(0, 20);
@@ -107,7 +125,7 @@ export function NotificationsBell() {
   };
 
   const iconFor = (t: Item["type"]) =>
-    t === "signup" ? UserPlus : t === "subscription" ? CreditCard : MessageSquare;
+    t === "signup" ? UserPlus : t === "subscription" ? CreditCard : t === "stream_issue" ? AlertTriangle : MessageSquare;
 
   return (
     <Popover open={open} onOpenChange={handleOpen}>

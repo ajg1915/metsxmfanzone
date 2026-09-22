@@ -146,7 +146,7 @@ const LiveStream = () => {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
-                    className="rounded-2xl overflow-hidden ring-1 ring-border/50 shadow-2xl shadow-primary/10 bg-card"
+                    className="overflow-hidden bg-player sm:rounded-lg"
                   >
                     <StreamPlayer
                       pageName={pageName}

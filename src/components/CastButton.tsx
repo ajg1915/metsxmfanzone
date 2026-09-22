@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
 import { Cast } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 declare global {
   interface Window {
@@ -248,13 +249,18 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
 
 
   return (
-    <div
-      className={`absolute top-3 right-3 z-30 inline-flex items-center gap-1.5 px-3 h-9 rounded-full backdrop-blur-md border text-[11px] font-bold overflow-hidden transition-transform active:scale-95 ${
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      className={`relative z-30 h-9 overflow-hidden rounded-full px-3 text-[11px] font-bold backdrop-blur-md ${
         connected
-          ? "bg-primary text-primary-foreground border-primary/40"
-          : "bg-black/40 hover:bg-black/60 text-white border-white/20"
+          ? "bg-primary text-primary-foreground"
+          : "bg-background/70 text-foreground hover:bg-background/90"
       }`}
-      style={{ maxWidth: 120, maxHeight: 36 }}
+      onClick={connected || !ready || window.self !== window.top ? handleCast : undefined}
+      aria-label={connected ? "Stop casting" : "Cast to TV"}
+      title={connected ? "Stop casting" : "Cast to TV"}
     >
       <Cast className="w-4 h-4" />
 
@@ -269,15 +275,10 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
             className="cast-launcher-overlay"
           />
         ) : (
-          <button
-            type="button"
-            onClick={handleCast}
-            aria-label={connected ? "Stop casting" : "Cast to TV"}
-            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-          />
+          <span className="absolute inset-0 cursor-pointer" onClick={handleCast} />
         )}
       </span>
-    </div>
+    </Button>
   );
 }
 

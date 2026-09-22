@@ -2,7 +2,9 @@ import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Loader2, AlertCircle, RotateCw, Play } from "lucide-react";
 import { CastButton } from "./CastButton";
+import { StreamIssueDialog } from "./StreamIssueDialog";
 import { StreamControls } from "./player/StreamControls";
+import { Button } from "@/components/ui/button";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
@@ -12,6 +14,7 @@ interface ClapprPlayerProps {
   pageDescription?: string;
   source?: string;
   showChrome?: boolean;
+  streamId?: string;
 }
 
 const isMobile = (() => {
@@ -28,6 +31,7 @@ const isIos = () => {
 export const ClapprPlayer = memo(function ClapprPlayer({
   source,
   pageTitle = "Live Stream",
+  streamId,
 }: ClapprPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -70,13 +74,13 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     setStatus("loading");
     setNeedsTap(false);
 
-    // Candidate URLs: HTTPS proxy first, then public CORS proxy, then raw.
+    // Secure sources load directly; only insecure sources require proxy fallbacks.
     const candidates = Array.from(
       new Set(
         [
-          toSecureStreamUrl(effectiveSource),
-          isInsecureUrl(effectiveSource) ? toCorsProxyUrl(effectiveSource) : "",
           effectiveSource,
+          isInsecureUrl(effectiveSource) ? toSecureStreamUrl(effectiveSource) : "",
+          isInsecureUrl(effectiveSource) ? toCorsProxyUrl(effectiveSource) : "",
         ].filter(Boolean)
       )
     );
@@ -147,18 +151,16 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         return;
       }
 
-      // Phones (especially Android) stall badly with ultra-low-latency buffers,
-      // so give mobile a deeper, more forgiving buffer.
       const hls = new Hls({
         enableWorker: true,
-        lowLatencyMode: false,
-        backBufferLength: isMobile ? 30 : 10,
-        maxBufferLength: isMobile ? 30 : 12,
-        maxMaxBufferLength: isMobile ? 60 : 30,
+        lowLatencyMode: true,
+        backBufferLength: isMobile ? 15 : 8,
+        maxBufferLength: isMobile ? 18 : 10,
+        maxMaxBufferLength: isMobile ? 30 : 20,
         maxBufferSize: 60 * 1000 * 1000,
         maxBufferHole: 0.5,
-        liveSyncDurationCount: isMobile ? 4 : 3,
-        liveMaxLatencyDurationCount: isMobile ? 12 : 8,
+        liveSyncDurationCount: 3,
+        liveMaxLatencyDurationCount: isMobile ? 8 : 6,
         liveDurationInfinity: true,
         highBufferWatchdogPeriod: 2,
         nudgeMaxRetry: 20,
@@ -234,10 +236,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   }, [effectiveSource, retryKey, notifyAdmins]);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full aspect-video bg-black overflow-hidden rounded-2xl border border-white/10 shadow-2xl group">
+    <div ref={containerRef} className="stream-player relative h-full w-full aspect-video overflow-hidden bg-player group">
       <video
         ref={videoRef}
-        className="absolute inset-0 w-full h-full object-contain bg-black"
+        className="absolute inset-0 h-full w-full object-contain bg-player"
         autoPlay
         muted
         playsInline
@@ -253,7 +255,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       />
 
 
-      <CastButton source={effectiveSource} title={pageTitle} />
+      <div className="absolute right-2 top-2 z-40 flex items-center gap-2 sm:right-3 sm:top-3">
+        <StreamIssueDialog streamId={streamId} streamTitle={pageTitle} video={videoRef.current} compact />
+        <CastButton source={effectiveSource} title={pageTitle} />
+      </div>
 
 
       {status === "ready" && (
@@ -268,39 +273,41 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
 
       {status === "loading" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white gap-2 pointer-events-none">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-player/60 text-player-foreground gap-2 pointer-events-none">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-xs text-white/80">Loading stream…</p>
+          <p className="text-xs text-player-foreground/80">Loading stream…</p>
         </div>
       )}
 
       {status === "error" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white gap-3 p-4 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-player/80 text-player-foreground gap-3 p-4 text-center">
           <AlertCircle className="w-10 h-10 text-destructive" />
           <p className="text-sm font-medium">Stream unavailable</p>
-          <p className="text-xs text-white/70">Stream goes live 30 minutes before game time</p>
-          <button
+          <p className="text-xs text-player-foreground/70">Stream goes live 30 minutes before game time</p>
+          <Button
             onClick={handleRetry}
-            className="mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors"
+            size="sm"
+            className="mt-1 text-xs"
           >
             <RotateCw className="w-3.5 h-3.5" /> Retry
-          </button>
+          </Button>
         </div>
       )}
 
       {status === "ready" && needsTap && (
-        <button
+        <Button
           onClick={handleTapPlay}
-          className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-black/70 backdrop-blur-sm text-white transition-colors hover:bg-black/80"
+          variant="ghost"
+          className="absolute inset-0 z-30 flex h-full w-full flex-col items-center justify-center gap-3 rounded-none bg-player/70 text-player-foreground backdrop-blur-sm hover:bg-player/80"
         >
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary flex items-center justify-center shadow-2xl shadow-primary/40 animate-pulse">
             <Play className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground ml-1" fill="currentColor" />
           </div>
           <p className="text-sm sm:text-base font-bold">Tap to play</p>
-          <p className="text-[11px] sm:text-xs text-white/70 max-w-[280px] text-center px-4">
+          <p className="text-[11px] sm:text-xs text-player-foreground/70 max-w-[280px] text-center px-4">
             Your browser blocked autoplay. Tap anywhere on the player to start the stream.
           </p>
-        </button>
+        </Button>
       )}
     </div>
   );
