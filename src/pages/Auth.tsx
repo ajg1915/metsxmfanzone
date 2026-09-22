@@ -394,7 +394,7 @@ const Auth = () => {
               ) : isSignup ? (
                 <div className="grid grid-cols-2 gap-2"><Button type="button" variant="outline" className="h-11" onClick={() => setSignupStep(1)}><ArrowLeft />Back</Button><Button type="submit" className="h-11" disabled={loading}>{loading ? <Loader2 className="animate-spin" /> : "Create account"}</Button></div>
               ) : (
-                <Button type="submit" className="h-11 w-full" disabled={loading}>{loading ? <Loader2 className="animate-spin" /> : isRecovery ? "Update password" : forgotPassword ? "Send reset link" : "Sign in"}</Button>
+                <Button type="submit" className="h-11 w-full" disabled={loading || (!isRecovery && !forgotPassword && !loginAgreeToTerms)}>{loading ? <Loader2 className="animate-spin" /> : isRecovery ? "Update password" : forgotPassword ? "Send reset link" : "Sign in"}</Button>
               )}
             </form>
 
