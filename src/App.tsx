@@ -387,6 +387,7 @@ const AppContent = () => {
               
               <Route path="live-notifications" element={<LiveNotificationManagement />} />
               <Route path="stories" element={<StoriesManagement />} />
+              <Route path="events" element={<EventsManagement />} />
               <Route path="tutorial" element={<TutorialManagement />} />
               <Route path="newsletter" element={<NewsletterGenerator />} />
               <Route path="email-editor" element={<EmailEditor />} />
@@ -411,7 +412,6 @@ const AppContent = () => {
               <Route path="game-alerts" element={<GameAlertsManagement />} />
               <Route path="podcaster-applications" element={<PodcasterApplicationsManagement />} />
               <Route path="daily-reports" element={<DailyReports />} />
-              <Route path="daily-reports" element={<DailyReports />} />
               <Route path="predictions" element={<PredictionsManagement />} />
               <Route path="polls" element={<PollManagement />} />
               <Route path="settings" element={<AdminSettings />} />
@@ -419,7 +419,6 @@ const AppContent = () => {
               <Route path="private-player" element={<PrivatePlayer />} />
               <Route path="social-media" element={<SocialMediaSettings />} />
               <Route path="tutorials" element={<TutorialManagement />} />
-              <Route path="media-library" element={<MediaLibrary />} />
               <Route path="toast-prompts" element={<ToastPromptManagement />} />
               <Route path="popup-notifications" element={<PopupNotificationsManagement />} />
               
