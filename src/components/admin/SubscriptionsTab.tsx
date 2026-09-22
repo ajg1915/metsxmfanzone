@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,12 +12,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import {
   Calendar, Mail, DollarSign, Clock, ChevronRight, Check, Ban, RotateCcw, CalendarPlus,
-  History,
+  History, Search,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { maskEmail } from "@/utils/secureDataVault";
+import { AdminList, AdminListCard, AdminRow, AdminStat, AdminStatGrid } from "@/components/admin/AdminUI";
 
 interface UserSubscription {
   id: string;
@@ -78,6 +79,8 @@ export default function SubscriptionsTab() {
   const [paymentNotes, setPaymentNotes] = useState("");
   const [extendDays, setExtendDays] = useState("30");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     fetchSubscriptions();
@@ -265,24 +268,46 @@ export default function SubscriptionsTab() {
     switch (planType) { case "weekly": return "$3.99/wk"; case "premium": return "$9.99/mo"; case "annual": return "$129.99/yr"; default: return "Free"; }
   };
 
+  const filteredSubscriptions = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    return subscriptions.filter((sub) => {
+      const effectiveStatus = sub.cancellation_status === "pending" ? "cancelling" : sub.status;
+      const matchesQuery = !normalizedQuery || sub.email.toLowerCase().includes(normalizedQuery) || sub.plan_type.toLowerCase().includes(normalizedQuery);
+      return matchesQuery && (statusFilter === "all" || statusFilter === effectiveStatus);
+    });
+  }, [query, statusFilter, subscriptions]);
+
   if (loading) return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading...</p></div>;
 
   return (
-    <div className="space-y-6 mt-4">
+    <div className="mt-3 space-y-3">
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Active</p><p className="text-2xl font-bold text-affirmative">{subscriptions.filter(s => s.status === "active" && !s.cancellation_status).length}</p></div><Check className="w-8 h-8 text-affirmative opacity-50" /></div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Pending Cancel</p><p className="text-2xl font-bold text-warning">{subscriptions.filter(s => s.cancellation_status === "pending").length}</p></div><Clock className="w-8 h-8 text-warning opacity-50" /></div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Cancelled</p><p className="text-2xl font-bold text-destructive">{subscriptions.filter(s => s.status === "cancelled").length}</p></div><Ban className="w-8 h-8 text-destructive opacity-50" /></div></CardContent></Card>
-        <Card><CardContent className="pt-6"><div className="flex items-center justify-between"><div><p className="text-sm text-muted-foreground">Premium/Annual</p><p className="text-2xl font-bold text-primary">{subscriptions.filter(s => s.plan_type !== "free" && s.status === "active").length}</p></div><DollarSign className="w-8 h-8 text-primary opacity-50" /></div></CardContent></Card>
+      <AdminStatGrid>
+        <AdminStat icon={Check} label="Active" tone="success" value={subscriptions.filter(s => s.status === "active" && !s.cancellation_status).length} />
+        <AdminStat icon={Clock} label="Cancelling" tone="warning" value={subscriptions.filter(s => s.cancellation_status === "pending").length} />
+        <AdminStat icon={Ban} label="Cancelled" tone="danger" value={subscriptions.filter(s => s.status === "cancelled").length} />
+        <AdminStat icon={DollarSign} label="Paid" value={subscriptions.filter(s => s.plan_type !== "free" && s.status === "active").length} />
+      </AdminStatGrid>
+
+      <div className="space-y-2 rounded-md border border-border/30 bg-card/80 p-2">
+        <div className="relative">
+          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search email or plan…" className="h-8 pl-8 text-xs" />
+        </div>
+        <div className="flex gap-1 overflow-x-auto pb-0.5">
+          {["all", "active", "pending", "cancelling", "cancelled"].map((status) => (
+            <Button key={status} variant={statusFilter === status ? "default" : "outline"} size="sm" className="h-7 shrink-0 px-2 text-[10px] capitalize" onClick={() => setStatusFilter(status)}>{status}</Button>
+          ))}
+          <span className="ml-auto self-center whitespace-nowrap text-[9px] text-muted-foreground">{filteredSubscriptions.length} / {subscriptions.length}</span>
+        </div>
       </div>
 
       {/* Table */}
-      <Card>
-        <CardHeader><CardTitle>All Subscriptions</CardTitle></CardHeader>
-        <CardContent>
-          {subscriptions.length === 0 ? <p className="text-center py-8 text-muted-foreground">No subscriptions found</p> : (<div>
-            <div className="hidden md:block overflow-x-auto">
+      <Card className="hidden rounded-md border-border/30 lg:block">
+        <CardHeader className="px-3 py-2"><CardTitle className="text-sm">Subscriptions</CardTitle></CardHeader>
+        <CardContent className="px-0 pb-0">
+          {filteredSubscriptions.length === 0 ? <p className="py-8 text-center text-xs text-muted-foreground">No subscriptions match these filters.</p> : (
+            <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -291,7 +316,7 @@ export default function SubscriptionsTab() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {subscriptions.map(sub => (
+                  {filteredSubscriptions.map(sub => (
                     <TableRow key={sub.id} className="cursor-pointer hover:bg-muted/50" onClick={() => fetchSubscriptionDetails(sub)}>
                        <TableCell><div className="flex items-center gap-2"><Mail className="w-4 h-4 text-muted-foreground" /><span className="font-mono text-xs font-medium">{maskEmail(sub.email)}</span></div></TableCell>
                       <TableCell><p className="font-medium capitalize">{sub.plan_type}</p><p className="text-xs text-muted-foreground">{getPlanPrice(sub.plan_type)}</p></TableCell>
@@ -314,21 +339,34 @@ export default function SubscriptionsTab() {
                 </TableBody>
               </Table>
             </div>
-            <div className="space-y-2 md:hidden">
-              {subscriptions.map(sub => (
-                <button key={sub.id} type="button" onClick={() => fetchSubscriptionDetails(sub)} className="w-full rounded-lg border border-border/40 bg-card p-3 text-left">
-                  <div className="flex items-start justify-between gap-2"><div className="min-w-0"><p className="truncate font-mono text-xs font-semibold">{maskEmail(sub.email)}</p><p className="text-xs capitalize text-muted-foreground">{sub.plan_type} · {getPlanPrice(sub.plan_type)}</p></div>{getStatusBadge(sub)}</div>
-                  <div className="mt-3 grid grid-cols-2 gap-2 border-t border-border/30 pt-2 text-[10px]"><div><p className="text-muted-foreground">Payment</p><p className="capitalize">{sub.payment_method || "Not linked"}</p></div><div><p className="text-muted-foreground">Renews / ends</p><p>{sub.end_date ? new Date(sub.end_date).toLocaleDateString() : "—"}</p></div></div>
-                </button>
-              ))}
-            </div>
-          </div>)}
+          )}
         </CardContent>
       </Card>
 
+      <div className="lg:hidden">
+        <AdminList>
+          {filteredSubscriptions.map((sub) => (
+            <AdminListCard key={sub.id} highlight={sub.cancellation_status === "pending"}>
+              <AdminRow
+                title={maskEmail(sub.email)}
+                meta={`${sub.plan_type} · ${getPlanPrice(sub.plan_type)}`}
+                badges={getStatusBadge(sub)}
+                actions={<Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => fetchSubscriptionDetails(sub)} aria-label={`Open ${maskEmail(sub.email)}`}><ChevronRight className="h-4 w-4" /></Button>}
+                body={<button type="button" onClick={() => fetchSubscriptionDetails(sub)} className="grid w-full grid-cols-3 gap-1 border-t border-border/30 pt-1.5 text-left text-[9px]">
+                  <span><span className="block text-muted-foreground">PayPal</span><span className="capitalize">{sub.payment_method || "Not linked"}</span></span>
+                  <span><span className="block text-muted-foreground">Amount</span>{sub.amount ? `$${sub.amount}` : "Free"}</span>
+                  <span><span className="block text-muted-foreground">Renews / ends</span>{sub.end_date ? new Date(sub.end_date).toLocaleDateString() : "—"}</span>
+                </button>}
+              />
+            </AdminListCard>
+          ))}
+          {filteredSubscriptions.length === 0 && <p className="py-8 text-center text-xs text-muted-foreground">No subscriptions match these filters.</p>}
+        </AdminList>
+      </div>
+
       {/* Detail Sheet */}
       <Sheet open={showDetailSheet} onOpenChange={setShowDetailSheet}>
-        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetContent className="w-full overflow-y-auto p-4 sm:max-w-xl">
           <SheetHeader>
             <div className="flex items-center gap-2">
               <SheetTitle>Subscription Overview</SheetTitle>
@@ -337,27 +375,27 @@ export default function SubscriptionsTab() {
             <SheetDescription className="font-mono">{selectedSubscription ? maskEmail(selectedSubscription.email) : ""}</SheetDescription>
           </SheetHeader>
           {selectedSubscription && (
-            <div className="mt-6 space-y-6">
-              <Card><CardContent className="pt-6">
+            <div className="mt-4 space-y-3">
+              <Card className="rounded-md border-border/30"><CardContent className="p-3">
                 <div className="flex justify-between items-start">
                   <div><h3 className="font-semibold text-lg capitalize">{selectedSubscription.plan_type} Membership</h3><p className="text-sm text-muted-foreground">Pricing Plan</p></div>
                   <p className="text-xl font-bold">{getPlanPrice(selectedSubscription.plan_type)}</p>
                 </div>
                 <Separator className="my-4" />
-                <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-3 gap-2 text-xs">
                   <div><p className="text-muted-foreground">Start</p><p className="font-medium">{new Date(selectedSubscription.start_date).toLocaleDateString()}</p></div>
                   <div><p className="text-muted-foreground">End</p><p className="font-medium">{selectedSubscription.end_date ? new Date(selectedSubscription.end_date).toLocaleDateString() : "-"}</p></div>
                   <div><p className="text-muted-foreground">Method</p><p className="font-medium capitalize">{selectedSubscription.payment_method || "Online"}</p></div>
                 </div>
               </CardContent></Card>
 
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={() => setShowMarkAsPaidDialog(true)} className="gap-2"><DollarSign className="w-4 h-4" />Mark as Paid</Button>
-                <Button variant="outline" onClick={() => setShowExtendDialog(true)} className="gap-2"><CalendarPlus className="w-4 h-4" />Extend</Button>
+              <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
+                <Button size="sm" onClick={() => setShowMarkAsPaidDialog(true)} className="gap-1"><DollarSign className="w-4 h-4" />Mark as Paid</Button>
+                <Button size="sm" variant="outline" onClick={() => setShowExtendDialog(true)} className="gap-1"><CalendarPlus className="w-4 h-4" />Extend</Button>
                 {selectedSubscription.cancellation_status === "pending" ? (
-                  <Button variant="outline" onClick={handleUndoCancellation} disabled={isProcessing} className="gap-2"><RotateCcw className="w-4 h-4" />Undo Cancel</Button>
+                  <Button size="sm" variant="outline" onClick={handleUndoCancellation} disabled={isProcessing} className="gap-1"><RotateCcw className="w-4 h-4" />Undo Cancel</Button>
                 ) : selectedSubscription.status === "active" && (
-                  <Button variant="destructive" onClick={() => setShowCancelDialog(true)} className="gap-2"><Ban className="w-4 h-4" />Cancel</Button>
+                  <Button size="sm" variant="destructive" onClick={() => setShowCancelDialog(true)} className="gap-1"><Ban className="w-4 h-4" />Cancel</Button>
                 )}
               </div>
 

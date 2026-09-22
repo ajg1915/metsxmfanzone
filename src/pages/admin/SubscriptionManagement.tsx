@@ -49,7 +49,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { AdminPage, AdminPageHeader, AdminStatGrid, AdminStat, AdminLoading } from "@/components/admin/AdminUI";
+import { AdminPage, AdminPageHeader, AdminStatGrid, AdminStat, AdminLoading, AdminSearch, AdminFilterChips, AdminList, AdminListCard, AdminRow } from "@/components/admin/AdminUI";
 
 interface UserSubscription {
   id: string;
@@ -116,6 +116,8 @@ export default function SubscriptionManagement() {
   const [extendDays, setExtendDays] = useState("30");
   const [cancelType, setCancelType] = useState<"immediate" | "pending">("pending");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     if (!authLoading && (!user || user.email !== "ajg1915@gmail.com")) {
@@ -434,11 +436,18 @@ export default function SubscriptionManagement() {
 
   const getPlanPrice = (planType: string) => {
     switch (planType) {
+      case "weekly": return "$3.99 / week";
       case "premium": return "$9.99 / month";
       case "annual": return "$129.99 / year";
       default: return "Free";
     }
   };
+
+  const filteredSubscriptions = subscriptions.filter((sub) => {
+    const matchesQuery = !query.trim() || sub.email.toLowerCase().includes(query.trim().toLowerCase()) || sub.plan_type.toLowerCase().includes(query.trim().toLowerCase());
+    const effectiveStatus = sub.cancellation_status === "pending" ? "cancelling" : sub.status;
+    return matchesQuery && (statusFilter === "all" || effectiveStatus === statusFilter);
+  });
 
   if (authLoading || loading) {
     return <AdminLoading label="Loading subscriptions…" />;
@@ -448,9 +457,9 @@ export default function SubscriptionManagement() {
     <AdminPage>
       <AdminPageHeader
         icon={CreditCard}
-        title="Subscription Management"
+        title="Subscriptions"
         count={subscriptions.length}
-        description="Manage user subscriptions, record payments, and handle cancellations"
+        description="Manage plans, PayPal status, payments, extensions, and cancellations"
       />
 
       {/* Stats Cards */}
@@ -481,17 +490,30 @@ export default function SubscriptionManagement() {
         />
         <AdminStat
           icon={DollarSign}
-          label="Premium/Annual"
+          label="Paid"
           value={subscriptions.filter(s => s.plan_type !== "free" && s.status === "active").length}
         />
       </AdminStatGrid>
 
-      <Card className="border-border/30">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">All Subscriptions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {subscriptions.length === 0 ? (
+      <div className="flex flex-col gap-1.5 rounded-md border border-border/30 bg-card/80 p-2 sm:flex-row sm:items-center">
+        <AdminSearch value={query} onChange={setQuery} placeholder="Search email or plan…" />
+        <AdminFilterChips
+          active={statusFilter}
+          onChange={setStatusFilter}
+          filters={[
+            { key: "all", label: "All", count: subscriptions.length },
+            { key: "active", label: "Active" },
+            { key: "pending", label: "Pending" },
+            { key: "cancelling", label: "Cancelling" },
+            { key: "cancelled", label: "Cancelled" },
+          ]}
+        />
+      </div>
+
+      <Card className="hidden rounded-md border-border/30 lg:block">
+        <CardHeader className="px-3 py-2"><CardTitle className="text-sm">Subscriptions <span className="font-sans text-[10px] font-medium text-muted-foreground">{filteredSubscriptions.length} shown</span></CardTitle></CardHeader>
+        <CardContent className="px-0 pb-0">
+          {filteredSubscriptions.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground">No subscriptions found</p>
           ) : (
             <div className="overflow-x-auto">
@@ -509,7 +531,7 @@ export default function SubscriptionManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {subscriptions.map((sub) => (
+                  {filteredSubscriptions.map((sub) => (
                     <TableRow 
                       key={sub.id} 
                       className="cursor-pointer hover:bg-muted/50"
@@ -582,9 +604,30 @@ export default function SubscriptionManagement() {
         </CardContent>
       </Card>
 
+      <div className="lg:hidden">
+        <AdminList>
+          {filteredSubscriptions.map((sub) => (
+            <AdminListCard key={sub.id} highlight={sub.cancellation_status === "pending"}>
+              <AdminRow
+                title={sub.email}
+                meta={`${sub.plan_type} · ${getPlanPrice(sub.plan_type)}`}
+                badges={getStatusBadge(sub)}
+                actions={<Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => fetchSubscriptionDetails(sub)} aria-label={`Open ${sub.email}`}><ChevronRight className="h-4 w-4" /></Button>}
+                body={<button type="button" onClick={() => fetchSubscriptionDetails(sub)} className="grid w-full grid-cols-3 gap-1 border-t border-border/30 pt-1.5 text-left text-[9px]">
+                  <span><span className="block text-muted-foreground">PayPal</span><span className="capitalize">{sub.payment_method || "Not linked"}</span></span>
+                  <span><span className="block text-muted-foreground">Amount</span>{sub.amount ? `$${sub.amount}` : "Free"}</span>
+                  <span><span className="block text-muted-foreground">Renews / ends</span>{sub.end_date ? new Date(sub.end_date).toLocaleDateString() : "—"}</span>
+                </button>}
+              />
+            </AdminListCard>
+          ))}
+          {filteredSubscriptions.length === 0 && <p className="py-8 text-center text-xs text-muted-foreground">No subscriptions match these filters.</p>}
+        </AdminList>
+      </div>
+
       {/* Subscription Detail Sheet */}
       <Sheet open={showDetailSheet} onOpenChange={setShowDetailSheet}>
-        <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
+        <SheetContent className="w-full overflow-y-auto p-4 sm:max-w-xl">
           <SheetHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -596,10 +639,10 @@ export default function SubscriptionManagement() {
           </SheetHeader>
 
           {selectedSubscription && (
-            <div className="mt-6 space-y-6">
+            <div className="mt-4 space-y-3">
               {/* Plan Info */}
-              <Card>
-                <CardContent className="pt-6">
+              <Card className="rounded-md border-border/30">
+                <CardContent className="p-3">
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-semibold text-lg capitalize">{selectedSubscription.plan_type} Membership</h3>
@@ -612,7 +655,7 @@ export default function SubscriptionManagement() {
 
                   <Separator className="my-4" />
 
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-3 gap-2 text-xs">
                     <div>
                       <p className="text-muted-foreground">Start date</p>
                       <p className="font-medium">{new Date(selectedSubscription.start_date).toLocaleDateString()}</p>
@@ -636,7 +679,7 @@ export default function SubscriptionManagement() {
 
                   <Separator className="my-4" />
 
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-3 gap-2 text-xs">
                     <div>
                       <p className="text-muted-foreground">Last payment</p>
                       {selectedSubscription.last_payment_date ? (
@@ -668,22 +711,22 @@ export default function SubscriptionManagement() {
               </Card>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap gap-2">
-                <Button onClick={() => setShowMarkAsPaidDialog(true)} className="gap-2">
+              <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap">
+                <Button size="sm" onClick={() => setShowMarkAsPaidDialog(true)} className="gap-1">
                   <DollarSign className="w-4 h-4" />
                   Mark as Paid
                 </Button>
-                <Button variant="outline" onClick={() => setShowExtendDialog(true)} className="gap-2">
+                <Button size="sm" variant="outline" onClick={() => setShowExtendDialog(true)} className="gap-1">
                   <CalendarPlus className="w-4 h-4" />
                   Extend
                 </Button>
                 {selectedSubscription.cancellation_status === "pending" ? (
-                  <Button variant="outline" onClick={handleUndoCancellation} disabled={isProcessing} className="gap-2">
+                  <Button size="sm" variant="outline" onClick={handleUndoCancellation} disabled={isProcessing} className="gap-1">
                     <RotateCcw className="w-4 h-4" />
                     Undo Cancellation
                   </Button>
                 ) : selectedSubscription.status === "active" && (
-                  <Button variant="destructive" onClick={() => setShowCancelDialog(true)} className="gap-2">
+                  <Button size="sm" variant="destructive" onClick={() => setShowCancelDialog(true)} className="gap-1">
                     <Ban className="w-4 h-4" />
                     Cancel
                   </Button>
@@ -691,14 +734,14 @@ export default function SubscriptionManagement() {
               </div>
 
               {/* Payment History */}
-              <Card>
-                <CardHeader>
+              <Card className="rounded-md border-border/30">
+                <CardHeader className="p-3 pb-1">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <History className="w-4 h-4" />
                     Payment History
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 pt-1">
                   {paymentHistory.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">No payments recorded</p>
                   ) : (
@@ -723,14 +766,14 @@ export default function SubscriptionManagement() {
               </Card>
 
               {/* Activity History */}
-              <Card>
-                <CardHeader>
+              <Card className="rounded-md border-border/30">
+                <CardHeader className="p-3 pb-1">
                   <CardTitle className="flex items-center gap-2 text-base">
                     <Clock className="w-4 h-4" />
                     Subscription History
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-3 pt-1">
                   {activityHistory.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-4">No activity recorded</p>
                   ) : (
