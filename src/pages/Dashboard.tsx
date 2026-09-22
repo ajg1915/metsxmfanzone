@@ -384,6 +384,7 @@ const Dashboard = () => {
                     Upgrade
                   </Button>
                 ) : (
+                  <>
                   <Dialog open={subscriptionDialogOpen} onOpenChange={setSubscriptionDialogOpen}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="bg-white/5 border-white/10 hover:bg-white/10">Manage</Button>
@@ -491,6 +492,7 @@ const Dashboard = () => {
                        </div>
                      </DialogContent>
                    </Dialog>
+                  </>
                 )}
               </div>
 
