@@ -99,10 +99,12 @@ const PaymentSuccess = () => {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-green-500 mb-2">
-                    Payment Successful!
+                    {planType === 'free' ? 'PayPal Linked!' : 'Payment Successful!'}
                   </h2>
                   <p className="text-muted-foreground">
-                    Your {planType} subscription is now active
+                    {planType === 'free'
+                      ? 'Your free membership is active and your PayPal account is linked. You were not charged.'
+                      : `Your ${planType} subscription is now active`}
                   </p>
                 </div>
                 <div className="bg-primary/10 rounded-lg p-4 space-y-2 text-sm">
