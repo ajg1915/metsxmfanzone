@@ -83,7 +83,7 @@ const ReplayGamesSection = () => {
       navigate(getStreamPageUrl(stream));
       return;
     }
-    if (isAdmin || tier === "premium" || tier === "annual") {
+    if (isAdmin || tier === "weekly" || tier === "premium" || tier === "annual") {
       navigate(getStreamPageUrl(stream));
     } else {
       navigate("/pricing");
@@ -191,10 +191,10 @@ const ReplayGamesSection = () => {
                   </div>
 
                   <div className="absolute top-2 right-2 flex items-center gap-1.5">
-                    {!isSpringTrainingStream(stream) && !isAdmin && tier !== "premium" && tier !== "annual" && (
+                    {!isSpringTrainingStream(stream) && !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
                       <PremiumBadge size="sm" />
                     )}
-                    {isSpringTrainingStream(stream) && !isAdmin && tier !== "premium" && tier !== "annual" && (
+                    {isSpringTrainingStream(stream) && !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
                       <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
                         FREE
                       </Badge>

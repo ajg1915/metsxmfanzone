@@ -33,7 +33,7 @@ interface SpringTrainingProps {
 
 export default function SpringTraining({ className }: SpringTrainingProps) {
   const { tier, isAdmin } = useSubscription();
-  const isPremium = isAdmin || tier === "premium" || tier === "annual";
+  const isPremium = isAdmin || tier === "weekly" || tier === "premium" || tier === "annual";
   
   const { data: games, isLoading } = useQuery({
     queryKey: ["spring-training-games"],
