@@ -10,6 +10,7 @@ import {
   renderBrandedEmail,
   type EmailBrand,
 } from "../_shared/email-brand.ts";
+import { sanitizeHtml } from "../_shared/sanitize-html.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
