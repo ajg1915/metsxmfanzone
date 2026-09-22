@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { FunctionsHttpError } from "@supabase/supabase-js";
+import { invokeEmailFunction } from "@/lib/emailFallback";
 import {
   Mail, Loader2, Send, Users, Newspaper, User, X, TestTube, RefreshCw,
   Paintbrush, FileText, PenSquare, CheckCircle2, AlertTriangle,
@@ -109,26 +109,6 @@ export default function EmailEditor() {
     fetchCounts();
   }, []);
 
-  const invokeEmailFunction = useCallback(async (functionName: string, body: Record<string, unknown>) => {
-    const timeout = new Promise<never>((_, reject) => {
-      window.setTimeout(() => reject(new Error("The email service timed out. Please try again.")), 30000);
-    });
-    const result = await Promise.race([supabase.functions.invoke(functionName, { body }), timeout]);
-    if (result.error) {
-      if (result.error instanceof FunctionsHttpError) {
-        const responseText = await result.error.context.text();
-        let details: { error?: string } | null = null;
-        try {
-          details = JSON.parse(responseText) as { error?: string };
-        } catch {
-          details = null;
-        }
-        throw new Error(details?.error || responseText || "The email could not be sent.");
-      }
-      throw new Error(result.error.message || "The email could not be sent.");
-    }
-    return result.data;
-  }, []);
 
   // Render the REAL branded email on the server, so preview == what recipients get.
   const renderPreview = useCallback(async () => {
