@@ -974,6 +974,7 @@ const Auth = () => {
       });
       navigate(`/confirm-account?email=${encodeURIComponent(email)}`);
     } else {
+      supabase.functions.invoke("member-auth-activity", { body: { eventType: "login" } }).catch(() => undefined);
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",

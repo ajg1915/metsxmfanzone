@@ -13,6 +13,6 @@
 
   - Selected direction: Midnight core minimalist (third option)
 - [ ] Redesign login and registration for all screen sizes
-- [ ] Add admin signup/login activity visibility and alerts
+- [x] Add admin signup/login activity visibility and alerts
 - [ ] Streamline member access, PayPal linkage, cancellation warnings, and repeat-cancellation limits
 - [x] Condense admin navigation and group infrequent tools under More
