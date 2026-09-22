@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeEmailFunction } from "@/lib/emailFallback";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -99,17 +100,34 @@ const WriterApplications = () => {
         }
       }
 
-      // Send email notification
-      const { error: emailError } = await supabase.functions.invoke("send-writer-approval-email", {
-        body: {
-          email: selectedApp.email,
-          name: selectedApp.full_name,
-          status: action === "approve" ? "approved" : "rejected",
-          adminNotes: adminNotes || undefined,
-        },
-      });
-
-      if (emailError) {
+      // Send email notification (falls back to /api/send-email on Vercel if the function fails)
+      const approved = action === "approve";
+      try {
+        await invokeEmailFunction(
+          "send-writer-approval-email",
+          {
+            email: selectedApp.email,
+            name: selectedApp.full_name,
+            status: approved ? "approved" : "rejected",
+            adminNotes: adminNotes || undefined,
+          },
+          {
+            to: selectedApp.email,
+            subject: approved
+              ? "Your MetsXMFanZone writer application was approved"
+              : "Update on your MetsXMFanZone writer application",
+            html: `<div style="background:#0a0a0a;padding:32px;font-family:Arial,Helvetica,sans-serif;color:#d1d5db;">
+              <h1 style="color:#ffffff;font-size:20px;margin:0 0 16px;">Writer application ${approved ? "approved" : "update"}</h1>
+              <p style="margin:0 0 16px;">Hi ${selectedApp.full_name},</p>
+              <p style="margin:0 0 16px;">${approved
+                ? "Your writer application has been approved. You can now sign in and start publishing."
+                : "After review, your writer application was not approved at this time."}</p>
+              ${adminNotes ? `<p style="margin:0 0 16px;">Notes: ${adminNotes}</p>` : ""}
+              <p style="margin:0;font-size:12px;color:#8b93a1;">MetsXMFanZone</p>
+            </div>`,
+          },
+        );
+      } catch (emailError) {
         console.error("Email error:", emailError);
         // Don't fail the whole operation if email fails
       }

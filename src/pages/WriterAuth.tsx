@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeEmailFunction } from "@/lib/emailFallback";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -150,20 +151,25 @@ const WriterAuth = () => {
 
   const sendOtpEmail = async (userEmail: string, otp: string) => {
     try {
-      const { data, error } = await supabase.functions.invoke("send-otp-email", {
-        body: {
+      // Falls back to /api/send-email on Vercel if the edge function fails.
+      const data = await invokeEmailFunction<{ success?: boolean } | undefined>(
+        "send-otp-email",
+        { to: userEmail, otp },
+        {
           to: userEmail,
-          otp,
+          subject: "Your MetsXMFanZone verification code",
+          html: `<div style="background:#0a0a0a;padding:32px;font-family:Arial,Helvetica,sans-serif;color:#d1d5db;">
+            <h1 style="color:#ffffff;font-size:20px;margin:0 0 16px;">Your verification code</h1>
+            <p style="margin:0 0 16px;">Use this code to finish signing in. It expires in 5 minutes.</p>
+            <p style="font-size:32px;letter-spacing:8px;color:#FF5910;font-weight:700;margin:0 0 16px;">${otp}</p>
+            <p style="font-size:12px;color:#8b93a1;margin:0;">If you did not request this, you can ignore this email.</p>
+          </div>`,
+          text: `Your MetsXMFanZone verification code is ${otp}. It expires in 5 minutes.`,
         },
-      });
+      );
 
-      if (error) {
-        console.error("Failed to send OTP email:", error);
-        return false;
-      }
-
-      if (!data?.success) {
-        console.error("OTP email function returned failure:", data);
+      if (data && data.success === false) {
+        console.error("OTP email function returned failure");
         return false;
       }
 

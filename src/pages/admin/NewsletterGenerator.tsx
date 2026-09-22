@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { invokeEmailFunction } from "@/lib/emailFallback";
 import { Mail, Loader2, Send, Newspaper, Eye, Sparkles, Copy, RefreshCw, Users, TestTube } from "lucide-react";
 import {
   AlertDialog,
@@ -254,18 +255,19 @@ export default function NewsletterGenerator() {
 
     try {
       const fullHtml = generateNewsletterHtml(subject, generatedContent);
-      
-      const { error } = await supabase.functions.invoke("send-user-email", {
-        body: {
+
+      // If the edge function fails, fall back to the Vercel /api/send-email route.
+      await invokeEmailFunction(
+        "send-user-email",
+        {
           subject: `[TEST] ${subject}`,
           content: fullHtml,
           recipientType: "specific",
           specificEmails: [testEmail],
           useTestSender: true,
         },
-      });
-
-      if (error) throw error;
+        { to: testEmail, subject: `[TEST] ${subject}`, html: fullHtml },
+      );
 
       toast({
         title: "Test Email Sent!",
