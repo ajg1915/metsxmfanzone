@@ -171,24 +171,27 @@ const Auth = () => {
       const contact = contactSchema.parse({ phoneNumber, agreeToTerms: agreeToTerms as true });
       const normalizedEmail = validateEmail(account.email);
       setLoading(true);
-      const { data, error } = await supabase.auth.signUp({
-        email: normalizedEmail,
-        password: account.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/confirm-account`,
-          data: {
-            full_name: account.fullName.trim(),
-            phone_number: contact.phoneNumber.trim(),
-            sms_notifications_enabled: smsOptIn,
-            preferred_payment_method: "paypal",
-          },
+      const { data, error } = await supabase.functions.invoke("register-member", {
+        body: {
+          email: normalizedEmail,
+          password: account.password,
+          fullName: account.fullName.trim(),
+          phoneNumber: contact.phoneNumber.trim(),
+          smsOptIn,
         },
       });
-      if (error) throw error;
-      if (!data.user) throw new Error("Account could not be created");
+      if (error) {
+        const details = typeof (error as { context?: { text?: () => Promise<string> } }).context?.text === "function"
+          ? await (error as { context: { text: () => Promise<string> } }).context.text()
+          : "";
+        let message = "Account could not be created";
+        try { message = JSON.parse(details)?.error || message; } catch { /* keep default */ }
+        throw new Error(message);
+      }
+      if (!data?.userId) throw new Error(data?.error || "Account could not be created");
 
       await supabase.functions.invoke("send-email-confirmation", {
-        body: { email: normalizedEmail, name: account.fullName.trim(), userId: data.user.id },
+        body: { email: normalizedEmail, name: account.fullName.trim(), userId: data.userId },
       }).catch(() => undefined);
 
       localStorage.removeItem(SIGNUP_DRAFT_KEY);
