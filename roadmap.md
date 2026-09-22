@@ -10,3 +10,5 @@
 - [ ] Redesign only the mobile menu for clearer navigation
 
   - Use a much darker menu; avoid light or bright-blue menu backgrounds
+
+  - Selected direction: Midnight core minimalist (third option)
