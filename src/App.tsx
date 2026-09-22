@@ -53,6 +53,7 @@ const PrivatePlayer = lazyWithRetry(() => import("./pages/admin/PrivatePlayer"),
 const PrivateLivePlayer = lazyWithRetry(() => import("./pages/PrivateLivePlayer"), "page-private-live-player");
 const MetsXMPlayer = lazyWithRetry(() => import("./pages/MetsXMPlayer"), "page-metsxm-player");
 const BlogManagement = lazyWithRetry(() => import("./pages/admin/BlogManagement"), "page-admin-blog-management");
+const ArticleEditor = lazyWithRetry(() => import("./pages/admin/ArticleEditor"), "page-admin-article-editor");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
 const PodcastManagement = lazyWithRetry(() => import("./pages/admin/PodcastManagement"), "page-admin-podcast-management");
 const ClubhouseStudio = lazyWithRetry(() => import("./pages/admin/ClubhouseStudio"), "page-admin-clubhouse-studio");
@@ -375,6 +376,8 @@ const AppContent = () => {
               <Route index element={<AdminDashboard />} />
               <Route path="hero" element={<HeroManagement />} />
               <Route path="blog" element={<BlogManagement />} />
+              <Route path="blog/new" element={<ArticleEditor />} />
+              <Route path="blog/edit/:id" element={<ArticleEditor />} />
               <Route path="video-gallery-management" element={<VideoGalleryManagement />} />
               <Route path="podcasts" element={<PodcastManagement />} />
               <Route path="studio" element={<ClubhouseStudio />} />

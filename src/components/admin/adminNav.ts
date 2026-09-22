@@ -45,12 +45,20 @@ export const ADMIN_NAV: AdminNavSection[] = [
     ],
   },
   {
+    title: "Articles",
+    icon: PenLine,
+    items: [
+      { title: "Write Article", url: "/admin/blog/new", icon: PenLine },
+      { title: "All Articles", url: "/admin/blog", icon: FileText },
+      { title: "Writer Apps", url: "/admin/writer-applications", icon: ClipboardList },
+    ],
+  },
+  {
     title: "Content",
     icon: FolderOpen,
     items: [
       { title: "Hero Slides", url: "/admin/hero", icon: Layers },
       { title: "Stories", url: "/admin/stories", icon: Sparkles },
-      { title: "Blog", url: "/admin/blog", icon: FileText },
       { title: "Game Recaps", url: "/admin/game-recaps", icon: Trophy },
       { title: "Highlights", url: "/admin/video-gallery-management", icon: Video },
       { title: "Media Library", url: "/admin/media-library", icon: FolderOpen },
