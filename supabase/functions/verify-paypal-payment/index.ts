@@ -117,6 +117,42 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Free membership: PayPal is linked but never charged
+    if (subscription.plan_type === 'free') {
+      const freeStart = new Date();
+      const { error: freeUpdateError } = await supabase
+        .from('subscriptions')
+        .update({ status: 'active', start_date: freeStart.toISOString(), end_date: null })
+        .eq('id', subscription.id);
+      if (freeUpdateError) throw freeUpdateError;
+
+      try {
+        await supabase.from('activity_logs').insert({
+          user_id: user.id,
+          action: 'free_membership_activated',
+          log_type: 'subscription',
+          resource_type: 'membership',
+          details: { plan_type: 'free', source: 'paypal_link' },
+        });
+      } catch (logError) {
+        console.error('Error logging free activation:', logError);
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          subscription: {
+            id: subscription.id,
+            plan_type: 'free',
+            status: 'active',
+            start_date: freeStart.toISOString(),
+            end_date: null,
+          },
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Calculate end date based on plan type
     const startDate = new Date();
     const endDate = new Date(startDate);
