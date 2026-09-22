@@ -130,7 +130,7 @@ export default function EmailEditor() {
     } finally {
       setIsRendering(false);
     }
-  }, [mode, selectedTemplate, subject, heading, content, invokeEmailFunction]);
+  }, [mode, selectedTemplate, subject, heading, content]);
 
   useEffect(() => {
     if (debounceRef.current) window.clearTimeout(debounceRef.current);
@@ -167,14 +167,22 @@ export default function EmailEditor() {
 
   const sendThroughResend = async (to: string[], isTest: boolean) => {
     if (!rendered) throw new Error("Wait for the preview to finish loading.");
-    return invokeEmailFunction("send-user-email", {
-      subject: rendered.subject,
-      content: rendered.html,
-      rawHtml: true,
-      recipientType: isTest ? "specific" : recipientType,
-      specificEmails: isTest ? to : recipientType === "specific" ? specificEmails : undefined,
-      useTestSender: isTest,
-    });
+    const directRecipients = isTest ? to : recipientType === "specific" ? specificEmails : [];
+    return invokeEmailFunction(
+      "send-user-email",
+      {
+        subject: rendered.subject,
+        content: rendered.html,
+        rawHtml: true,
+        recipientType: isTest ? "specific" : recipientType,
+        specificEmails: isTest ? to : recipientType === "specific" ? specificEmails : undefined,
+        useTestSender: isTest,
+      },
+      // Backup path: only possible when we know the exact recipients client-side.
+      directRecipients.length
+        ? { to: directRecipients, subject: rendered.subject, html: rendered.html }
+        : undefined,
+    );
   };
 
   const sendTestEmail = async () => {
