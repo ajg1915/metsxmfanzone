@@ -35,12 +35,15 @@ const PaymentSuccess = () => {
 
         if (result.error) throw result.error;
 
+        const confirmedPlan = result.data?.subscription?.plan_type || 'premium';
         setStatus('success');
-        setPlanType(result.data?.subscription?.plan_type || 'premium');
-        
+        setPlanType(confirmedPlan);
+
         toast({
-          title: "Payment Successful! 🎉",
-          description: "Your subscription is now active. Welcome to the premium experience!",
+          title: confirmedPlan === 'free' ? "PayPal Linked! 🎉" : "Payment Successful! 🎉",
+          description: confirmedPlan === 'free'
+            ? "Your PayPal account is linked and your free membership is active. You were not charged."
+            : "Your subscription is now active. Welcome to the premium experience!",
         });
 
         setTimeout(() => navigate('/'), 5000);
