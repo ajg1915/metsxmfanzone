@@ -32,7 +32,7 @@ export const renderCancellationStatus = async (root) => {
     /* ignore malformed state */
   }
 
-  const allDone = Boolean(result?.paypalConfirmed && result?.accountDeleted);
+  const allDone = Boolean(result?.paypalConfirmed && result?.accountRetained);
 
   const row = (ok, title, okText, failText, pendingLabel) => `
     <div class="card-panel" style="margin-block:10px;">
@@ -68,17 +68,17 @@ export const renderCancellationStatus = async (root) => {
               result.error || "PayPal did not confirm the cancellation, so nothing was changed on your account.",
             )}
             ${row(
-              Boolean(result.accountDeleted),
-              "Account and data deleted",
-              "Your MetsXMFanZone account and associated data have been permanently removed.",
+              Boolean(result.accountRetained),
+              "Account retained",
+              `Your account and history remain available. Cancellation count: ${escapeHtml(String(result.cancellationCount || 1))}.`,
               result.paypalConfirmed
-                ? "Billing was stopped, but your account could not be removed automatically."
-                : "Account deletion was not attempted because billing was not confirmed cancelled.",
+                ? "Billing was stopped. Contact support if your account status does not update."
+                : "Your account remains unchanged because PayPal did not confirm cancellation.",
               result.paypalConfirmed ? "Pending" : "Not started",
             )}
             <div style="display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;">
               <a class="button secondary" href="/">Go Home</a>
-              ${!result.accountDeleted ? '<a class="button primary" href="/dashboard">Back to Dashboard</a>' : ""}
+              ${result.accountRetained ? '<a class="button primary" href="/dashboard">Back to Dashboard</a>' : ""}
             </div>`
       }
     </section>`;

@@ -218,7 +218,7 @@ export const renderDashboard = async (root) => {
     const cancelError = root.querySelector("#cancel-error");
     cancelButton?.addEventListener("click", async () => {
       const confirmed = window.confirm(
-        "Cancel your membership? This stops all future PayPal charges immediately and permanently deletes your MetsXMFanZone account and data. This cannot be undone.",
+        "Cancel your membership? PayPal renewal will stop, but your account and history will remain. More than two cancellations will limit paid access until an admin restores it.",
       );
       if (!confirmed) return;
       cancelButton.disabled = true;
@@ -226,12 +226,10 @@ export const renderDashboard = async (root) => {
       try {
         const { data, error } = await backend.functions.invoke("cancel-subscription", { body: {} });
         if (error || data?.error) throw new Error(data?.error || error?.message || "Failed to cancel");
-        const accountDeleted = Boolean(data?.accountDeleted);
-        recordCancellationResult({ paypalConfirmed: true, accountDeleted, message: data?.message });
-        if (accountDeleted) await auth.signOut();
+        recordCancellationResult({ paypalConfirmed: true, accountRetained: true, cancellationCount: data?.cancellationCount, limitedAccess: data?.limitedAccess, message: data?.message });
         window.location.assign("/dashboard/cancellation-status");
       } catch (failure) {
-        recordCancellationResult({ paypalConfirmed: false, accountDeleted: false, error: failure?.message || "Failed to cancel" });
+        recordCancellationResult({ paypalConfirmed: false, accountRetained: true, error: failure?.message || "Failed to cancel" });
         window.location.assign("/dashboard/cancellation-status");
       }
     });
