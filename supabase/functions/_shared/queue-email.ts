@@ -1,8 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { EmailAPIError, sendLovableEmail } from 'npm:@lovable.dev/email-js@0.1.0'
 
-export const VERIFIED_EMAIL_DOMAIN = 'notify.metsxmfanzone.com'
+// Emails are delivered through Resend via the Lovable connector gateway.
+export const VERIFIED_EMAIL_DOMAIN = 'metsxmfanzone.com'
 export const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`
+
+const RESEND_GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
 
 // deno-lint-ignore no-explicit-any
 type ServiceClient = any
@@ -51,9 +53,8 @@ const logSend = async (
 }
 
 /**
- * Sends an email through Lovable's managed email API. Delivery, retries,
- * rate limits, suppression and unsubscribe handling are managed by Lovable.
- * A suppressed recipient resolves with { sent: false }; any other failure throws.
+ * Sends an email through Resend (via the Lovable connector gateway).
+ * Suppressed / blocked recipients resolve with { sent: false }; other failures throw.
  */
 export const queueTransactionalEmail = async (
   supabase: ServiceClient,
@@ -64,35 +65,32 @@ export const queueTransactionalEmail = async (
     text,
     label,
     metadata,
-    purpose = 'transactional',
     idempotencyKey,
   }: SendEmailOptions
 ): Promise<{ messageId: string; sent: boolean; reason?: 'recipient_suppressed' }> => {
-  const apiKey = Deno.env.get('LOVABLE_API_KEY')
-  if (!apiKey) {
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
+  if (!lovableApiKey) {
     throw new Error('LOVABLE_API_KEY is not configured')
   }
 
-  const normalizedTo = to.trim().toLowerCase()
-  const messageId = crypto.randomUUID()
+  const resendApiKey =
+    Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
+  if (!resendApiKey) {
+    throw new Error('RESEND_API_KEY is not configured')
+  }
 
+  const normalizedTo = to.trim().toLowerCase()
+  let messageId = crypto.randomUUID()
+
+  // Suppression list is kept in our own table so unsubscribes/bounces are honoured.
   try {
-    await sendLovableEmail(
-      {
-        to,
-        from: VERIFIED_FROM_ADDRESS,
-        sender_domain: VERIFIED_EMAIL_DOMAIN,
-        subject,
-        html,
-        text: text ?? subject,
-        purpose,
-        label,
-        idempotency_key: idempotencyKey ?? `${label}:${normalizedTo}:${messageId}`,
-      },
-      { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
-    )
-  } catch (error) {
-    if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
+    const { data: suppressed } = await supabase
+      .from('suppressed_emails')
+      .select('email')
+      .eq('email', normalizedTo)
+      .maybeSingle()
+
+    if (suppressed) {
       await logSend(supabase, {
         message_id: messageId,
         template_name: label,
@@ -102,7 +100,29 @@ export const queueTransactionalEmail = async (
       })
       return { messageId, sent: false, reason: 'recipient_suppressed' }
     }
+  } catch (_error) {
+    // Suppression table unavailable: continue with the send.
+  }
 
+  let response: Response
+  try {
+    response = await fetch(`${RESEND_GATEWAY_URL}/emails`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${lovableApiKey}`,
+        'X-Connection-Api-Key': resendApiKey,
+        'Idempotency-Key': idempotencyKey ?? `${label}:${normalizedTo}:${messageId}`,
+      },
+      body: JSON.stringify({
+        from: VERIFIED_FROM_ADDRESS,
+        to: [to],
+        subject,
+        html,
+        text: text ?? subject,
+      }),
+    })
+  } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     await logSend(supabase, {
       message_id: messageId,
@@ -113,6 +133,28 @@ export const queueTransactionalEmail = async (
       metadata: metadata ?? null,
     })
     throw error
+  }
+
+  const bodyText = await response.text()
+
+  if (!response.ok) {
+    console.error(`Resend send failed [${response.status}]: ${bodyText}`)
+    await logSend(supabase, {
+      message_id: messageId,
+      template_name: label,
+      recipient_email: to,
+      status: 'failed',
+      error_message: `${response.status}: ${bodyText}`.slice(0, 1000),
+      metadata: metadata ?? null,
+    })
+    throw new Error(`Email send failed [${response.status}]: ${bodyText}`)
+  }
+
+  try {
+    const parsed = JSON.parse(bodyText)
+    if (parsed?.id) messageId = parsed.id
+  } catch (_error) {
+    // Non-JSON success body: keep the generated id.
   }
 
   await logSend(supabase, {
