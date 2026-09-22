@@ -266,13 +266,6 @@
     "image": "/share/help-create-account.jpg"
   },
   {
-    "path": "/help/biometric-login",
-    "label": "Help \u00b7 Login",
-    "title": "Biometric Login Help | MetsXMFanZone",
-    "description": "Learn how to use supported biometric login options with MetsXMFanZone.",
-    "image": "/share/help-biometric-login.jpg"
-  },
-  {
     "path": "/help/navigate-platform",
     "label": "Help \u00b7 Navigation",
     "title": "Navigate MetsXMFanZone",

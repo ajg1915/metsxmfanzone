@@ -164,7 +164,6 @@ export default function ConfirmAccount() {
 
   // Check if there's a pending plan selection
   const hasPendingPlan = localStorage.getItem("pending_signup_plan");
-  const needsMembershipSelection = localStorage.getItem("pending_membership_selection") === "true" || Boolean(hasPendingPlan);
   const pendingPaymentMethod = localStorage.getItem("pending_signup_payment_method");
 
   // Handle post-verification: notify admins and keep unpaid users in plan selection
@@ -190,7 +189,7 @@ export default function ConfirmAccount() {
 
         if (sub && ["free", "weekly", "premium", "annual"].includes(sub.plan_type)) {
           planType = sub.plan_type;
-          amount = sub.amount ? `$${Number(sub.amount).toFixed(2)}` : planType === "annual" ? "$129.99" : "$9.99";
+          amount = sub.amount ? `$${Number(sub.amount).toFixed(2)}` : planType === "annual" ? "$129.99" : planType === "weekly" ? "$3.99" : planType === "premium" ? "$9.99" : "$0";
           paymentMethod = sub.payment_method || paymentMethod;
         }
 

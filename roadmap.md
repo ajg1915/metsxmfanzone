@@ -23,7 +23,7 @@
 - [ ] Correct subscription, PayPal, cancellation, and error states
 - [ ] Rebuild admin Members for mobile, tablet, and desktop
 - [ ] Verify member and admin flows across responsive sizes
-- [ ] Rebuild login and registration UI for all devices
-- [ ] Remove biometric sign-in and enrollment entry points
-- [ ] Restore Free, Weekly ($3.99), Monthly ($9.99), and Yearly ($129.99) plan choices
-- [ ] Connect post-registration plan selection and verify flows
+- [x] Rebuild login and registration UI for all devices
+- [x] Remove biometric sign-in and enrollment entry points
+- [x] Restore Free, Weekly ($3.99), Monthly ($9.99), and Yearly ($129.99) plan choices
+- [x] Connect post-registration plan selection and verify flows
