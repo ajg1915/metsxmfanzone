@@ -102,6 +102,8 @@ const WATCH_PAGE_OPTIONS = [
   { value: 'pix11-network', label: 'PIX11 Network' },
 ];
 
+const PIX11_STREAM_URL = "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
+
 const getWatchPage = (pages: string[] | null | undefined) => {
   if (pages?.includes('metsxmfanzone')) return 'metsxmfanzone';
   if (pages?.includes('metsxmfanzone-2')) return 'metsxmfanzone-2';
@@ -798,6 +800,21 @@ export default function LiveStreamManagement() {
                 <p className="text-xs text-muted-foreground mt-1">
                   Enter the HLS stream URL ending in .m3u8
                 </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 h-8 text-xs"
+                  onClick={() => setFormData({
+                    ...formData,
+                    stream_url: PIX11_STREAM_URL,
+                    assigned_pages: formData.assigned_pages.includes("live")
+                      ? formData.assigned_pages
+                      : [...formData.assigned_pages, "live"],
+                  })}
+                >
+                  Use PIX11 Stream
+                </Button>
 
               </div>
 
