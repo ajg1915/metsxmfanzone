@@ -1,5 +1,5 @@
-import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
-import { renderBrandedEmailFor } from '../_shared/email-brand.ts'
+import { createClient } from 'npm:@supabase/supabase-js@2'
+import { escapeHtml, renderBrandedEmailFor } from '../_shared/email-brand.ts'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,6 +14,45 @@ interface OtpEmailRequest {
   otp: string;
 }
 
+const sendDirectlyThroughResend = async (to: string, subject: string, html: string, text: string) => {
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
+  const resendApiKey = Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
+  if (!lovableApiKey || !resendApiKey) {
+    throw new Error('Email service is not configured')
+  }
+
+  const normalizedTo = to.trim().toLowerCase()
+  const response = await fetch('https://connector-gateway.lovable.dev/resend/emails', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${lovableApiKey}`,
+      'X-Connection-Api-Key': resendApiKey,
+      'Idempotency-Key': `otp:${normalizedTo}:${crypto.randomUUID()}`,
+    },
+    body: JSON.stringify({
+      from: 'MetsXMFanZone <noreply@metsxmfanzone.com>',
+      to: [normalizedTo],
+      subject,
+      html,
+      text,
+      reply_to: 'support@metsxmfanzone.com',
+    }),
+  })
+
+  const responseBody = await response.text()
+  if (!response.ok) {
+    console.error('OTP email provider rejected the request', { status: response.status })
+    throw new Error(`Email provider rejected the request (${response.status})`)
+  }
+
+  try {
+    return (JSON.parse(responseBody) as { id?: string }).id ?? crypto.randomUUID()
+  } catch {
+    return crypto.randomUUID()
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -22,14 +61,20 @@ Deno.serve(async (req) => {
   try {
     const { to, otp }: OtpEmailRequest = await req.json();
 
-    if (!to || !otp) {
+    if (!to || !/^\S+@\S+\.\S+$/.test(to) || !/^\d{4,8}$/.test(otp)) {
       return new Response(
-        JSON.stringify({ error: "Email address and OTP code are required" }),
+        JSON.stringify({ error: "A valid email address and 4–8 digit verification code are required" }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    const supabase = createServiceClient();
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error('Backend email service is not configured')
+    }
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const safeOtp = escapeHtml(otp)
 
     const html = await renderBrandedEmailFor(supabase, {
       preheader: "Your MetsXMFanZone verification code.",
@@ -37,7 +82,7 @@ Deno.serve(async (req) => {
       content: `
         <div style="background: #002D72; padding: 12px 16px; text-align: center; border-radius: 6px; margin-bottom: 12px;">
           <span style="font-size: 24px; font-weight: bold; letter-spacing: 6px; color: #ffffff; font-family: 'Courier New', monospace;">
-            ${otp}
+            ${safeOtp}
           </span>
         </div>
         <p style="color: #a0a0a0; text-align: center; font-size: 12px; margin: 0 0 12px;">
@@ -56,21 +101,20 @@ Deno.serve(async (req) => {
         </p>`,
     });
 
-    const { messageId } = await queueTransactionalEmail(supabase, {
-      to,
-      subject: "Your MetsXMFanZone Verification Code",
-      html,
-      text: `Your MetsXMFanZone verification code is ${otp}. It expires in 5 minutes.`,
-      label: "otp_verification",
-      idempotencyKey: `otp:${to.toLowerCase()}:${Date.now()}`,
-    });
+    const subject = 'Your MetsXMFanZone Verification Code'
+    const text = `Your MetsXMFanZone verification code is ${otp}. It expires in 5 minutes.`
+    const messageId = await sendDirectlyThroughResend(to, subject, html, text)
 
     return new Response(
       JSON.stringify({ success: true, messageId }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Unknown error";
+    const message = error instanceof Error
+      ? error.message
+      : typeof error === 'string'
+        ? error
+        : 'The verification email could not be sent'
     console.error("send-otp-email: ERROR", message);
     return new Response(
       JSON.stringify({ error: message }),
