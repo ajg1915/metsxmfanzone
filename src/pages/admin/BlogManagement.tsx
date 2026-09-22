@@ -14,19 +14,6 @@ import {
 } from "lucide-react";
 import BlogShareDialog from "@/components/admin/BlogShareDialog";
 
-const blogPostSchema = z.object({
-  title: z.string().trim().min(3, "Title must be at least 3 characters").max(200),
-  slug: z.string().trim().min(1, "Slug is required").max(250).regex(/^[a-z0-9-]+$/, "Slug: lowercase letters, numbers, hyphens only"),
-  content: z.string().trim().min(10, "Content must be at least 10 characters").max(100000),
-  excerpt: z.string().trim().max(500).optional(),
-  meta_description: z.string().trim().max(160, "Meta description should be ≤160 chars").optional(),
-  featured_image_url: z.string().trim().max(2000).optional(),
-  category: z.string().trim().min(1, "Category is required").max(100),
-  tags: z.string().trim().max(300).optional(),
-  published: z.boolean(),
-  scheduled_publish_at: z.string().optional(),
-});
-
 interface BlogPost {
   id: string;
   title: string;
@@ -48,90 +35,19 @@ interface BlogPost {
   profiles?: { full_name: string | null; email: string | null } | null;
 }
 
-const ADMIN_DRAFT_KEY = "admin-blog-draft-v2";
 const SITE_URL = "https://metsxmfanzone.com";
 
-const slugify = (s: string) =>
-  s.toLowerCase().trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .slice(0, 250);
-
 export default function BlogManagement() {
-  const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [draftRestored, setDraftRestored] = useState(false);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "published" | "draft" | "scheduled" | "pending">("all");
-  const [autoSlug, setAutoSlug] = useState(true);
-  const [savedAt, setSavedAt] = useState<number | null>(null);
-  const formInitialized = useRef(false);
-  const editorImageInputRef = useRef<HTMLInputElement>(null);
+  const [sharePost, setSharePost] = useState<BlogPost | null>(null);
 
-  const defaultFormData = {
-    title: "", slug: "", content: "", excerpt: "", meta_description: "",
-    featured_image_url: "", audio_url: "", category: "General", tags: "",
-    published: false, scheduled_publish_at: "",
-  };
-  const [formData, setFormData] = useState(defaultFormData);
-
-  const [htmlMode, setHtmlMode] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadingFeatured, setUploadingFeatured] = useState(false);
-  const [uploadingAudio, setUploadingAudio] = useState(false);
-
-  // Auto-slug from title
-  useEffect(() => {
-    if (autoSlug && !editingPost && formData.title) {
-      setFormData(f => ({ ...f, slug: slugify(formData.title) }));
-    }
-  }, [formData.title, autoSlug, editingPost]);
-
-  // Auto-save draft
-  const saveDraft = useCallback(() => {
-    if (editingPost || !formInitialized.current) return;
-    if (!formData.title && !formData.content) return;
-    try {
-      localStorage.setItem(ADMIN_DRAFT_KEY, JSON.stringify({ ...formData, savedAt: Date.now() }));
-      setSavedAt(Date.now());
-    } catch {}
-  }, [formData, editingPost]);
-
-  useEffect(() => {
-    if (editingPost) return;
-    const interval = setInterval(saveDraft, 4000);
-    return () => clearInterval(interval);
-  }, [saveDraft, editingPost]);
-
-  const clearDraft = useCallback(() => {
-    try { localStorage.removeItem(ADMIN_DRAFT_KEY); } catch {}
-    setSavedAt(null);
-  }, []);
-
-  // Restore draft once
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(ADMIN_DRAFT_KEY);
-      if (saved) {
-        const draft = JSON.parse(saved);
-        if (Date.now() - draft.savedAt < 7 * 24 * 60 * 60 * 1000) {
-          setFormData({ ...defaultFormData, ...draft });
-          setDraftRestored(true);
-        }
-      }
-    } catch {}
-    formInitialized.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => { fetchPosts(); }, []);
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -144,7 +60,9 @@ export default function BlogManagement() {
       console.error("Error fetching posts:", e);
       toast({ title: "Error", description: "Failed to load blog posts", variant: "destructive" });
     } finally { setLoading(false); }
-  };
+  }, [toast]);
+
+  useEffect(() => { fetchPosts(); }, [fetchPosts]);
 
   const filteredPosts = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -195,88 +113,9 @@ export default function BlogManagement() {
       if (error) throw error;
       toast({ title: "Rejected" });
       fetchPosts();
-    } catch (e) {
+    } catch {
       toast({ title: "Error", description: "Failed to reject", variant: "destructive" });
     }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-
-    const validation = blogPostSchema.safeParse(formData);
-    if (!validation.success) {
-      const first = validation.error.errors[0];
-      toast({ title: "Validation Error", description: first.message, variant: "destructive" });
-      return;
-    }
-
-    const tagsArray = formData.tags.split(",").map(t => t.trim()).filter(Boolean);
-    if (tagsArray.some(t => t.length > 50)) {
-      toast({ title: "Validation Error", description: "Each tag must be ≤50 chars", variant: "destructive" });
-      return;
-    }
-
-    const scheduled = formData.scheduled_publish_at ? new Date(formData.scheduled_publish_at).toISOString() : null;
-    const isScheduledFuture = !!scheduled && new Date(scheduled).getTime() > Date.now();
-
-    const postData: any = {
-      title: formData.title.trim(),
-      slug: slugify(formData.slug),
-      content: formData.content,
-      excerpt: formData.excerpt || null,
-      meta_description: formData.meta_description || null,
-      featured_image_url: formData.featured_image_url || null,
-      audio_url: formData.audio_url || null,
-      category: formData.category,
-      tags: tagsArray,
-      user_id: user.id,
-      approval_status: "approved",
-      scheduled_publish_at: scheduled,
-      // If scheduled in the future, keep it unpublished. Otherwise honor switch.
-      published: isScheduledFuture ? false : formData.published,
-      published_at: (isScheduledFuture ? null : (formData.published ? new Date().toISOString() : null)),
-      is_draft: !formData.published && !isScheduledFuture,
-    };
-
-    try {
-      if (editingPost) {
-        const { error } = await supabase.from("blog_posts").update(postData).eq("id", editingPost.id);
-        if (error) throw error;
-        toast({ title: "Updated", description: isScheduledFuture ? "Scheduled for later." : "Saved." });
-      } else {
-        const { error } = await supabase.from("blog_posts").insert([postData]);
-        if (error) throw error;
-        toast({ title: "Created", description: isScheduledFuture ? "Scheduled for later." : "Saved." });
-      }
-      clearDraft();
-      setIsDialogOpen(false);
-      resetForm();
-      fetchPosts();
-    } catch (e: any) {
-      console.error(e);
-      const msg = e?.message?.includes("duplicate") ? "Slug already exists. Try a different one." : (e?.message || "Failed to save");
-      toast({ title: "Error", description: msg, variant: "destructive" });
-    }
-  };
-
-  const handleEdit = (post: BlogPost) => {
-    setEditingPost(post);
-    setAutoSlug(false);
-    setFormData({
-      title: post.title,
-      slug: post.slug,
-      content: post.content,
-      excerpt: post.excerpt || "",
-      meta_description: post.meta_description || "",
-      featured_image_url: post.featured_image_url || "",
-      audio_url: post.audio_url || "",
-      category: post.category,
-      tags: post.tags?.join(", ") || "",
-      published: post.published,
-      scheduled_publish_at: post.scheduled_publish_at ? new Date(post.scheduled_publish_at).toISOString().slice(0, 16) : "",
-    });
-    setIsDialogOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -286,67 +125,9 @@ export default function BlogManagement() {
       if (error) throw error;
       toast({ title: "Deleted" });
       fetchPosts();
-    } catch (e) {
+    } catch {
       toast({ title: "Error", description: "Failed to delete", variant: "destructive" });
     }
-  };
-
-
-
-  const uploadToBucket = async (file: File, _bucket: string, folder: string) => {
-    const { publicUrl } = await uploadToR2(file, folder);
-    return publicUrl;
-  };
-
-  const handleFeaturedImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const validation = await validateFile(file, 'image', 5);
-    if (!validation.valid) { toast({ title: "Error", description: validation.error, variant: "destructive" }); return; }
-    setUploadingFeatured(true);
-    try {
-      const url = await uploadToBucket(file, "content_uploads", "blog-images");
-      setFormData(f => ({ ...f, featured_image_url: url }));
-      toast({ title: "Image uploaded" });
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
-    } finally { setUploadingFeatured(false); e.target.value = ""; }
-  };
-
-  const handleEditorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const validation = await validateFile(file, 'image', 5);
-    if (!validation.valid) { toast({ title: "Error", description: validation.error, variant: "destructive" }); return; }
-    setUploadingImage(true);
-    try {
-      const url = await uploadToBucket(file, "content_uploads", "blog-images");
-      // Append image tag to content (Tiptap re-syncs via the value prop)
-      setFormData(f => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
-      toast({ title: "Inserted into article" });
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
-    } finally { setUploadingImage(false); e.target.value = ""; }
-  };
-
-  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return;
-    const validation = await validateFile(file, 'audio', 50);
-    if (!validation.valid) { toast({ title: "Error", description: validation.error, variant: "destructive" }); return; }
-    setUploadingAudio(true);
-    try {
-      const url = await uploadToBucket(file, "podcasts", "blog-audio");
-      setFormData(f => ({ ...f, audio_url: url }));
-      toast({ title: "Audio uploaded" });
-    } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
-    } finally { setUploadingAudio(false); e.target.value = ""; }
-  };
-
-  const resetForm = () => {
-    setEditingPost(null);
-    setFormData(defaultFormData);
-    setDraftRestored(false);
-    setAutoSlug(true);
-    clearDraft();
   };
 
   const handleCopyLink = async (post: BlogPost) => {
@@ -357,20 +138,6 @@ export default function BlogManagement() {
       toast({ title: "Error", description: "Copy failed", variant: "destructive" });
     }
   };
-
-  const wordCount = useMemo(() => {
-    const txt = formData.content.replace(/<[^>]*>/g, " ").trim();
-    if (!txt) return 0;
-    return txt.split(/\s+/).length;
-  }, [formData.content]);
-
-  const slugConflict = useMemo(() => {
-    if (!formData.slug) return false;
-    return posts.some(p => p.slug === formData.slug && p.id !== editingPost?.id);
-  }, [formData.slug, posts, editingPost]);
-
-  const isScheduledFuture = !!formData.scheduled_publish_at &&
-    new Date(formData.scheduled_publish_at).getTime() > Date.now();
 
   // ----- UI -----
 
