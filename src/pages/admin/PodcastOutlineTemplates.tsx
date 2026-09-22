@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Copy, Sparkles, Loader2, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, Copy, Sparkles, Loader2, GripVertical, ListMusic } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminEmpty, AdminLoading } from "@/components/admin/AdminUI";
 
 type Segment = { title: string; duration: string; notes: string };
 type Template = {
@@ -183,15 +184,17 @@ Include 5-8 segments covering hook, intro, main, sub-segments, listener interact
   };
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Podcast Outline Templates</h1>
-          <p className="text-sm text-muted-foreground">Reusable script outlines for your podcast shows</p>
-        </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={ListMusic}
+        title="Podcast Outline Templates"
+        count={templates.length}
+        countLabel="templates"
+        description="Reusable script outlines for your podcast shows"
+        actions={
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
           <DialogTrigger asChild>
-            <Button onClick={openNew}><Plus className="w-4 h-4 mr-2" />New Template</Button>
+            <Button size="sm" className="h-8 text-xs" onClick={openNew}><Plus className="w-3.5 h-3.5 mr-1" />New Template</Button>
           </DialogTrigger>
           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
@@ -262,13 +265,14 @@ Include 5-8 segments covering hook, intro, main, sub-segments, listener interact
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+        }
+      />
 
-      <Card>
-        <CardHeader><CardTitle className="text-base">Saved Templates</CardTitle></CardHeader>
-        <CardContent>
-          {isLoading ? <p className="text-sm text-muted-foreground">Loading...</p>
-          : templates.length === 0 ? <p className="text-sm text-muted-foreground">No templates yet — create your first.</p>
+      <Card className="border-border/30">
+        <CardHeader className="p-2.5 pb-1"><CardTitle className="text-xs font-semibold">Saved Templates</CardTitle></CardHeader>
+        <CardContent className="p-2.5 pt-1">
+          {isLoading ? <AdminLoading />
+          : templates.length === 0 ? <AdminEmpty message="No templates yet — create your first." />
           : (
             <div className="grid gap-3 md:grid-cols-2">
               {templates.map((t) => (
@@ -306,6 +310,6 @@ Include 5-8 segments covering hook, intro, main, sub-segments, listener interact
           )}
         </CardContent>
       </Card>
-    </div>
+    </AdminPage>
   );
 }

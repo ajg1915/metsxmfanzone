@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { RefreshCw, Star, Flame, Snowflake, AlertTriangle, Users, Calendar, Plus, Trash2, PenLine, Link2 } from "lucide-react";
+import { RefreshCw, Star, Flame, Snowflake, AlertTriangle, Users, Calendar, Plus, Trash2, PenLine, Link2, TrendingUp } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminEmpty } from "@/components/admin/AdminUI";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -288,11 +289,14 @@ export default function PredictionsManagement() {
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-primary">Anthony's Predictions</h1>
-        <p className="text-muted-foreground mt-1">Manage daily player predictions — use AI or add manually</p>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={TrendingUp}
+        title="Anthony's Predictions"
+        count={predictions?.length}
+        countLabel="today"
+        description="Manage daily player predictions — use AI or add manually"
+      />
 
       {/* Manual Entry Card */}
       <Card className="border-primary/30">
@@ -707,6 +711,6 @@ export default function PredictionsManagement() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </AdminPage>
   );
 }

@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, Plus, Edit, Upload, Sparkles, Film, Download, RefreshCw } from "lucide-react";
 import {
@@ -19,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import VideoFramePicker from "@/components/admin/VideoFramePicker";
+import { AdminPage, AdminPageHeader, AdminLoading, AdminEmpty } from "@/components/admin/AdminUI";
 
 interface Video {
   id: string;
@@ -305,17 +307,17 @@ export default function VideoGalleryManagement() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-muted-foreground">Loading videos...</p>
-      </div>
-    );
+    return <AdminLoading label="Loading videos…" />;
   }
 
   return (
-    <div className="max-w-full px-2 py-3 space-y-4 overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <h1 className="text-lg sm:text-xl font-bold">Video Gallery</h1>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Film}
+        title="Video Gallery"
+        count={videos.length}
+        countLabel="videos"
+        actions={
         <div className="flex gap-2 flex-wrap">
           <Button
             variant="outline"
@@ -549,68 +551,49 @@ export default function VideoGalleryManagement() {
           </DialogContent>
         </Dialog>
         </div>
-      </div>
+        }
+      />
 
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {videos.map((video) => (
-          <Card key={video.id}>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                {video.title}
-                {video.video_type === 'highlight' && (
-                  <span className="text-xs px-1.5 py-0.5 bg-primary/20 text-primary rounded">
-                    Highlight
-                  </span>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="relative">
+      {videos.length === 0 ? (
+        <AdminEmpty message="No videos yet. Add your first video!" />
+      ) : (
+        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {videos.map((video) => (
+            <Card key={video.id} className="border-border/30">
+              <CardContent className="p-2.5 space-y-1.5">
                 {video.thumbnail_url && (
                   <img
                     src={video.thumbnail_url}
                     alt={video.title}
-                    className="w-full h-48 object-cover rounded-md mb-2"
+                    className="w-full aspect-video object-cover rounded-md"
                   />
                 )}
-              </div>
-              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                {video.description}
-              </p>
-              <div className="flex justify-between items-center text-sm mb-3">
-                <span className={`px-2 py-1 rounded-full ${video.published ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400'}`}>
-                  {video.published ? 'Published' : 'Draft'}
-                </span>
-                <span className="text-muted-foreground">{video.category}</span>
-              </div>
-              
-              
-              <div className="flex justify-end space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEdit(video)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(video.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {videos.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No videos yet. Add your first video!</p>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-medium truncate flex-1 min-w-0">{video.title}</span>
+                  {video.video_type === 'highlight' && (
+                    <Badge variant="outline" className="h-4 text-[9px] border-primary/50 text-primary">Highlight</Badge>
+                  )}
+                  <Badge className={`h-4 text-[9px] ${video.published ? 'bg-green-500 text-white' : ''}`} variant={video.published ? undefined : "outline"}>
+                    {video.published ? 'Published' : 'Draft'}
+                  </Badge>
+                </div>
+                <p className="text-[10px] text-muted-foreground line-clamp-2">{video.description}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-muted-foreground truncate">{video.category}</span>
+                  <div className="flex items-center gap-0.5 flex-shrink-0">
+                    <Button variant="ghost" size="sm" className="h-7 px-1.5" title="Edit" onClick={() => handleEdit(video)}>
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-7 px-1.5 text-red-400" title="Delete" onClick={() => handleDelete(video.id)}>
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
-    </div>
+    </AdminPage>
   );
 }

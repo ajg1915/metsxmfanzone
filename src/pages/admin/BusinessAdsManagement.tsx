@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, X, Trash2, ExternalLink, Mail, Phone } from "lucide-react";
+import { Check, X, Trash2, ExternalLink, Mail, Phone, Megaphone } from "lucide-react";
 import CreateBusinessAdForm from "@/components/CreateBusinessAdForm";
+import {
+  AdminPage, AdminPageHeader, AdminSearch, AdminFilterChips, AdminList, AdminListCard,
+  AdminRow, AdminEmpty, AdminLoading, AdminIconButton,
+} from "@/components/admin/AdminUI";
 
 interface BusinessAd {
   id: string;
@@ -24,6 +26,8 @@ export default function BusinessAdsManagement() {
   const [ads, setAds] = useState<BusinessAd[]>([]);
   const [loading, setLoading] = useState(true);
   const [adminUserId, setAdminUserId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -113,23 +117,30 @@ export default function BusinessAdsManagement() {
       approved: "default",
       rejected: "destructive",
     };
-    return <Badge variant={variants[status] || "secondary"}>{status}</Badge>;
+    return <Badge variant={variants[status] || "secondary"} className="h-4 text-[9px]">{status}</Badge>;
   };
 
-  if (loading) {
-    return (
-      <div className="container mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-6">
-        <p className="text-sm text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
+  const counts = useMemo(() => ({
+    all: ads.length,
+    pending: ads.filter(a => a.status === "pending").length,
+    approved: ads.filter(a => a.status === "approved").length,
+    rejected: ads.filter(a => a.status === "rejected").length,
+  }), [ads]);
+
+  const filteredAds = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return ads.filter((a) => {
+      if (q && !(`${a.business_name} ${a.ad_title}`.toLowerCase().includes(q))) return false;
+      if (filter !== "all") return a.status === filter;
+      return true;
+    });
+  }, [ads, search, filter]);
+
+  if (loading) return <AdminLoading label="Loading…" />;
 
   return (
-    <div className="max-w-full px-2 py-3 space-y-4 overflow-x-hidden">
-      <div>
-        <h2 className="text-lg sm:text-xl font-bold">Business Ads</h2>
-        <p className="text-xs text-muted-foreground">Create and review submissions</p>
-      </div>
+    <AdminPage>
+      <AdminPageHeader icon={Megaphone} title="Business Ads" count={counts.all} description="Create and review submissions" />
 
       {adminUserId && (
         <div className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl p-4">
@@ -137,106 +148,92 @@ export default function BusinessAdsManagement() {
         </div>
       )}
 
-      <div className="grid gap-3">
-        {ads.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <p className="text-sm text-muted-foreground">No business ads submitted yet</p>
-            </CardContent>
-          </Card>
+      <div className="flex items-center gap-2 flex-wrap">
+        <AdminSearch value={search} onChange={setSearch} placeholder="Search business or ad title…" />
+        <AdminFilterChips
+          filters={[
+            { key: "all", label: "All", count: counts.all },
+            { key: "pending", label: "Pending", count: counts.pending },
+            { key: "approved", label: "Approved", count: counts.approved },
+            { key: "rejected", label: "Rejected", count: counts.rejected },
+          ]}
+          active={filter}
+          onChange={(k) => setFilter(k as any)}
+        />
+      </div>
+
+      <AdminList>
+        {filteredAds.length === 0 ? (
+          <AdminEmpty message="No business ads submitted yet" />
         ) : (
-          ads.map((ad) => (
-            <Card key={ad.id}>
-              <CardHeader className="pb-3">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                  <div className="flex-1">
-                    <CardTitle className="text-base sm:text-lg flex items-center gap-2 mb-1">
-                      {ad.business_name}
-                      {getStatusBadge(ad.status)}
-                    </CardTitle>
-                    <CardDescription className="text-xs">
-                      {ad.business_name} • {new Date(ad.created_at).toLocaleDateString()}
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
+          filteredAds.map((ad) => (
+            <AdminListCard key={ad.id}>
+              <AdminRow
+                title={ad.business_name}
+                badges={getStatusBadge(ad.status)}
+                meta={new Date(ad.created_at).toLocaleDateString()}
+                actions={
+                  <>
                     {ad.status === "pending" && (
                       <>
-                        <Button
-                          size="sm"
-                          variant="default"
-                          onClick={() => handleUpdateStatus(ad.id, "approved")}
-                        >
-                          <Check className="w-4 h-4 mr-1" />
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleUpdateStatus(ad.id, "rejected")}
-                        >
-                          <X className="w-4 h-4 mr-1" />
-                          Reject
-                        </Button>
+                        <AdminIconButton icon={Check} title="Approve" tone="success" onClick={() => handleUpdateStatus(ad.id, "approved")} />
+                        <AdminIconButton icon={X} title="Reject" tone="danger" onClick={() => handleUpdateStatus(ad.id, "rejected")} />
                       </>
                     )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(ad.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <h4 className="text-sm font-semibold mb-1">{ad.ad_title}</h4>
-                  <p className="text-xs text-muted-foreground">{ad.ad_description}</p>
-                </div>
-
-                {ad.ad_image_url && (
-                  <img
-                    src={ad.ad_image_url}
-                    alt={ad.ad_title}
-                    className="rounded-lg max-w-full h-auto max-h-48 object-cover"
-                  />
-                )}
-
-                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Mail className="w-3 h-3" />
-                    <a href={`mailto:${ad.contact_email}`} className="hover:underline">
-                      {ad.contact_email}
-                    </a>
-                  </div>
-                  {ad.contact_phone && (
-                    <div className="flex items-center gap-1">
-                      <Phone className="w-3 h-3" />
-                      <a href={`tel:${ad.contact_phone}`} className="hover:underline">
-                        {ad.contact_phone}
-                      </a>
+                    <AdminIconButton icon={Trash2} title="Delete" tone="danger" onClick={() => handleDelete(ad.id)} />
+                  </>
+                }
+                body={
+                  <div className="space-y-1.5">
+                    <div>
+                      <p className="text-xs font-semibold">{ad.ad_title}</p>
+                      <p className="text-[10px] text-muted-foreground">{ad.ad_description}</p>
                     </div>
-                  )}
-                  {ad.website_url && (
-                    <div className="flex items-center gap-1">
-                      <ExternalLink className="w-3 h-3" />
-                      <a
-                        href={ad.website_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="hover:underline"
-                      >
-                        Visit Website
-                      </a>
+
+                    {ad.ad_image_url && (
+                      <img
+                        src={ad.ad_image_url}
+                        alt={ad.ad_title}
+                        className="rounded-lg max-w-full h-auto max-h-40 object-cover"
+                      />
+                    )}
+
+                    <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Mail className="w-2.5 h-2.5" />
+                        <a href={`mailto:${ad.contact_email}`} className="hover:underline">
+                          {ad.contact_email}
+                        </a>
+                      </div>
+                      {ad.contact_phone && (
+                        <div className="flex items-center gap-1">
+                          <Phone className="w-2.5 h-2.5" />
+                          <a href={`tel:${ad.contact_phone}`} className="hover:underline">
+                            {ad.contact_phone}
+                          </a>
+                        </div>
+                      )}
+                      {ad.website_url && (
+                        <div className="flex items-center gap-1">
+                          <ExternalLink className="w-2.5 h-2.5" />
+                          <a
+                            href={ad.website_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            Visit Website
+                          </a>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                }
+              />
+            </AdminListCard>
           ))
         )}
-      </div>
-    </div>
+      </AdminList>
+    </AdminPage>
   );
 }

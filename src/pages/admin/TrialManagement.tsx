@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2, Gift, Save } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminLoading } from "@/components/admin/AdminUI";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -85,24 +86,23 @@ const TrialManagement = () => {
     }));
 
   if (loading) {
-    return (
-      <p className="text-muted-foreground">Loading...</p>
-    );
+    return <AdminLoading label="Loading trial settings…" />;
   }
 
   return (
-    <>
-      <div className="space-y-5">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Gift className="w-5 h-5 text-primary" />
-            <h1 className="text-xl sm:text-2xl font-bold">Free Trials & Promo Days</h1>
-          </div>
-          <Button onClick={save} disabled={saving} className="gap-2">
-            <Save className="w-4 h-4" />
+    <AdminPage>
+      <AdminPageHeader
+        icon={Gift}
+        title="Free Trials & Promo Days"
+        count={config.windows.length}
+        countLabel="promo windows"
+        actions={
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={save} disabled={saving}>
+            <Save className="w-3.5 h-3.5" />
             {saving ? "Saving..." : "Save"}
           </Button>
-        </div>
+        }
+      />
 
         <Card className="bg-card/90 backdrop-blur">
           <CardHeader className="pb-3">
@@ -315,8 +315,7 @@ const TrialManagement = () => {
             })}
           </CardContent>
         </Card>
-      </div>
-    </>
+    </AdminPage>
   );
 };
 

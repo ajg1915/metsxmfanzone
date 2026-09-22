@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Pencil, Trash2, MessageSquare, Eye, Search, Loader2, Bell } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminSearch, AdminStatGrid, AdminStat, AdminIconButton, AdminEmpty, AdminLoading } from "@/components/admin/AdminUI";
 
 interface ToastPrompt {
   id: string;
@@ -194,92 +195,51 @@ export default function ToastPromptManagement() {
   const locationLabel = (loc: string) => LOCATIONS.find(l => l.value === loc)?.label || loc;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Bell className="w-6 h-6 text-primary" />
-            Toast Prompt Management
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            View and manage all toast notifications and prompts across the website.
-          </p>
-        </div>
-        <Button onClick={() => openEditor()} className="gap-2">
-          <Plus className="w-4 h-4" />
-          New Prompt
-        </Button>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Bell}
+        title="Toast Prompt Management"
+        count={prompts.length}
+        description="View and manage all toast notifications and prompts across the website."
+        actions={
+          <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => openEditor()}>
+            <Plus className="w-3.5 h-3.5" />
+            New Prompt
+          </Button>
+        }
+      />
 
       {/* Filters */}
-      <Card>
-        <CardContent className="pt-4 pb-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search prompts..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={filterLocation} onValueChange={setFilterLocation}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Filter by location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Locations</SelectItem>
-                {LOCATIONS.map(loc => (
-                  <SelectItem key={loc.value} value={loc.value}>{loc.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-foreground">{prompts.length}</p>
-            <p className="text-xs text-muted-foreground">Total Prompts</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-green-500">{prompts.filter(p => p.is_active).length}</p>
-            <p className="text-xs text-muted-foreground">Active</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-muted-foreground">{prompts.filter(p => !p.is_active).length}</p>
-            <p className="text-xs text-muted-foreground">Inactive</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-destructive">{prompts.filter(p => p.variant === "destructive").length}</p>
-            <p className="text-xs text-muted-foreground">Error Toasts</p>
-          </CardContent>
-        </Card>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <AdminSearch value={search} onChange={setSearch} placeholder="Search prompts…" />
+        <Select value={filterLocation} onValueChange={setFilterLocation}>
+          <SelectTrigger className="w-full sm:w-[200px] h-8 text-xs">
+            <SelectValue placeholder="Filter by location" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Locations</SelectItem>
+            {LOCATIONS.map(loc => (
+              <SelectItem key={loc.value} value={loc.value}>{loc.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
+      {/* Stats */}
+      <AdminStatGrid>
+        <AdminStat icon={MessageSquare} label="Total Prompts" value={prompts.length} />
+        <AdminStat icon={Eye} label="Active" value={prompts.filter(p => p.is_active).length} tone="success" />
+        <AdminStat icon={Eye} label="Inactive" value={prompts.filter(p => !p.is_active).length} />
+        <AdminStat icon={MessageSquare} label="Error Toasts" value={prompts.filter(p => p.variant === "destructive").length} tone="danger" />
+      </AdminStatGrid>
+
       {/* Table */}
-      <Card>
+      <Card className="border-border/30">
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
+            <AdminLoading label="Loading prompts…" />
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <MessageSquare className="w-10 h-10 mx-auto mb-3 opacity-40" />
-              <p>No toast prompts found.</p>
-            </div>
+            <AdminEmpty message="No toast prompts found." />
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -317,23 +277,16 @@ export default function ToastPromptManagement() {
                         />
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handlePreview(prompt)} title="Preview">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditor(prompt)} title="Edit">
-                            <Pencil className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive"
-                            onClick={() => handleDelete(prompt.id)}
-                            disabled={deleting === prompt.id}
+                        <div className="flex items-center justify-end gap-0.5">
+                          <AdminIconButton icon={Eye} title="Preview" onClick={() => handlePreview(prompt)} />
+                          <AdminIconButton icon={Pencil} title="Edit" onClick={() => openEditor(prompt)} />
+                          <AdminIconButton
+                            icon={Trash2}
                             title="Delete"
-                          >
-                            {deleting === prompt.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                          </Button>
+                            tone="danger"
+                            disabled={deleting === prompt.id}
+                            onClick={() => handleDelete(prompt.id)}
+                          />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -468,6 +421,6 @@ export default function ToastPromptManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

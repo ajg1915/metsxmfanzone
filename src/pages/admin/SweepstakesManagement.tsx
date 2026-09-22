@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Plus, Trash2, Gift, Trophy, Users, Calendar, Star } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminEmpty } from "@/components/admin/AdminUI";
 import { format } from "date-fns";
 
 interface SweepstakesEvent {
@@ -226,11 +227,8 @@ const SweepstakesManagement = () => {
   const activeEvent = events.find(e => e.id === selectedEvent);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Gift className="h-7 w-7 text-primary" />
-        <h1 className="text-2xl font-bold">Sweepstakes Management</h1>
-      </div>
+    <AdminPage>
+      <AdminPageHeader icon={Gift} title="Sweepstakes Management" count={events.length} />
 
       <Tabs defaultValue="events" className="space-y-4">
         <TabsList>
@@ -298,7 +296,7 @@ const SweepstakesManagement = () => {
               );
             })}
             {events.length === 0 && !loading && (
-              <p className="text-center text-muted-foreground py-8">No sweepstakes events yet. Create one above!</p>
+              <AdminEmpty message="No sweepstakes events yet. Create one above!" />
             )}
           </div>
         </TabsContent>
@@ -356,7 +354,7 @@ const SweepstakesManagement = () => {
                 </Card>
               ))}
             {prizes.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">No prizes yet. Add some above!</p>
+              <AdminEmpty message="No prizes yet. Add some above!" />
             )}
           </div>
         </TabsContent>
@@ -371,7 +369,7 @@ const SweepstakesManagement = () => {
             </CardHeader>
             <CardContent>
               {winners.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No winners yet for this event.</p>
+                <AdminEmpty message="No winners yet for this event." />
               ) : (
                 <div className="space-y-2">
                   {winners.map(w => (
@@ -395,7 +393,7 @@ const SweepstakesManagement = () => {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </AdminPage>
   );
 };
 

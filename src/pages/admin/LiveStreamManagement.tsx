@@ -75,6 +75,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { uploadToR2 } from "@/lib/r2Upload";
+import { AdminPage, AdminPageHeader, AdminLoading, AdminEmpty } from "@/components/admin/AdminUI";
 
 interface LiveStream {
   id: string;
@@ -659,10 +660,14 @@ export default function LiveStreamManagement() {
   };
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-7xl space-y-4 overflow-x-hidden py-3">
+    <AdminPage>
       <TikTokLiveToggle />
-      <div className="mb-4 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-lg font-bold">Live Stream Management</h1>
+      <AdminPageHeader
+        icon={Radio}
+        title="Live Stream Management"
+        count={streams.length}
+        countLabel="streams"
+        actions={
         <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
           {streams.length > 0 && (
             <Button size="sm" variant="outline" className="h-8 min-w-0 px-2 text-xs" onClick={selectAll}>
@@ -1034,16 +1039,13 @@ export default function LiveStreamManagement() {
           </DialogContent>
         </Dialog>
         </div>
-      </div>
+        }
+      />
 
       {loading ? (
-        <div className="text-center py-8">Loading streams...</div>
+        <AdminLoading label="Loading streams…" />
       ) : streams.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            No live streams yet. Click "Add Live Stream" to schedule your first stream.
-          </CardContent>
-        </Card>
+        <AdminEmpty message='No live streams yet. Click "Add Live Stream" to schedule your first stream.' />
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={streams.map(s => s.id)} strategy={rectSortingStrategy}>
@@ -1210,6 +1212,6 @@ export default function LiveStreamManagement() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Search, Globe, FileText, CheckCircle, AlertCircle, RefreshCw, Plus, Pencil, Trash2, Eye, Tag, Shield, Copy } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminSearch, AdminStatGrid, AdminStat } from "@/components/admin/AdminUI";
 
 interface SEOSetting {
   id: string;
@@ -306,59 +307,20 @@ export default function SEOManagement() {
   };
 
   return (
-    <div className="w-full max-w-full px-1 sm:px-2 py-2 sm:py-3 overflow-x-hidden space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-        <div>
-          <h2 className="text-base sm:text-lg font-bold">SEO Management</h2>
-          <p className="text-xs text-muted-foreground">Manage page titles, descriptions, meta tags & verification</p>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Globe}
+        title="SEO Management"
+        description="Manage page titles, descriptions, meta tags & verification"
+      />
 
       {/* SEO Score Overview */}
-      <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-4">
-        <Card className="min-w-0">
-          <CardHeader className="pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">SEO Score</CardTitle>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className={`text-xl sm:text-2xl font-bold ${getScoreColor(seoScore.score)}`}>
-              {seoScore.score}%
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0">
-          <CardHeader className="pb-1 pt-3 px-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Passed</CardTitle>
-            <CheckCircle className="h-3 w-3 text-green-500" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold text-green-500">{seoScore.passed}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0">
-          <CardHeader className="pb-1 pt-3 px-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Warnings</CardTitle>
-            <AlertCircle className="h-3 w-3 text-yellow-500" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold text-yellow-500">{seoScore.warnings}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="min-w-0">
-          <CardHeader className="pb-1 pt-3 px-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Verification Tags</CardTitle>
-            <Shield className="h-3 w-3 text-primary" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold text-primary">
-              {verificationTags.filter(t => t.is_active).length}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <AdminStatGrid>
+        <AdminStat label="SEO Score" value={`${seoScore.score}%`} tone={seoScore.score >= 80 ? "success" : seoScore.score >= 60 ? "warning" : "danger"} />
+        <AdminStat icon={CheckCircle} label="Passed" value={seoScore.passed} tone="success" />
+        <AdminStat icon={AlertCircle} label="Warnings" value={seoScore.warnings} tone="warning" />
+        <AdminStat icon={Shield} label="Verification Tags" value={verificationTags.filter(t => t.is_active).length} />
+      </AdminStatGrid>
 
       <Tabs defaultValue="pages" className="w-full">
         <TabsList className="h-8">
@@ -370,15 +332,7 @@ export default function SEOManagement() {
         <TabsContent value="pages" className="mt-3 space-y-3">
           {/* Search and Actions */}
           <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                placeholder="Search pages..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-8 text-xs"
-              />
-            </div>
+            <AdminSearch value={searchQuery} onChange={setSearchQuery} placeholder="Search pages..." />
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={fetchSEOSettings} className="gap-1.5">
                 <RefreshCw className="h-3.5 w-3.5" />
@@ -927,6 +881,6 @@ export default function SEOManagement() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

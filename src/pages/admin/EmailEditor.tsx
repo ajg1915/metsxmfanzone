@@ -36,6 +36,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useRef } from "react";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 type RecipientType = "all_users" | "subscribers" | "specific";
 type EmailTemplateType = "custom" | "otp" | "welcome" | "subscription" | "game_day" | "writer_approval" | "writer_revoked" | "email_confirm" | "sub_expiry" | "maintenance";
@@ -811,18 +812,19 @@ export default function EmailEditor() {
   );
 
   return (
-    <div className="container mx-auto max-w-5xl px-3 sm:px-4 py-4 sm:py-6">
-      <div className="mb-4 sm:mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold mb-1">Email Templates</h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Preview, test & manage all email templates ({Object.keys(TEMPLATE_META).length} types)
-          </p>
-        </div>
-        <Button variant={showStylePanel ? "default" : "outline"} size="sm" onClick={() => setShowStylePanel(!showStylePanel)}>
-          <Paintbrush className="w-4 h-4 mr-1" /> Style
-        </Button>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Mail}
+        title="Email Templates"
+        count={Object.keys(TEMPLATE_META).length}
+        countLabel="types"
+        description="Preview, test & manage all email templates"
+        actions={
+          <Button variant={showStylePanel ? "default" : "outline"} size="sm" className="h-8 text-xs" onClick={() => setShowStylePanel(!showStylePanel)}>
+            <Paintbrush className="w-3.5 h-3.5 mr-1" /> Style
+          </Button>
+        }
+      />
 
       {showStylePanel && <div className="mb-4"><StylePanel /></div>}
 
@@ -1124,6 +1126,6 @@ export default function EmailEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AdminPage>
   );
 }

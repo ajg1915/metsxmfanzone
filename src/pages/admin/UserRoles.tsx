@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Trash2 } from "lucide-react";
+import {
+  AdminPage, AdminPageHeader, AdminEmpty, AdminIconButton,
+} from "@/components/admin/AdminUI";
 
 interface UserRole {
   id: string;
@@ -127,86 +130,77 @@ export default function UserRoles() {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-6">
-      <h2 className="text-3xl font-bold mb-6">User Roles Management</h2>
+    <AdminPage>
+      <AdminPageHeader icon={Shield} title="User Roles Management" count={userRoles.length} />
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
+      <div className="grid gap-3 md:grid-cols-2">
+        <Card className="border-border/30">
+          <CardHeader className="p-2.5 pb-0">
+            <CardTitle className="flex items-center gap-1.5 text-xs">
+              <Shield className="w-3.5 h-3.5" />
               Assign Role
             </CardTitle>
-            <CardDescription>
+            <p className="text-[10px] text-muted-foreground">
               Grant admin or moderator privileges to users
-            </CardDescription>
+            </p>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="email">User Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="user@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
-              <div>
-                <Label htmlFor="role">Role</Label>
-                <Select value={selectedRole} onValueChange={setSelectedRole}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="user">User</SelectItem>
-                    <SelectItem value="writer">Writer</SelectItem>
-                    <SelectItem value="moderator">Moderator</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={handleAddRole} disabled={loading} className="w-full">
-                {loading ? "Adding..." : "Assign Role"}
-              </Button>
+          <CardContent className="p-2.5 space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-[10px]">User Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="user@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                className="h-8 text-xs"
+              />
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="role" className="text-[10px]">Role</Label>
+              <Select value={selectedRole} onValueChange={setSelectedRole}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="writer">Writer</SelectItem>
+                  <SelectItem value="moderator">Moderator</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={handleAddRole} disabled={loading} className="w-full h-8 text-xs">
+              {loading ? "Adding..." : "Assign Role"}
+            </Button>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Current User Roles</CardTitle>
-            <CardDescription>
-              Manage existing user privileges
-            </CardDescription>
+        <Card className="border-border/30">
+          <CardHeader className="p-2.5 pb-0">
+            <CardTitle className="text-xs">Current User Roles</CardTitle>
+            <p className="text-[10px] text-muted-foreground">Manage existing user privileges</p>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
+          <CardContent className="p-2.5">
+            <div className="space-y-1.5 max-h-96 overflow-y-auto">
               {userRoles.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No roles assigned yet</p>
+                <AdminEmpty message="No roles assigned yet" />
               ) : (
                 userRoles.map((userRole) => (
                   <div
                     key={userRole.id}
-                    className="flex items-center justify-between p-3 bg-muted rounded"
+                    className="flex items-center justify-between p-2 bg-muted/50 rounded border border-border/30"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold truncate">
+                      <p className="text-xs font-medium truncate">
                         {userRole.profiles?.full_name || userRole.profiles?.email || "Unknown User"}
                       </p>
-                      <p className="text-sm text-muted-foreground capitalize">
+                      <p className="text-[10px] text-muted-foreground capitalize">
                         {userRole.role}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteRole(userRole.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <AdminIconButton icon={Trash2} title="Remove role" tone="danger" onClick={() => handleDeleteRole(userRole.id)} />
                   </div>
                 ))
               )}
@@ -214,6 +208,6 @@ export default function UserRoles() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminPage>
   );
 }

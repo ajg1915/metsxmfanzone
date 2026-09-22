@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Bell, Send, Radio, Users, Clock, AlertCircle, CheckCircle2, Mail } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminEmpty } from "@/components/admin/AdminUI";
 import { motion } from "framer-motion";
 
 interface NotificationLog {
@@ -196,23 +197,18 @@ const GameNotifications = () => {
   ];
 
   return (
-    <div className="space-y-3 max-w-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div className="min-w-0">
-          <h1 className="text-base sm:text-lg font-bold text-foreground flex items-center gap-1.5 truncate">
-            <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0" />
-            Game Notifications
-          </h1>
-          <p className="text-muted-foreground text-xs mt-0.5 truncate">
-            Send push notifications when games go live
-          </p>
-        </div>
-        <Badge variant="secondary" className="flex items-center gap-1 px-2 py-1 text-xs w-fit flex-shrink-0">
-          <Users className="w-3 h-3" />
-          {subscriberCount} subs
-        </Badge>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Bell}
+        title="Game Notifications"
+        description="Send push notifications when games go live"
+        actions={
+          <Badge variant="secondary" className="flex items-center gap-1 px-2 py-1 text-[10px] w-fit flex-shrink-0">
+            <Users className="w-3 h-3" />
+            {subscriberCount} subs
+          </Badge>
+        }
+      />
 
       {/* Gameday Email Triggers */}
       <Card className="border-border/30">
@@ -378,10 +374,7 @@ const GameNotifications = () => {
           </CardHeader>
           <CardContent className="p-3 pt-0">
             {notificationLogs.length === 0 ? (
-              <div className="text-center py-6 text-muted-foreground">
-                <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-xs">No notifications sent</p>
-              </div>
+              <AdminEmpty message="No notifications sent yet." />
             ) : (
               <div className="space-y-2 max-h-[300px] sm:max-h-[400px] overflow-y-auto">
                 {notificationLogs.map((log) => (
@@ -424,7 +417,7 @@ const GameNotifications = () => {
           </ul>
         </CardContent>
       </Card>
-    </div>
+    </AdminPage>
   );
 };
 

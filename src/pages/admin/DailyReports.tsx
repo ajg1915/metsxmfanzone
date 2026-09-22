@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdminPage, AdminPageHeader, AdminStatGrid } from "@/components/admin/AdminUI";
 
 interface DailyStats {
   newUsers: number;
@@ -118,73 +119,73 @@ const DailyReports = () => {
     trend?: string;
     color?: string;
   }) => (
-    <Card className="glass-card border-primary/20">
-      <CardContent className="p-6">
+    <Card className="border-border/30">
+      <CardContent className="p-2.5">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
+          <div className="min-w-0">
+            <p className="text-[10px] text-muted-foreground truncate">{title}</p>
             {loading ? (
-              <Skeleton className="h-8 w-16 mt-1" />
+              <Skeleton className="h-6 w-14 mt-1" />
             ) : (
-              <p className="text-2xl font-bold">{value}</p>
+              <p className="text-base font-bold mt-0.5">{value}</p>
             )}
             {trend && !loading && (
-              <Badge variant="secondary" className="mt-2 text-xs">
-                <TrendingUp className="w-3 h-3 mr-1" />
+              <Badge variant="secondary" className="mt-1.5 text-[9px] h-4">
+                <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
                 {trend}
               </Badge>
             )}
           </div>
-          <div className={`p-3 rounded-full bg-${color}/10`}>
-            <Icon className={`w-6 h-6 text-${color}`} />
-          </div>
+          <Icon className={`w-4 h-4 text-${color} flex-shrink-0`} />
         </div>
       </CardContent>
     </Card>
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Daily Reports</h1>
-          <p className="text-muted-foreground">
-            Activity summary for {format(selectedDate, 'MMMM d, yyyy')}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSelectedDate(subDays(selectedDate, 1))}
-          >
-            Previous Day
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSelectedDate(new Date())}
-            disabled={format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')}
-          >
-            Today
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => fetchDailyStats(selectedDate)}
-          >
-            <RefreshCw className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Calendar}
+        title="Daily Reports"
+        description={`Activity summary for ${format(selectedDate, 'MMMM d, yyyy')}`}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setSelectedDate(subDays(selectedDate, 1))}
+            >
+              Previous Day
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setSelectedDate(new Date())}
+              disabled={format(selectedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')}
+            >
+              Today
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => fetchDailyStats(selectedDate)}
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </Button>
+          </>
+        }
+      />
 
       {/* User Activity Section */}
       <div>
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <Users className="w-5 h-5 text-primary" />
+        <h2 className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+          <Users className="w-3.5 h-3.5 text-primary" />
           User Activity
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <AdminStatGrid>
           <StatCard
             title="New Signups"
             value={stats?.newUsers || 0}
@@ -205,16 +206,16 @@ const DailyReports = () => {
             value={stats?.avgSessionDuration || "0m"}
             icon={Clock}
           />
-        </div>
+        </AdminStatGrid>
       </div>
 
       {/* Content Stats Section */}
       <div>
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-primary" />
+        <h2 className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+          <FileText className="w-3.5 h-3.5 text-primary" />
           Content Statistics
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <AdminStatGrid>
           <StatCard
             title="Blog Views"
             value={stats?.blogViews || 0}
@@ -235,18 +236,18 @@ const DailyReports = () => {
             value={stats?.newSubscriptions || 0}
             icon={TrendingUp}
           />
-        </div>
+        </AdminStatGrid>
       </div>
 
       {/* Quick Summary Card */}
-      <Card className="glass-card border-primary/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+      <Card className="border-border/30">
+        <CardHeader className="p-2.5 pb-0">
+          <CardTitle className="text-xs flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5" />
             Daily Summary
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-2.5">
           {loading ? (
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />
@@ -254,7 +255,7 @@ const DailyReports = () => {
               <Skeleton className="h-4 w-1/2" />
             </div>
           ) : (
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <div className="space-y-1.5 text-[10px] text-muted-foreground">
               <p>• <strong>{stats?.newUsers || 0}</strong> new users joined today</p>
               <p>• <strong>{stats?.activeUsers || 0}</strong> users were active on the platform</p>
               <p>• <strong>{stats?.blogViews || 0}</strong> blog articles were viewed</p>
@@ -264,7 +265,7 @@ const DailyReports = () => {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AdminPage>
   );
 };
 

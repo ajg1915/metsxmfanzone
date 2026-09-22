@@ -150,13 +150,11 @@ export default function AIAssistant() {
   return (
     <div className="w-full max-w-full h-full min-h-0 flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-3 shrink-0">
-        <div className="p-2 rounded-lg bg-[#FF5910]/10 border border-[#FF5910]/20">
-          <Bot className="w-6 h-6 text-[#FF5910]" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Admin AI Assistant</h1>
-          <p className="text-sm text-slate-400">
+      <div className="flex items-center gap-2 mb-3 shrink-0">
+        <Bot className="w-4 h-4 text-primary flex-shrink-0" />
+        <div className="min-w-0">
+          <h1 className="text-sm sm:text-base font-bold truncate">Admin AI Assistant</h1>
+          <p className="text-[10px] text-muted-foreground">
             Blog posts, podcast scripts, content ideas, and live Mets stats.
           </p>
         </div>

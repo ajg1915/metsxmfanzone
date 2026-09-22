@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Palette, Image, Type, Save, RotateCcw, Upload } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 interface EmailSettings {
   logo_url: string;
@@ -111,23 +112,22 @@ const EmailTemplateSettings = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Email Template Designer</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Customize the look of all automated emails (signup, password reset, etc.)
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleReset}>
-            <RotateCcw className="w-4 h-4 mr-1" /> Reset
-          </Button>
-          <Button size="sm" onClick={handleSave} disabled={saving}>
-            <Save className="w-4 h-4 mr-1" /> {saving ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Palette}
+        title="Email Template Designer"
+        description="Customize the look of all automated emails (signup, password reset, etc.)"
+        actions={
+          <>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={handleReset}>
+              <RotateCcw className="w-3.5 h-3.5 mr-1" /> Reset
+            </Button>
+            <Button size="sm" className="h-8 text-xs" onClick={handleSave} disabled={saving}>
+              <Save className="w-3.5 h-3.5 mr-1" /> {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Settings Panel */}
@@ -334,7 +334,7 @@ const EmailTemplateSettings = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminPage>
   );
 };
 

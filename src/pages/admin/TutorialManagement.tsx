@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit2, Save, X, MoveUp, MoveDown, ImageIcon, Loader2, Eye } from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, MoveUp, MoveDown, ImageIcon, Loader2, Eye, GraduationCap } from "lucide-react";
 import OnboardingWalkthrough from "@/components/OnboardingWalkthrough";
+import { AdminPage, AdminPageHeader, AdminList, AdminListCard, AdminRow, AdminEmpty, AdminIconButton } from "@/components/admin/AdminUI";
 
 interface TutorialStep {
   id: string;
@@ -206,35 +207,39 @@ export default function TutorialManagement() {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-3 py-4 space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <div>
-          <h1 className="text-xl font-bold">Tutorial Management</h1>
-          <p className="text-xs text-muted-foreground">Manage onboarding steps</p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowPreview(true)}
-            disabled={steps.length === 0}
-          >
-            <Eye className="w-3 h-3 mr-1" />
-            Preview
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              resetForm();
-              setShowForm(!showForm);
-            }}
-          >
-            {showForm ? <X className="w-3 h-3 mr-1" /> : <Plus className="w-3 h-3 mr-1" />}
-            {showForm ? "Cancel" : "Add Step"}
-          </Button>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={GraduationCap}
+        title="Tutorial Management"
+        count={steps.length}
+        countLabel="steps"
+        description="Manage onboarding steps"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => setShowPreview(true)}
+              disabled={steps.length === 0}
+            >
+              <Eye className="w-3 h-3 mr-1" />
+              Preview
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 text-xs"
+              onClick={() => {
+                resetForm();
+                setShowForm(!showForm);
+              }}
+            >
+              {showForm ? <X className="w-3 h-3 mr-1" /> : <Plus className="w-3 h-3 mr-1" />}
+              {showForm ? "Cancel" : "Add Step"}
+            </Button>
+          </>
+        }
+      />
 
       {/* Form Section */}
       {showForm && (
@@ -311,19 +316,16 @@ export default function TutorialManagement() {
       )}
 
       {/* List Section */}
-      <div className="space-y-2">
+      <AdminList>
         {steps.length === 0 && !loading && (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            No tutorial steps. Create one to get started.
-          </div>
+          <AdminEmpty message="No tutorial steps. Create one to get started." />
         )}
 
         {steps.map((step, index) => (
-          <Card
+          <AdminListCard
             key={step.id}
-            className={`${!step.is_active ? "opacity-60 bg-muted/50" : ""}`}
+            className={!step.is_active ? "opacity-60 bg-muted/50" : ""}
           >
-            <CardContent className="p-3">
               <div className="flex gap-3 items-center">
                 {/* Reorder & Number */}
                 <div className="flex flex-col items-center gap-0.5 shrink-0">
@@ -367,19 +369,14 @@ export default function TutorialManagement() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(step)}>
-                    <Edit2 className="w-3 h-3" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(step.id)}>
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
+                <div className="flex gap-0.5 shrink-0">
+                  <AdminIconButton icon={Edit2} title="Edit" onClick={() => handleEdit(step)} />
+                  <AdminIconButton icon={Trash2} title="Delete" tone="danger" onClick={() => handleDelete(step.id)} />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </AdminListCard>
         ))}
-      </div>
+      </AdminList>
 
       {showPreview && (
         <OnboardingWalkthrough 
@@ -388,6 +385,6 @@ export default function TutorialManagement() {
           previewSteps={steps}
         />
       )}
-    </div>
+    </AdminPage>
   );
 }

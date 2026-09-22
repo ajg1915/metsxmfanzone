@@ -6,6 +6,7 @@ import { Users, Eye, Radio, MessageSquare, FileText, Globe, Monitor, Smartphone,
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import LiveVisitorsMonitor from "@/components/admin/LiveVisitorsMonitor";
+import { AdminPage, AdminPageHeader, AdminStatGrid, AdminStat } from "@/components/admin/AdminUI";
 
 interface PresenceData {
   id: string;
@@ -186,68 +187,27 @@ export default function RealtimeAnalytics() {
   const authenticatedUsers = presenceData.filter(p => p.is_authenticated).length;
 
   return (
-    <div className="w-full max-w-full px-1 sm:px-2 py-2 sm:py-3 overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-        <div>
-          <h2 className="text-base sm:text-lg font-bold">Real-Time Analytics</h2>
-          <p className="text-xs text-muted-foreground">
-            Last updated: {lastRefresh.toLocaleTimeString()}
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        title="Real-Time Analytics"
+        description={`Last updated: ${lastRefresh.toLocaleTimeString()}`}
+        actions={
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={fetchData} disabled={loading}>
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        }
+      />
 
       <LiveVisitorsMonitor />
 
       {/* Summary Cards */}
-      <div className="grid gap-2 sm:gap-3 grid-cols-2 lg:grid-cols-4 mb-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Online Now</CardTitle>
-            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold text-green-500">{onlineUsers}</div>
-            <p className="text-[10px] text-muted-foreground">{authenticatedUsers} logged in</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Watching Streams</CardTitle>
-            <Radio className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold text-red-500">{streamViewers}</div>
-            <p className="text-[10px] text-muted-foreground">Live viewers</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Reading Blogs</CardTitle>
-            <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold text-blue-500">{blogViewers}</div>
-            <p className="text-[10px] text-muted-foreground">Active readers</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Comments (24h)</CardTitle>
-            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold text-purple-500">{blogComments}</div>
-            <p className="text-[10px] text-muted-foreground">New comments</p>
-          </CardContent>
-        </Card>
-      </div>
+      <AdminStatGrid>
+        <AdminStat icon={Users} label="Online Now" value={onlineUsers} tone="success" />
+        <AdminStat icon={Radio} label="Watching Streams" value={streamViewers} tone="danger" />
+        <AdminStat icon={FileText} label="Reading Blogs" value={blogViewers} tone="default" />
+        <AdminStat icon={MessageSquare} label="Comments (24h)" value={blogComments} tone="default" />
+      </AdminStatGrid>
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Active Users List */}
@@ -420,6 +380,6 @@ export default function RealtimeAnalytics() {
           </Card>
         </div>
       </div>
-    </div>
+    </AdminPage>
   );
 }

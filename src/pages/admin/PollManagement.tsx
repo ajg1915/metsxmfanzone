@@ -1,14 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, BarChart3, X } from "lucide-react";
+import { Plus, Trash2, Edit, BarChart3, X, Vote } from "lucide-react";
 import { format } from "date-fns";
+import {
+  AdminPage, AdminPageHeader, AdminSearch, AdminList, AdminListCard,
+  AdminRow, AdminEmpty, AdminLoading, AdminIconButton,
+} from "@/components/admin/AdminUI";
 
 interface Poll {
   id: string;
@@ -28,6 +31,7 @@ interface PollVote {
 const PollManagement = () => {
   const [polls, setPolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPoll, setEditingPoll] = useState<Poll | null>(null);
   const [formData, setFormData] = useState({
@@ -217,187 +221,186 @@ const PollManagement = () => {
     return (pollResults[pollId] || []).reduce((total, vote) => total + Number(vote.vote_count || 0), 0);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const filteredPolls = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return polls;
+    return polls.filter((p) => p.question.toLowerCase().includes(q));
+  }, [polls, search]);
+
+  if (loading) return <AdminLoading label="Loading polls…" />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Poll Management</h1>
-          <p className="text-muted-foreground">Create and manage polls for your website</p>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={(open) => {
-          setDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="h-4 w-4" />
-              Create Poll
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg bg-background">
-            <DialogHeader>
-              <DialogTitle>{editingPoll ? "Edit Poll" : "Create New Poll"}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="question">Question</Label>
-                <Input
-                  id="question"
-                  value={formData.question}
-                  onChange={(e) => setFormData({ ...formData, question: e.target.value })}
-                  placeholder="What's your favorite..."
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Options (2-6)</Label>
-                {formData.options.map((option, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={option}
-                      onChange={(e) => updateOption(index, e.target.value)}
-                      placeholder={`Option ${index + 1}`}
-                    />
-                    {formData.options.length > 2 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeOption(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                {formData.options.length < 6 && (
-                  <Button type="button" variant="outline" size="sm" onClick={addOption}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Option
-                  </Button>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="expires_at">Expires At (optional)</Label>
-                <Input
-                  id="expires_at"
-                  type="date"
-                  value={formData.expires_at}
-                  onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="show_as_toast">Show as Toast Popup</Label>
-                <Switch
-                  id="show_as_toast"
-                  checked={formData.show_as_toast}
-                  onCheckedChange={(checked) => setFormData({ ...formData, show_as_toast: checked })}
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="is_active">Active</Label>
-                <Switch
-                  id="is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">{editingPoll ? "Update" : "Create"} Poll</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {polls.map((poll) => (
-          <Card key={poll.id} className={`${poll.is_active ? "border-primary" : "border-border"}`}>
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg">{poll.question}</CardTitle>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => handleEdit(poll)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(poll.id)}>
-                    <Trash2 className="h-4 w-4 text-destructive" />
-                  </Button>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Vote}
+        title="Poll Management"
+        count={polls.length}
+        actions={
+          <Dialog open={dialogOpen} onOpenChange={(open) => {
+            setDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="h-8 text-xs gap-1">
+                <Plus className="h-3.5 w-3.5" />
+                Create Poll
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg bg-background">
+              <DialogHeader>
+                <DialogTitle>{editingPoll ? "Edit Poll" : "Create New Poll"}</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="question">Question</Label>
+                  <Input
+                    id="question"
+                    value={formData.question}
+                    onChange={(e) => setFormData({ ...formData, question: e.target.value })}
+                    placeholder="What's your favorite..."
+                    required
+                  />
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-2">
-                {poll.options.map((option, index) => {
-                  const voteCount = getVoteCount(poll.id, index);
-                  const totalVotes = getTotalVotes(poll.id);
-                  const percentage = totalVotes > 0 ? (voteCount / totalVotes) * 100 : 0;
 
-                  return (
-                    <div key={index} className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span>{option}</span>
-                        <span className="text-muted-foreground">{voteCount} votes ({percentage.toFixed(0)}%)</span>
-                      </div>
-                      <div className="h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-primary transition-all"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
+                <div className="space-y-2">
+                  <Label>Options (2-6)</Label>
+                  {formData.options.map((option, index) => (
+                    <div key={index} className="flex gap-2">
+                      <Input
+                        value={option}
+                        onChange={(e) => updateOption(index, e.target.value)}
+                        placeholder={`Option ${index + 1}`}
+                      />
+                      {formData.options.length > 2 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeOption(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
-
-              <div className="flex items-center justify-between pt-2 border-t">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <BarChart3 className="h-4 w-4" />
-                  <span>{getTotalVotes(poll.id)} total votes</span>
+                  ))}
+                  {formData.options.length < 6 && (
+                    <Button type="button" variant="outline" size="sm" onClick={addOption}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Option
+                    </Button>
+                  )}
                 </div>
-                <Switch
-                  checked={poll.is_active}
-                  onCheckedChange={() => toggleActive(poll)}
-                />
-              </div>
 
-              <div className="flex flex-wrap gap-2 text-xs">
-                {poll.show_as_toast && (
-                  <span className="px-2 py-1 bg-primary/10 text-primary rounded">Toast</span>
-                )}
-                {poll.expires_at && (
-                  <span className="px-2 py-1 bg-muted rounded">
-                    Expires: {format(new Date(poll.expires_at), "MMM d, yyyy")}
-                  </span>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div>
+                  <Label htmlFor="expires_at">Expires At (optional)</Label>
+                  <Input
+                    id="expires_at"
+                    type="date"
+                    value={formData.expires_at}
+                    onChange={(e) => setFormData({ ...formData, expires_at: e.target.value })}
+                  />
+                </div>
 
-        {polls.length === 0 && (
-          <div className="col-span-full text-center py-12 text-muted-foreground">
-            No polls created yet. Click "Create Poll" to get started.
-          </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="show_as_toast">Show as Toast Popup</Label>
+                  <Switch
+                    id="show_as_toast"
+                    checked={formData.show_as_toast}
+                    onCheckedChange={(checked) => setFormData({ ...formData, show_as_toast: checked })}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="is_active">Active</Label>
+                  <Switch
+                    id="is_active"
+                    checked={formData.is_active}
+                    onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit">{editingPoll ? "Update" : "Create"} Poll</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        }
+      />
+
+      <AdminSearch value={search} onChange={setSearch} placeholder="Search poll question…" />
+
+      <AdminList>
+        {filteredPolls.length === 0 ? (
+          <AdminEmpty message='No polls created yet. Click "Create Poll" to get started.' />
+        ) : (
+          filteredPolls.map((poll) => (
+            <AdminListCard key={poll.id} highlight={poll.is_active}>
+              <AdminRow
+                title={poll.question}
+                actions={
+                  <>
+                    <AdminIconButton icon={Edit} title="Edit" onClick={() => handleEdit(poll)} />
+                    <AdminIconButton icon={Trash2} title="Delete" tone="danger" onClick={() => handleDelete(poll.id)} />
+                  </>
+                }
+                body={
+                  <div className="space-y-2">
+                    <div className="space-y-1.5">
+                      {poll.options.map((option, index) => {
+                        const voteCount = getVoteCount(poll.id, index);
+                        const totalVotes = getTotalVotes(poll.id);
+                        const percentage = totalVotes > 0 ? (voteCount / totalVotes) * 100 : 0;
+
+                        return (
+                          <div key={index} className="space-y-0.5">
+                            <div className="flex justify-between text-[10px]">
+                              <span>{option}</span>
+                              <span className="text-muted-foreground">{voteCount} votes ({percentage.toFixed(0)}%)</span>
+                            </div>
+                            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-primary transition-all"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1.5 border-t border-border/30">
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                        <BarChart3 className="h-3 w-3" />
+                        <span>{getTotalVotes(poll.id)} total votes</span>
+                      </div>
+                      <Switch
+                        checked={poll.is_active}
+                        onCheckedChange={() => toggleActive(poll)}
+                      />
+                    </div>
+
+                    <div className="flex flex-wrap gap-1.5 text-[9px]">
+                      {poll.show_as_toast && (
+                        <span className="px-1.5 py-0.5 bg-primary/10 text-primary rounded">Toast</span>
+                      )}
+                      {poll.expires_at && (
+                        <span className="px-1.5 py-0.5 bg-muted rounded">
+                          Expires: {format(new Date(poll.expires_at), "MMM d, yyyy")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                }
+              />
+            </AdminListCard>
+          ))
         )}
-      </div>
-    </div>
+      </AdminList>
+    </AdminPage>
   );
 };
 
