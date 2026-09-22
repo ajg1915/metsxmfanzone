@@ -8,7 +8,7 @@ const corsHeaders = {
 }
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
-const DEFAULT_FROM = 'MetsXMFanZone <noreply@notify.metsxmfanzone.com>'
+const DEFAULT_FROM = 'MetsXMFanZone <noreply@metsxmfanzone.com>'
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
