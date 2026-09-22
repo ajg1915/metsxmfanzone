@@ -1,4 +1,5 @@
 import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
+import { renderBrandedEmailFor } from '../_shared/email-brand.ts'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,29 +53,17 @@ Deno.serve(async (req) => {
     const safeMessage = escapeHtml(maintenanceMessage);
     const subject = `${emojis.maintenance} MetsXMFanZone is Under Maintenance`;
 
-    const html = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin: 0; padding: 0;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0a0e1a" style="background-color: #0a0e1a;">
-    <tr><td align="center" style="padding: 16px;">
-      <table width="480" cellpadding="0" cellspacing="0" border="0" bgcolor="${style.cardBgColor}" style="max-width: 480px; width: 100%; background-color: ${style.cardBgColor}; border-radius: ${style.borderRadius}px; border: 1px solid ${style.borderColor}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-        <tr><td style="padding: 32px;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <img src="${style.logoUrl}" alt="MetsXMFanZone" style="width: ${style.logoWidth}px; height: auto; margin-bottom: 8px; border-radius: 12px;" />
-          </div>
-          <div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 48px;">${emojis.maintenance}</span></div>
-          <h1 style="color: ${style.textColor}; text-align: center; font-size: 22px; font-weight: bold; margin: 0 0 12px;">Scheduled Maintenance</h1>
-          <p style="color: ${style.mutedTextColor}; text-align: center; font-size: 14px; margin: 0 0 20px; line-height: 1.6;">${safeMessage}</p>
-          <div style="text-align: center; margin: 20px 0;">
-            <a href="https://www.metsxmfanzone.com" style="display: inline-block; background-color: ${style.accentColor}; color: white; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 700; font-size: 14px;">Visit MetsXMFanZone</a>
-          </div>
-          <div style="text-align: center; border-top: 1px solid ${style.borderColor}; padding-top: 16px;">
-            <p style="color: ${style.mutedTextColor}; font-size: 11px; margin: 0;">Follow us for live updates</p>
-          </div>
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
-</body></html>`;
+    const content = `
+      <div style="text-align: center; margin-bottom: 20px;"><span style="font-size: 48px;">${emojis.maintenance}</span></div>
+      <p style="text-align: center; font-size: 14px; margin: 0; line-height: 1.6;">${safeMessage}</p>`;
+
+    const html = await renderBrandedEmailFor(supabase, {
+      preheader: safeMessage,
+      heading: "Scheduled Maintenance",
+      content,
+      cta: { label: "Visit MetsXMFanZone", url: "https://www.metsxmfanzone.com" },
+      note: "Follow us for live updates",
+    });
 
     const { data: profiles } = await supabase.from("profiles").select("email").not("email", "is", null);
     const { data: subscribers } = await supabase.from("newsletter_subscribers").select("email").eq("is_active", true);

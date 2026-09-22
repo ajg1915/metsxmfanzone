@@ -1,4 +1,5 @@
 import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
+import { renderBrandedEmailFor } from '../_shared/email-brand.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -273,32 +274,24 @@ async function sendMaintenanceEmails(supabase: any, issueType: string, alertMess
 
   const issueLabel = issueType.charAt(0).toUpperCase() + issueType.slice(1);
   const safeMessage = escapeHtml(alertMessage);
-  const logoUrl = 'https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png';
 
   const subject = `⚠️ MetsXMFanZone Stream Maintenance Notice`;
-  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin: 0; padding: 0; background-color: #002D72; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-  <div style="max-width: 420px; margin: 0 auto; padding: 20px 12px;">
-    <div style="text-align: center; padding: 24px 0 16px 0;">
-      <img src="${logoUrl}" alt="MetsXMFanZone" width="85" style="width: 85px; height: auto; border-radius: 12px;" />
+  const content = `
+    <div style="text-align: center; margin-bottom: 16px;"><span style="font-size: 36px;">${maintenanceEmoji}</span></div>
+    <div style="background: #0a0e1a; border: 1px solid rgba(255,69,0,0.3); border-radius: 12px; padding: 18px; margin: 16px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="color: #9CA3AF; font-size: 11px; padding: 4px 0;">Issue Type</td><td style="color: #FF4500; font-size: 13px; padding: 4px 0; text-align: right; font-weight: 700;">${escapeHtml(issueLabel)}</td></tr>
+        <tr><td style="color: #9CA3AF; font-size: 11px; padding: 4px 0;">Status</td><td style="color: #FBBF24; font-size: 13px; padding: 4px 0; text-align: right;">Under Investigation</td></tr>
+      </table>
     </div>
-    <div style="background: linear-gradient(180deg, #141a2e 0%, #0d1222 100%); border: 1px solid rgba(255,69,0,0.25); border-radius: 16px; padding: 28px 20px;">
-      <div style="text-align: center; margin-bottom: 16px;"><span style="font-size: 36px;">${maintenanceEmoji}</span></div>
-      <h1 style="color: white; font-size: 20px; text-align: center; margin: 0 0 12px;">Stream Maintenance Notice</h1>
-      <div style="background: #0a0e1a; border: 1px solid rgba(255,69,0,0.3); border-radius: 12px; padding: 18px; margin: 16px 0;">
-        <table width="100%" cellpadding="0" cellspacing="0">
-          <tr><td style="color: #9CA3AF; font-size: 11px; padding: 4px 0;">Issue Type</td><td style="color: #FF4500; font-size: 13px; padding: 4px 0; text-align: right; font-weight: 700;">${escapeHtml(issueLabel)}</td></tr>
-          <tr><td style="color: #9CA3AF; font-size: 11px; padding: 4px 0;">Status</td><td style="color: #FBBF24; font-size: 13px; padding: 4px 0; text-align: right;">Under Investigation</td></tr>
-        </table>
-      </div>
-      <p style="color: #D1D5DB; font-size: 14px; text-align: center;">${safeMessage}</p>
-      <div style="text-align: center; margin-top: 24px;">
-        <a href="https://metsxmfanzone.com" style="display: inline-block; background: #FF4500; color: white; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 14px;">Check Status</a>
-      </div>
-    </div>
-    <p style="color: #6B7280; font-size: 10px; text-align: center; margin-top: 15px;">&copy; ${new Date().getFullYear()} MetsXMFanZone</p>
-  </div>
-</body></html>`;
+    <p style="text-align: center;">${safeMessage}</p>`;
+
+  const html = await renderBrandedEmailFor(supabase, {
+    preheader: safeMessage,
+    heading: "Stream Maintenance Notice",
+    content,
+    cta: { label: "Check Status", url: "https://metsxmfanzone.com" },
+  });
 
   let sent = 0;
   for (const profile of profiles) {

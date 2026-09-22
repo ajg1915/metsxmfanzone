@@ -4,6 +4,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Text,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 interface Props {
   name?: string
@@ -17,6 +18,7 @@ const Email = ({ name, trackingNumber, carrier }: Props) => (
     <Preview>Your free MetsXMFanZone T-Shirt is on the way!</Preview>
     <Body style={main}>
       <Container style={container}>
+        <BrandHeader />
         <Heading style={h1}>Your T-Shirt is on the way! 📦</Heading>
         <Text style={text}>
           {name ? `Hey ${name},` : 'Hey there,'} we just shipped your free MetsXMFanZone T-Shirt.
@@ -27,6 +29,7 @@ const Email = ({ name, trackingNumber, carrier }: Props) => (
           </Text>
         ) : null}
         <Text style={text}>Thanks for being part of the fan zone. Let's go Mets!</Text>
+        <BrandFooter />
       </Container>
     </Body>
   </Html>

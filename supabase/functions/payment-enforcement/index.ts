@@ -1,4 +1,5 @@
 import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
+import { renderBrandedEmailFor } from '../_shared/email-brand.ts'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -66,17 +67,20 @@ Deno.serve(async (req) => {
         });
 
         try {
+          const deactivatedHtml = await renderBrandedEmailFor(supabase, {
+            preheader: "Your MetsXMFanZone membership has been deactivated.",
+            heading: "Membership Deactivated",
+            content: `
+              <p>Hi ${safeName},</p>
+              <p>Your <strong>${safePlan}</strong> membership has been deactivated due to missed payment. Your subscription expired on <strong>${endDate.toLocaleDateString()}</strong>.</p>
+              <p>To reactivate your account, please visit our plans page and subscribe again.</p>`,
+            cta: { label: "Reactivate Now", url: "https://www.metsxmfanzone.com/plans" },
+            note: "If you believe this is an error, please contact us.",
+          });
           await queueTransactionalEmail(supabase, {
             to: profile.email,
             subject: "Your MetsXMFanZone Membership Has Been Deactivated",
-            html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-              <h2 style="color:#FF5910">Membership Deactivated</h2>
-              <p>Hi ${safeName},</p>
-              <p>Your <strong>${safePlan}</strong> membership has been deactivated due to missed payment. Your subscription expired on <strong>${endDate.toLocaleDateString()}</strong>.</p>
-              <p>To reactivate your account, please visit our plans page and subscribe again.</p>
-              <a href="https://www.metsxmfanzone.com/plans" style="display:inline-block;background:#FF5910;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;margin:16px 0">Reactivate Now</a>
-              <p style="color:#666;font-size:12px">If you believe this is an error, please contact us.</p>
-            </div>`,
+            html: deactivatedHtml,
             label: "payment_terminated",
             idempotencyKey: `payment-terminated:${sub.id}`,
           });
@@ -99,17 +103,20 @@ Deno.serve(async (req) => {
         });
 
         try {
+          const warningHtml = await renderBrandedEmailFor(supabase, {
+            preheader: "Your MetsXMFanZone payment is overdue.",
+            heading: "Payment Overdue",
+            content: `
+              <p>Hi ${safeName},</p>
+              <p>Your <strong>${safePlan}</strong> membership payment is overdue. Your subscription expired on <strong>${endDate.toLocaleDateString()}</strong>.</p>
+              <p style="color:#ff8080;font-weight:bold">If payment is not received within 4 days, your account will be automatically deactivated.</p>`,
+            cta: { label: "Update Payment", url: "https://www.metsxmfanzone.com/plans" },
+            note: "If you've already made a payment, please disregard this email.",
+          });
           await queueTransactionalEmail(supabase, {
             to: profile.email,
             subject: "⚠️ Action Required: Your MetsXMFanZone Payment is Overdue",
-            html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-              <h2 style="color:#FF5910">Payment Overdue</h2>
-              <p>Hi ${safeName},</p>
-              <p>Your <strong>${safePlan}</strong> membership payment is overdue. Your subscription expired on <strong>${endDate.toLocaleDateString()}</strong>.</p>
-              <p style="color:#cc0000;font-weight:bold">If payment is not received within 4 days, your account will be automatically deactivated.</p>
-              <a href="https://www.metsxmfanzone.com/plans" style="display:inline-block;background:#FF5910;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;margin:16px 0">Update Payment</a>
-              <p style="color:#666;font-size:12px">If you've already made a payment, please disregard this email.</p>
-            </div>`,
+            html: warningHtml,
             label: "payment_warning",
             idempotencyKey: `payment-warning:${sub.id}`,
           });

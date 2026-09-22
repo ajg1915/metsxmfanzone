@@ -3,6 +3,7 @@ import {
   Body, Button, Container, Head, Heading, Html, Preview, Section, Text,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 const SITE_NAME = 'MetsXMFanZone'
 
@@ -41,6 +42,7 @@ const GamedayAlertEmail = ({
       <Preview>{title}</Preview>
       <Body style={main}>
         <Container style={container}>
+          <BrandHeader />
           <Section style={header}>
             <Text style={badge}>{label}</Text>
             <Heading style={h1}>{title}</Heading>
@@ -62,10 +64,7 @@ const GamedayAlertEmail = ({
             </Section>
           </Section>
 
-          <Text style={footer}>
-            Let&rsquo;s Go Mets! 🟠🔵<br />
-            {SITE_NAME}
-          </Text>
+          <BrandFooter />
         </Container>
       </Body>
     </Html>

@@ -1,4 +1,5 @@
 import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
+import { renderBrandedEmailFor } from '../_shared/email-brand.ts'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -119,7 +120,12 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     if (shouldAlert && adminEmails.length > 0) {
-      const fullHtml = `<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:linear-gradient(135deg,#1e3a5f,#002d62);color:white;padding:20px;border-radius:8px 8px 0 0}.content{background:#f9fafb;padding:20px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px}</style></head><body><div class="container"><div class="header"><h1 style="margin:0">🛡️ MetsXM Security Alert</h1></div><div class="content">${alertMessage}</div><div style="margin-top:20px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:12px;color:#666"><p><a href="https://metsxmfanzone.com/admin/activity">View Activity Dashboard</a></p></div></div></body></html>`;
+      const fullHtml = await renderBrandedEmailFor(supabase, {
+        preheader: alertSubject,
+        heading: "🛡️ MetsXM Security Alert",
+        content: alertMessage,
+        cta: { label: "View Activity Dashboard", url: "https://metsxmfanzone.com/admin/activity" },
+      });
 
       for (const adminEmail of adminEmails) {
         try {
