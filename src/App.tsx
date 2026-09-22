@@ -52,6 +52,7 @@ const WelcomeScreenManagement = lazyWithRetry(() => import("./pages/admin/Welcom
 const PrivatePlayer = lazyWithRetry(() => import("./pages/admin/PrivatePlayer"), "page-admin-private-player");
 const PrivateLivePlayer = lazyWithRetry(() => import("./pages/PrivateLivePlayer"), "page-private-live-player");
 const MetsXMPlayer = lazyWithRetry(() => import("./pages/MetsXMPlayer"), "page-metsxm-player");
+const EventsManagement = lazyWithRetry(() => import("./pages/admin/EventsManagement"), "page-admin-events-management");
 const BlogManagement = lazyWithRetry(() => import("./pages/admin/BlogManagement"), "page-admin-blog-management");
 const ArticleEditor = lazyWithRetry(() => import("./pages/admin/ArticleEditor"), "page-admin-article-editor");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
@@ -387,6 +388,7 @@ const AppContent = () => {
               
               <Route path="live-notifications" element={<LiveNotificationManagement />} />
               <Route path="stories" element={<StoriesManagement />} />
+              <Route path="events" element={<EventsManagement />} />
               <Route path="tutorial" element={<TutorialManagement />} />
               <Route path="newsletter" element={<NewsletterGenerator />} />
               <Route path="email-editor" element={<EmailEditor />} />
@@ -394,9 +396,9 @@ const AppContent = () => {
               <Route path="feedbacks" element={<FeedbackManagement />} />
               <Route path="posts" element={<PostsManagement />} />
               <Route path="business-ads" element={<BusinessAdsManagement />} />
-              <Route path="roles" element={<UserManagement />} />
+              <Route path="roles" element={<UserRoles />} />
               <Route path="user-management" element={<UserManagement />} />
-              <Route path="subscriptions" element={<UserManagement />} />
+              <Route path="subscriptions" element={<SubscriptionManagement />} />
               <Route path="trials" element={<TrialManagement />} />
               <Route path="backgrounds" element={<BackgroundManagement />} />
               <Route path="activity" element={<ActivityDashboard />} />
@@ -411,7 +413,6 @@ const AppContent = () => {
               <Route path="game-alerts" element={<GameAlertsManagement />} />
               <Route path="podcaster-applications" element={<PodcasterApplicationsManagement />} />
               <Route path="daily-reports" element={<DailyReports />} />
-              <Route path="daily-reports" element={<DailyReports />} />
               <Route path="predictions" element={<PredictionsManagement />} />
               <Route path="polls" element={<PollManagement />} />
               <Route path="settings" element={<AdminSettings />} />
@@ -419,7 +420,6 @@ const AppContent = () => {
               <Route path="private-player" element={<PrivatePlayer />} />
               <Route path="social-media" element={<SocialMediaSettings />} />
               <Route path="tutorials" element={<TutorialManagement />} />
-              <Route path="media-library" element={<MediaLibrary />} />
               <Route path="toast-prompts" element={<ToastPromptManagement />} />
               <Route path="popup-notifications" element={<PopupNotificationsManagement />} />
               
