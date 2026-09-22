@@ -2,6 +2,7 @@
 // and haven't received a loyalty reward in the past 365 days. Creates a
 // pending reward row and emails them a claim link.
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { sendTemplateEmail } from '../_shared/transactional-email-templates/send-email.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
