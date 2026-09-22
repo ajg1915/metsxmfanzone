@@ -281,6 +281,11 @@ export default function BlogManagement() {
         )}
       </div>
 
+      <BlogShareDialog
+        open={!!sharePost}
+        onOpenChange={(o) => { if (!o) setSharePost(null); }}
+        post={sharePost}
+      />
     </div>
   );
 }
