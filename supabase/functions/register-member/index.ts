@@ -54,8 +54,7 @@ Deno.serve(async (req) => {
         return json({ error: "This email already has an account. Sign in instead." }, 409);
       }
       console.error("register-member: createUser failed", error.message);
-      return json({ error: "Account could not be created", detail: error.message }, 400);
-      return json({ error: "Account could not be created" }, 400);
+      return json({ error: error.message || "Account could not be created" }, 400);
     }
 
     if (!data.user) return json({ error: "Account could not be created" }, 400);
