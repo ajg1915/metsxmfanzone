@@ -164,15 +164,15 @@ export default function BlogShareDialog({ open, onOpenChange, post }: BlogShareD
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[94vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="grid max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-md grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-h-[calc(100dvh-2rem)]">
+        <DialogHeader className="border-b border-border/40 px-4 py-3 pr-11 text-left sm:px-5 sm:py-4">
           <DialogTitle className="text-base flex items-center gap-2">
             <Share2 className="w-4 h-4" /> Share article
           </DialogTitle>
-          <DialogDescription className="text-[11px] truncate">{post?.title}</DialogDescription>
+          <DialogDescription className="line-clamp-2 break-words text-[11px] leading-4">{post?.title}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
           <div className="rounded-md border border-border/40 p-2 flex items-center gap-2">
             <Link2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
             <span className="text-[11px] truncate flex-1">{shareUrl}</span>
@@ -181,7 +181,7 @@ export default function BlogShareDialog({ open, onOpenChange, post }: BlogShareD
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
             <Button type="button" variant="outline" size="sm" className="h-9 text-xs" onClick={nativeShare}>
               <Share2 className="w-3.5 h-3.5 mr-1.5" /> Share sheet
             </Button>
@@ -233,7 +233,7 @@ export default function BlogShareDialog({ open, onOpenChange, post }: BlogShareD
           </div>
         </div>
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="shrink-0 gap-2 border-t border-border/40 bg-background px-4 py-3 sm:px-5">
           <Button variant="outline" size="sm" className="h-9 text-xs" onClick={() => onOpenChange(false)}>
             Close
           </Button>
