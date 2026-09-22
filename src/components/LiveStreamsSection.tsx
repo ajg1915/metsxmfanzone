@@ -313,21 +313,33 @@ const LiveStreamsSection = () => {
       });
 
 
-      // Exclude the 24/7 sports network channels — they live in Sports Network Streams.
-      // Actual game broadcasts (e.g. "Mets Vs Nationals 8/14/26") stay here even when
-      // they're assigned to a network page.
-      const excludedPages = ['mlb-network', 'sny-tv', 'sny.tv', 'msg-network', 'msg', 'espn-network', 'espn', 'pix11-network', 'pix11', 'metsxmfanzone-2'];
+      // Only the always-on 24/7 network channels are hidden here (they live in
+      // Sports Network Streams). Any actual game broadcast shows in Live Streams
+      // even when it's assigned to Stream 2 or another network watch page.
+      const networkChannelPages = ['mlb-network', 'sny-tv', 'sny.tv', 'msg-network', 'msg', 'espn-network', 'espn', 'pix11-network', 'pix11'];
       const isGameBroadcast = (title: string) =>
-        /\b(mets|nym)\b\s*(vs\.?|@|at)\s+/i.test(title) || /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(title);
+        /\s(vs\.?|v\.?|@|at)\s/i.test(` ${title} `) || /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(title);
 
       const filtered = sorted.filter(s => {
         const title = s.title.toLowerCase();
+        // A scheduled game always belongs in Live Streams.
         if (isGameBroadcast(s.title)) return true;
 
-        const isSportsNetwork24x7 =
-          (title.includes('mlb network') || title.includes('sny.tv') || title.includes('msg network') || title.includes('espn')) && title.includes('24/7');
+        const is24x7Title = title.includes('24/7') || title.includes('24-7');
+        const isChannelFeed =
+          is24x7Title &&
+          (title.includes('mlb network') || title.includes('sny') || title.includes('msg network') || title.includes('espn') || title.includes('pix11'));
 
-        return !isSportsNetwork24x7 && !s.assigned_pages?.some(p => excludedPages.includes(p.toLowerCase()));
+        if (isChannelFeed) return false;
+
+        // Channel-only entries (no game title) assigned solely to a network page stay out.
+        const pages = (s.assigned_pages || []).map(p => p.toLowerCase());
+        const onlyNetworkPage =
+          pages.length > 0 &&
+          pages.filter(p => p !== 'live' && p !== 'guide').length > 0 &&
+          pages.filter(p => p !== 'live' && p !== 'guide').every(p => networkChannelPages.includes(p));
+
+        return !(onlyNetworkPage && is24x7Title);
       });
       setStreams(filtered as LiveStream[]);
 
