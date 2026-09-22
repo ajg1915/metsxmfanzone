@@ -63,16 +63,39 @@ const Plans = () => {
 
     if (planId === "free") {
       setActivatingFree(true);
-      const { data, error } = await supabase.functions.invoke("activate-free-membership", { body: {} });
+      const { data, error } = await supabase.functions.invoke("create-paypal-free-link", {
+        body: { returnOrigin: window.location.origin },
+      });
       setActivatingFree(false);
+
       if (error || data?.error) {
-        toast({ title: "Membership could not be activated", description: "Please try again.", variant: "destructive" });
+        toast({
+          title: "PayPal link could not be started",
+          description: "Please try again in a moment.",
+          variant: "destructive",
+        });
         return;
       }
-      localStorage.removeItem("pending_membership_selection");
-      localStorage.removeItem("pending_signup_plan");
+
+      if (data?.alreadyPaid) {
+        localStorage.removeItem("pending_membership_selection");
+        localStorage.removeItem("pending_signup_plan");
+        setHasPlanSelected(true);
+        navigate("/dashboard", { replace: true });
+        return;
+      }
+
+      if (!data?.approvalUrl) {
+        toast({
+          title: "PayPal link could not be started",
+          description: "Please try again in a moment.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setHasPlanSelected(true);
-      navigate("/dashboard", { replace: true });
+      window.location.href = data.approvalUrl;
       return;
     }
 
