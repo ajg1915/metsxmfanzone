@@ -42,7 +42,7 @@ interface MemberRow {
 }
 
 type StatusFilter = "all" | "active" | "pending" | "cancelled" | "none";
-type PlanFilter = "all" | "free" | "trial" | "premium" | "annual";
+type PlanFilter = "all" | "free" | "trial" | "weekly" | "premium" | "annual";
 
 export default function MembersTab() {
   const { user } = useAuth();
@@ -150,7 +150,7 @@ export default function MembersTab() {
   const dispPhone = (m: MemberRow) => decrypted ? (decryptedData.get(m.user_id)?.phone_number || "—") : (m.phone_number ? maskSensitiveField(m.phone_number) : "—");
 
   const planMonths = (plan: string) => plan === "annual" ? 12 : plan === "premium" ? 1 : 0;
-  const planPrice = (plan: string) => plan === "annual" ? 129.99 : plan === "premium" ? 9.99 : 0;
+  const planPrice = (plan: string) => plan === "annual" ? 129.99 : plan === "premium" ? 9.99 : plan === "weekly" ? 3.99 : 0;
 
   const logActivity = async (m: MemberRow, action: string, details: any) => {
     if (!m.subscription_id) return;
@@ -434,9 +434,9 @@ export default function MembersTab() {
   if (loading) return <div className="flex items-center justify-center min-h-[300px]"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
 
   return (
-    <div className="space-y-4 mt-4">
+    <div className="mt-3 space-y-3">
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-5 gap-1.5 overflow-hidden rounded-md border border-border/30 bg-card/80 p-1.5">
         {[
           { label: "Total", value: stats.total, icon: <Users className="w-5 h-5 text-primary" />, color: "" },
           { label: "Active", value: stats.active, icon: <UserCheck className="w-5 h-5 text-affirmative" />, color: "text-affirmative" },
@@ -444,14 +444,14 @@ export default function MembersTab() {
           { label: "Pending", value: stats.pending, icon: <RefreshCw className="w-5 h-5 text-yellow-500" />, color: "text-yellow-500" },
           { label: "Inactive", value: stats.inactive, icon: <UserX className="w-5 h-5 text-destructive" />, color: "text-destructive" },
         ].map(s => (
-          <Card key={s.label}>
-            <CardContent className="pt-4 pb-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">{s.label}</p>
-                  <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+          <Card key={s.label} className="border-0 bg-muted/35 shadow-none">
+            <CardContent className="p-1.5 sm:p-2">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <div className="hidden opacity-60 sm:block">{s.icon}</div>
+                <div className="min-w-0">
+                  <p className="truncate text-[8px] text-muted-foreground sm:text-[10px]">{s.label}</p>
+                  <p className={`text-sm font-bold leading-none sm:text-lg ${s.color}`}>{s.value}</p>
                 </div>
-                <div className="opacity-60">{s.icon}</div>
               </div>
             </CardContent>
           </Card>
@@ -459,15 +459,15 @@ export default function MembersTab() {
       </div>
 
       {/* Encryption + Filters bar */}
-      <Card>
-        <CardContent className="pt-4 pb-4 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[200px]">
+      <Card className="rounded-md border-border/30 bg-card/80">
+        <CardContent className="space-y-2 p-2 sm:p-3">
+          <div className="grid grid-cols-2 gap-1.5 sm:flex sm:items-center">
+            <div className="relative col-span-2 min-w-0 flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input placeholder="Search by name, email, phone…" value={query} onChange={e => setQuery(e.target.value)} className="pl-9 h-9" />
+               <Input placeholder="Search members…" value={query} onChange={e => setQuery(e.target.value)} className="h-8 pl-9 text-xs" />
             </div>
             <Select value={statusFilter} onValueChange={(v: StatusFilter) => setStatusFilter(v)}>
-              <SelectTrigger className="w-[140px] h-9"><Filter className="w-3.5 h-3.5 mr-1" /><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-8 w-full text-xs sm:w-[130px]"><Filter className="mr-1 h-3.5 w-3.5" /><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
@@ -477,31 +477,32 @@ export default function MembersTab() {
               </SelectContent>
             </Select>
             <Select value={planFilter} onValueChange={(v: PlanFilter) => setPlanFilter(v)}>
-              <SelectTrigger className="w-[130px] h-9"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-8 w-full text-xs sm:w-[120px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All plans</SelectItem>
                 <SelectItem value="free">Free</SelectItem>
                 <SelectItem value="trial">Trial</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="premium">Premium</SelectItem>
                 <SelectItem value="annual">Annual</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={fetchMembers} className="h-9"><RefreshCw className="w-3.5 h-3.5 mr-1" />Refresh</Button>
-            <Button variant={decrypted ? "destructive" : "outline"} size="sm" onClick={handleDecryptToggle} disabled={decrypting} className="h-9 gap-1">
+            <Button variant="outline" size="sm" onClick={fetchMembers} className="h-8 px-2 text-xs"><RefreshCw className="h-3.5 w-3.5 sm:mr-1" /><span className="hidden sm:inline">Refresh</span></Button>
+            <Button variant={decrypted ? "destructive" : "outline"} size="sm" onClick={handleDecryptToggle} disabled={decrypting} className="h-8 gap-1 px-2 text-xs">
               {decrypting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : decrypted ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-              {decrypted ? "Hide PII" : "Show PII"}
+               <span className="hidden sm:inline">{decrypted ? "Hide PII" : "Show PII"}</span>
             </Button>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground sm:text-[10px]">
             {decrypted ? <Unlock className="w-3.5 h-3.5 text-warning" /> : <Lock className="w-3.5 h-3.5 text-affirmative" />}
             <span>{decrypted ? "Sensitive PII visible — handle with care." : "PII is masked. Click Show PII to decrypt."}</span>
-            <span className="ml-auto">Showing {filtered.length} of {members.length}</span>
+            <span className="ml-auto whitespace-nowrap">{filtered.length} / {members.length}</span>
           </div>
         </CardContent>
       </Card>
 
       {/* Members on phones */}
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <AdminList>
           {filtered.map(m => (
             <AdminListCard key={m.user_id} highlight={m.limited_access}>
@@ -510,7 +511,7 @@ export default function MembersTab() {
                 meta={dispEmail(m)}
                 badges={<>{statusBadge(m.status)}<Badge variant="outline" className="text-[9px] capitalize">{m.plan_type}</Badge></>}
                 actions={memberActions(m)}
-                body={<div className="mt-2 grid grid-cols-2 gap-2 border-t border-border/30 pt-2 text-[10px]">
+                body={<div className="mt-1.5 grid grid-cols-4 gap-1 border-t border-border/30 pt-1.5 text-[9px]">
                   <div><p className="text-muted-foreground">PayPal</p><p className="font-medium">{m.payment_method === "paypal" ? "Linked" : "Not linked"}</p></div>
                   <div><p className="text-muted-foreground">Renews / ends</p><p className="font-medium">{m.end_date ? new Date(m.end_date).toLocaleDateString() : "—"}</p></div>
                   <div><p className="text-muted-foreground">Cancellations</p><p className="font-medium">{m.cancellation_count}{m.limited_access ? " · Limited" : ""}</p></div>
@@ -524,8 +525,8 @@ export default function MembersTab() {
       </div>
 
       {/* Members on tablets and desktops */}
-      <Card className="hidden md:block">
-        <CardHeader className="pb-2"><CardTitle className="text-base">Members</CardTitle></CardHeader>
+      <Card className="hidden rounded-md border-border/30 lg:block">
+        <CardHeader className="px-3 py-2"><CardTitle className="text-sm">Members</CardTitle></CardHeader>
         <CardContent className="px-0">
           <div className="overflow-x-auto">
             <Table className="text-sm">
@@ -564,6 +565,7 @@ export default function MembersTab() {
                         <SelectContent>
                           <SelectItem value="free">Free</SelectItem>
                           <SelectItem value="trial">Trial</SelectItem>
+                           <SelectItem value="weekly">Weekly</SelectItem>
                           <SelectItem value="premium">Premium</SelectItem>
                           <SelectItem value="annual">Annual</SelectItem>
                         </SelectContent>

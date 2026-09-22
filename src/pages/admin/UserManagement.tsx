@@ -3,13 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Bot, Send, Loader2, Users, CreditCard, Shield,
-  Sparkles, UserPlus,
+  Sparkles, UserPlus, ChevronDown,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
@@ -162,8 +161,8 @@ const UserManagement = () => {
         description="Manage membership access, PayPal status, signups, transactions, and roles"
       />
 
-      <details className="group rounded-lg border border-border/40 bg-card/70">
-        <summary className="flex cursor-pointer list-none items-center gap-2 p-3 text-xs font-semibold"><Bot className="h-4 w-4 text-primary" />AI member assistant<span className="ml-auto text-muted-foreground group-open:rotate-90">›</span></summary>
+      <details className="group overflow-hidden rounded-md border border-border/40 bg-card/70">
+        <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 px-3 py-2 text-xs font-semibold"><Bot className="h-4 w-4 text-primary" />AI member assistant<ChevronDown className="ml-auto h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-180" /></summary>
       <Card className="border-0 bg-transparent shadow-none">
         <CardContent className="pt-4 pb-3">
           <div className="flex gap-2">
@@ -258,19 +257,19 @@ const UserManagement = () => {
       </details>
 
       {/* Tabs: Members / Signups / Transactions / Roles */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4 max-w-3xl h-auto p-1">
-          <TabsTrigger value="members" className="gap-1 text-[10px] sm:text-xs px-1.5">
-            <Users className="hidden sm:block w-3.5 h-3.5" />Members
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
+        <TabsList className="grid h-10 w-full grid-cols-4 rounded-md border border-border/30 bg-card/80 p-1 sm:max-w-2xl">
+          <TabsTrigger value="members" className="gap-1 px-1 text-[10px] sm:text-xs">
+            <Users className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Members</span>
           </TabsTrigger>
-          <TabsTrigger value="signups" className="gap-1 text-[10px] sm:text-xs px-1.5">
-            <UserPlus className="hidden sm:block w-3.5 h-3.5" />Signups
+          <TabsTrigger value="signups" className="gap-1 px-1 text-[10px] sm:text-xs">
+            <UserPlus className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Signups</span>
           </TabsTrigger>
-          <TabsTrigger value="transactions" className="gap-1 text-[10px] sm:text-xs px-1.5">
-            <CreditCard className="hidden sm:block w-3.5 h-3.5" />Billing
+          <TabsTrigger value="transactions" className="gap-1 px-1 text-[10px] sm:text-xs">
+            <CreditCard className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Billing</span>
           </TabsTrigger>
-          <TabsTrigger value="roles" className="gap-1 text-[10px] sm:text-xs px-1.5">
-            <Shield className="hidden sm:block w-3.5 h-3.5" />Roles
+          <TabsTrigger value="roles" className="gap-1 px-1 text-[10px] sm:text-xs">
+            <Shield className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Roles</span>
           </TabsTrigger>
         </TabsList>
 
