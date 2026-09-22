@@ -596,15 +596,13 @@ export default function EmailEditor() {
     if (result.error) {
       if (result.error instanceof FunctionsHttpError) {
         const responseText = await result.error.context.text();
+        let details: { error?: string } | null = null;
         try {
-          const details = JSON.parse(responseText) as { error?: string };
-          throw new Error(details.error || "The email could not be sent.");
-        } catch (parseError) {
-          if (parseError instanceof Error && parseError.message !== "Unexpected end of JSON input") {
-            throw parseError;
-          }
-          throw new Error(responseText || "The email could not be sent.");
+          details = JSON.parse(responseText) as { error?: string };
+        } catch {
+          details = null;
         }
+        throw new Error(details?.error || responseText || "The email could not be sent.");
       }
       throw new Error(result.error.message || "The email could not be sent.");
     }
