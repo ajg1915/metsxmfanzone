@@ -62,6 +62,7 @@ const Auth = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [smsOptIn, setSmsOptIn] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [loginAgreeToTerms, setLoginAgreeToTerms] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
