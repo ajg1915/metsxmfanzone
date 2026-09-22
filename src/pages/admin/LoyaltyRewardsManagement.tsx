@@ -173,16 +173,11 @@ function RewardRow({ reward, onUpdate }: { reward: Reward; onUpdate: () => void 
     }
     // Send shipped email
     if (reward.profiles?.email) {
-      await supabase.functions.invoke("send-transactional-email", {
+      await supabase.functions.invoke("send-loyalty-shipped-email", {
         body: {
-          templateName: "loyalty-reward-shipped",
-          recipientEmail: reward.profiles.email,
-          idempotencyKey: `loyalty-shipped-${reward.id}`,
-          templateData: {
-            name: reward.profiles.full_name || "",
-            trackingNumber: tracking,
-            carrier,
-          },
+          rewardId: reward.id,
+          trackingNumber: tracking,
+          carrier,
         },
       });
     }
