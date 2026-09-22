@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Plus, Upload, RefreshCw, Loader2, Cloud, Pencil, Calendar, MapPin, Clock }from "lucide-react";
+import { Trash2, Plus, Upload, RefreshCw, Loader2, Cloud, Pencil, Calendar, MapPin, Clock, Palmtree } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminEmpty } from "@/components/admin/AdminUI";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -199,29 +200,31 @@ export default function SpringTrainingManagement() {
   };
 
   return (
-    <div className="w-full max-w-full px-2 sm:px-4 py-4 sm:py-6 overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold">Spring Training</h2>
-          <p className="text-xs text-muted-foreground">MLB API synced + manual edits</p>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            onClick={syncFromMLB} 
-            disabled={syncing}
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
-            {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Cloud className="w-4 h-4" />}
-            Sync MLB
-          </Button>
-          <Button onClick={() => setIsAdding(!isAdding)} size="sm" className="w-full sm:w-auto">
-            <Plus className="w-4 h-4 mr-2" />
-            {isAdding ? "Cancel" : "Add Game"}
-          </Button>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Palmtree}
+        title="Spring Training"
+        count={games?.length}
+        description="MLB API synced + manual edits"
+        actions={
+          <>
+            <Button
+              onClick={syncFromMLB}
+              disabled={syncing}
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs gap-1.5"
+            >
+              {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Cloud className="w-3.5 h-3.5" />}
+              Sync MLB
+            </Button>
+            <Button onClick={() => setIsAdding(!isAdding)} size="sm" className="h-8 text-xs">
+              <Plus className="w-3.5 h-3.5 mr-1" />
+              {isAdding ? "Cancel" : "Add Game"}
+            </Button>
+          </>
+        }
+      />
 
       {isAdding && (
         <Card className={`mb-6 ${editingId ? "ring-2 ring-primary" : ""}`}>
@@ -318,11 +321,11 @@ export default function SpringTrainingManagement() {
           <Loader2 className="w-6 h-6 animate-spin" />
         </div>
       ) : games?.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-muted-foreground mb-4">No Spring Training games yet</p>
-            <Button onClick={syncFromMLB} disabled={syncing}>
-              {syncing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Cloud className="w-4 h-4 mr-2" />}
+        <Card className="border-border/30">
+          <CardContent className="py-6 text-center">
+            <p className="text-xs text-muted-foreground mb-3">No Spring Training games yet</p>
+            <Button size="sm" className="h-8 text-xs" onClick={syncFromMLB} disabled={syncing}>
+              {syncing ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : <Cloud className="w-3.5 h-3.5 mr-1.5" />}
               Sync from MLB API
             </Button>
           </CardContent>
@@ -394,6 +397,6 @@ export default function SpringTrainingManagement() {
           ))}
         </div>
       )}
-    </div>
+    </AdminPage>
   );
 }

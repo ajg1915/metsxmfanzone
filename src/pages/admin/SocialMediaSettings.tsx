@@ -25,6 +25,7 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 interface SocialConnection {
   id: string;
@@ -358,19 +359,20 @@ const SocialMediaSettings = () => {
   };
 
   return (
-    <div className="max-w-full px-2 py-3 space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg sm:text-xl font-bold">Social Media</h1>
-          <p className="text-sm text-muted-foreground">
-            Connect your accounts to auto-post stories
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={fetchConnections} disabled={loading}>
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Link2}
+        title="Social Media"
+        count={connections.length}
+        countLabel="connected"
+        description="Connect your accounts to auto-post stories"
+        actions={
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={fetchConnections} disabled={loading}>
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        }
+      />
 
       <Alert className="border-primary/30 bg-primary/5">
         <Shield className="h-4 w-4" />
@@ -521,7 +523,7 @@ const SocialMediaSettings = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 };
 

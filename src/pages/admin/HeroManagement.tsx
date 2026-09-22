@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { Plus, Trash2, Save, GripVertical, ChevronDown, ChevronUp, Eye, EyeOff, Image as ImageIcon, ImagePlus, Loader2, Search, X } from "lucide-react";
+import { Plus, Trash2, Save, GripVertical, ChevronDown, ChevronUp, Eye, EyeOff, Image as ImageIcon, ImagePlus, Loader2, Search, X, Images } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminLoading } from "@/components/admin/AdminUI";
 import { Badge } from "@/components/ui/badge";
 import {
   DndContext, closestCenter, KeyboardSensor, MouseSensor, TouchSensor, useSensor, useSensors, DragEndEvent,
@@ -385,16 +386,20 @@ const HeroManagement = () => {
 
   const filteredSlides = slides.filter(s => filter === "all" || (filter === "members" ? s.is_for_members : !s.is_for_members));
 
-  if (loading) return <div className="flex items-center justify-center min-h-[200px]"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" /></div>;
+  if (loading) return <AdminLoading />;
 
   return (
-    <div className="space-y-3 max-w-full">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-bold">Hero Slides</h2>
-        <Button size="sm" onClick={addSlide} className="h-7 text-[10px] gap-1">
-          <Plus className="w-3 h-3" /> Add Slide
-        </Button>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Images}
+        title="Hero Slides"
+        count={slides.length}
+        actions={
+          <Button size="sm" onClick={addSlide} className="h-8 text-xs gap-1">
+            <Plus className="w-3.5 h-3.5" /> Add Slide
+          </Button>
+        }
+      />
 
       {/* Filter tabs */}
       <div className="flex gap-1">
@@ -431,7 +436,7 @@ const HeroManagement = () => {
           </SortableContext>
         </DndContext>
       )}
-    </div>
+    </AdminPage>
   );
 };
 

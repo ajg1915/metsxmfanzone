@@ -6,10 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Eye, Image, Search } from "lucide-react";
+import { Plus, Trash2, Edit, Eye, Image, Search, Bell } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminList, AdminListCard, AdminRow, AdminIconButton, AdminEmpty, AdminLoading, AdminSearch } from "@/components/admin/AdminUI";
 import { format } from "date-fns";
 
 interface PopupNotif {
@@ -145,15 +147,13 @@ const PopupNotificationsManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Popup Notifications</h1>
-      </div>
+    <AdminPage>
+      <AdminPageHeader icon={Bell} title="Popup Notifications" count={popups.length} />
 
       {/* Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">{editing ? "Edit Popup" : "Create New Popup"}</CardTitle>
+      <Card className="border-border/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">{editing ? "Edit Popup" : "Create New Popup"}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -208,41 +208,38 @@ const PopupNotificationsManagement = () => {
       </Card>
 
       {/* List */}
-      <div className="space-y-3">
-        {loading ? (
-          <p className="text-muted-foreground text-sm">Loading...</p>
-        ) : popups.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No popup notifications yet.</p>
-        ) : popups.map((p) => (
-          <Card key={p.id} className={p.is_active ? "border-primary" : ""}>
-            <CardContent className="p-4 flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  {p.is_active && (
-                    <span className="text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded font-medium">LIVE</span>
-                  )}
-                  <h3 className="font-semibold text-sm truncate">{p.title}</h3>
-                </div>
-                <p className="text-xs text-muted-foreground line-clamp-2">{p.message}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Created {format(new Date(p.created_at), "MMM d, yyyy h:mm a")}
-                </p>
-              </div>
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleActive(p)} title={p.is_active ? "Deactivate" : "Activate"}>
-                  <Eye className={`w-4 h-4 ${p.is_active ? "text-primary" : "text-muted-foreground"}`} />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(p)}>
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(p.id)}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {loading ? (
+        <AdminLoading label="Loading popups…" />
+      ) : (
+        <AdminList>
+          {popups.length === 0 ? (
+            <AdminEmpty message="No popup notifications yet." />
+          ) : popups.map((p) => (
+            <AdminListCard key={p.id} highlight={p.is_active}>
+              <AdminRow
+                title={p.title}
+                badges={p.is_active && (
+                  <Badge className="h-4 text-[9px] bg-primary text-primary-foreground">LIVE</Badge>
+                )}
+                meta={`Created ${format(new Date(p.created_at), "MMM d, yyyy h:mm a")}`}
+                actions={
+                  <>
+                    <AdminIconButton
+                      icon={Eye}
+                      title={p.is_active ? "Deactivate" : "Activate"}
+                      tone={p.is_active ? "primary" : "default"}
+                      onClick={() => toggleActive(p)}
+                    />
+                    <AdminIconButton icon={Edit} title="Edit" onClick={() => startEdit(p)} />
+                    <AdminIconButton icon={Trash2} title="Delete" tone="danger" onClick={() => handleDelete(p.id)} />
+                  </>
+                }
+                body={<p className="text-[10px] text-muted-foreground line-clamp-2">{p.message}</p>}
+              />
+            </AdminListCard>
+          ))}
+        </AdminList>
+      )}
 
       {/* Media Library Picker */}
       <Dialog open={mediaPickerOpen} onOpenChange={setMediaPickerOpen}>
@@ -282,7 +279,7 @@ const PopupNotificationsManagement = () => {
           </ScrollArea>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 };
 

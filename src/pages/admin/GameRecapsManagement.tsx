@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Sparkles, Loader2, Film } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminList, AdminListCard, AdminRow, AdminEmpty, AdminLoading, AdminIconButton } from "@/components/admin/AdminUI";
 import { format } from "date-fns";
 
 type Recap = {
@@ -186,21 +187,22 @@ Output ONLY valid JSON with fields: title (catchy headline), summary (1-2 senten
   };
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Game Recaps</h1>
-          <p className="text-sm text-muted-foreground">Write & publish Mets game recaps</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={generateFromMLB} disabled={autoGenerating}>
-            {autoGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-            Generate from MLB
-          </Button>
-          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
-            <DialogTrigger asChild>
-              <Button onClick={openNew}><Plus className="w-4 h-4 mr-2" />New Recap</Button>
-            </DialogTrigger>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Film}
+        title="Game Recaps"
+        count={recaps.length}
+        description="Write & publish Mets game recaps"
+        actions={
+          <>
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={generateFromMLB} disabled={autoGenerating}>
+              {autoGenerating ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 mr-1" />}
+              Generate from MLB
+            </Button>
+            <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) reset(); }}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="h-8 text-xs" onClick={openNew}><Plus className="w-3.5 h-3.5 mr-1" />New Recap</Button>
+              </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editing ? "Edit Recap" : "Create Recap"}</DialogTitle>
@@ -277,48 +279,46 @@ Output ONLY valid JSON with fields: title (catchy headline), summary (1-2 senten
               <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending}>
                 {saveMutation.isPending ? "Saving..." : "Save"}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        </div>
-      </div>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
+        }
+      />
 
-      <Card>
-        <CardHeader><CardTitle className="text-base">All Recaps</CardTitle></CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          ) : recaps.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No recaps yet.</p>
+      {isLoading ? (
+        <AdminLoading />
+      ) : (
+        <AdminList>
+          {recaps.length === 0 ? (
+            <AdminEmpty message="No recaps yet." />
           ) : (
-            <div className="space-y-2">
-              {recaps.map((r) => (
-                <div key={r.id} className="flex items-start justify-between gap-3 p-3 border border-border rounded-md hover:bg-muted/30">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-sm truncate">{r.title}</h3>
-                      <Badge variant={r.status === "published" ? "default" : "secondary"} className="text-[10px]">
+            recaps.map((r) => (
+              <AdminListCard key={r.id}>
+                <AdminRow
+                  title={r.title}
+                  badges={
+                    <>
+                      <Badge variant={r.status === "published" ? "default" : "secondary"} className="h-4 text-[9px]">
                         {r.status}
                       </Badge>
-                      {r.result && <Badge variant="outline" className="text-[10px]">{r.result} {r.mets_score}-{r.opponent_score}</Badge>}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {r.opponent ? `vs ${r.opponent}` : ""} {r.game_date ? `• ${format(new Date(r.game_date), "MMM d, yyyy")}` : ""}
-                    </p>
-                    {r.summary && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.summary}</p>}
-                  </div>
-                  <div className="flex gap-1">
-                    <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="w-4 h-4" /></Button>
-                    <Button size="icon" variant="ghost" onClick={() => { if (confirm("Delete recap?")) deleteMutation.mutate(r.id); }}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                      {r.result && <Badge variant="outline" className="h-4 text-[9px]">{r.result} {r.mets_score}-{r.opponent_score}</Badge>}
+                    </>
+                  }
+                  meta={<>{r.opponent ? `vs ${r.opponent}` : ""} {r.game_date ? `• ${format(new Date(r.game_date), "MMM d, yyyy")}` : ""}</>}
+                  actions={
+                    <>
+                      <AdminIconButton icon={Pencil} title="Edit" onClick={() => openEdit(r)} />
+                      <AdminIconButton icon={Trash2} title="Delete" tone="danger" onClick={() => { if (confirm("Delete recap?")) deleteMutation.mutate(r.id); }} />
+                    </>
+                  }
+                  body={r.summary ? <p className="text-[10px] text-muted-foreground line-clamp-2">{r.summary}</p> : undefined}
+                />
+              </AdminListCard>
+            ))
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </AdminList>
+      )}
+    </AdminPage>
   );
 }

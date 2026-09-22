@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, CheckCircle2, Megaphone, Volume2, BarChart3, ShieldCheck, Radio } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminEmpty } from "@/components/admin/AdminUI";
 import { toast } from "@/hooks/use-toast";
 import { PendingRoomsAdmin } from "@/components/radio/PendingRoomsAdmin";
 import { ScheduledShowsAdmin } from "@/components/radio/ScheduledShowsAdmin";
@@ -243,11 +244,12 @@ const GameDayLiveAdmin = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-5xl">
-      <h1 className="text-2xl font-bold mb-1">MetsXMFanZone Radio Network · Admin</h1>
-      <p className="text-sm text-muted-foreground mb-6">
-        Manage scheduled shows, approve member voice rooms, polls, and announcements.
-      </p>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Radio}
+        title="MetsXMFanZone Radio Network"
+        description="Manage scheduled shows, approve member voice rooms, polls, and announcements."
+      />
 
       <Tabs defaultValue="shows">
         <TabsList className="flex-wrap h-auto">
@@ -404,7 +406,7 @@ const GameDayLiveAdmin = () => {
               </Card>
             ))}
             {polls.length === 0 && (
-              <p className="text-center text-sm text-muted-foreground py-8">No polls yet.</p>
+              <AdminEmpty message="No polls yet." />
             )}
           </div>
         </TabsContent>
@@ -449,9 +451,7 @@ const GameDayLiveAdmin = () => {
               </Card>
             ))}
             {rooms.length === 0 && (
-              <p className="text-center text-sm text-muted-foreground py-8">
-                No voice rooms yet.
-              </p>
+              <AdminEmpty message="No voice rooms yet." />
             )}
           </div>
         </TabsContent>
@@ -494,14 +494,12 @@ const GameDayLiveAdmin = () => {
               </Card>
             ))}
             {announces.length === 0 && (
-              <p className="text-center text-sm text-muted-foreground py-8">
-                No announcements yet.
-              </p>
+              <AdminEmpty message="No announcements yet." />
             )}
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </AdminPage>
   );
 };
 

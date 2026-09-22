@@ -6,7 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Radio } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminList, AdminListCard, AdminRow, AdminIconButton, AdminEmpty, AdminLoading } from "@/components/admin/AdminUI";
 
 interface Notification {
   id: string;
@@ -139,21 +140,21 @@ const LiveNotificationManagement = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <AdminLoading label="Loading notifications…" />;
   }
 
   return (
-    <div className="max-w-full px-2 py-3 space-y-4 overflow-x-hidden">
-      <div>
-        <h2 className="text-lg sm:text-xl font-bold">Live Notifications</h2>
-        <p className="text-xs sm:text-sm text-muted-foreground">
-          Manage live notifications
-        </p>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Radio}
+        title="Live Notifications"
+        count={notifications.length}
+        description="Manage live notifications shown site-wide"
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Create New Notification</CardTitle>
+      <Card className="border-border/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">Create New Notification</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -196,49 +197,45 @@ const LiveNotificationManagement = () => {
         </CardContent>
       </Card>
 
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Existing Notifications</h3>
+      <div className="space-y-1.5">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Existing Notifications</h3>
         {notifications.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              No notifications yet. Create one above.
-            </CardContent>
-          </Card>
+          <AdminEmpty message="No notifications yet. Create one above." />
         ) : (
-          notifications.map((notification) => (
-            <Card key={notification.id}>
-              <CardContent className="pt-6">
-              <div className="flex flex-col sm:flex-row sm:items-start gap-3">
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <p className="text-sm font-medium break-words">{notification.message}</p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {notification.link_url}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Switch
-                      checked={notification.is_active}
-                      onCheckedChange={() =>
-                        toggleActive(notification.id, notification.is_active)
-                      }
-                    />
-                    <span className="text-xs w-12">{notification.is_active ? "On" : "Off"}</span>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      onClick={() => deleteNotification(notification.id)}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+          <AdminList>
+            {notifications.map((notification) => (
+              <AdminListCard key={notification.id} highlight={notification.is_active}>
+                <AdminRow
+                  title={notification.message}
+                  meta={notification.link_url}
+                  actions={
+                    <>
+                      <div className="flex items-center gap-1 mr-1">
+                        <Switch
+                          checked={notification.is_active}
+                          onCheckedChange={() =>
+                            toggleActive(notification.id, notification.is_active)
+                          }
+                        />
+                        <span className="text-[10px] text-muted-foreground">
+                          {notification.is_active ? "On" : "Off"}
+                        </span>
+                      </div>
+                      <AdminIconButton
+                        icon={Trash2}
+                        title="Delete"
+                        tone="danger"
+                        onClick={() => deleteNotification(notification.id)}
+                      />
+                    </>
+                  }
+                />
+              </AdminListCard>
+            ))}
+          </AdminList>
         )}
       </div>
-    </div>
+    </AdminPage>
   );
 };
 

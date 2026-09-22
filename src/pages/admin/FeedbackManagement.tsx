@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Star } from "lucide-react";
+import { Trash2, Star, MessageCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +13,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { formatDistanceToNow } from "date-fns";
+import {
+  AdminPage, AdminPageHeader, AdminList, AdminListCard, AdminRow,
+  AdminEmpty, AdminLoading, AdminIconButton,
+} from "@/components/admin/AdminUI";
 
 interface Feedback {
   id: string;
@@ -83,50 +85,39 @@ const FeedbackManagement = () => {
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-8">Loading feedbacks...</div>;
-  }
+  if (loading) return <AdminLoading label="Loading feedbacks…" />;
 
   return (
-    <div className="max-w-full px-2 py-3 space-y-4 overflow-x-hidden">
-      <h1 className="text-lg sm:text-xl font-bold">Feedback</h1>
+    <AdminPage>
+      <AdminPageHeader icon={MessageCircle} title="Feedback" count={feedbacks.length} />
 
-      {feedbacks.length === 0 ? (
-        <Card>
-          <CardContent className="py-8">
-            <p className="text-center text-muted-foreground">No feedbacks yet</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {feedbacks.map((feedback) => (
-            <Card key={feedback.id}>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center justify-between">
-                  <div className="flex gap-1">
+      <AdminList>
+        {feedbacks.length === 0 ? (
+          <AdminEmpty message="No feedbacks yet" />
+        ) : (
+          feedbacks.map((feedback) => (
+            <AdminListCard key={feedback.id}>
+              <AdminRow
+                title={
+                  <span className="flex gap-0.5">
                     {feedback.rating && Array.from({ length: feedback.rating }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                     ))}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setDeleteId(feedback.id)}
-                  >
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-3">{feedback.content}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(feedback.created_at), { addSuffix: true })}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                    {feedback.display_name && (
+                      <span className="text-xs font-medium ml-1">{feedback.display_name}</span>
+                    )}
+                  </span>
+                }
+                meta={`${formatDistanceToNow(new Date(feedback.created_at), { addSuffix: true })}${feedback.location ? ` · ${feedback.location}` : ""}`}
+                actions={
+                  <AdminIconButton icon={Trash2} title="Delete" tone="danger" onClick={() => setDeleteId(feedback.id)} />
+                }
+                body={<p className="text-xs text-muted-foreground">{feedback.content}</p>}
+              />
+            </AdminListCard>
+          ))
+        )}
+      </AdminList>
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
@@ -142,7 +133,7 @@ const FeedbackManagement = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AdminPage>
   );
 };
 

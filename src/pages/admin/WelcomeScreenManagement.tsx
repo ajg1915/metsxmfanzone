@@ -14,6 +14,7 @@ import {
   type GateConfig,
 } from "@/components/DesktopWelcomeGate";
 import logo from "@/assets/metsxmfanzone-logo.png";
+import { AdminPage, AdminPageHeader, AdminLoading } from "@/components/admin/AdminUI";
 
 export default function WelcomeScreenManagement() {
   const [cfg, setCfg] = useState<GateConfig>(GATE_DEFAULTS);
@@ -68,20 +69,16 @@ export default function WelcomeScreenManagement() {
     setCfg((c) => ({ ...c, [k]: v }));
 
   if (loading) {
-    return <div className="p-6 text-muted-foreground">Loading…</div>;
+    return <AdminLoading />;
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <Monitor className="w-6 h-6 text-primary" />
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Desktop Welcome Screen</h1>
-          <p className="text-sm text-muted-foreground">
-            Shown to all visitors who open the homepage on a PC (screens 1024px+).
-          </p>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Monitor}
+        title="Desktop Welcome Screen"
+        description="Shown to all visitors who open the homepage on a PC (screens 1024px+)."
+      />
 
       <Card className="bg-card/90 backdrop-blur border-border">
         <CardHeader>
@@ -241,6 +238,6 @@ export default function WelcomeScreenManagement() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AdminPage>
   );
 }

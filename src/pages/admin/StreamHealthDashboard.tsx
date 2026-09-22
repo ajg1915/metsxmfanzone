@@ -8,6 +8,7 @@ import { AlertTriangle, CheckCircle, Radio, RefreshCw, Bell, BellOff, Send } fro
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import StreamSourceStatusPanel from "@/components/admin/StreamSourceStatusPanel";
+import { AdminPage, AdminPageHeader, AdminStatGrid, AdminStat } from "@/components/admin/AdminUI";
 
 import {
   Dialog,
@@ -210,28 +211,24 @@ export default function StreamHealthDashboard() {
   }, {} as Record<string, number>);
 
   return (
-    <div className="w-full max-w-full px-1 sm:px-2 py-2 sm:py-3 overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-        <div>
-          <h2 className="text-base sm:text-lg font-bold flex items-center gap-2">
-            <Radio className="h-5 w-5 text-red-500" />
-            Stream Health Monitor
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Automatic stream issue detection & viewer alerts
-          </p>
-        </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Radio}
+        title="Stream Health Monitor"
+        description="Automatic stream issue detection & viewer alerts"
+        actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <Button variant="outline" size="sm" className="h-8 text-xs" onClick={fetchData} disabled={loading}>
+            <RefreshCw className={`h-3.5 w-3.5 mr-1 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button size="sm" onClick={() => setShowAlertDialog(true)}>
-            <Bell className="h-4 w-4 mr-2" />
+          <Button size="sm" className="h-8 text-xs" onClick={() => setShowAlertDialog(true)}>
+            <Bell className="h-3.5 w-3.5 mr-1" />
             Send Alert
           </Button>
         </div>
-      </div>
+        }
+      />
 
       {/* Live feed (primary/backup) health */}
       <div className="mb-4">
@@ -240,47 +237,12 @@ export default function StreamHealthDashboard() {
 
       {/* Summary Cards */}
 
-      <div className="grid gap-2 sm:gap-3 grid-cols-2 sm:grid-cols-4 mb-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Active Alerts</CardTitle>
-            <Bell className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold text-blue-500">{activeAlertsCount}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Issues Detected</CardTitle>
-            <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold text-yellow-500">{totalIssuesDetected}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Buffering/Lag</CardTitle>
-            <span className="text-sm">⏳</span>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold">{(issuesByType['buffering'] || 0) + (issuesByType['lag'] || 0)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-3">
-            <CardTitle className="text-[10px] sm:text-xs font-medium">Audio/Video</CardTitle>
-            <span className="text-sm">📺</span>
-          </CardHeader>
-          <CardContent className="px-3 pb-3">
-            <div className="text-xl sm:text-2xl font-bold">{(issuesByType['audio'] || 0) + (issuesByType['video'] || 0)}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <AdminStatGrid>
+        <AdminStat icon={Bell} label="Active Alerts" value={activeAlertsCount} tone="default" />
+        <AdminStat icon={AlertTriangle} label="Issues Detected" value={totalIssuesDetected} tone="warning" />
+        <AdminStat label="Buffering/Lag" value={(issuesByType['buffering'] || 0) + (issuesByType['lag'] || 0)} />
+        <AdminStat label="Audio/Video" value={(issuesByType['audio'] || 0) + (issuesByType['video'] || 0)} />
+      </AdminStatGrid>
 
       {/* Detection Status Card */}
       <Card className="mb-4">
@@ -417,6 +379,6 @@ export default function StreamHealthDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

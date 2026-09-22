@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Plus, Trash2, Edit, ThumbsUp, ThumbsDown } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminList, AdminListCard, AdminEmpty, AdminLoading, AdminIconButton } from "@/components/admin/AdminUI";
 import { toast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -147,16 +148,13 @@ const PlayerOfTheMonthManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Trophy className="w-6 h-6 text-primary" />
-        <h1 className="text-2xl font-bold text-foreground">Player of the Month</h1>
-      </div>
+    <AdminPage>
+      <AdminPageHeader icon={Trophy} title="Player of the Month" count={entries.length} />
 
       {/* Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">
+      <Card className="border-border/30">
+        <CardHeader className="p-2.5 pb-1">
+          <CardTitle className="text-xs">
             {editingId ? "Edit Entry" : "Create New Entry"}
           </CardTitle>
         </CardHeader>
@@ -221,51 +219,49 @@ const PlayerOfTheMonthManagement = () => {
       </Card>
 
       {/* Entries List */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-foreground">All Entries</h2>
+      <div className="space-y-1.5">
+        <h2 className="text-xs font-semibold text-foreground">All Entries</h2>
         {loading ? (
-          <p className="text-muted-foreground">Loading...</p>
+          <AdminLoading />
         ) : entries.length === 0 ? (
-          <p className="text-muted-foreground">No entries yet.</p>
+          <AdminEmpty message="No entries yet." />
         ) : (
-          entries.map(entry => {
-            const vc = voteCounts[entry.id] || { agree: 0, disagree: 0 };
-            return (
-              <Card key={entry.id} className={!entry.is_active ? "opacity-60" : ""}>
-                <CardContent className="p-4 flex flex-col sm:flex-row gap-4 items-start">
-                  {entry.player_image_url && (
-                    <img src={entry.player_image_url} alt={entry.player_name} className="w-16 h-20 object-cover rounded-md" />
-                  )}
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-foreground">{entry.player_name}</span>
-                      <Badge variant="secondary" className="text-[10px]">{entry.month} {entry.year}</Badge>
-                      {entry.is_active && <Badge className="text-[10px] bg-green-600 text-white">Active</Badge>}
+          <AdminList>
+            {entries.map(entry => {
+              const vc = voteCounts[entry.id] || { agree: 0, disagree: 0 };
+              return (
+                <AdminListCard key={entry.id} className={!entry.is_active ? "opacity-60" : ""}>
+                  <div className="flex flex-col sm:flex-row gap-2 items-start">
+                    {entry.player_image_url && (
+                      <img src={entry.player_image_url} alt={entry.player_name} className="w-12 h-16 object-cover rounded-md flex-shrink-0" />
+                    )}
+                    <div className="flex-1 space-y-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-medium truncate">{entry.player_name}</span>
+                        <Badge variant="secondary" className="h-4 text-[9px]">{entry.month} {entry.year}</Badge>
+                        {entry.is_active && <Badge className="h-4 text-[9px] bg-green-500 text-white">Active</Badge>}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground line-clamp-2">{entry.admin_opinion}</p>
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><ThumbsUp className="w-3 h-3" /> {vc.agree}</span>
+                        <span className="flex items-center gap-1"><ThumbsDown className="w-3 h-3" /> {vc.disagree}</span>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{entry.admin_opinion}</p>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><ThumbsUp className="w-3 h-3" /> {vc.agree}</span>
-                      <span className="flex items-center gap-1"><ThumbsDown className="w-3 h-3" /> {vc.disagree}</span>
+                    <div className="flex items-center gap-0.5 flex-shrink-0">
+                      <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={() => toggleActive(entry.id, entry.is_active)}>
+                        {entry.is_active ? "Deactivate" : "Activate"}
+                      </Button>
+                      <AdminIconButton icon={Edit} title="Edit" onClick={() => handleEdit(entry)} />
+                      <AdminIconButton icon={Trash2} title="Delete" tone="danger" onClick={() => handleDelete(entry.id)} />
                     </div>
                   </div>
-                  <div className="flex gap-2 flex-shrink-0">
-                    <Button size="sm" variant="outline" onClick={() => toggleActive(entry.id, entry.is_active)}>
-                      {entry.is_active ? "Deactivate" : "Activate"}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleEdit(entry)}>
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="destructive" onClick={() => handleDelete(entry.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })
+                </AdminListCard>
+              );
+            })}
+          </AdminList>
         )}
       </div>
-    </div>
+    </AdminPage>
   );
 };
 

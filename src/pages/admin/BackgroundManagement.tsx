@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Plus, Trash2, Check, Image, Palette, Sparkles } from "lucide-react";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 interface BackgroundSetting {
   id: string;
@@ -135,13 +136,12 @@ const BackgroundManagement = () => {
   const welcomeBackgrounds = backgrounds?.filter((b) => b.page_type === "welcome") || [];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Background Management</h1>
-        <p className="text-muted-foreground mt-2">
-            Manage backgrounds for login and welcome screens
-          </p>
-        </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Image}
+        title="Background Management"
+        description="Manage backgrounds for login and welcome screens"
+      />
 
         {/* Create New Background */}
         <Card className="bg-card border-border">
@@ -376,7 +376,7 @@ const BackgroundManagement = () => {
             )}
           </CardContent>
         </Card>
-      </div>
+    </AdminPage>
   );
 };
 

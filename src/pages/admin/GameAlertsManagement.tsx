@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Bell, Send, Trash2, AlertTriangle, Info, Siren, Plus, ImagePlus, X, Loader2, Smartphone, Volume2, Upload } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminEmpty, AdminIconButton } from "@/components/admin/AdminUI";
 import { motion } from "framer-motion";
 import { validateFile, generateSafeFilename } from "@/utils/fileValidation";
 import { generateAlertSound } from "@/utils/alertSounds";
@@ -229,11 +230,8 @@ const GameAlertsManagement = () => {
   };
 
   return (
-    <div className="space-y-2 w-full max-w-full overflow-hidden px-1">
-      <div className="flex items-center gap-1.5">
-        <Bell className="w-4 h-4 text-primary" />
-        <h1 className="text-sm sm:text-base font-bold">Game Alerts</h1>
-      </div>
+    <AdminPage>
+      <AdminPageHeader icon={Bell} title="Game Alerts" count={alerts.length} />
 
       <div className="grid gap-2 lg:grid-cols-2">
         {/* Create Alert */}
@@ -440,10 +438,7 @@ const GameAlertsManagement = () => {
             {loading ? (
               <p className="text-[10px] text-muted-foreground">Loading...</p>
             ) : alerts.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground">
-                <Bell className="w-6 h-6 mx-auto mb-1 opacity-50" />
-                <p className="text-[10px]">No alerts yet</p>
-              </div>
+              <AdminEmpty message="No alerts yet." />
             ) : (
               <div className="space-y-1.5 max-h-[350px] overflow-y-auto">
                 {alerts.map((alert) => (
@@ -462,9 +457,7 @@ const GameAlertsManagement = () => {
                         <Badge variant={alert.is_active ? "default" : "secondary"} className="text-[8px] px-1 py-0 cursor-pointer" onClick={() => toggleActive(alert.id, alert.is_active)}>
                           {alert.is_active ? "Active" : "Off"}
                         </Badge>
-                        <button onClick={() => deleteAlert(alert.id)} className="text-destructive hover:text-destructive/80 p-0.5" title="Delete alert permanently">
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                        <AdminIconButton icon={Trash2} title="Delete alert permanently" tone="danger" onClick={() => deleteAlert(alert.id)} />
                       </div>
                     </div>
                     <p className="text-[9px] text-muted-foreground line-clamp-1">{alert.message}</p>
@@ -485,7 +478,7 @@ const GameAlertsManagement = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </AdminPage>
   );
 };
 

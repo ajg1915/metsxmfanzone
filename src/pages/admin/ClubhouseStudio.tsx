@@ -16,17 +16,13 @@ export default function ClubhouseStudio() {
   };
 
   return (
-    <div className="max-w-full px-2 sm:px-4 py-4 space-y-5 overflow-x-hidden">
+    <div className="w-full max-w-full overflow-hidden px-1 space-y-3">
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 shadow-lg shadow-orange-500/25">
-          <Radio className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
-            The Clubhouse Studio
-          </h1>
-          <p className="text-xs text-muted-foreground font-medium">
+      <div className="flex items-center gap-2">
+        <Radio className="w-4 h-4 text-primary flex-shrink-0" />
+        <div className="min-w-0">
+          <h1 className="text-sm sm:text-base font-bold truncate">The Clubhouse Studio</h1>
+          <p className="text-[10px] text-muted-foreground">
             Major League Content Production
           </p>
         </div>

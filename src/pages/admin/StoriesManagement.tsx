@@ -27,6 +27,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { validateFile, generateSafeFilename, FileType } from "@/utils/fileValidation";
 import { SocialShareDialog } from "@/components/SocialShareDialog";
 import { STORY_BG_STYLES, getStoryBgStyle } from "@/lib/storyBackgrounds";
+import { AdminPage, AdminPageHeader, AdminLoading, AdminEmpty } from "@/components/admin/AdminUI";
+import { Camera } from "lucide-react";
 
 interface BlogPost {
   id: string;
@@ -611,9 +613,13 @@ const StoriesManagement = () => {
   };
 
   return (
-    <div className="max-w-full px-2 py-3 space-y-4 overflow-x-hidden">
-      <div className="flex justify-between items-center">
-        <h1 className="text-lg sm:text-xl font-bold">Stories</h1>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Camera}
+        title="Stories"
+        count={stories.length}
+        countLabel="stories"
+        actions={
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -827,7 +833,8 @@ const StoriesManagement = () => {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+        }
+      />
 
 
       {/* AI Image Generator Section */}
@@ -907,7 +914,7 @@ const StoriesManagement = () => {
       </Card>
 
       {loading ? (
-        <div className="text-center py-8">Loading stories...</div>
+        <AdminLoading label="Loading stories…" />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {stories.map((story) => (
@@ -991,11 +998,7 @@ const StoriesManagement = () => {
       )}
 
       {!loading && stories.length === 0 && (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            No stories yet. Create your first story!
-          </CardContent>
-        </Card>
+        <AdminEmpty message="No stories yet. Create your first story!" />
       )}
       {shareStory && (
         <SocialShareDialog
@@ -1006,7 +1009,7 @@ const StoriesManagement = () => {
           mediaUrl={shareStory.media_url || ''}
         />
       )}
-    </div>
+    </AdminPage>
   );
 };
 

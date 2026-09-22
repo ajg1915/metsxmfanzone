@@ -49,6 +49,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { AdminPage, AdminPageHeader, AdminStatGrid, AdminStat, AdminLoading } from "@/components/admin/AdminUI";
 
 interface UserSubscription {
   id: string;
@@ -440,94 +441,54 @@ export default function SubscriptionManagement() {
   };
 
   if (authLoading || loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
+    return <AdminLoading label="Loading subscriptions…" />;
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-primary mb-2">Subscription Management</h1>
-        <p className="text-muted-foreground">
-          Manage user subscriptions, record payments, and handle cancellations
-        </p>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={CreditCard}
+        title="Subscription Management"
+        count={subscriptions.length}
+        description="Manage user subscriptions, record payments, and handle cancellations"
+      />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active</p>
-                <p className="text-2xl font-bold text-affirmative">
-                  {subscriptions.filter(s => s.status === "active" && !s.cancellation_status).length}
-                </p>
-              </div>
-              <Check className="w-8 h-8 text-affirmative opacity-50" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Pending Cancel</p>
-                <p className="text-2xl font-bold text-warning">
-                  {subscriptions.filter(s => s.cancellation_status === "pending").length}
-                </p>
-              </div>
-              <Clock className="w-8 h-8 text-warning opacity-50" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Cancelled</p>
-                <p className="text-2xl font-bold text-destructive">
-                  {subscriptions.filter(s => s.status === "cancelled").length}
-                </p>
-              </div>
-              <Ban className="w-8 h-8 text-destructive opacity-50" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold text-yellow-500">
-                  {subscriptions.filter(s => s.status === "pending").length}
-                </p>
-              </div>
-              <Clock className="w-8 h-8 text-yellow-500 opacity-50" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Premium/Annual</p>
-                <p className="text-2xl font-bold text-primary">
-                  {subscriptions.filter(s => s.plan_type !== "free" && s.status === "active").length}
-                </p>
-              </div>
-              <DollarSign className="w-8 h-8 text-primary opacity-50" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <AdminStatGrid>
+        <AdminStat
+          icon={Check}
+          label="Active"
+          tone="success"
+          value={subscriptions.filter(s => s.status === "active" && !s.cancellation_status).length}
+        />
+        <AdminStat
+          icon={Clock}
+          label="Pending Cancel"
+          tone="warning"
+          value={subscriptions.filter(s => s.cancellation_status === "pending").length}
+        />
+        <AdminStat
+          icon={Ban}
+          label="Cancelled"
+          tone="danger"
+          value={subscriptions.filter(s => s.status === "cancelled").length}
+        />
+        <AdminStat
+          icon={Clock}
+          label="Pending"
+          tone="warning"
+          value={subscriptions.filter(s => s.status === "pending").length}
+        />
+        <AdminStat
+          icon={DollarSign}
+          label="Premium/Annual"
+          value={subscriptions.filter(s => s.plan_type !== "free" && s.status === "active").length}
+        />
+      </AdminStatGrid>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Subscriptions</CardTitle>
+      <Card className="border-border/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm">All Subscriptions</CardTitle>
         </CardHeader>
         <CardContent>
           {subscriptions.length === 0 ? (
@@ -948,6 +909,6 @@ export default function SubscriptionManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }

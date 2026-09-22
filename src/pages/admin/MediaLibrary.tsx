@@ -24,6 +24,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
+import { AdminPage, AdminPageHeader, AdminLoading, AdminEmpty } from "@/components/admin/AdminUI";
 
 const FOLDERS = ["general", "hero", "blog", "stories", "events", "podcasts", "social", "misc"];
 
@@ -156,14 +157,14 @@ export default function MediaLibrary() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Media Library</h1>
-          <p className="text-sm text-muted-foreground">
-            Upload, browse, and manage your media files
-          </p>
-        </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={FolderOpen}
+        title="Media Library"
+        count={filtered?.length ?? 0}
+        countLabel="files"
+        description="Upload, browse, and manage your media files"
+        actions={
         <>
           <Button
             type="button"
@@ -188,7 +189,8 @@ export default function MediaLibrary() {
             onChange={handleUpload}
           />
         </>
-      </div>
+        }
+      />
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -232,7 +234,7 @@ export default function MediaLibrary() {
       </div>
 
       {/* Stats */}
-      <div className="flex gap-4 text-sm text-muted-foreground">
+      <div className="flex gap-4 text-xs text-muted-foreground">
         <span>{filtered?.length ?? 0} files</span>
         <span>
           {formatFileSize(
@@ -249,11 +251,7 @@ export default function MediaLibrary() {
           ))}
         </div>
       ) : !filtered?.length ? (
-        <Card className="p-12 text-center">
-          <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-          <p className="text-muted-foreground">No media files found</p>
-          <p className="text-xs text-muted-foreground mt-1">Upload files to get started</p>
-        </Card>
+        <AdminEmpty message="No media files found. Upload files to get started." />
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {filtered.map((item) => {
@@ -431,6 +429,6 @@ export default function MediaLibrary() {
           })}
         </div>
       )}
-    </div>
+    </AdminPage>
   );
 }

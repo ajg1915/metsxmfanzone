@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 export default function StreamTester() {
   const { toast } = useToast();
@@ -169,13 +170,12 @@ export default function StreamTester() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">M3U8 Stream Tester</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Paste an M3U8 URL to test playback, check quality levels, and verify stream health.
-        </p>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Link2}
+        title="M3U8 Stream Tester"
+        description="Paste an M3U8 URL to test playback, check quality levels, and verify stream health."
+      />
 
       {/* Mode Toggle */}
       <div className="flex gap-2">
@@ -316,6 +316,6 @@ export default function StreamTester() {
           </button>
         ))}
       </div>
-    </div>
+    </AdminPage>
   );
 }

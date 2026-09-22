@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Trash2, Upload, Loader2, Pencil, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import PodcastAudioRecorder from "@/components/PodcastAudioRecorder";
+import { AdminPage, AdminPageHeader, AdminEmpty } from "@/components/admin/AdminUI";
+import { Mic } from "lucide-react";
 
 interface Podcast {
   id: string;
@@ -196,11 +198,8 @@ export default function PodcastManagement() {
   };
 
   return (
-    <div className="max-w-full px-2 py-3 space-y-4 overflow-x-hidden">
-      <div>
-        <h1 className="text-lg sm:text-xl font-bold">Podcasts</h1>
-        <p className="text-xs text-muted-foreground">Manage episodes</p>
-      </div>
+    <AdminPage>
+      <AdminPageHeader icon={Mic} title="Podcasts" count={podcasts.length} countLabel="episodes" description="Manage episodes" />
 
       <Card>
         <CardHeader>
@@ -268,6 +267,7 @@ export default function PodcastManagement() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {podcasts.length === 0 && <AdminEmpty message="No podcasts yet. Upload one above." />}
             {podcasts.map((podcast) => (
               <div key={podcast.id} className="p-3 border rounded-lg space-y-2">
                 {editingId === podcast.id ? (
@@ -331,6 +331,6 @@ export default function PodcastManagement() {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </AdminPage>
   );
 }

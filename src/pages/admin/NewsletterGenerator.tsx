@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 // HTML escaping utility to prevent XSS
 const escapeHtml = (str: string): string => {
@@ -327,24 +328,18 @@ export default function NewsletterGenerator() {
   const previewHtml = generateNewsletterHtml(subject || "Newsletter Preview", generatedContent || "<p>Your newsletter content will appear here...</p>");
 
   return (
-    <div className="container mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-6">
-      <div className="mb-4 sm:mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold mb-1 flex items-center gap-2">
-              <Newspaper className="w-5 h-5 sm:w-6 sm:h-6" />
-              Newsletter Generator
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Create AI-powered newsletters for your subscribers
-            </p>
-          </div>
-          <Badge variant="secondary" className="flex items-center gap-1.5">
+    <AdminPage>
+      <AdminPageHeader
+        icon={Newspaper}
+        title="Newsletter Generator"
+        description="Create AI-powered newsletters for your subscribers"
+        actions={
+          <Badge variant="secondary" className="flex items-center gap-1.5 text-[10px] h-5">
             <Users className="w-3 h-3" />
             {subscriberCount} Subscribers
           </Badge>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid lg:grid-cols-2 gap-4">
         {/* Left Panel - Generator */}
@@ -613,6 +608,6 @@ export default function NewsletterGenerator() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </AdminPage>
   );
 }

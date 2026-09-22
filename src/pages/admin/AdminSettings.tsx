@@ -34,6 +34,7 @@ import {
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AdminPage, AdminPageHeader, AdminLoading } from "@/components/admin/AdminUI";
 
 interface SiteBranding {
   site_name: string;
@@ -185,22 +186,16 @@ export default function AdminSettings() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <AdminLoading label="Loading settings…" />;
   }
 
   return (
-    <div className="container mx-auto max-w-5xl px-4 py-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Settings className="h-7 w-7 text-primary" />
-        <div>
-          <h2 className="text-2xl font-bold">Site Settings</h2>
-          <p className="text-sm text-muted-foreground">Configure your website settings</p>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Settings}
+        title="Site Settings"
+        description="Configure your website settings"
+      />
 
       <Tabs defaultValue="branding" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3 h-auto p-1 bg-muted/50 backdrop-blur-sm rounded-lg">
@@ -528,7 +523,7 @@ export default function AdminSettings() {
           </div>
         </TabsContent>
       </Tabs>
-    </div>
+    </AdminPage>
   );
 }
 

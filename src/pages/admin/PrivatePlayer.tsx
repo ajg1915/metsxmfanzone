@@ -15,6 +15,7 @@ import {
   getPrivatePlayerSourceError,
   type PrivatePlayerConfig,
 } from "@/lib/privatePlayer";
+import { AdminPage, AdminPageHeader, AdminLoading } from "@/components/admin/AdminUI";
 
 export default function PrivatePlayer() {
   const [cfg, setCfg] = useState<PrivatePlayerConfig>(PRIVATE_PLAYER_DEFAULTS);
@@ -59,20 +60,15 @@ export default function PrivatePlayer() {
   const effectiveUrl = getPrivatePlayerIframeUrl(cfg);
   const sourceError = getPrivatePlayerSourceError(cfg);
 
-  if (loading) return <div className="p-6 text-muted-foreground">Loading…</div>;
+  if (loading) return <AdminLoading />;
 
   return (
-    <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <Tv className="w-6 h-6 text-primary" />
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Admin Private Player</h1>
-          <p className="text-sm text-muted-foreground">
-            An iframe live stream player visible only to admins at{" "}
-            <code className="text-primary">/private-player</code>.
-          </p>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Tv}
+        title="Admin Private Player"
+        description="An iframe live stream player visible only to admins at /private-player."
+      />
 
       <Card className="bg-card/90 backdrop-blur border-border">
         <CardHeader>
@@ -155,6 +151,6 @@ export default function PrivatePlayer() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AdminPage>
   );
 }

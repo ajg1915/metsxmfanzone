@@ -17,6 +17,7 @@ import RolesTab from "@/components/admin/RolesTab";
 import MembersTab from "@/components/admin/MembersTab";
 import SignupsTab from "@/components/admin/SignupsTab";
 import { maskEmail, maskSensitiveField } from "@/utils/secureDataVault";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 interface MemberRow {
   user_id: string;
@@ -168,19 +169,13 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="p-2 rounded-lg bg-primary/10">
-          <Bot className="w-6 h-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">AI User Management</h1>
-          <p className="text-sm text-muted-foreground">
-            Tell the AI what to do — it handles members, subscriptions & roles automatically
-          </p>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Bot}
+        title="AI User Management"
+        count={totalMembers}
+        description="Tell the AI what to do — it handles members, subscriptions & roles automatically"
+      />
 
       {/* AI Command Bar */}
       <Card className="border-primary/20 bg-card/80 backdrop-blur">
@@ -323,7 +318,7 @@ const UserManagement = () => {
           <RolesTab />
         </TabsContent>
       </Tabs>
-    </div>
+    </AdminPage>
   );
 };
 

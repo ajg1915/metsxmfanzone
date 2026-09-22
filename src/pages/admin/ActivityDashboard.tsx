@@ -39,6 +39,7 @@ import {
 import { format, formatDistanceToNow } from "date-fns";
 import { fetchDecryptedActivityLogs } from "@/utils/secureDataVault";
 import { useToast } from "@/hooks/use-toast";
+import { AdminPage, AdminPageHeader, AdminSearch, AdminLoading, AdminStatGrid, AdminStat } from "@/components/admin/AdminUI";
 
 interface ActivityLog {
   id: string;
@@ -197,103 +198,48 @@ export default function ActivityDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <AdminLoading label="Loading activity logs…" />;
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-bold flex items-center gap-2">
-            <Activity className="h-5 w-5 text-primary" />
-            Activity Dashboard
-          </h1>
-          <p className="text-xs text-muted-foreground">Real-time admin activity monitoring</p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchLogs(true)}
-            disabled={refreshing}
-            className="h-8"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-          <Button variant="outline" size="sm" onClick={exportLogs} className="h-8">
-            <Download className="h-3.5 w-3.5 mr-1.5" />
-            Export
-          </Button>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Activity}
+        title="Activity Dashboard"
+        description="Real-time admin activity monitoring"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchLogs(true)}
+              disabled={refreshing}
+              className="h-8 text-xs"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${refreshing ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportLogs} className="h-8 text-xs">
+              <Download className="h-3.5 w-3.5 mr-1.5" />
+              Export
+            </Button>
+          </>
+        }
+      />
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="bg-card/50">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Total Logs</p>
-                <p className="text-xl font-bold">{stats.totalLogs}</p>
-              </div>
-              <Database className="h-8 w-8 text-muted-foreground/30" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card/50">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Admin Access</p>
-                <p className="text-xl font-bold text-amber-400">{stats.adminAccesses}</p>
-              </div>
-              <Shield className="h-8 w-8 text-amber-400/30" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card/50">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Security Events</p>
-                <p className="text-xl font-bold text-red-400">{stats.securityEvents}</p>
-              </div>
-              <AlertCircle className="h-8 w-8 text-red-400/30" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-card/50">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground">Last Hour</p>
-                <p className="text-xl font-bold text-green-400">{stats.recentActivity}</p>
-              </div>
-              <Clock className="h-8 w-8 text-green-400/30" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <AdminStatGrid>
+        <AdminStat icon={Database} label="Total Logs" value={stats.totalLogs} />
+        <AdminStat icon={Shield} label="Admin Access" value={stats.adminAccesses} tone="warning" />
+        <AdminStat icon={AlertCircle} label="Security Events" value={stats.securityEvents} tone="danger" />
+        <AdminStat icon={Clock} label="Last Hour" value={stats.recentActivity} tone="success" />
+      </AdminStatGrid>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="p-3">
+      <Card className="border-border/30">
+        <CardContent className="p-2.5">
           <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search logs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-9"
-              />
-            </div>
+            <AdminSearch value={searchQuery} onChange={setSearchQuery} placeholder="Search logs..." />
             <Select value={logTypeFilter} onValueChange={setLogTypeFilter}>
               <SelectTrigger className="w-full sm:w-[180px] h-9">
                 <Filter className="h-3.5 w-3.5 mr-2" />
@@ -405,6 +351,6 @@ export default function ActivityDashboard() {
         <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
         <span>Real-time monitoring active</span>
       </div>
-    </div>
+    </AdminPage>
   );
 }

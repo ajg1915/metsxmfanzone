@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Package, Mail } from "lucide-react";
+import { Loader2, Package, Mail, Gift, RefreshCw } from "lucide-react";
+import {
+  AdminPage, AdminPageHeader, AdminSearch, AdminFilterChips, AdminList, AdminListCard,
+  AdminRow, AdminEmpty, AdminLoading,
+} from "@/components/admin/AdminUI";
 
 interface Reward {
   id: string;
@@ -46,6 +49,7 @@ export default function LoyaltyRewardsManagement() {
   const { toast } = useToast();
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<string>("all");
 
   const load = async () => {
@@ -74,7 +78,22 @@ export default function LoyaltyRewardsManagement() {
 
   useEffect(() => { load(); }, []);
 
-  const filtered = rewards.filter((r) => filter === "all" || r.status === filter);
+  const counts = useMemo(() => ({
+    all: rewards.length,
+    claimed: rewards.filter(r => r.status === "claimed").length,
+    shipped: rewards.filter(r => r.status === "shipped").length,
+    pending: rewards.filter(r => r.status === "pending").length,
+    opted_out: rewards.filter(r => r.status === "opted_out").length,
+  }), [rewards]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return rewards.filter((r) => {
+      if (filter !== "all" && r.status !== filter) return false;
+      if (q && !(`${r.profiles?.full_name || ""} ${r.profiles?.email || ""}`.toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }, [rewards, search, filter]);
 
   const triggerCheck = async () => {
     toast({ title: "Running eligibility check..." });
@@ -84,39 +103,46 @@ export default function LoyaltyRewardsManagement() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">Loyalty Rewards</h1>
-          <p className="text-sm text-muted-foreground">Free t-shirt program — members active 60+ consecutive days.</p>
-        </div>
-        <div className="flex gap-2">
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="claimed">Claimed (to ship)</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
-              <SelectItem value="pending">Pending claim</SelectItem>
-              <SelectItem value="opted_out">Opted out</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={triggerCheck} variant="outline">Run eligibility check</Button>
-        </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Gift}
+        title="Loyalty Rewards"
+        count={counts.all}
+        description="Free t-shirt program — members active 60+ consecutive days."
+        actions={
+          <Button onClick={triggerCheck} variant="outline" size="sm" className="h-8 text-xs">
+            <RefreshCw className="w-3.5 h-3.5 mr-1" /> Run eligibility check
+          </Button>
+        }
+      />
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <AdminSearch value={search} onChange={setSearch} placeholder="Search member name or email…" />
+        <AdminFilterChips
+          filters={[
+            { key: "all", label: "All", count: counts.all },
+            { key: "claimed", label: "Claimed", count: counts.claimed },
+            { key: "shipped", label: "Shipped", count: counts.shipped },
+            { key: "pending", label: "Pending", count: counts.pending },
+            { key: "opted_out", label: "Opted out", count: counts.opted_out },
+          ]}
+          active={filter}
+          onChange={setFilter}
+        />
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        <AdminLoading label="Loading rewards…" />
       ) : filtered.length === 0 ? (
-        <Card className="p-8 text-center text-muted-foreground">No rewards yet.</Card>
+        <AdminEmpty message="No rewards yet." />
       ) : (
-        <div className="space-y-3">
+        <AdminList>
           {filtered.map((r) => (
             <RewardRow key={r.id} reward={r} onUpdate={load} />
           ))}
-        </div>
+        </AdminList>
       )}
-    </div>
+    </AdminPage>
   );
 }
 
@@ -173,80 +199,82 @@ function RewardRow({ reward, onUpdate }: { reward: Reward; onUpdate: () => void 
   };
 
   return (
-    <Card className="p-4 bg-card/90 backdrop-blur border-border/40">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="font-semibold">{reward.profiles?.full_name || "Member"}</span>
-            <span className="text-xs text-muted-foreground">{reward.profiles?.email}</span>
-            <Badge className={statusColors[reward.status] || ""}>{reward.status}</Badge>
-          </div>
-          {reward.shipping_name ? (
-            <div className="text-xs text-muted-foreground mt-1">
-              Ship to: {reward.shipping_name}, {reward.shipping_address1}
-              {reward.shipping_address2 ? `, ${reward.shipping_address2}` : ""},{" "}
-              {reward.shipping_city}, {reward.shipping_state} {reward.shipping_zip} — Size <strong>{reward.shirt_size}</strong>
-              {reward.phone ? ` — ${reward.phone}` : ""}
-            </div>
-          ) : (
-            <div className="text-xs text-muted-foreground mt-1">
-              {reward.status === "pending" ? "Awaiting member response" : "No shipping info"}
-            </div>
-          )}
-          {reward.tracking_number && (
-            <div className="text-xs mt-1">📦 {reward.carrier}: {reward.tracking_number}</div>
-          )}
-        </div>
-        <div className="flex gap-2">
-          {reward.status === "claimed" && (
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm"><Package className="h-4 w-4 mr-1" /> Mark shipped</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Mark as shipped</DialogTitle></DialogHeader>
-                <div className="space-y-3">
-                  <div>
-                    <Label>Carrier</Label>
-                    <Select value={carrier} onValueChange={setCarrier}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        {["USPS", "UPS", "FedEx", "DHL", "Other"].map((c) => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+    <AdminListCard>
+      <AdminRow
+        title={reward.profiles?.full_name || "Member"}
+        badges={<Badge className={`h-4 text-[9px] ${statusColors[reward.status] || ""}`}>{reward.status}</Badge>}
+        meta={reward.profiles?.email}
+        actions={
+          <>
+            {reward.status === "claimed" && (
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="h-7 text-[10px] px-2"><Package className="h-3 w-3 mr-1" /> Mark shipped</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Mark as shipped</DialogTitle></DialogHeader>
+                  <div className="space-y-3">
+                    <div>
+                      <Label>Carrier</Label>
+                      <Select value={carrier} onValueChange={setCarrier}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {["USPS", "UPS", "FedEx", "DHL", "Other"].map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Tracking number</Label>
+                      <Input value={tracking} onChange={(e) => setTracking(e.target.value)} />
+                    </div>
+                    <div>
+                      <Label>Notes (optional)</Label>
+                      <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+                    </div>
+                    <Button onClick={markShipped} disabled={saving} className="w-full">
+                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
+                      Ship & email member
+                    </Button>
                   </div>
-                  <div>
-                    <Label>Tracking number</Label>
-                    <Input value={tracking} onChange={(e) => setTracking(e.target.value)} />
-                  </div>
-                  <div>
-                    <Label>Notes (optional)</Label>
-                    <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-                  </div>
-                  <Button onClick={markShipped} disabled={saving} className="w-full">
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
-                    Ship & email member
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
-          {reward.status !== "claimed" && (
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="sm" variant="outline">Notes</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader><DialogTitle>Admin notes</DialogTitle></DialogHeader>
-                <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} />
-                <Button onClick={saveNotes}>Save</Button>
-              </DialogContent>
-            </Dialog>
-          )}
-        </div>
-      </div>
-    </Card>
+                </DialogContent>
+              </Dialog>
+            )}
+            {reward.status !== "claimed" && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button size="sm" variant="outline" className="h-7 text-[10px] px-2">Notes</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader><DialogTitle>Admin notes</DialogTitle></DialogHeader>
+                  <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} />
+                  <Button onClick={saveNotes}>Save</Button>
+                </DialogContent>
+              </Dialog>
+            )}
+          </>
+        }
+        body={
+          <>
+            {reward.shipping_name ? (
+              <div className="text-[10px] text-muted-foreground">
+                Ship to: {reward.shipping_name}, {reward.shipping_address1}
+                {reward.shipping_address2 ? `, ${reward.shipping_address2}` : ""},{" "}
+                {reward.shipping_city}, {reward.shipping_state} {reward.shipping_zip} — Size <strong>{reward.shirt_size}</strong>
+                {reward.phone ? ` — ${reward.phone}` : ""}
+              </div>
+            ) : (
+              <div className="text-[10px] text-muted-foreground">
+                {reward.status === "pending" ? "Awaiting member response" : "No shipping info"}
+              </div>
+            )}
+            {reward.tracking_number && (
+              <div className="text-[10px] mt-1">📦 {reward.carrier}: {reward.tracking_number}</div>
+            )}
+          </>
+        }
+      />
+    </AdminListCard>
   );
 }

@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Sparkles, Loader2, Trash2, Eye, EyeOff, RefreshCw, ImagePlus, Search, X } from "lucide-react";
+import { AdminPage, AdminPageHeader, AdminEmpty, AdminLoading } from "@/components/admin/AdminUI";
 
 interface HeroSlide {
   id: string;
@@ -123,26 +124,28 @@ export default function AIHeroSlides() {
     : mediaFiles;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <h1 className="flex items-center gap-2"><Sparkles className="w-5 h-5 text-primary" /> AI Hero Slides</h1>
-          <p className="text-muted-foreground text-sm">Auto-generate branded Mets hero slides — images from your media library</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <select
-            value={slideCount}
-            onChange={e => setSlideCount(Number(e.target.value))}
-            className="h-7 rounded border border-muted/40 bg-muted/30 text-xs px-2"
-          >
-            {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} slide{n > 1 ? "s" : ""}</option>)}
-          </select>
-          <Button onClick={generateSlides} disabled={generating} size="sm" className="gap-1.5">
-            {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-            {generating ? "Generating..." : "Generate Slides"}
-          </Button>
-        </div>
-      </div>
+    <AdminPage>
+      <AdminPageHeader
+        icon={Sparkles}
+        title="AI Hero Slides"
+        count={slides.length}
+        description="Auto-generate branded Mets hero slides — images from your media library"
+        actions={
+          <>
+            <select
+              value={slideCount}
+              onChange={e => setSlideCount(Number(e.target.value))}
+              className="h-7 rounded border border-muted/40 bg-muted/30 text-[10px] px-2"
+            >
+              {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} slide{n > 1 ? "s" : ""}</option>)}
+            </select>
+            <Button onClick={generateSlides} disabled={generating} size="sm" className="h-8 text-xs gap-1.5">
+              {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+              {generating ? "Generating..." : "Generate Slides"}
+            </Button>
+          </>
+        }
+      />
 
       {generating && (
         <Card className="border-primary/30 bg-primary/5">
@@ -171,15 +174,9 @@ export default function AIHeroSlides() {
       )}
 
       {loading ? (
-        <p className="text-muted-foreground text-center py-8">Loading...</p>
+        <AdminLoading />
       ) : slides.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Sparkles className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-            <p className="font-medium">No AI slides yet</p>
-            <p className="text-xs text-muted-foreground mt-1">Click "Generate Slides" to create branded hero slides from your Mets content</p>
-          </CardContent>
-        </Card>
+        <AdminEmpty message='Click "Generate Slides" to create branded hero slides from your Mets content.' />
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {slides.map(slide => (
@@ -288,6 +285,6 @@ export default function AIHeroSlides() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
-    </div>
+    </AdminPage>
   );
 }
