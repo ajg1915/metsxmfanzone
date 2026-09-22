@@ -2,6 +2,7 @@
 // and haven't received a loyalty reward in the past 365 days. Creates a
 // pending reward row and emails them a claim link.
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { sendTemplateEmail } from '../_shared/transactional-email-templates/send-email.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -78,16 +79,12 @@ Deno.serve(async (req) => {
       const claimUrl = `${SITE_URL}/rewards/claim?token=${reward.claim_token}`
       const optOutUrl = `${SITE_URL}/rewards/claim?token=${reward.claim_token}&action=optout`
 
-      await supabase.functions.invoke('send-transactional-email', {
-        body: {
-          templateName: 'loyalty-reward-available',
-          recipientEmail: profile.email,
-          idempotencyKey: `loyalty-reward-${reward.id}`,
-          templateData: {
-            name: profile.full_name || '',
-            claimUrl,
-            optOutUrl,
-          },
+      await sendTemplateEmail('loyalty-reward-available', profile.email, {
+        idempotencyKey: `loyalty-reward-${reward.id}`,
+        templateData: {
+          name: profile.full_name || '',
+          claimUrl,
+          optOutUrl,
         },
       })
 

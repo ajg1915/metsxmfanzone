@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendTemplateEmail } from "../_shared/transactional-email-templates/send-email.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,26 +46,17 @@ const sendNotifications = async (
 
         for (const to of emails) {
           try {
-            await fetch(`${supabaseUrl}/functions/v1/send-transactional-email`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${serviceKey}`,
+            await sendTemplateEmail('gameday-alert', to, {
+              idempotencyKey: `gameday-${triggerType}-${todayET}-${to}`,
+              templateData: {
+                title,
+                message,
+                opponent,
+                gameTime: timeStr,
+                venue,
+                linkUrl,
+                triggerType,
               },
-              body: JSON.stringify({
-                templateName: 'gameday-alert',
-                recipientEmail: to,
-                idempotencyKey: `gameday-${triggerType}-${todayET}-${to}`,
-                templateData: {
-                  title,
-                  message,
-                  opponent,
-                  gameTime: timeStr,
-                  venue,
-                  linkUrl,
-                  triggerType,
-                },
-              }),
             });
           } catch (e) {
             console.error(`Email send failed for ${to}:`, e);

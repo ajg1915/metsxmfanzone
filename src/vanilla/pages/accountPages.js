@@ -354,64 +354,14 @@ export const renderUnsubscribe = async (root) => {
     noindex: true,
   });
 
-  const token = new URLSearchParams(window.location.search).get("token") || "";
+  const body = `<p>Unsubscribing is handled straight from the unsubscribe link at the bottom of any MetsXMFanZone email. Open a recent email from us and tap that link to stop receiving them.</p>
+    <p class="form-note">Need a hand? <a href="/contact">Contact support</a> and we'll take care of it for you.</p>`;
 
-  const paint = (state, email = "", message = "") => {
-    let body;
-    if (state === "loading") body = "<p>Validating your link…</p>";
-    else if (state === "valid")
-      body = `<p>You're about to unsubscribe${email ? ` ${escapeHtml(email)}` : ""} from MetsXMFanZone app emails.</p>
-              <button class="button primary" type="button" id="confirm-unsub">Confirm Unsubscribe</button>`;
-    else if (state === "submitting") body = "<p>Unsubscribing…</p>";
-    else if (state === "success")
-      body = `<p><strong>You've been unsubscribed.</strong></p>${email ? `<p class="form-note">${escapeHtml(email)} won't receive these emails anymore.</p>` : ""}`;
-    else if (state === "already")
-      body = `<p><strong>You're already unsubscribed.</strong></p>${email ? `<p class="form-note">${escapeHtml(email)}</p>` : ""}`;
-    else body = `<p><strong>${state === "invalid" ? "Invalid link" : "Something went wrong"}</strong></p><p class="form-note">${escapeHtml(message)}</p>`;
-
-    root.innerHTML = renderShell({
-      content: `<section class="content-width status-panel"><p class="eyebrow">Email Preferences</p><h1>Email Unsubscribe</h1>${body}</section>`,
-      currentPath: "/unsubscribe",
-    });
-    bindShell(root);
-
-    root.querySelector("#confirm-unsub")?.addEventListener("click", async () => {
-      paint("submitting");
-      try {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/handle-email-unsubscribe`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
-          body: JSON.stringify({ token }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Could not unsubscribe.");
-        paint("success", email);
-      } catch (failure) {
-        paint("error", "", failure?.message || "Network error. Please try again.");
-      }
-    });
-  };
-
-  if (!token) {
-    paint("invalid", "", "No unsubscribe token provided.");
-    return;
-  }
-
-  paint("loading");
-  try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/handle-email-unsubscribe?token=${encodeURIComponent(token)}`, {
-      headers: { apikey: SUPABASE_ANON_KEY },
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      paint("invalid", "", data?.error || "Invalid or expired link.");
-      return;
-    }
-    if (data.alreadyUnsubscribed) paint("already", data.email || "");
-    else paint("valid", data.email || "");
-  } catch {
-    paint("invalid", "", "Could not validate this link.");
-  }
+  root.innerHTML = renderShell({
+    content: `<section class="content-width status-panel"><p class="eyebrow">Email Preferences</p><h1>Email Unsubscribe</h1>${body}</section>`,
+    currentPath: "/unsubscribe",
+  });
+  bindShell(root);
 };
 
 // ---------------------------------------------------------------------------

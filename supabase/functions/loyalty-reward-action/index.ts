@@ -3,6 +3,7 @@
 // notifies admins on claim.
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { z } from 'npm:zod@3.23.8'
+import { sendTemplateEmail } from '../_shared/transactional-email-templates/send-email.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -127,25 +128,21 @@ Deno.serve(async (req) => {
     }
 
     for (const email of adminEmails) {
-      await supabase.functions.invoke('send-transactional-email', {
-        body: {
-          templateName: 'loyalty-reward-admin-notify',
-          recipientEmail: email,
-          idempotencyKey: `loyalty-admin-${reward.id}`,
-          templateData: {
-            memberName: profile?.full_name || '',
-            memberEmail: profile?.email || 'unknown',
-            shippingName: d.shippingName,
-            address1: d.address1,
-            address2: d.address2 || '',
-            city: d.city,
-            state: d.state,
-            zip: d.zip,
-            country: d.country || 'United States',
-            shirtSize: d.shirtSize,
-            phone: d.phone || '',
-            adminUrl: `${SITE_URL}/admin/loyalty-rewards`,
-          },
+      await sendTemplateEmail('loyalty-reward-admin-notify', email, {
+        idempotencyKey: `loyalty-admin-${reward.id}`,
+        templateData: {
+          memberName: profile?.full_name || '',
+          memberEmail: profile?.email || 'unknown',
+          shippingName: d.shippingName,
+          address1: d.address1,
+          address2: d.address2 || '',
+          city: d.city,
+          state: d.state,
+          zip: d.zip,
+          country: d.country || 'United States',
+          shirtSize: d.shirtSize,
+          phone: d.phone || '',
+          adminUrl: `${SITE_URL}/admin/loyalty-rewards`,
         },
       })
     }
