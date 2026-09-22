@@ -209,6 +209,10 @@ const Auth = () => {
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     if (honeypot) return;
+    if (!loginAgreeToTerms) {
+      toast({ title: "Agreement required", description: "Please agree to the Terms and Privacy Policy to sign in.", variant: "destructive" });
+      return;
+    }
     try {
       const validated = { email: z.string().email().parse(email), password: z.string().min(6).parse(password) };
       setLoading(true);
