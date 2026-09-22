@@ -646,10 +646,15 @@ All colors MUST be HSL.
     background: hsl(var(--player));
   }
 
+  /* Edge-to-edge on phones without ever overflowing the viewport:
+     cancel the page container padding instead of using 100vw, which
+     gets clipped by any overflow-hidden ancestor. */
   @media (max-width: 639px) {
     .stream-player-shell {
-      width: 100vw;
-      margin-left: calc(50% - 50vw);
+      width: auto;
+      margin-left: -1rem;
+      margin-right: -1rem;
+      max-width: 100vw;
       border: 0 !important;
       border-radius: 0 !important;
       box-shadow: none !important;
@@ -659,6 +664,24 @@ All colors MUST be HSL.
     .stream-player video {
       border: 0 !important;
       border-radius: 0 !important;
+    }
+  }
+
+  /* Keep the whole 16:9 frame (and its controls) on screen in landscape
+     and on short tablet viewports. */
+  @media (orientation: landscape) and (max-height: 700px) {
+    .stream-player-shell {
+      display: flex;
+      justify-content: center;
+      background: hsl(var(--player));
+    }
+
+    .stream-player-shell .stream-player {
+      height: calc(100dvh - 4.5rem) !important;
+      width: auto !important;
+      max-width: 100% !important;
+      margin-inline: auto !important;
+      aspect-ratio: 16 / 9;
     }
   }
 
