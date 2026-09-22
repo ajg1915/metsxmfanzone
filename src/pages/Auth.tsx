@@ -382,7 +382,12 @@ const Auth = () => {
                 <><div className="space-y-1.5"><Label htmlFor="newPassword">New password</Label><Input id="newPassword" type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11" autoComplete="new-password" /></div><div className="space-y-1.5"><Label htmlFor="confirmPassword">Confirm password</Label><Input id="confirmPassword" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="h-11" autoComplete="new-password" /></div></>
               )}
 
-              {!isSignup && !forgotPassword && !isRecovery && <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground"><Checkbox checked={rememberMe} onCheckedChange={(value) => setRememberMe(value === true)} />Remember this email for 30 days</label>}
+              {!isSignup && !forgotPassword && !isRecovery && (
+                <>
+                  <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border/40 bg-muted/20 p-3"><Checkbox checked={loginAgreeToTerms} onCheckedChange={(value) => setLoginAgreeToTerms(value === true)} aria-label="Agree to the Terms and Privacy Policy" /><span className="text-xs leading-5 text-muted-foreground">I agree to the <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>. <span className="text-destructive">*</span></span></label>
+                  <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground"><Checkbox checked={rememberMe} onCheckedChange={(value) => setRememberMe(value === true)} />Remember this email for 30 days</label>
+                </>
+              )}
 
               {isSignup && signupStep === 1 ? (
                 <Button type="button" className="h-11 w-full" onClick={continueSignup}>Continue <ArrowRight /></Button>
