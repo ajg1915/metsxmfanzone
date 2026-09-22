@@ -8,3 +8,5 @@
 - [ ] Verify playback, rotation, casting controls, ticket submission, and admin visibility
 
 - [ ] Redesign only the mobile menu for clearer navigation
+
+  - Use a much darker menu; avoid light or bright-blue menu backgrounds
