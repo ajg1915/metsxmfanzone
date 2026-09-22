@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 import { uploadToR2 } from "@/lib/r2Upload";
 import { Mail, Loader2, Send, Users, Newspaper, User, Eye, X, TestTube, ShieldCheck, UserPlus, CreditCard, Paintbrush, RotateCcw, Trophy, PenTool, CheckCircle, Clock, Wrench, Bell, Upload, ImageIcon } from "lucide-react";
 import {
@@ -584,6 +585,30 @@ export default function EmailEditor() {
     }
   };
 
+  const invokeEmailFunction = async (functionName: string, body: Record<string, unknown>) => {
+    const timeout = new Promise<never>((_, reject) => {
+      window.setTimeout(() => reject(new Error("The email service timed out. Please try again.")), 30000);
+    });
+    const result = await Promise.race([
+      supabase.functions.invoke(functionName, { body }),
+      timeout,
+    ]);
+    if (result.error) {
+      if (result.error instanceof FunctionsHttpError) {
+        const responseText = await result.error.context.text();
+        let details: { error?: string } | null = null;
+        try {
+          details = JSON.parse(responseText) as { error?: string };
+        } catch {
+          details = null;
+        }
+        throw new Error(details?.error || responseText || "The email could not be sent.");
+      }
+      throw new Error(result.error.message || "The email could not be sent.");
+    }
+    return result.data;
+  };
+
   const sendTestEmail = async () => {
     if (!testEmail.trim() || !testEmail.includes("@")) {
       toast({ title: "Invalid Email", description: "Please enter a valid email address for testing", variant: "destructive" });
@@ -596,22 +621,18 @@ export default function EmailEditor() {
     setIsSendingTest(true);
     try {
       if (activeTab === "otp") {
-        const { error } = await supabase.functions.invoke("send-otp-email", { body: { to: testEmail, otp: otpCode } });
-        if (error) throw error;
+        await invokeEmailFunction("send-otp-email", { to: testEmail, otp: otpCode });
       } else if (activeTab === "welcome") {
-        const { error } = await supabase.functions.invoke("send-confirmation-email", { body: { type: "welcome", email: testEmail, name: welcomeName } });
-        if (error) throw error;
+        await invokeEmailFunction("send-confirmation-email", { type: "welcome", email: testEmail, name: welcomeName });
       } else if (activeTab === "subscription") {
-        const { error } = await supabase.functions.invoke("send-confirmation-email", { body: { type: "subscription", email: testEmail, name: subscriptionName, planType: subscriptionPlan.toLowerCase().includes("annual") ? "annual" : "premium", amount: subscriptionAmount } });
-        if (error) throw error;
+        await invokeEmailFunction("send-confirmation-email", { type: "subscription", email: testEmail, name: subscriptionName, planType: subscriptionPlan.toLowerCase().includes("annual") ? "annual" : "premium", amount: subscriptionAmount });
       } else if (activeTab === "game_day") {
         toast({ title: "Disabled", description: "Game day email notifications have been removed.", variant: "destructive" });
         return;
       } else {
-        const { error } = await supabase.functions.invoke("send-user-email", {
-          body: { subject: getCurrentSubject(), content: getCurrentEmailHtml(), recipientType: "specific", specificEmails: [testEmail] },
+        await invokeEmailFunction("send-user-email", {
+          subject: getCurrentSubject(), content: getCurrentEmailHtml(), recipientType: "specific", specificEmails: [testEmail], useTestSender: true,
         });
-        if (error) throw error;
       }
       toast({ title: "Test Email Sent!", description: `Test email sent to ${testEmail}` });
     } catch (error: any) {
@@ -638,10 +659,9 @@ export default function EmailEditor() {
     setShowSendDialog(false);
     setIsSending(true);
     try {
-      const { data, error } = await supabase.functions.invoke("send-user-email", {
-        body: { subject: getCurrentSubject(), content: getCurrentEmailHtml(), recipientType, specificEmails: recipientType === "specific" ? specificEmails : undefined },
+      const data = await invokeEmailFunction("send-user-email", {
+        subject: getCurrentSubject(), content: getCurrentEmailHtml(), recipientType, specificEmails: recipientType === "specific" ? specificEmails : undefined,
       });
-      if (error) throw error;
       toast({ title: "Email Campaign Sent!", description: `Successfully sent to ${data.sent} of ${data.total} recipients` });
       if (activeTab === "custom") { setSubject(""); setContent(""); }
       setSpecificEmails([]);
