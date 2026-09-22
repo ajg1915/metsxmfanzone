@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { cancelPaypalAndDeleteAccount } from "../_shared/account-cleanup.ts";
+import { cancelPaypalAndRetainAccount } from "../_shared/account-cleanup.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,12 +39,14 @@ Deno.serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
     try {
-      const result = await cancelPaypalAndDeleteAccount(admin, user.id, reason);
+       const result = await cancelPaypalAndRetainAccount(admin, user.id, reason);
       if (!result.paypalConfirmed) return json({ error: result.message }, 502);
       return json({
-        success: result.paypalConfirmed && result.accountDeleted,
+        success: result.paypalConfirmed,
         paypalCancelled: result.paypalConfirmed,
-        accountDeleted: result.accountDeleted,
+        accountRetained: result.accountRetained,
+        cancellationCount: result.cancellationCount,
+        limitedAccess: result.limitedAccess,
         message: result.message,
       });
     } catch (e) {

@@ -10,6 +10,16 @@ export type AccountCleanupResult = {
   message?: string;
 };
 
+export type MembershipCancellationResult = {
+  paypalConfirmed: boolean;
+  accountRetained: boolean;
+  cancellationCount: number;
+  limitedAccess: boolean;
+  cancelledPaypalCount: number;
+  failedPaypalCount: number;
+  message?: string;
+};
+
 async function getPayPalAccessToken(api: string, id: string, secret: string) {
   const res = await fetch(`${api}/v1/oauth2/token`, {
     method: "POST",
@@ -60,6 +70,97 @@ async function cancelPayPalSubscription(
 
   console.error("PayPal subscription cancel failed", { status: cancelRes.status, paypalId: "[REDACTED]" });
   return false;
+}
+
+export async function cancelPaypalAndRetainAccount(
+  admin: ServiceClient,
+  userId: string,
+  reason = "Membership cancellation requested",
+): Promise<MembershipCancellationResult> {
+  const { data: subs, error: subErr } = await admin
+    .from("subscriptions")
+    .select("id, paypal_subscription_id, status, end_date")
+    .eq("user_id", userId);
+  if (subErr) throw subErr;
+
+  const paypalIds = Array.from(new Set((subs || []).map((s) => s.paypal_subscription_id).filter(Boolean))) as string[];
+  let failedPaypalCount = 0;
+  let cancelledPaypalCount = 0;
+
+  if (paypalIds.length > 0) {
+    const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
+    const secret = Deno.env.get("PAYPAL_SECRET");
+    const api = Deno.env.get("PAYPAL_BASE_URL") || "https://api-m.paypal.com";
+    if (!clientId || !secret) throw new Error("PayPal cancellation is not configured");
+    const token = await getPayPalAccessToken(api, clientId, secret);
+    for (const paypalId of paypalIds) {
+      const ok = await cancelPayPalSubscription(api, token, paypalId, reason);
+      if (ok) cancelledPaypalCount += 1;
+      else failedPaypalCount += 1;
+    }
+  }
+
+  const { count: priorCount } = await admin
+    .from("subscription_activity")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .in("action", ["membership_cancelled", "account_cancelled_deleted"]);
+
+  if (failedPaypalCount > 0) {
+    return {
+      paypalConfirmed: false,
+      accountRetained: true,
+      cancellationCount: priorCount || 0,
+      limitedAccess: (priorCount || 0) > 2,
+      cancelledPaypalCount,
+      failedPaypalCount,
+      message: "PayPal did not confirm every cancellation, so your membership was not changed.",
+    };
+  }
+
+  const nowIso = new Date().toISOString();
+  const recentCutoff = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const { count: recentCount } = await admin
+    .from("subscription_activity")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("action", "membership_cancelled")
+    .gte("created_at", recentCutoff);
+
+  if (subs && subs.length > 0) {
+    await admin.from("subscriptions").update({
+      status: "cancelled",
+      cancellation_status: "cancelled",
+      cancellation_requested_at: nowIso,
+      updated_at: nowIso,
+    }).in("id", subs.map((s) => s.id));
+
+    if (!recentCount) {
+      const subscriptionId = subs[0]?.id;
+      if (subscriptionId) {
+        await admin.from("subscription_activity").insert({
+          subscription_id: subscriptionId,
+          user_id: userId,
+          action: "membership_cancelled",
+          details: { reason, paypal_confirmed: true, account_retained: true },
+          performed_by: userId,
+        });
+      }
+    }
+  }
+
+  const cancellationCount = (priorCount || 0) + (recentCount ? 0 : 1);
+  return {
+    paypalConfirmed: true,
+    accountRetained: true,
+    cancellationCount,
+    limitedAccess: cancellationCount > 2,
+    cancelledPaypalCount,
+    failedPaypalCount,
+    message: cancellationCount > 2
+      ? "PayPal billing was cancelled. Your account remains available with limited access because it has been cancelled more than twice."
+      : "PayPal billing was cancelled. Your account remains available and paid access continues until the current billing period ends.",
+  };
 }
 
 const cleanupTargets = [

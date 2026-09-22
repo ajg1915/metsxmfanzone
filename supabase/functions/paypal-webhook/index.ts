@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { cancelPaypalAndDeleteAccount } from "../_shared/account-cleanup.ts";
+import { cancelPaypalAndRetainAccount } from "../_shared/account-cleanup.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -362,18 +362,19 @@ Deno.serve(async (req: Request) => {
           break;
         }
 
-        // Cancelling ends the membership entirely — remove the account and all related data.
+        // Retain the member account and history after PayPal cancellation.
         for (const row of cancelledRows || []) {
           if (!row.user_id) continue;
           try {
-            const cleanup = await cancelPaypalAndDeleteAccount(
+            const cleanup = await cancelPaypalAndRetainAccount(
               supabase,
               row.user_id,
               'PayPal cancellation webhook received',
             );
             console.log('PayPal webhook account cleanup completed', {
               paypalConfirmed: cleanup.paypalConfirmed,
-              accountDeleted: cleanup.accountDeleted,
+              accountRetained: cleanup.accountRetained,
+              limitedAccess: cleanup.limitedAccess,
               userId: '[REDACTED]',
             });
           } catch (cleanupErr) {

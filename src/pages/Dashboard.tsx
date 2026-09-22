@@ -41,12 +41,10 @@ const Dashboard = () => {
   const [postCount, setPostCount] = useState(0);
   const [memberDays, setMemberDays] = useState(0);
   const [cancelling, setCancelling] = useState(false);
+  const [cancellationCount, setCancellationCount] = useState(0);
+  const [cancelWarningOpen, setCancelWarningOpen] = useState(false);
 
   const handleCancelSubscription = async () => {
-    const confirmed = window.confirm(
-      "Cancel your membership? This stops all future PayPal charges immediately and permanently deletes your MetsXMFanZone account and data. This cannot be undone."
-    );
-    if (!confirmed) return;
     setCancelling(true);
 
     const recordResult = (result: Record<string, unknown>) => {
@@ -64,23 +62,24 @@ const Dashboard = () => {
         throw new Error((data as any)?.error || error?.message || "Failed to cancel");
       }
 
-      const accountDeleted = Boolean((data as any)?.accountDeleted);
+      const nextCount = Number((data as any)?.cancellationCount || cancellationCount + 1);
+      setCancellationCount(nextCount);
       setSubscriptionStatus("cancelled");
       setSubscriptionDialogOpen(false);
       recordResult({
         paypalConfirmed: true,
-        accountDeleted,
+        accountRetained: true,
+        cancellationCount: nextCount,
+        limitedAccess: Boolean((data as any)?.limitedAccess),
         message: (data as any)?.message,
       });
 
-      if (accountDeleted) {
-        await supabase.auth.signOut();
-      }
+      setCancelWarningOpen(false);
       navigate("/dashboard/cancellation-status");
     } catch (e: any) {
       recordResult({
         paypalConfirmed: false,
-        accountDeleted: false,
+        accountRetained: true,
         error: e?.message || "Failed to cancel",
       });
       setSubscriptionDialogOpen(false);
@@ -113,7 +112,7 @@ const Dashboard = () => {
       setMemberDays(Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24)));
 
       try {
-        const [subResult, profileResult, postsResult] = await Promise.all([
+        const [subResult, profileResult, postsResult, cancellationResult] = await Promise.all([
           supabase
             .from('subscriptions')
             .select('id, plan_type, status, start_date, end_date, amount, currency')
@@ -131,6 +130,11 @@ const Dashboard = () => {
             .from('posts')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', user.id),
+          supabase
+            .from('subscription_activity')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .in('action', ['membership_cancelled', 'account_cancelled_deleted']),
         ]);
 
         if (!subResult.error && subResult.data) {
@@ -147,6 +151,7 @@ const Dashboard = () => {
         }
 
         setPostCount(postsResult.count || 0);
+        setCancellationCount(cancellationResult.count || 0);
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -448,7 +453,7 @@ const Dashboard = () => {
                             variant="outline"
                             className="w-full border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/60"
                             disabled={cancelling || subscriptionStatus !== "active"}
-                            onClick={handleCancelSubscription}
+                             onClick={() => setCancelWarningOpen(true)}
                           >
                             {cancelling
                               ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Cancelling…</>)
@@ -457,7 +462,7 @@ const Dashboard = () => {
                                 : "Subscription Already Cancelled"}
                           </Button>
                           <p className="text-[11px] text-muted-foreground text-center pt-1">
-                            Cancelling stops all future PayPal charges immediately and permanently deletes your account.
+                             Your account stays available. More than two cancellations will limit paid access.
                           </p>
 
                         </div>
@@ -465,6 +470,27 @@ const Dashboard = () => {
                       </div>
                     </DialogContent>
                   </Dialog>
+                   <Dialog open={cancelWarningOpen} onOpenChange={setCancelWarningOpen}>
+                     <DialogContent className="grid max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-md grid-rows-[auto_1fr_auto] overflow-hidden p-0">
+                       <DialogHeader className="border-b border-border/60 p-5 text-left">
+                         <DialogTitle>Before you cancel</DialogTitle>
+                         <DialogDescription>Review what happens to your membership and account.</DialogDescription>
+                       </DialogHeader>
+                       <div className="space-y-3 overflow-y-auto p-5 text-sm text-muted-foreground">
+                         <p>PayPal renewal will stop. Your account and membership history will remain available.</p>
+                         <p>Paid access continues through the current billing period when confirmed by PayPal.</p>
+                         <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-foreground">
+                           You have cancelled {cancellationCount} time{cancellationCount === 1 ? "" : "s"}. After more than two cancellations, paid access is limited until an admin restores eligibility.
+                         </div>
+                       </div>
+                       <div className="grid gap-2 border-t border-border/60 p-4 sm:grid-cols-2">
+                         <Button variant="outline" onClick={() => setCancelWarningOpen(false)}>Keep Membership</Button>
+                         <Button variant="destructive" onClick={handleCancelSubscription} disabled={cancelling}>
+                           {cancelling ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Cancelling…</> : "Confirm Cancellation"}
+                         </Button>
+                       </div>
+                     </DialogContent>
+                   </Dialog>
                 )}
               </div>
 
