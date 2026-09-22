@@ -1,5 +1,4 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { queueTransactionalEmail } from "../_shared/queue-email.ts";
 import { renderBrandedEmailFor, escapeHtml } from "../_shared/email-brand.ts";
 
 const corsHeaders = {
@@ -20,6 +19,58 @@ interface EmailRequest {
   subscriptionId?: string;
 }
 
+const sendDirectlyThroughResend = async ({
+  to,
+  subject,
+  html,
+  label,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+  label: string;
+}) => {
+  const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+  const resendApiKey = Deno.env.get("RESEND_API_KEY_1") ?? Deno.env.get("RESEND_API_KEY");
+  if (!lovableApiKey || !resendApiKey) {
+    throw new Error("Email service is not configured");
+  }
+
+  const normalizedTo = to.trim().toLowerCase();
+  const response = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${lovableApiKey}`,
+      "X-Connection-Api-Key": resendApiKey,
+      "Idempotency-Key": `${label}:${normalizedTo}:${crypto.randomUUID()}`,
+    },
+    body: JSON.stringify({
+      from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+      to: [normalizedTo],
+      subject,
+      html,
+      text: subject,
+      reply_to: "support@metsxmfanzone.com",
+    }),
+  });
+
+  const responseBody = await response.text();
+  if (!response.ok) {
+    console.error("Confirmation email provider rejected the request", {
+      status: response.status,
+      details: responseBody,
+    });
+    throw new Error(`Email provider rejected the request (${response.status}): ${responseBody}`);
+  }
+
+  try {
+    return (JSON.parse(responseBody) as { id?: string }).id ?? crypto.randomUUID();
+  } catch {
+    return crypto.randomUUID();
+  }
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -31,6 +82,13 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { type, email, name, planType, amount, transactionDate, subscriptionId }: EmailRequest = await req.json();
+
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+      return new Response(JSON.stringify({ error: "A valid email address is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const safeName = escapeHtml(name || "Mets Fan");
     const safeAmount = escapeHtml(amount || "0.00");
@@ -91,7 +149,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { messageId } = await queueTransactionalEmail(supabase, {
+    const messageId = await sendDirectlyThroughResend({
       to: email,
       subject,
       html: emailContent,
@@ -102,9 +160,14 @@ Deno.serve(async (req) => {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
-  } catch (error: any) {
-    console.error("Error in send-confirmation-email:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const message = error instanceof Error
+      ? error.message
+      : typeof error === "string"
+        ? error
+        : "The confirmation email could not be sent";
+    console.error("Error in send-confirmation-email:", message);
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
