@@ -16,3 +16,10 @@
 - [x] Add admin signup/login activity visibility and alerts
 - [x] Streamline member access, PayPal linkage, cancellation warnings, and repeat-cancellation limits
 - [x] Condense admin navigation and group infrequent tools under More
+
+# Member Center and subscription UI refresh
+
+- [ ] Rebuild the member-facing center and subscription summary
+- [ ] Correct subscription, PayPal, cancellation, and error states
+- [ ] Rebuild admin Members for mobile, tablet, and desktop
+- [ ] Verify member and admin flows across responsive sizes
