@@ -29,6 +29,8 @@ interface EmailRequest {
   recipientType: "all_users" | "subscribers" | "specific";
   specificEmails?: string[];
   useTestSender?: boolean;
+  /** When true, content is already a full branded HTML document and is sent as-is. */
+  rawHtml?: boolean;
 }
 
 const sendDirectlyThroughResend = async ({
@@ -120,7 +122,8 @@ Deno.serve(async (req) => {
       throw new Error("Admin access required");
     }
 
-    const { subject, content, recipientType, specificEmails, useTestSender }: EmailRequest = await req.json();
+    const { subject, content, recipientType, specificEmails, useTestSender, rawHtml }: EmailRequest =
+      await req.json();
 
     if (!subject || !content) {
       throw new Error("Subject and content are required");
@@ -185,14 +188,17 @@ Deno.serve(async (req) => {
 
     for (const recipient of dedupedRecipients) {
       try {
-        const personalizedContent = sanitizedContent
+        // rawHtml is a full branded document already sanitized when it was rendered.
+        const personalizedContent = (rawHtml ? content : sanitizedContent)
           .replace(/\{\{name\}\}/g, escapeHtml(recipient.name || "Fan"))
           .replace(/\{\{email\}\}/g, escapeHtml(recipient.email));
 
-        const brandedHtml = await renderBrandedEmailFor(supabase, {
-          preheader: subject,
-          content: personalizedContent,
-        });
+        const brandedHtml = rawHtml
+          ? personalizedContent
+          : await renderBrandedEmailFor(supabase, {
+            preheader: subject,
+            content: personalizedContent,
+          });
 
         await sendDirectlyThroughResend({
           to: recipient.email,
