@@ -104,6 +104,8 @@ export const queueTransactionalEmail = async (
     // Suppression table unavailable: continue with the send.
   }
 
+  const unsubscribeUrl = `https://${VERIFIED_EMAIL_DOMAIN}/unsubscribe?email=${encodeURIComponent(normalizedTo)}`
+
   let response: Response
   try {
     response = await fetch(`${RESEND_GATEWAY_URL}/emails`, {
@@ -120,6 +122,11 @@ export const queueTransactionalEmail = async (
         subject,
         html,
         text: text ?? subject,
+        reply_to: `support@${VERIFIED_EMAIL_DOMAIN}`,
+        headers: {
+          'List-Unsubscribe': `<${unsubscribeUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       }),
     })
   } catch (error) {
