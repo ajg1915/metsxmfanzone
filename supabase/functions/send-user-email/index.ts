@@ -1,7 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
-import * as ammonia from "https://deno.land/x/ammonia@0.3.1/mod.ts";
+import { escapeHtml, sanitizeHtml } from "../_shared/sanitize-html.ts";
 
-await ammonia.init();
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,24 +14,6 @@ const VERIFIED_EMAIL_DOMAIN = "notify.metsxmfanzone.com";
 const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`;
 const EMAIL_QUEUE_NAME = "transactional_emails";
 
-const escapeHtml = (str: string): string => {
-  if (!str) return "";
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-};
-
-const sanitizeHtml = (html: string): string => {
-  try {
-    return ammonia.clean(html);
-  } catch (error) {
-    console.error("Error sanitizing HTML:", error);
-    return escapeHtml(html);
-  }
-};
 
 const getTemplateName = (recipientType: EmailRequest["recipientType"], useTestSender: boolean) => {
   if (useTestSender) return "manual_campaign_test";
