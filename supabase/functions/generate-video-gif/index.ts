@@ -78,27 +78,18 @@ Deno.serve(async (req) => {
 
     const { bytes } = await generateCloudflareImage({ prompt });
 
-    const fileName = `gif_preview_${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
+    const fileName = `videos/gif_preview_${Date.now()}_${Math.random().toString(36).substring(7)}.png`;
 
-    const { error: uploadError } = await supabase.storage
-      .from("videos")
-      .upload(fileName, bytes, {
-        contentType: "image/png",
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.error("Storage upload error:", uploadError);
+    let publicUrl: string;
+    try {
+      publicUrl = await uploadBytesToR2(fileName, bytes, "image/png");
+    } catch (uploadError) {
+      console.error("R2 upload error:", uploadError instanceof Error ? uploadError.message : uploadError);
       return new Response(JSON.stringify({ error: "Failed to upload preview image" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from("videos")
-      .getPublicUrl(fileName);
 
     console.log("Preview image uploaded:", publicUrl);
 
