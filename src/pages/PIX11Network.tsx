@@ -89,9 +89,9 @@ const PIX11Network = () => {
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="bg-[#00a8e8]/20 text-[#00a8e8] border-[#00a8e8]/30">
+                    <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
                       <Signal className="w-3 h-3 mr-1" />
-                      Channel 11
+                      Beyond the Mets
                     </Badge>
                     <Badge variant="outline" className="border-muted-foreground/30">
                       <Tv className="w-3 h-3 mr-1" />
@@ -99,11 +99,11 @@ const PIX11Network = () => {
                     </Badge>
                   </div>
                   <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-2">
-                    PIX11 <span className="text-[#00a8e8]">Network</span>
+                    MetsXMFanZone <span className="text-primary">Game Events</span>
                   </h1>
                   <p className="text-muted-foreground text-sm sm:text-base max-w-xl">
-                    New York's source for breaking news, weather, and Mets coverage. 
-                    Stream live 24/7 from the heart of the city.
+                    Live games and events beyond the Mets — non-Mets matchups, special
+                    broadcasts and extra sports coverage, streamed by MetsXMFanZone.
                   </p>
                 </motion.div>
                 
