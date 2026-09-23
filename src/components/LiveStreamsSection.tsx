@@ -343,8 +343,14 @@ const LiveStreamsSection = () => {
         // 4. MetsXMFanZone live and event broadcasts belong here.
         if (pages.includes('metsxmfanzone') || pages.includes('metsxmfanzone-2')) return true;
 
-        // 5. Admin-added entries with no channel page are homepage events.
-        if (pages.length === 0) return true;
+        // 4b. A bare network channel name (SNY.TV, MLB Network, MSG, ESPN,
+        //     PIX11) is a channel feed, not a game or event.
+        const titleLower = s.title.toLowerCase();
+        if (['sny', 'mlb network', 'msg', 'espn', 'pix11', 'pix 11'].some(n => titleLower.includes(n))) return false;
+
+        // 5. Untagged entries only belong if they are MetsXMFanZone
+        //    broadcasts — anything else unclassified stays out.
+        if (pages.length === 0) return titleLower.includes('metsxmfanzone');
 
         return false;
       });
