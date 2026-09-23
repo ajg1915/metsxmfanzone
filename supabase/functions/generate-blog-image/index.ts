@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { generateCloudflareImage } from "../_shared/cloudflareAi.ts";
+import { uploadBytesToR2 } from "../_shared/r2.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -67,22 +68,7 @@ Deno.serve(async (req: Request) => {
     });
 
     const fileName = `blog-images/${crypto.randomUUID()}.png`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("content_uploads")
-      .upload(fileName, bytes, {
-        contentType: "image/png",
-        upsert: false,
-      });
-
-    if (uploadError) {
-      console.error("Upload error:", uploadError);
-      throw new Error("Failed to upload image to storage");
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from("content_uploads")
-      .getPublicUrl(fileName);
+    const publicUrl = await uploadBytesToR2(fileName, bytes, "image/png");
 
     console.log("Image uploaded successfully:", publicUrl);
 

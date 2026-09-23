@@ -78,18 +78,22 @@ const GameAlertsManagement = () => {
     setLoading(false);
   };
 
+  // Custom sounds live in R2; their links are remembered on this device.
+  const R2_SOUNDS_KEY = "mxfz_r2_alert_sounds";
   const loadCustomSounds = async () => {
-    const { data } = await supabase.storage
-      .from("content_uploads")
-      .list("alert-sounds", { limit: 50 });
-
-    if (data) {
-      const sounds = data.map((file) => {
-        const { data: urlData } = supabase.storage.from("content_uploads").getPublicUrl(`alert-sounds/${file.name}`);
-        return { name: file.name.replace(/\.[^.]+$/, ''), url: urlData.publicUrl };
-      });
-      setCustomSounds(sounds);
+    try {
+      const saved = JSON.parse(localStorage.getItem(R2_SOUNDS_KEY) || "[]");
+      setCustomSounds(Array.isArray(saved) ? saved : []);
+    } catch {
+      setCustomSounds([]);
     }
+  };
+  const rememberSound = (name: string, url: string) => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(R2_SOUNDS_KEY) || "[]");
+      const list = (Array.isArray(saved) ? saved : []).filter((s: any) => s.url !== url);
+      localStorage.setItem(R2_SOUNDS_KEY, JSON.stringify([{ name, url }, ...list].slice(0, 50)));
+    } catch {}
   };
 
   const handleUploadCustomSound = async () => {
@@ -103,6 +107,7 @@ const GameAlertsManagement = () => {
 
     try {
       const { publicUrl } = await uploadToR2(customSoundFile, "alert-sounds");
+      rememberSound(customSoundName || customSoundFile.name.replace(/\.[^.]+$/, ""), publicUrl);
       setAlertSound(publicUrl);
       setCustomSoundFile(null);
       setCustomSoundName("");
