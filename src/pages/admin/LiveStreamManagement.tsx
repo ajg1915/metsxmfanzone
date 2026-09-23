@@ -813,7 +813,7 @@ export default function LiveStreamManagement() {
                       : [...formData.assigned_pages, "live"],
                   })}
                 >
-                  Use PIX11 Stream
+                  Use Game Events Stream
                 </Button>
 
               </div>
@@ -997,7 +997,7 @@ export default function LiveStreamManagement() {
                     </SelectContent>
                   </Select>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Choose Stream 2 to show this game there. Paste the PIX11 M3U8 URL above as its video source.
+                    Choose Stream 2 to show this game there. Paste the Game Events M3U8 URL above as its video source.
                   </p>
                   <Label className="mt-4 block">Also Show In</Label>
                   <div className="space-y-2 mt-2">

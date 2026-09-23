@@ -232,9 +232,9 @@
   },
   {
     "path": "/pix11-network",
-    "label": "PIX11",
-    "title": "PIX11 Mets Coverage | MetsXMFanZone",
-    "description": "Find PIX11 Mets broadcasts and New York sports coverage.",
+    "label": "Game Events",
+    "title": "MetsXMFanZone Game Events | Non-Mets Games & Events",
+    "description": "Live non-Mets games and special event streams on MetsXMFanZone.",
     "image": "/share/pix11-network.jpg"
   },
   {
