@@ -455,6 +455,7 @@ const AppContent = () => {
             <Route path="/mlb-network" element={<MLBNetwork />} />
             <Route path="/espn-network" element={<ESPNNetwork />} />
             <Route path="/pix11-network" element={<PIX11Network />} />
+            <Route path="/game-events" element={<PIX11Network />} />
             <Route path="/msg-network" element={<MSGNetwork />} />
             <Route path="/msg-plus" element={<MSGPlus />} />
             <Route path="/live/:streamId" element={<LiveStream />} />

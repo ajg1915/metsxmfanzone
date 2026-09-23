@@ -14,10 +14,10 @@ const PIX11Network = () => {
     <StreamTimeLimit pageKey="pix11-network" allowGuestPreview>
     <div className="min-h-screen bg-background flex flex-col">
       <SEOHead
-        title="PIX11 Live Stream - Watch PIX11 New York Live | MetsXMFanZone"
-        description="Stream PIX11 New York live - your source for local news, sports, weather, and entertainment. Watch 24/7 live coverage from NYC's favorite local station."
+        title="MetsXMFanZone Game Events - Live Non-Mets Games & Events"
+        description="Stream live game events on MetsXMFanZone - non-Mets games, special events and extra live sports coverage beyond the Mets."
         canonical="https://www.metsxmfanzone.com/pix11-network"
-        keywords="PIX11, PIX11 live stream, New York local news, NYC sports, PIX11 weather, New York TV, live stream NYC"
+        keywords="MetsXMFanZone game events, live game stream, non-Mets games, live sports events, extra games stream"
         ogType="video.other"
       />
       <Navigation />
@@ -64,10 +64,10 @@ const PIX11Network = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-[#00a8e8] to-[#005f8a] flex items-center justify-center shadow-xl shadow-[#00a8e8]/20">
-                  <div className="text-center">
-                    <span className="text-white font-black text-3xl sm:text-4xl tracking-tight">PIX</span>
-                    <span className="text-[#ffd700] font-black text-3xl sm:text-4xl">11</span>
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-primary to-[#002D72] flex items-center justify-center shadow-xl shadow-primary/20">
+                  <div className="text-center px-2">
+                    <span className="text-white font-black text-xl sm:text-2xl tracking-tight leading-none block">GAME</span>
+                    <span className="text-[#ffd700] font-black text-xl sm:text-2xl leading-none block">EVENTS</span>
                   </div>
                 </div>
                 {/* Live indicator */}
@@ -89,9 +89,9 @@ const PIX11Network = () => {
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="bg-[#00a8e8]/20 text-[#00a8e8] border-[#00a8e8]/30">
+                    <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
                       <Signal className="w-3 h-3 mr-1" />
-                      Channel 11
+                      Beyond the Mets
                     </Badge>
                     <Badge variant="outline" className="border-muted-foreground/30">
                       <Tv className="w-3 h-3 mr-1" />
@@ -99,11 +99,11 @@ const PIX11Network = () => {
                     </Badge>
                   </div>
                   <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-2">
-                    PIX11 <span className="text-[#00a8e8]">Network</span>
+                    MetsXMFanZone <span className="text-primary">Game Events</span>
                   </h1>
                   <p className="text-muted-foreground text-sm sm:text-base max-w-xl">
-                    New York's source for breaking news, weather, and Mets coverage. 
-                    Stream live 24/7 from the heart of the city.
+                    Live games and events beyond the Mets — non-Mets matchups, special
+                    broadcasts and extra sports coverage, streamed by MetsXMFanZone.
                   </p>
                 </motion.div>
                 
@@ -119,8 +119,8 @@ const PIX11Network = () => {
                     <span className="text-xs text-foreground">New York, NY</span>
                   </div>
                   <div className="flex items-center gap-2 bg-background/50 backdrop-blur-sm px-3 py-2 rounded-lg border border-border/50">
-                    <Clock className="w-4 h-4 text-[#00a8e8]" />
-                    <span className="text-xs text-foreground">24/7 Live Coverage</span>
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="text-xs text-foreground">Live Event Coverage</span>
                   </div>
                 </motion.div>
               </div>
@@ -138,8 +138,8 @@ const PIX11Network = () => {
             >
               <StreamPlayer 
                 pageName="pix11-network"
-                pageTitle="PIX11 Live Stream"
-                pageDescription="Watch PIX11 New York live - local news, sports, weather, and entertainment"
+                pageTitle="MetsXMFanZone Game Events Live"
+                pageDescription="Watch live non-Mets games and special event broadcasts on MetsXMFanZone"
               />
             </motion.div>
             
@@ -150,14 +150,14 @@ const PIX11Network = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:border-[#00a8e8]/50 transition-colors group">
+              <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:border-primary/50 transition-colors group">
                 <CardContent className="p-4 sm:p-6">
-                  <div className="w-12 h-12 rounded-xl bg-[#00a8e8]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Tv className="w-6 h-6 text-[#00a8e8]" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Tv className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="font-bold text-lg text-foreground mb-2">Local News</h3>
+                  <h3 className="font-bold text-lg text-foreground mb-2">Non-Mets Games</h3>
                   <p className="text-sm text-muted-foreground">
-                    Breaking news coverage from across the tri-state area with live updates throughout the day.
+                    Live matchups from around the league and beyond — the games that aren't Mets broadcasts.
                   </p>
                 </CardContent>
               </Card>
@@ -167,9 +167,9 @@ const PIX11Network = () => {
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Radio className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="font-bold text-lg text-foreground mb-2">Mets Coverage</h3>
+                  <h3 className="font-bold text-lg text-foreground mb-2">Special Events</h3>
                   <p className="text-sm text-muted-foreground">
-                    Exclusive Mets pre-game shows, post-game analysis, and insider reports from Citi Field.
+                    One-off live broadcasts, fan events and special streams you won't find on the main channel.
                   </p>
                 </CardContent>
               </Card>
@@ -179,9 +179,9 @@ const PIX11Network = () => {
                   <div className="w-12 h-12 rounded-xl bg-[#ffd700]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Signal className="w-6 h-6 text-[#ffd700]" />
                   </div>
-                  <h3 className="font-bold text-lg text-foreground mb-2">Weather Updates</h3>
+                  <h3 className="font-bold text-lg text-foreground mb-2">Extra Coverage</h3>
                   <p className="text-sm text-muted-foreground">
-                    Accurate forecasts and severe weather alerts to keep you prepared for game day conditions.
+                    Bonus live sports coverage streamed by MetsXMFanZone whenever big events are on.
                   </p>
                 </CardContent>
               </Card>

@@ -413,8 +413,8 @@ export const networkRoutes = [
   {
     path: "/pix11-network",
     render: (root) => renderNetworkPage(root, "/pix11-network", {
-      title: "PIX11 Network",
-      description: "Stream PIX11 New York live - local news, sports, and Mets coverage.",
+      title: "MetsXMFanZone Game Events",
+      description: "Live non-Mets games and special event streams on MetsXMFanZone.",
       streamPageKey: "pix11-network",
       color: "#1e3a5f",
       image: "/share/pix11-network.jpg"
