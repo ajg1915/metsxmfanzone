@@ -119,8 +119,8 @@ const PIX11Network = () => {
                     <span className="text-xs text-foreground">New York, NY</span>
                   </div>
                   <div className="flex items-center gap-2 bg-background/50 backdrop-blur-sm px-3 py-2 rounded-lg border border-border/50">
-                    <Clock className="w-4 h-4 text-[#00a8e8]" />
-                    <span className="text-xs text-foreground">24/7 Live Coverage</span>
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span className="text-xs text-foreground">Live Event Coverage</span>
                   </div>
                 </motion.div>
               </div>
@@ -138,8 +138,8 @@ const PIX11Network = () => {
             >
               <StreamPlayer 
                 pageName="pix11-network"
-                pageTitle="PIX11 Live Stream"
-                pageDescription="Watch PIX11 New York live - local news, sports, weather, and entertainment"
+                pageTitle="MetsXMFanZone Game Events Live"
+                pageDescription="Watch live non-Mets games and special event broadcasts on MetsXMFanZone"
               />
             </motion.div>
             
@@ -150,14 +150,14 @@ const PIX11Network = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:border-[#00a8e8]/50 transition-colors group">
+              <Card className="bg-gradient-to-br from-card to-card/50 border-border/50 hover:border-primary/50 transition-colors group">
                 <CardContent className="p-4 sm:p-6">
-                  <div className="w-12 h-12 rounded-xl bg-[#00a8e8]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Tv className="w-6 h-6 text-[#00a8e8]" />
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <Tv className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="font-bold text-lg text-foreground mb-2">Local News</h3>
+                  <h3 className="font-bold text-lg text-foreground mb-2">Non-Mets Games</h3>
                   <p className="text-sm text-muted-foreground">
-                    Breaking news coverage from across the tri-state area with live updates throughout the day.
+                    Live matchups from around the league and beyond — the games that aren't Mets broadcasts.
                   </p>
                 </CardContent>
               </Card>
@@ -167,9 +167,9 @@ const PIX11Network = () => {
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Radio className="w-6 h-6 text-primary" />
                   </div>
-                  <h3 className="font-bold text-lg text-foreground mb-2">Mets Coverage</h3>
+                  <h3 className="font-bold text-lg text-foreground mb-2">Special Events</h3>
                   <p className="text-sm text-muted-foreground">
-                    Exclusive Mets pre-game shows, post-game analysis, and insider reports from Citi Field.
+                    One-off live broadcasts, fan events and special streams you won't find on the main channel.
                   </p>
                 </CardContent>
               </Card>
@@ -179,9 +179,9 @@ const PIX11Network = () => {
                   <div className="w-12 h-12 rounded-xl bg-[#ffd700]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <Signal className="w-6 h-6 text-[#ffd700]" />
                   </div>
-                  <h3 className="font-bold text-lg text-foreground mb-2">Weather Updates</h3>
+                  <h3 className="font-bold text-lg text-foreground mb-2">Extra Coverage</h3>
                   <p className="text-sm text-muted-foreground">
-                    Accurate forecasts and severe weather alerts to keep you prepared for game day conditions.
+                    Bonus live sports coverage streamed by MetsXMFanZone whenever big events are on.
                   </p>
                 </CardContent>
               </Card>
