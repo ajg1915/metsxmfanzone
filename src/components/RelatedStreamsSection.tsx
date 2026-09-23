@@ -61,8 +61,8 @@ const FALLBACK_STREAMS: RelatedStream[] = [
   },
   {
     id: "pix11-network",
-    title: "PIX11 24/7",
-    subtitle: "24/7 — PIX11 New York, local news, weather & Mets coverage",
+    title: "MetsXMFanZone Game Events",
+    subtitle: "Non-Mets games & live event streams",
     thumbnail: channelPix11,
     href: "/pix11-network",
   },
@@ -107,7 +107,7 @@ const isEspn24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) 
 const isPix1124x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
   if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
-  return title.includes("pix11") || title.includes("pix 11") || !!stream.assigned_pages?.includes("pix11-network");
+  return title.includes("pix11") || title.includes("pix 11") || title.includes("game events") || !!stream.assigned_pages?.includes("pix11-network");
 };
 
 const isMetsXM2 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
