@@ -340,15 +340,16 @@ const LiveStreamsSection = () => {
         // 3. Games and dated events always belong here.
         if (isGameBroadcast(s.title)) return true;
 
-        // 4. MetsXMFanZone live and event broadcasts belong here.
-        if (pages.includes('metsxmfanzone') || pages.includes('metsxmfanzone-2')) return true;
-
-        // 4b. A bare network channel name (SNY.TV, MLB Network, MSG, ESPN,
-        //     PIX11) is a channel feed, not a game or event.
+        // 4. A bare network channel name (SNY.TV, MLB Network, MSG, ESPN,
+        //    PIX11) is a channel feed, not a game or event — even if it was
+        //    also tagged to a MetsXMFanZone page.
         const titleLower = s.title.toLowerCase();
         if (['sny', 'mlb network', 'msg', 'espn', 'pix11', 'pix 11'].some(n => titleLower.includes(n))) return false;
 
-        // 5. Untagged entries only belong if they are MetsXMFanZone
+        // 5. MetsXMFanZone live and event broadcasts belong here.
+        if (pages.includes('metsxmfanzone') || pages.includes('metsxmfanzone-2')) return true;
+
+        // 6. Untagged entries only belong if they are MetsXMFanZone
         //    broadcasts — anything else unclassified stays out.
         if (pages.length === 0) return titleLower.includes('metsxmfanzone');
 
