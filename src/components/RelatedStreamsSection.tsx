@@ -220,7 +220,7 @@ const RelatedStreamsSection = () => {
             </h2>
           </div>
           <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-            24/7 · MLB · SNY · MSG · ESPN · PIX11 · XM2
+            24/7 · MLB · SNY · MSG · ESPN · Game Events · XM2
           </span>
         </div>
 
