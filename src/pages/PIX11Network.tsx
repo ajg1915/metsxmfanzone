@@ -14,10 +14,10 @@ const PIX11Network = () => {
     <StreamTimeLimit pageKey="pix11-network" allowGuestPreview>
     <div className="min-h-screen bg-background flex flex-col">
       <SEOHead
-        title="PIX11 Live Stream - Watch PIX11 New York Live | MetsXMFanZone"
-        description="Stream PIX11 New York live - your source for local news, sports, weather, and entertainment. Watch 24/7 live coverage from NYC's favorite local station."
+        title="MetsXMFanZone Game Events - Live Non-Mets Games & Events"
+        description="Stream live game events on MetsXMFanZone - non-Mets games, special events and extra live sports coverage beyond the Mets."
         canonical="https://www.metsxmfanzone.com/pix11-network"
-        keywords="PIX11, PIX11 live stream, New York local news, NYC sports, PIX11 weather, New York TV, live stream NYC"
+        keywords="MetsXMFanZone game events, live game stream, non-Mets games, live sports events, extra games stream"
         ogType="video.other"
       />
       <Navigation />
@@ -64,10 +64,10 @@ const PIX11Network = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-[#00a8e8] to-[#005f8a] flex items-center justify-center shadow-xl shadow-[#00a8e8]/20">
-                  <div className="text-center">
-                    <span className="text-white font-black text-3xl sm:text-4xl tracking-tight">PIX</span>
-                    <span className="text-[#ffd700] font-black text-3xl sm:text-4xl">11</span>
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-primary to-[#002D72] flex items-center justify-center shadow-xl shadow-primary/20">
+                  <div className="text-center px-2">
+                    <span className="text-white font-black text-xl sm:text-2xl tracking-tight leading-none block">GAME</span>
+                    <span className="text-[#ffd700] font-black text-xl sm:text-2xl leading-none block">EVENTS</span>
                   </div>
                 </div>
                 {/* Live indicator */}
