@@ -33,7 +33,7 @@ import { CSS } from "@dnd-kit/utilities";
 interface LiveStream {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   stream_url: string;
   thumbnail_url: string;
   status: 'live' | 'scheduled' | 'ended';
