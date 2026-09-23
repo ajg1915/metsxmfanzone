@@ -107,6 +107,7 @@ const GameAlertsManagement = () => {
 
     try {
       const { publicUrl } = await uploadToR2(customSoundFile, "alert-sounds");
+      rememberSound(customSoundName || customSoundFile.name.replace(/\.[^.]+$/, ""), publicUrl);
       setAlertSound(publicUrl);
       setCustomSoundFile(null);
       setCustomSoundName("");
