@@ -33,7 +33,7 @@ import { CSS } from "@dnd-kit/utilities";
 interface LiveStream {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   stream_url: string;
   thumbnail_url: string;
   status: 'live' | 'scheduled' | 'ended';
@@ -313,27 +313,47 @@ const LiveStreamsSection = () => {
       });
 
 
-      // Live Streams shows games, MetsXMFanZone live and event broadcasts.
-      // The always-on 24/7 network channel feeds never appear here.
+      // Live Streams shows only games you add, plus MetsXMFanZone live and
+      // event broadcasts. Always-on 24/7 network channel feeds never appear
+      // here — exclusions are checked BEFORE the game/event title match so a
+      // 24/7 feed can never slip back in through its title wording.
       const networkChannelPages = ['mlb-network', 'sny-tv', 'sny.tv', 'msg-network', 'msg', 'espn-network', 'espn', 'pix11-network', 'pix11'];
+      const looksLike247 = (s: { title: string; description?: string | null }) => {
+        const text = `${s.title} ${s.description || ''}`.toLowerCase();
+        return text.includes('24/7') || text.includes('24-7') || text.includes('24x7');
+      };
       const isGameBroadcast = (title: string) =>
-        /\s(vs\.?|v\.?|@|at)\s/i.test(` ${title} `) || /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(title);
+        /\b(vs\.?|@|at)\b/i.test(title) || /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(title);
 
       const filtered = sorted.filter(s => {
-        const title = s.title.toLowerCase();
-        // A scheduled game or event always belongs in Live Streams.
-        if (isGameBroadcast(s.title)) return true;
+        // 1. Always-on 24/7 channel feeds never belong in Live Streams.
+        if (looksLike247(s)) return false;
 
-        // Always-on channel feed by title.
-        if (title.includes('24/7') || title.includes('24-7')) return false;
-
-        // A channel entry with no game/event title that only lives on a network page.
         const pages = (s.assigned_pages || [])
           .map(p => p.toLowerCase())
           .filter(p => p !== 'live' && p !== 'guide');
+
+        // 2. Entries that only feed a network channel page stay in Sports
+        //    Network Streams.
         if (pages.length > 0 && pages.every(p => networkChannelPages.includes(p))) return false;
 
-        return true;
+        // 3. Games and dated events always belong here.
+        if (isGameBroadcast(s.title)) return true;
+
+        // 4. A bare network channel name (SNY.TV, MLB Network, MSG, ESPN,
+        //    PIX11) is a channel feed, not a game or event — even if it was
+        //    also tagged to a MetsXMFanZone page.
+        const titleLower = s.title.toLowerCase();
+        if (['sny', 'mlb network', 'msg', 'espn', 'pix11', 'pix 11'].some(n => titleLower.includes(n))) return false;
+
+        // 5. MetsXMFanZone live and event broadcasts belong here.
+        if (pages.includes('metsxmfanzone') || pages.includes('metsxmfanzone-2')) return true;
+
+        // 6. Untagged entries only belong if they are MetsXMFanZone
+        //    broadcasts — anything else unclassified stays out.
+        if (pages.length === 0) return titleLower.includes('metsxmfanzone');
+
+        return false;
       });
       setStreams(filtered as LiveStream[]);
 
