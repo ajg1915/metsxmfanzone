@@ -593,11 +593,6 @@ const LiveStreamsSection = () => {
           )}
         </div>
 
-        {visibleStreams.length === 0 && isAdmin && adminMode && (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            No published streams found. Add streams in the Live Stream Management page.
-          </div>
-        )}
       </section>
     </>
   );
