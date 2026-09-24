@@ -281,19 +281,19 @@ const RelatedStreamsSection = () => {
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3">
-                <div className="flex items-center justify-between gap-2">
+              <div className="p-1.5 sm:p-2">
+                <div className="flex items-center justify-between gap-1.5">
                   <div className="min-w-0">
-                    <h3 className="text-xs sm:text-sm font-bold text-foreground truncate">
+                    <h3 className="text-[11px] sm:text-xs font-bold text-foreground truncate">
                       {s.title}
                     </h3>
-                    <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
                       {s.subtitle}
                     </p>
                   </div>
                   <ChevronRight
                     className={cn(
-                      "w-4 h-4 text-primary flex-shrink-0 transition-transform",
+                      "w-3.5 h-3.5 text-primary flex-shrink-0 transition-transform",
                       "group-hover:translate-x-1"
                     )}
                   />
