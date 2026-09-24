@@ -508,7 +508,9 @@ export default function LiveStreamManagement() {
 
     try {
       // NY team events always use the shared secondary link when no URL is set.
-      const isNYTeamEvent = formData.assigned_pages.some((page) => NY_TEAM_PAGES.includes(page));
+      const isNYTeamEvent = formData.assigned_pages.some((page) =>
+        (NY_TEAM_PAGES as readonly string[]).includes(page.toLowerCase())
+      );
       const streamData = {
         ...formData,
         stream_url: formData.stream_url || (isNYTeamEvent ? SPORTS_EVENTS_STREAM_URL : formData.stream_url),
