@@ -27,14 +27,15 @@ const sendNotifications = async (
 ) => {
   // Gameday email — only fires for triggers that are toggled ON in admin
   try {
-    if (triggerType === 'pregame_20min' || triggerType === 'pregame_5min') {
+    if (triggerType === 'pregame_20min' || triggerType === 'pregame_5min' || triggerType === 'game_live') {
       const { data: setting } = await supabase
         .from('gameday_email_settings')
         .select('enabled')
         .eq('trigger_type', triggerType)
         .maybeSingle();
 
-      if (setting?.enabled) {
+      // Game-live emails are on unless the admin turns them off
+      if (setting ? setting.enabled : triggerType === 'game_live') {
         // Fetch all opted-in recipients (subscribed users)
         const { data: recipients } = await supabase
           .from('profiles')
@@ -49,6 +50,7 @@ const sendNotifications = async (
         const gamedayLabelMap: Record<string, string> = {
           pregame_20min: '20 MINUTES TO FIRST PITCH',
           pregame_5min: '5 MINUTES TO FIRST PITCH',
+          game_live: 'LIVE NOW',
         };
         const gamedayLabel = gamedayLabelMap[triggerType] || 'GAMEDAY ALERT';
         const gamedayContent = `
