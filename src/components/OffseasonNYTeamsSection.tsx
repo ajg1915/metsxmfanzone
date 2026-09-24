@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Radio, Play, ChevronRight, ChevronLeft, ShieldCheck, Trophy, CalendarClock } from "lucide-react";
+import { Radio, Play, ChevronRight, ChevronLeft, ShieldCheck, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import fanartGeneral from "@/assets/fanart-mets-general.jpg";
+import metsxmfanzoneLogo from "@/assets/metsxmfanzone-logo.png";
 
 interface LiveStream {
   id: string;
@@ -126,7 +127,7 @@ const OffseasonNYTeamsSection = () => {
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-primary" />
+            <img src={metsxmfanzoneLogo} alt="MetsXMFanZone" className="w-5 h-5 sm:w-6 sm:h-6 rounded object-contain" />
             <h2 className="text-xl md:text-2xl font-bold text-foreground">
               NY Sports Teams Events
             </h2>
