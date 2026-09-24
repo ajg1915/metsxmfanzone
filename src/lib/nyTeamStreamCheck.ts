@@ -19,5 +19,11 @@ export const isNYTeamStream = (stream: {
     return true;
   }
 
-  return NY_TEAM_NAME_PATTERN.test(`${stream.title || ""} ${stream.description || ""}`);
+  const eventText = `${stream.title || ""} ${stream.description || ""}`;
+  // Avoid classifying Mets games against the Texas Rangers or San Francisco
+  // Giants as NY football/hockey events. Explicit admin assignments above
+  // remain authoritative for any intentional exception.
+  if (/\bmets\b/i.test(eventText)) return false;
+
+  return NY_TEAM_NAME_PATTERN.test(eventText);
 };
