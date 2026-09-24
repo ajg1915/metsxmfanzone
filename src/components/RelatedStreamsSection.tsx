@@ -229,7 +229,7 @@ const RelatedStreamsSection = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3">
 
 
           {streams.map((s) => (
@@ -268,8 +268,8 @@ const RelatedStreamsSection = () => {
                 </div>
 
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-90 group-hover:scale-100 transition-transform">
-                    <Play className="w-6 h-6 text-white ml-0.5" fill="currentColor" />
+                  <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-90 group-hover:scale-100 transition-transform">
+                    <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
                   </div>
                 </div>
 
@@ -281,13 +281,13 @@ const RelatedStreamsSection = () => {
                 </div>
               </div>
 
-              <div className="p-3 sm:p-4">
+              <div className="p-2.5 sm:p-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-bold text-foreground truncate">
+                    <h3 className="text-xs sm:text-sm font-bold text-foreground truncate">
                       {s.title}
                     </h3>
-                    <p className="text-[11px] sm:text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                    <p className="text-[10px] sm:text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
                       {s.subtitle}
                     </p>
                   </div>
