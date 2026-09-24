@@ -99,38 +99,75 @@ function ManualFetchButton({
 }
 
 function TestPushButton() {
+  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [link, setLink] = useState("/");
+
   const handleSend = async () => {
+    if (!title.trim() || !message.trim()) {
+      toast.error("Add a title and a message first");
+      return;
+    }
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-beams-notification", {
         body: {
-          title: "MetsXMFanZone test alert",
-          body: "If you can see this, notifications are working.",
-          path: "/",
+          title: title.trim(),
+          body: message.trim(),
+          path: link.trim() || "/",
+          interests: ["hello", "all-users"],
         },
       });
       if (error) throw error;
       if (!data?.sent) {
-        toast.error("No alert sent", { description: data?.message || "No registered device found yet." });
+        toast.error("Notification not sent", { description: data?.error || "Please try again." });
         return;
       }
-      toast.success("Test alert sent to the latest device");
+      toast.success("Push notification sent");
+      setTitle("");
+      setMessage("");
+      setLink("/");
+      setOpen(false);
     } catch (err: any) {
-      toast.error("Test alert failed", { description: err?.message || "Unknown error" });
+      toast.error("Push notification failed", { description: err?.message || "Unknown error" });
     } finally {
       setLoading(false);
     }
   };
+
   return (
-    <button
-      onClick={handleSend}
-      disabled={loading}
-      className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-xs font-semibold text-slate-200 transition-all hover:border-[#FF5910]/50 hover:bg-white/[0.08] disabled:opacity-60"
-    >
-      {loading ? <Loader2 className="h-4 w-4 animate-spin text-[#FF7A3D]" /> : <Bell className="h-4 w-4" />}
-      Test push alert
-    </button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-xs font-semibold text-slate-200 transition-all hover:border-[#FF5910]/50 hover:bg-white/[0.08]">
+          <Bell className="h-4 w-4" />
+          Send push notification
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Send push notification</DialogTitle>
+          <DialogDescription>Goes to every device that turned on notifications.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <Input placeholder="Title (e.g. Mets game starts soon!)" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} />
+          <textarea
+            placeholder="Message"
+            maxLength={500}
+            rows={3}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          />
+          <Input placeholder="Link when tapped (e.g. /live)" maxLength={300} value={link} onChange={(e) => setLink(e.target.value)} />
+          <Button onClick={handleSend} disabled={loading} className="w-full">
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bell className="mr-2 h-4 w-4" />}
+            Send now
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
