@@ -149,7 +149,8 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     const userKey = `${STORAGE_KEY}_${user?.id ?? "anon"}`;
     const metaStart = Number(user?.user_metadata?.stream_preview_started_at) || 0;
     const localStart = Number(localStorage.getItem(userKey)) || 0;
-    const known = [metaStart, localStart].filter(Boolean);
+    const guestStart = Number(localStorage.getItem(GUEST_STORAGE_KEY)) || 0;
+    const known = [metaStart, localStart, guestStart].filter(Boolean);
     const startTime = String(known.length ? Math.min(...known) : Date.now());
     localStorage.setItem(userKey, startTime);
     if (!metaStart && user) {
