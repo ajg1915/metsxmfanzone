@@ -10,7 +10,7 @@ interface BackgroundSetting {
   name: string;
 }
 
-export const useBackgroundSettings = (pageType: "auth" | "welcome") => {
+export const useBackgroundSettings = (pageType: "auth" | "auth_login" | "auth_signup" | "welcome") => {
   return useQuery({
     queryKey: ["active-background", pageType],
     queryFn: async () => {

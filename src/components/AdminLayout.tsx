@@ -273,6 +273,30 @@ export function AdminLayout() {
     checkAdmin();
   }, [user, loading, navigate, toast, pinVerified]);
 
+  useEffect(() => {
+    if (!isAdmin || !user) return;
+
+    const inactivityMs = 5 * 60 * 1000;
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const signOutForInactivity = async () => {
+      clearAdminSession();
+      await signOut();
+      navigate("/auth?mode=login", { replace: true });
+      toast({ title: "Signed out", description: "Your admin session ended after 5 minutes of inactivity." });
+    };
+    const resetTimer = () => {
+      window.clearTimeout(timeoutId);
+      timeoutId = window.setTimeout(signOutForInactivity, inactivityMs);
+    };
+    const events: Array<keyof WindowEventMap> = ["pointerdown", "keydown", "touchstart", "scroll"];
+    events.forEach((event) => window.addEventListener(event, resetTimer, { passive: true }));
+    resetTimer();
+    return () => {
+      window.clearTimeout(timeoutId);
+      events.forEach((event) => window.removeEventListener(event, resetTimer));
+    };
+  }, [isAdmin, user, signOut, navigate, toast]);
+
 
   if (loading || checking) {
     return (
@@ -291,13 +315,13 @@ export function AdminLayout() {
           <p className="mt-2 text-xs text-muted-foreground">
             {loadingTimedOut
               ? "Your saved login may be expired. Start a fresh secure admin login to continue."
-              : "Verifying your account and secure PIN session..."}
+              : "Verifying your admin account..."}
           </p>
           {loadingTimedOut && (
             <div className="mt-4 grid gap-2">
               <Button onClick={handleFreshAdminLogin} className="w-full">
                 <LogIn className="mr-2 h-4 w-4" />
-                Open Secure PIN Login
+                Open Admin Login
               </Button>
               <Button variant="outline" onClick={() => window.location.reload()} className="w-full">
                 <RefreshCw className="mr-2 h-4 w-4" />

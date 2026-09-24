@@ -338,7 +338,7 @@ const Auth = () => {
         <meta name="robots" content="noindex,follow" />
         <link rel="canonical" href="https://metsxmfanzone.com/auth" />
       </Helmet>
-      <AuthBackground />
+      <AuthBackground mode={isSignup ? "signup" : "login"} />
 
       <main className="relative z-10 mx-auto grid w-full max-w-5xl overflow-hidden rounded-lg border border-border/50 bg-card/95 shadow-2xl backdrop-blur-xl lg:grid-cols-[0.9fr_1.1fr]">
         <section className="hidden border-r border-border/40 bg-secondary/20 p-8 lg:flex lg:flex-col lg:justify-between">
