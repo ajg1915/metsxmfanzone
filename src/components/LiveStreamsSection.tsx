@@ -470,7 +470,7 @@ const LiveStreamsSection = () => {
       const scrollAmount = container.clientWidth * 0.8;
       const newPosition = direction === 'left'
         ? Math.max(0, scrollPosition - scrollAmount)
-        : scrollPosition + scrollAmount;
+        : Math.min(container.scrollWidth - container.clientWidth, scrollPosition + scrollAmount);
       container.scrollTo({ left: newPosition, behavior: 'smooth' });
       setScrollPosition(newPosition);
     }
@@ -499,7 +499,7 @@ const LiveStreamsSection = () => {
   return (
     <>
       <UpgradePrompt open={showUpgradePrompt} onOpenChange={setShowUpgradePrompt} />
-      <section className="py-6 sm:py-8 relative">
+      <section className="py-6 relative bg-background/50">
         <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -522,13 +522,35 @@ const LiveStreamsSection = () => {
                 </button>
               )}
             </div>
-            <a
-              href="/community"
-              className="flex items-center gap-1 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              In Game Post
-              <ChevronRight className="w-4 h-4" />
-            </a>
+            <div className="flex items-center gap-2">
+              <a
+                href="/community"
+                className="flex items-center gap-1 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                In Game Post
+                <ChevronRight className="w-4 h-4" />
+              </a>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => scroll('left')}
+                className="h-8 w-8 rounded-full bg-secondary/50"
+                aria-label="Scroll live streams left"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => scroll('right')}
+                className="h-8 w-8 rounded-full bg-secondary/50"
+                aria-label="Scroll live streams right"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
           {adminMode && (
             <p className="text-xs text-muted-foreground mb-3">
