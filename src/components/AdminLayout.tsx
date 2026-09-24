@@ -274,14 +274,14 @@ export function AdminLayout() {
   }, [user, loading, navigate, toast, pinVerified]);
 
   useEffect(() => {
-    if (!isAdmin || !user) return;
+    if (!isAdmin && !pinOnlyAuth) return;
 
     const inactivityMs = 5 * 60 * 1000;
     let timeoutId: ReturnType<typeof setTimeout>;
     const signOutForInactivity = async () => {
       clearAdminSession();
-      await signOut();
-      navigate("/auth?mode=login", { replace: true });
+      if (user) await signOut();
+      navigate(user ? "/auth?mode=login" : "/admin-portal", { replace: true });
       toast({ title: "Signed out", description: "Your admin session ended after 5 minutes of inactivity." });
     };
     const resetTimer = () => {
@@ -295,7 +295,7 @@ export function AdminLayout() {
       window.clearTimeout(timeoutId);
       events.forEach((event) => window.removeEventListener(event, resetTimer));
     };
-  }, [isAdmin, user, signOut, navigate, toast]);
+  }, [isAdmin, pinOnlyAuth, user, signOut, navigate, toast]);
 
 
   if (loading || checking) {
