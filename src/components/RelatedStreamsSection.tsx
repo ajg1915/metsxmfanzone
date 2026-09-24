@@ -238,9 +238,28 @@ const RelatedStreamsSection = () => {
               Sports Network Streams
             </h2>
           </div>
-          <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">
-            24/7 · MLB · SNY · MSG · ESPN · Game Events · XM2
-          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => scroll('left')}
+              className="h-8 w-8 rounded-full bg-secondary/50"
+              aria-label="Scroll network streams left"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => scroll('right')}
+              className="h-8 w-8 rounded-full bg-secondary/50"
+              aria-label="Scroll network streams right"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3">
