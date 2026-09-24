@@ -6,6 +6,7 @@ import { useFreeStreams } from "@/hooks/useFreeStreams";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Radio, Users, Play, ChevronRight, ChevronLeft, ShieldCheck, GripVertical, Settings2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -84,7 +85,7 @@ const SortableStreamCard = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="min-w-0 w-full sm:flex-shrink-0 sm:w-[280px] md:w-[320px] lg:w-[380px] cursor-pointer group relative"
+      className="flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] snap-start group relative"
     >
       {adminMode && (
         <div
@@ -100,76 +101,71 @@ const SortableStreamCard = ({
       <div
         onClick={() => !adminMode && onStreamClick(stream)}
         className={cn(
-          "relative overflow-hidden rounded-md sm:rounded-lg transition-all duration-300",
-          !adminMode && "group-hover:scale-105 group-hover:z-10 group-hover:shadow-2xl group-hover:shadow-primary/20",
+          "relative aspect-video rounded-lg overflow-hidden border border-border/50 group-hover:border-primary/50 transition-all duration-300",
           isDragging && "ring-2 ring-primary"
         )}
       >
-        <div className="aspect-video relative">
-          {stream.thumbnail_url ? (
-            <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover" onError={(e) => { if (e.currentTarget.src !== fanartGeneral) e.currentTarget.src = fanartGeneral; }} />
-          ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center">
-              <Radio className="w-8 h-8 text-muted-foreground" />
-            </div>
-          )}
+        <img
+          src={stream.thumbnail_url || fanartGeneral}
+          alt={stream.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => { if (e.currentTarget.src !== fanartGeneral) e.currentTarget.src = fanartGeneral; }}
+        />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
 
-          {!adminMode && (
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-transform">
-                <Play className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground ml-0.5" fill="currentColor" />
-              </div>
-            </div>
-          )}
+        {!adminMode && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onStreamClick(stream); }}
+            className="absolute inset-0 m-auto h-12 w-12 rounded-full opacity-0 transition-all group-hover:opacity-100 group-focus-within:opacity-100 flex items-center justify-center bg-primary text-primary-foreground"
+            aria-label={`Watch ${stream.title}`}
+          >
+            <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
+          </button>
+        )}
 
-          <div className="absolute top-2 right-2 flex items-center gap-1.5">
-            {guestPreview ? (
-              <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
-                FREE PREVIEW
-              </Badge>
-            ) : (
-              isProStream && !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
-                <PremiumBadge size="sm" />
-              )
-            )}
-            {isSpringTraining && !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
-              <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
-                FREE
-              </Badge>
-            )}
-            <Badge className={cn(
-              "text-[10px] sm:text-xs px-1.5 py-0.5 font-semibold backdrop-blur-sm",
-              stream.status === 'live'
-                ? 'bg-red-600/90 text-white shadow-lg shadow-red-600/50'
-                : 'bg-secondary/80 text-secondary-foreground'
-            )}>
-              {stream.status === 'live' && <Radio className="w-2.5 h-2.5 mr-1 animate-pulse" />}
-              {stream.status === 'live' ? 'LIVE' : stream.status === 'scheduled' ? 'UPCOMING' : 'ENDED'}
+        <div className="absolute top-2 right-2 flex items-center gap-1.5">
+          {guestPreview ? (
+            <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
+              FREE PREVIEW
             </Badge>
+          ) : (
+            isProStream && !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
+              <PremiumBadge size="sm" />
+            )
+          )}
+          {isSpringTraining && !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
+            <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
+              FREE
+            </Badge>
+          )}
+          <Badge variant={stream.status === 'live' ? "destructive" : "secondary"} className={cn("text-[10px] sm:text-xs px-1.5 py-0.5 font-semibold backdrop-blur-sm", stream.status === 'live' && "animate-pulse")}>
+            {stream.status === 'live' && <Radio className="w-2.5 h-2.5 mr-1" />}
+            {stream.status === 'live' ? 'LIVE' : stream.status === 'scheduled' ? 'UPCOMING' : 'ENDED'}
+          </Badge>
+        </div>
+
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/80 backdrop-blur-sm">
+          <ShieldCheck className="w-2.5 h-2.5 text-accent-foreground" />
+          <span className="text-[8px] font-semibold text-accent-foreground uppercase tracking-wide">VPN Secured</span>
+        </div>
+
+        {stream.viewers_count > 0 && !adminMode && (
+          <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-background/90 backdrop-blur-sm text-[10px] sm:text-xs font-medium text-foreground flex items-center gap-1">
+            <Users className="w-3 h-3 text-primary" />
+            {stream.viewers_count}
           </div>
+        )}
+      </div>
 
-          {!adminMode && (
-            <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-600/80 backdrop-blur-sm">
-              <ShieldCheck className="w-2.5 h-2.5 text-white" />
-              <span className="text-[8px] font-semibold text-white uppercase tracking-wide">VPN Secured</span>
-            </div>
-          )}
-
-          {stream.viewers_count > 0 && !adminMode && (
-            <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-background/90 backdrop-blur-sm text-[10px] sm:text-xs font-medium text-foreground flex items-center gap-1">
-              <Users className="w-3 h-3 text-primary" />
-              {stream.viewers_count}
-            </div>
-          )}
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 bg-gradient-to-t from-background to-transparent">
-          <p className="text-foreground text-xs sm:text-sm font-semibold line-clamp-2">
-            {stream.title}
-          </p>
-        </div>
+      <div className="mt-2">
+        <h3 className="text-sm font-semibold line-clamp-1 text-foreground group-hover:text-primary transition-colors">
+          {stream.title}
+        </h3>
+        <p className="text-xs text-muted-foreground line-clamp-1">
+          {stream.description || 'Live game coverage'}
+        </p>
       </div>
 
       {/* Admin: Set Live toggle below card */}
@@ -475,7 +471,7 @@ const LiveStreamsSection = () => {
       const scrollAmount = container.clientWidth * 0.8;
       const newPosition = direction === 'left'
         ? Math.max(0, scrollPosition - scrollAmount)
-        : scrollPosition + scrollAmount;
+        : Math.min(container.scrollWidth - container.clientWidth, scrollPosition + scrollAmount);
       container.scrollTo({ left: newPosition, behavior: 'smooth' });
       setScrollPosition(newPosition);
     }
@@ -504,7 +500,7 @@ const LiveStreamsSection = () => {
   return (
     <>
       <UpgradePrompt open={showUpgradePrompt} onOpenChange={setShowUpgradePrompt} />
-      <section className="py-6 sm:py-8 relative">
+      <section className="py-6 relative bg-background/50">
         <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -527,13 +523,35 @@ const LiveStreamsSection = () => {
                 </button>
               )}
             </div>
-            <a
-              href="/community"
-              className="flex items-center gap-1 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-            >
-              In Game Post
-              <ChevronRight className="w-4 h-4" />
-            </a>
+            <div className="flex items-center gap-2">
+              <a
+                href="/community"
+                className="flex items-center gap-1 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                In Game Post
+                <ChevronRight className="w-4 h-4" />
+              </a>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => scroll('left')}
+                className="h-8 w-8 rounded-full bg-secondary/50"
+                aria-label="Scroll live streams left"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => scroll('right')}
+                className="h-8 w-8 rounded-full bg-secondary/50"
+                aria-label="Scroll live streams right"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
           {adminMode && (
             <p className="text-xs text-muted-foreground mb-3">
@@ -542,26 +560,15 @@ const LiveStreamsSection = () => {
           )}
         </div>
 
-        <div className="relative group/carousel">
-          {scrollPosition > 0 && (
-            <button
-              onClick={() => scroll('left')}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
-            >
-              <ChevronLeft className="w-8 h-8 text-foreground" />
-            </button>
-          )}
-
+        <div>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={visibleStreams.map(s => s.id)} strategy={horizontalListSortingStrategy}>
               <div
                 id="streams-scroll"
                 onScroll={handleScroll}
-                className="grid grid-cols-2 gap-2 px-3 sm:flex sm:gap-3 sm:overflow-x-auto sm:scroll-smooth sm:px-6 lg:px-8 scrollbar-hide"
+                className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-4 px-3 sm:px-6 lg:px-8"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                <div className="hidden lg:block flex-shrink-0 w-[calc((100vw-1280px)/2)]" />
-
                 {visibleStreams.map((stream) => (
                   <SortableStreamCard
                     key={stream.id}
@@ -576,25 +583,17 @@ const LiveStreamsSection = () => {
                     guestPreview={isGuestPreviewStream(stream)}
                   />
                 ))}
-
-                <div className="hidden lg:block flex-shrink-0 w-[calc((100vw-1280px)/2)]" />
               </div>
             </SortableContext>
           </DndContext>
 
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
-          >
-            <ChevronRight className="w-8 h-8 text-foreground" />
-          </button>
+          {visibleStreams.length === 0 && isAdmin && adminMode && (
+            <div className="text-center py-8 text-muted-foreground text-sm">
+              No published streams found. Add streams in the Live Stream Management page.
+            </div>
+          )}
         </div>
 
-        {visibleStreams.length === 0 && isAdmin && adminMode && (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            No published streams found. Add streams in the Live Stream Management page.
-          </div>
-        )}
       </section>
     </>
   );
