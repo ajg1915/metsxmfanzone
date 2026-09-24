@@ -376,6 +376,8 @@ const AppContent = () => {
               <Route index element={<AdminDashboard />} />
               <Route path="hero" element={<HeroManagement />} />
               <Route path="blog" element={<BlogManagement />} />
+              <Route path="media-library" element={<MediaLibrary />} />
+              <Route path="media" element={<MediaLibrary />} />
               <Route path="blog/new" element={<ArticleEditor />} />
               <Route path="blog/edit/:id" element={<ArticleEditor />} />
               <Route path="video-gallery-management" element={<VideoGalleryManagement />} />
