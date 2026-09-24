@@ -85,6 +85,46 @@ const TEMPLATES: Record<string, Fragment> = {
     cta: { label: "Confirm Email", url: "https://metsxmfanzone.com/dashboard" },
     note: "If you did not request this change, you can ignore this email and your address stays the same.",
   },
+  game_live: {
+    label: "Game is live (LIVE NOW)",
+    subject: "🔴 LIVE NOW: Mets vs Yankees",
+    preheader: "🔴 LIVE NOW: Mets vs Yankees",
+    heading: "🔴 LIVE NOW: Mets vs Yankees",
+    content: `
+      <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:1px;color:#FF5910;text-align:center;">LIVE NOW</p>
+      <p style="margin:0 0 16px;">The Mets game is underway — tune in now and don't miss a pitch!</p>
+      <p style="margin:4px 0;"><strong>Opponent:</strong> Yankees</p>
+      <p style="margin:4px 0;"><strong>First Pitch:</strong> 7:10 PM ET</p>
+      <p style="margin:4px 0;"><strong>Venue:</strong> Citi Field</p>`,
+    cta: { label: "Watch Live", url: "https://metsxmfanzone.com/live" },
+    note: "Sent automatically to all members the moment each Mets game goes live. Controlled by the Game Is Live switch on the Game Notifications page.",
+  },
+  pregame_20min: {
+    label: "20 minutes to first pitch",
+    subject: "⏰ 20 Minutes to First Pitch: Mets vs Yankees",
+    preheader: "⏰ 20 Minutes to First Pitch: Mets vs Yankees",
+    heading: "⏰ 20 Minutes to First Pitch: Mets vs Yankees",
+    content: `
+      <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:1px;color:#FF5910;text-align:center;">20 MINUTES TO FIRST PITCH</p>
+      <p style="margin:0 0 16px;">The Mets take the field in 20 minutes — get ready to watch!</p>
+      <p style="margin:4px 0;"><strong>Opponent:</strong> Yankees</p>
+      <p style="margin:4px 0;"><strong>First Pitch:</strong> 7:10 PM ET</p>
+      <p style="margin:4px 0;"><strong>Venue:</strong> Citi Field</p>`,
+    cta: { label: "Watch Live", url: "https://metsxmfanzone.com/live" },
+  },
+  pregame_5min: {
+    label: "5 minutes to first pitch",
+    subject: "🚨 5 Minutes to First Pitch: Mets vs Yankees",
+    preheader: "🚨 5 Minutes to First Pitch: Mets vs Yankees",
+    heading: "🚨 5 Minutes to First Pitch: Mets vs Yankees",
+    content: `
+      <p style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:1px;color:#FF5910;text-align:center;">5 MINUTES TO FIRST PITCH</p>
+      <p style="margin:0 0 16px;">First pitch is in 5 minutes — grab your spot now!</p>
+      <p style="margin:4px 0;"><strong>Opponent:</strong> Yankees</p>
+      <p style="margin:4px 0;"><strong>First Pitch:</strong> 7:10 PM ET</p>
+      <p style="margin:4px 0;"><strong>Venue:</strong> Citi Field</p>`,
+    cta: { label: "Watch Live", url: "https://metsxmfanzone.com/live" },
+  },
   payment_confirmed: {
     label: "Payment confirmed",
     subject: "Payment Confirmed - Monthly Plan",
