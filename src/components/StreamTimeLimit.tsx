@@ -144,10 +144,16 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
   useEffect(() => {
     if (loading || configLoading || !isPreviewPlan) return;
 
-    let startTime = sessionStorage.getItem(STORAGE_KEY);
-    if (!startTime) {
-      startTime = Date.now().toString();
-      sessionStorage.setItem(STORAGE_KEY, startTime);
+    // One-time preview: the start time is saved permanently on the account
+    // (and on this device), so it never restarts on refresh, new tabs or other devices.
+    const userKey = `${STORAGE_KEY}_${user?.id ?? "anon"}`;
+    const metaStart = Number(user?.user_metadata?.stream_preview_started_at) || 0;
+    const localStart = Number(localStorage.getItem(userKey)) || 0;
+    const known = [metaStart, localStart].filter(Boolean);
+    const startTime = String(known.length ? Math.min(...known) : Date.now());
+    localStorage.setItem(userKey, startTime);
+    if (!metaStart && user) {
+      void supabase.auth.updateUser({ data: { stream_preview_started_at: Number(startTime) } });
     }
 
     const previewStartedAt = Number.parseInt(startTime, 10);
@@ -166,16 +172,14 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     checkTimeLimit();
     const interval = setInterval(checkTimeLimit, 1000);
     return () => clearInterval(interval);
-  }, [loading, configLoading, isPreviewPlan, previewMs]);
+  }, [loading, configLoading, isPreviewPlan, previewMs, user]);
 
   const handleUpgrade = () => {
-    sessionStorage.removeItem(STORAGE_KEY);
     setShowUpgradePrompt(false);
     window.location.href = "/pricing";
   };
 
   const handleGoHome = () => {
-    sessionStorage.removeItem(STORAGE_KEY);
     setShowUpgradePrompt(false);
     window.location.href = "/";
   };
