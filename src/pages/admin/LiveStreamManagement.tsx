@@ -122,7 +122,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
   isFreeGame: boolean;
   onToggleFree: (id: string, free: boolean) => void;
   onSelectWatchPage: (id: string, page: string) => void;
-  onToggleLive: (stream: LiveStream) => void;
+  onToggleLive: (stream: LiveStream, target?: "scheduled") => void;
 }) {
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: stream.id });
@@ -203,6 +203,11 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
             <Radio className="w-3 h-3 mr-1" />
             {stream.status === "live" ? "End Live" : "Go Live"}
           </Button>
+          {stream.status === "live" && (
+            <Button variant="outline" size="sm" onClick={() => onToggleLive(stream, "scheduled")} className="flex-1 h-7 text-xs">
+              Not Live Yet
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={() => onEdit(stream)} className="flex-1 h-7 text-xs">
             <Edit className="w-3 h-3 mr-1" /> Edit
           </Button>
@@ -237,12 +242,24 @@ export default function LiveStreamManagement() {
     toast({ title: "Watch page updated", description: WATCH_PAGE_OPTIONS.find(o => o.value === page)?.label });
   };
 
-  const handleToggleLive = async (stream: LiveStream) => {
+  const handleToggleLive = async (stream: LiveStream, target?: "scheduled") => {
+    if (target === "scheduled") {
+      const updates = { status: "scheduled" as const, actual_start: null, actual_end: null };
+      const { error } = await supabase.from("live_streams").update(updates).eq("id", stream.id);
+      if (error) {
+        toast({ title: "Could not update", description: error.message, variant: "destructive" });
+        return;
+      }
+      setStreams(prev => prev.map(item => item.id === stream.id ? { ...item, ...updates } : item));
+      toast({ title: "Back to scheduled", description: `${stream.title} now shows as Upcoming.` });
+      return;
+    }
     const goingLive = stream.status !== "live";
     const now = new Date().toISOString();
     const updates = goingLive
       ? { status: "live" as const, published: true, actual_start: now, actual_end: null }
       : { status: "ended" as const, actual_end: now };
+
 
     const { error } = await supabase.from("live_streams").update(updates).eq("id", stream.id);
     if (error) {

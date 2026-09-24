@@ -19,6 +19,8 @@ export const isAutoStartMetsGame = (stream: {
 }) => {
   const pages = stream.assigned_pages || [];
   if (pages.some((p) => NON_METS_PAGES.includes(p))) return false;
+  // Never auto-start NY Jets/Giants/Knicks/Rangers/Islanders/Nets events
+  if (/\b(jets|knicks|islanders|nets)\b/i.test(stream.title || "")) return false;
   // \bmets\b matches "Mets Vs ..." but not "MetsXMFanZone"
   return /\bmets\b/i.test(stream.title || "");
 };
