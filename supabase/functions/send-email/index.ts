@@ -1,3 +1,4 @@
+import { resendFetch } from '../_shared/resend-fetch.ts'
 // Send emails via Resend through the Lovable connector gateway.
 // Invoke with: supabase.functions.invoke('send-email', { body: { to, subject, html, text?, from? } })
 
@@ -17,7 +18,7 @@ Deno.serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured')
+    
 
     const RESEND_API_KEY =
       Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    const response = await fetch(`${GATEWAY_URL}/emails`, {
+    const response = await resendFetch(`${GATEWAY_URL}/emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

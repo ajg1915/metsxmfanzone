@@ -1,3 +1,4 @@
+import { resendFetch } from './resend-fetch.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 // Emails are delivered through Resend via the Lovable connector gateway.
@@ -69,9 +70,7 @@ export const queueTransactionalEmail = async (
   }: SendEmailOptions
 ): Promise<{ messageId: string; sent: boolean; reason?: 'recipient_suppressed' }> => {
   const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
-  if (!lovableApiKey) {
-    throw new Error('LOVABLE_API_KEY is not configured')
-  }
+  
 
   const resendApiKey =
     Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
@@ -108,7 +107,7 @@ export const queueTransactionalEmail = async (
 
   let response: Response
   try {
-    response = await fetch(`${RESEND_GATEWAY_URL}/emails`, {
+    response = await resendFetch(`${RESEND_GATEWAY_URL}/emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

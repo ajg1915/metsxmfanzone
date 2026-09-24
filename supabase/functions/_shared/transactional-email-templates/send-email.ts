@@ -1,3 +1,4 @@
+import { resendFetch } from '../resend-fetch.ts'
 import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { TEMPLATES } from './registry.ts'
@@ -30,9 +31,7 @@ export async function sendTemplateEmail(
   options: SendTemplateEmailOptions = {}
 ): Promise<SendTemplateEmailResult> {
   const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
-  if (!lovableApiKey) {
-    throw new Error('LOVABLE_API_KEY is not configured')
-  }
+  
   const resendApiKey =
     Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
   if (!resendApiKey) {
@@ -62,7 +61,7 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
-  const response = await fetch(`${RESEND_GATEWAY_URL}/emails`, {
+  const response = await resendFetch(`${RESEND_GATEWAY_URL}/emails`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

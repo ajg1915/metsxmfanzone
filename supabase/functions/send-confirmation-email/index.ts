@@ -1,3 +1,4 @@
+import { resendFetch } from '../_shared/resend-fetch.ts'
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { renderBrandedEmailFor, escapeHtml } from "../_shared/email-brand.ts";
 
@@ -32,12 +33,12 @@ const sendDirectlyThroughResend = async ({
 }) => {
   const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
   const resendApiKey = Deno.env.get("RESEND_API_KEY_1") ?? Deno.env.get("RESEND_API_KEY");
-  if (!lovableApiKey || !resendApiKey) {
+  if (!resendApiKey) {
     throw new Error("Email service is not configured");
   }
 
   const normalizedTo = to.trim().toLowerCase();
-  const response = await fetch("https://connector-gateway.lovable.dev/resend/emails", {
+  const response = await resendFetch("https://connector-gateway.lovable.dev/resend/emails", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
