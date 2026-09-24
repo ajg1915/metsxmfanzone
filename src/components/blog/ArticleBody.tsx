@@ -45,8 +45,8 @@ export default function ArticleBody({ content, className }: { content: string; c
   return (
     <div
       className={cn(
-        "article-body prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert break-words",
-        "prose-headings:font-bold prose-a:text-primary prose-img:rounded-lg prose-img:mx-auto",
+        "article-body prose prose-sm sm:prose-base lg:prose-lg max-w-none break-words text-foreground",
+        "prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-li:text-foreground prose-strong:text-foreground prose-em:text-foreground prose-blockquote:text-foreground prose-a:text-primary prose-img:rounded-lg prose-img:mx-auto",
         "[&_img]:max-w-full [&_img]:h-auto [&_video]:max-w-full [&_iframe]:w-full [&_iframe]:aspect-video [&_iframe]:h-auto",
         "[&_[data-table-wrap]]:overflow-x-auto [&_pre]:overflow-x-auto [&_pre]:whitespace-pre-wrap",
         className,
