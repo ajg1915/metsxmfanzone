@@ -354,6 +354,28 @@ async function sendPushNotification(
   }
 }
 
+async function sendBeamsBroadcast(title: string, body: string, url?: string) {
+  const id = Deno.env.get('PUSHER_BEAMS_INSTANCE_ID') ?? '';
+  const key = Deno.env.get('PUSHER_BEAMS_SECRET_KEY') ?? '';
+  if (!id || !key) return { skipped: true };
+  try {
+    const res = await fetch(`https://${id}.pushnotifications.pusher.com/publish_api/v1/instances/${id}/publishes/interests`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        interests: ['hello', 'all-users'],
+        web: { notification: { title, body, deep_link: new URL(url || '/', 'https://metsxmfanzone.com').toString() } },
+      }),
+    });
+    const text = await res.text();
+    if (!res.ok) console.error(`Beams publish failed [${res.status}]: ${text}`);
+    return { ok: res.ok, status: res.status };
+  } catch (e) {
+    console.error('Beams error:', e);
+    return { ok: false };
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -412,6 +434,10 @@ Deno.serve(async (req) => {
       );
     }
 
+    const beams = (!targetUsers || !Array.isArray(targetUsers) || targetUsers.length === 0)
+      ? await sendBeamsBroadcast(title, body, url)
+      : { skipped: true };
+
     let query = supabase.from('notification_subscriptions').select('*');
     
     if (targetUsers && Array.isArray(targetUsers) && targetUsers.length > 0) {
@@ -424,7 +450,7 @@ Deno.serve(async (req) => {
 
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(
-        JSON.stringify({ message: 'No active subscriptions' }),
+        JSON.stringify({ message: 'No active subscriptions', beams }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -471,6 +497,7 @@ Deno.serve(async (req) => {
         successful: successCount,
         failed: subscriptions.length - successCount,
         vapidConfigured: !!VAPID_PRIVATE_KEY,
+        beams,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
