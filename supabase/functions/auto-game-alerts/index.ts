@@ -409,7 +409,7 @@ serve(async (req) => {
       const linkUrl = gameType === 'S' ? '/spring-training-live' : '/metsxmfanzone';
       const alertTypeDb = gameType === 'S' ? 'spring_training' : 'game_day';
 
-      const { error: insertError } = await supabase
+      let { error: insertError } = await supabase
         .from("game_alerts")
         .insert({
           title,
@@ -423,9 +423,27 @@ serve(async (req) => {
         });
 
       if (insertError) {
+        console.warn("Alert insert rejected, retrying with safe values:", insertError.message);
+        const retry = await supabase
+          .from("game_alerts")
+          .insert({
+            title,
+            message,
+            alert_type: alertTypeDb,
+            severity: 'info',
+            link_url: linkUrl,
+            is_active: true,
+            push_sent: false,
+            email_sent: false,
+          });
+        insertError = retry.error;
+      }
+
+      if (insertError) {
         console.error("Failed to insert alert:", insertError);
         continue;
       }
+
 
       console.log(`Created ${triggerType} alert: ${title}`);
       alertsCreated++;
