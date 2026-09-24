@@ -18,15 +18,21 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString();
 
     // Find scheduled streams whose start time has passed
-    const { data: streamsToGoLive, error: fetchError } = await supabase
+    const { data: allDue, error: fetchError } = await supabase
       .from("live_streams")
-      .select("id, title, scheduled_start")
+      .select("id, title, scheduled_start, assigned_pages")
       .eq("status", "scheduled")
       .eq("published", true)
       .lte("scheduled_start", now)
       .not("scheduled_start", "is", null);
 
     if (fetchError) throw fetchError;
+
+    // Only real Mets games auto-start; Game Events / NY teams / other events stay scheduled
+    const NON_METS = ["pix11-network","ny-jets","ny-giants","ny-knicks","ny-rangers","ny-islanders","brooklyn-nets"];
+    const streamsToGoLive = (allDue || []).filter((s: any) =>
+      !(s.assigned_pages || []).some((p: string) => NON_METS.includes(p)) && /\bmets\b/i.test(s.title || "")
+    );
 
     if (!streamsToGoLive || streamsToGoLive.length === 0) {
       return new Response(JSON.stringify({ message: "No streams to start", count: 0 }), {
