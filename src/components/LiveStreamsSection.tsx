@@ -559,26 +559,15 @@ const LiveStreamsSection = () => {
           )}
         </div>
 
-        <div className="relative group/carousel">
-          {scrollPosition > 0 && (
-            <button
-              onClick={() => scroll('left')}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
-            >
-              <ChevronLeft className="w-8 h-8 text-foreground" />
-            </button>
-          )}
-
+        <div>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={visibleStreams.map(s => s.id)} strategy={horizontalListSortingStrategy}>
               <div
                 id="streams-scroll"
                 onScroll={handleScroll}
-                className="grid grid-cols-2 gap-2 px-3 sm:flex sm:gap-3 sm:overflow-x-auto sm:scroll-smooth sm:px-6 lg:px-8 scrollbar-hide"
+                className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-4 px-3 sm:px-6 lg:px-8"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                <div className="hidden lg:block flex-shrink-0 w-[calc((100vw-1280px)/2)]" />
-
                 {visibleStreams.map((stream) => (
                   <SortableStreamCard
                     key={stream.id}
@@ -593,18 +582,15 @@ const LiveStreamsSection = () => {
                     guestPreview={isGuestPreviewStream(stream)}
                   />
                 ))}
-
-                <div className="hidden lg:block flex-shrink-0 w-[calc((100vw-1280px)/2)]" />
               </div>
             </SortableContext>
           </DndContext>
 
-          <button
-            onClick={() => scroll('right')}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
-          >
-            <ChevronRight className="w-8 h-8 text-foreground" />
-          </button>
+          {visibleStreams.length === 0 && isAdmin && adminMode && (
+            <div className="text-center py-8 text-muted-foreground text-sm">
+              No published streams found. Add streams in the Live Stream Management page.
+            </div>
+          )}
         </div>
 
         {visibleStreams.length === 0 && isAdmin && adminMode && (
