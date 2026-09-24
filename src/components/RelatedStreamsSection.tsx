@@ -229,7 +229,7 @@ const RelatedStreamsSection = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3">
 
 
           {streams.map((s) => (
@@ -238,7 +238,7 @@ const RelatedStreamsSection = () => {
               onClick={() => handleClick(s)}
               className="group relative overflow-hidden rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 text-left"
             >
-              <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-primary/20 via-background to-background">
+              <div className="h-20 sm:h-24 lg:h-28 relative overflow-hidden bg-gradient-to-br from-primary/20 via-background to-background">
                 {s.thumbnail ? (
                   <img
                     src={s.thumbnail}
