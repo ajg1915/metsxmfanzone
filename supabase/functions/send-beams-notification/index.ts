@@ -68,8 +68,8 @@ Deno.serve(async (req) => {
             notification: {
               title,
               body,
-              icon: new URL(icon ?? "/logo-192.png", "https://metsxmfanzone.com").toString(),
-              deep_link: path ? new URL(path, "https://metsxmfanzone.com").toString() : undefined,
+              ...(icon && /^https:\/\//i.test(icon) ? { icon } : {}),
+              deep_link: new URL(path || "/", "https://metsxmfanzone.com").toString(),
             },
           },
           fcm: {
