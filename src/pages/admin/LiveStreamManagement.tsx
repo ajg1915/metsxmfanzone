@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
 import { TikTokLiveToggle } from "@/components/admin/TikTokLiveToggle";
 
 // Team matchup preset images
@@ -393,21 +394,21 @@ export default function LiveStreamManagement() {
       // Start scheduled streams whose start time has passed
       const { data: toGoLive } = await supabase
         .from("live_streams")
-        .select("id, title")
+        .select("id, title, assigned_pages")
         .eq("status", "scheduled")
         .eq("published", true)
         .lte("scheduled_start", now)
         .not("scheduled_start", "is", null);
 
-      if (toGoLive && toGoLive.length > 0) {
-        for (const stream of toGoLive) {
+      if (toGoLive && toGoLive.filter(isAutoStartMetsGame).length > 0) {
+        for (const stream of toGoLive.filter(isAutoStartMetsGame)) {
           await supabase
             .from("live_streams")
             .update({ status: "live", actual_start: now })
             .eq("id", stream.id);
           sendLiveNotification(stream.title, stream.id);
         }
-        toast({ title: "Streams auto-started", description: `${toGoLive.length} stream(s) went live` });
+        toast({ title: "Streams auto-started", description: `${toGoLive.filter(isAutoStartMetsGame).length} stream(s) went live` });
       }
 
       // End live streams whose end time has passed
