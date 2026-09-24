@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StreamAlertBanner } from "./StreamAlertBanner";
 import { NewPostAlert } from "./NewPostAlert";
 import ClapprPlayer from "./ClapprPlayer";
+import { getNYTeamStreamUrl } from "@/lib/nyTeamStreamCheck";
 
 interface LiveStream {
   id: string;
@@ -11,6 +12,7 @@ interface LiveStream {
   stream_url: string;
   thumbnail_url: string;
   status: 'live' | 'scheduled' | 'ended';
+  assigned_pages?: string[] | null;
 }
 
 interface StreamPlayerProps {
@@ -83,7 +85,11 @@ export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPla
       if (error) throw error;
 
       if (data) {
-        setStream(data as LiveStream | null);
+        const liveStream = data as LiveStream;
+        // NY team events always play the shared secondary link, even when the
+        // stream row has no URL saved yet.
+        liveStream.stream_url = getNYTeamStreamUrl(liveStream);
+        setStream(liveStream);
         return;
       }
 
