@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Radio, Play, ChevronRight, ChevronLeft, ShieldCheck, Trophy } from "lucide-react";
+import { Radio, Play, ChevronRight, ChevronLeft, ShieldCheck, Trophy, CalendarClock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,7 +15,7 @@ interface LiveStream {
   stream_url: string;
   thumbnail_url: string;
   status: 'live' | 'scheduled' | 'ended';
-  scheduled_start: string;
+  scheduled_start: string | null;
   assigned_pages: string[];
 }
 
@@ -31,6 +31,20 @@ const OffseasonNYTeamsSection = () => {
   const isOffseasonTeamStream = (stream: LiveStream) => {
     if (stream.assigned_pages?.some((page) => nyTeamPages.includes(page))) return true;
     return /\b(new york|ny)\s+(jets|giants|knicks|rangers|islanders)\b|\bbrooklyn nets\b/i.test(`${stream.title} ${stream.description || ""}`);
+  };
+
+  const formatScheduledStart = (value: string | null) => {
+    if (!value) return "Time to be announced";
+
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
+    }).format(new Date(value));
   };
 
   useEffect(() => {
@@ -55,12 +69,25 @@ const OffseasonNYTeamsSection = () => {
         .from("live_streams_public")
         .select("*")
         .eq("published", true)
-        .eq("status", "live")
+        .in("status", ["live", "scheduled"])
         .order("scheduled_start", { ascending: true });
 
       if (error) throw error;
 
-      const filtered = (data || []).filter((stream: LiveStream) => isOffseasonTeamStream(stream));
+      const now = Date.now();
+      const filtered = (data || [])
+        .filter((stream: LiveStream) => {
+          if (!isOffseasonTeamStream(stream)) return false;
+          if (stream.status === "live") return true;
+          if (!stream.scheduled_start) return true;
+          return new Date(stream.scheduled_start).getTime() >= now;
+        })
+        .sort((a: LiveStream, b: LiveStream) => {
+          if (a.status !== b.status) return a.status === "live" ? -1 : 1;
+          const aStart = a.scheduled_start ? new Date(a.scheduled_start).getTime() : Number.MAX_SAFE_INTEGER;
+          const bStart = b.scheduled_start ? new Date(b.scheduled_start).getTime() : Number.MAX_SAFE_INTEGER;
+          return aStart - bStart;
+        });
 
       setStreams(filtered as LiveStream[]);
     } catch (error) {
@@ -101,7 +128,7 @@ const OffseasonNYTeamsSection = () => {
           <div className="flex items-center gap-2">
             <Trophy className="w-5 h-5 text-primary" />
             <h2 className="text-xl md:text-2xl font-bold text-foreground">
-              Offseason NY Teams
+              NY Sports Teams Events
             </h2>
           </div>
           <div className="flex items-center gap-2">
@@ -133,11 +160,12 @@ const OffseasonNYTeamsSection = () => {
           className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-4"
           onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
         >
-          {streams.map((stream) => (
-            <div
+          {streams.map((stream) => {
+            const isLive = stream.status === "live";
+            return (
+            <article
               key={stream.id}
-              onClick={() => handleStreamClick(stream)}
-              className="flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] cursor-pointer group relative snap-start"
+              className="flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] group relative snap-start"
             >
               <div className="relative aspect-video rounded-lg overflow-hidden border border-border/50 group-hover:border-primary/50 transition-all duration-300">
                 <img 
@@ -149,22 +177,28 @@ const OffseasonNYTeamsSection = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
                 
                 <div className="absolute top-2 right-2">
-                  <Badge className="bg-red-600 text-white animate-pulse">
-                    <Radio className="w-3 h-3 mr-1" />
-                    LIVE
+                  <Badge variant={isLive ? "destructive" : "secondary"} className={isLive ? "animate-pulse" : ""}>
+                    {isLive ? <Radio className="w-3 h-3 mr-1" /> : <CalendarClock className="w-3 h-3 mr-1" />}
+                    {isLive ? "LIVE" : "UPCOMING"}
                   </Badge>
                 </div>
 
-                <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-600/80 backdrop-blur-sm">
-                  <ShieldCheck className="w-2.5 h-2.5 text-white" />
-                  <span className="text-[8px] font-semibold text-white uppercase tracking-wide">VPN Secured</span>
+                <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/80 backdrop-blur-sm">
+                  <ShieldCheck className="w-2.5 h-2.5 text-accent-foreground" />
+                  <span className="text-[8px] font-semibold text-accent-foreground uppercase tracking-wide">VPN Secured</span>
                 </div>
 
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform">
-                    <Play className="w-5 h-5 text-primary-foreground ml-0.5" fill="currentColor" />
-                  </div>
-                </div>
+                {isLive && (
+                  <Button
+                    type="button"
+                    size="icon"
+                    onClick={() => handleStreamClick(stream)}
+                    className="absolute inset-0 m-auto h-12 w-12 rounded-full opacity-0 transition-all group-hover:opacity-100 group-focus-within:opacity-100"
+                    aria-label={`Watch ${stream.title}`}
+                  >
+                    <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
+                  </Button>
+                )}
               </div>
               <div className="mt-2">
                 <h3 className="text-sm font-semibold line-clamp-1 text-foreground group-hover:text-primary transition-colors">
@@ -173,9 +207,16 @@ const OffseasonNYTeamsSection = () => {
                 <p className="text-xs text-muted-foreground line-clamp-1">
                   {stream.description || 'Live NY sports coverage'}
                 </p>
+                {!isLive && (
+                  <p className="mt-1 flex items-center gap-1 text-xs font-medium text-primary">
+                    <CalendarClock className="h-3.5 w-3.5" />
+                    {formatScheduledStart(stream.scheduled_start)}
+                  </p>
+                )}
               </div>
-            </div>
-          ))}
+            </article>
+            );
+          })}
         </div>
       </div>
     </section>
