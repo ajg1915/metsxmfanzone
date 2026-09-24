@@ -262,21 +262,23 @@ const RelatedStreamsSection = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 sm:gap-3">
-
-
+        <div
+          id="network-streams-scroll"
+          className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-4"
+          onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
+        >
           {streams.map((s) => (
             <button
               key={s.id}
               onClick={() => handleClick(s)}
-              className="group relative overflow-hidden rounded-lg bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 text-left"
+              className="flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] group relative snap-start text-left"
             >
-              <div className="h-20 sm:h-24 lg:h-28 relative overflow-hidden bg-gradient-to-br from-primary/20 via-background to-background">
+              <div className="relative aspect-video rounded-lg overflow-hidden border border-border/50 group-hover:border-primary/50 transition-all duration-300">
                 {s.thumbnail ? (
                   <img
                     src={s.thumbnail}
                     alt={s.title}
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                     onError={(e) => {
                       const img = e.currentTarget;
@@ -286,49 +288,39 @@ const RelatedStreamsSection = () => {
                     }}
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-full h-full bg-muted flex items-center justify-center">
                     <Radio className="w-12 h-12 text-primary/40" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-                <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
 
-
-                <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                <div className="absolute top-2 right-2">
                   <Badge className="text-[10px] px-1.5 py-0.5 font-semibold bg-primary/90 text-primary-foreground backdrop-blur-sm">
                     24/7
                   </Badge>
                 </div>
 
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-90 group-hover:scale-100 transition-transform">
-                    <Play className="w-5 h-5 text-white ml-0.5" fill="currentColor" />
-                  </div>
+                <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/80 backdrop-blur-sm">
+                  <ShieldCheck className="w-2.5 h-2.5 text-accent-foreground" />
+                  <span className="text-[8px] font-semibold text-accent-foreground uppercase tracking-wide">VPN Secured</span>
                 </div>
 
-                <div className="absolute bottom-2 left-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-600/80 backdrop-blur-sm">
-                  <ShieldCheck className="w-2.5 h-2.5 text-white" />
-                  <span className="text-[8px] font-semibold text-white uppercase tracking-wide">
-                    VPN Secured
-                  </span>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="w-12 h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
+                    <Play className="w-5 h-5 text-primary-foreground ml-0.5" fill="currentColor" />
+                  </div>
                 </div>
               </div>
-
-              <div className="p-1.5 sm:p-2">
+              <div className="mt-2">
+                <h3 className="text-sm font-semibold line-clamp-1 text-foreground group-hover:text-primary transition-colors">
+                  {s.title}
+                </h3>
                 <div className="flex items-center justify-between gap-1.5">
-                  <div className="min-w-0">
-                    <h3 className="text-[11px] sm:text-xs font-bold text-foreground truncate">
-                      {s.title}
-                    </h3>
-                    <p className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1 mt-0.5">
-                      {s.subtitle}
-                    </p>
-                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-1 flex-1">
+                    {s.subtitle}
+                  </p>
                   <ChevronRight
-                    className={cn(
-                      "w-3.5 h-3.5 text-primary flex-shrink-0 transition-transform",
-                      "group-hover:translate-x-1"
-                    )}
+                    className="w-3.5 h-3.5 text-primary flex-shrink-0 transition-transform group-hover:translate-x-1"
                   />
                 </div>
               </div>
