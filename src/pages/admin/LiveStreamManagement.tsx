@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
+import { NY_TEAM_PAGES } from "@/lib/nyTeamStreamCheck";
 import { TikTokLiveToggle } from "@/components/admin/TikTokLiveToggle";
 
 // Team matchup preset images
