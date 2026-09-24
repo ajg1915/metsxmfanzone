@@ -7,6 +7,22 @@ export const NY_TEAM_PAGES = [
   "brooklyn-nets",
 ] as const;
 
+// Shared secondary link used for every NY team event watch page when the
+// stream has no URL of its own.
+export const NY_TEAM_STREAM_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
+
+export const getNYTeamStreamUrl = (stream: {
+  stream_url?: string | null;
+  assigned_pages?: string[] | null;
+}) => {
+  if (stream.stream_url) return stream.stream_url;
+  const assignedPages = (stream.assigned_pages || []).map((page) => page.toLowerCase());
+  if (assignedPages.some((page) => NY_TEAM_PAGES.includes(page as (typeof NY_TEAM_PAGES)[number]))) {
+    return NY_TEAM_STREAM_URL;
+  }
+  return stream.stream_url || "";
+};
+
 const NY_TEAM_NAME_PATTERN = /\b(?:new york\s+|ny\s+)?(?:jets|giants|knicks|rangers|islanders)\b|\b(?:brooklyn\s+)?nets\b/i;
 
 export const isNYTeamStream = (stream: {
