@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import fanartGeneral from "@/assets/fanart-mets-general.jpg";
 import metsxmfanzoneLogo from "@/assets/metsxmfanzone-logo.png";
+import { isNYTeamStream } from "@/lib/nyTeamStreamCheck";
 
 interface LiveStream {
   id: string;
@@ -27,12 +28,6 @@ const OffseasonNYTeamsSection = () => {
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollPosition, setScrollPosition] = useState(0);
-
-  const nyTeamPages = ['ny-jets', 'ny-giants', 'ny-knicks', 'ny-rangers', 'ny-islanders', 'brooklyn-nets'];
-  const isOffseasonTeamStream = (stream: LiveStream) => {
-    if (stream.assigned_pages?.some((page) => nyTeamPages.includes(page))) return true;
-    return /\b(new york|ny)\s+(jets|giants|knicks|rangers|islanders)\b|\bbrooklyn nets\b/i.test(`${stream.title} ${stream.description || ""}`);
-  };
 
   const formatScheduledStart = (value: string | null) => {
     if (!value) return "Time to be announced";
@@ -75,14 +70,8 @@ const OffseasonNYTeamsSection = () => {
 
       if (error) throw error;
 
-      const now = Date.now();
       const filtered = (data || [])
-        .filter((stream: LiveStream) => {
-          if (!isOffseasonTeamStream(stream)) return false;
-          if (stream.status === "live") return true;
-          if (!stream.scheduled_start) return true;
-          return new Date(stream.scheduled_start).getTime() >= now;
-        })
+        .filter((stream: LiveStream) => isNYTeamStream(stream))
         .sort((a: LiveStream, b: LiveStream) => {
           if (a.status !== b.status) return a.status === "live" ? -1 : 1;
           const aStart = a.scheduled_start ? new Date(a.scheduled_start).getTime() : Number.MAX_SAFE_INTEGER;
