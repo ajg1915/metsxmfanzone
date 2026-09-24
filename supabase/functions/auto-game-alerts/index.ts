@@ -302,7 +302,7 @@ serve(async (req) => {
           continue;
         }
 
-        const { error: insertError } = await supabase
+        let { error: insertError } = await supabase
           .from("game_alerts")
           .insert({
             title,
@@ -315,10 +315,30 @@ serve(async (req) => {
             email_sent: false,
           });
 
+        // Some databases only allow a narrower set of alert types/severities.
+        // Retry once with the universally accepted values so the alert still goes out.
+        if (insertError) {
+          console.warn("game_live insert rejected, retrying as game_day:", insertError.message);
+          const retry = await supabase
+            .from("game_alerts")
+            .insert({
+              title,
+              message,
+              alert_type: 'game_day',
+              severity: 'info',
+              link_url: linkUrl,
+              is_active: true,
+              push_sent: false,
+              email_sent: false,
+            });
+          insertError = retry.error;
+        }
+
         if (insertError) {
           console.error("Failed to insert game_live alert:", insertError);
           continue;
         }
+
 
         console.log(`Created game_live alert: ${title}`);
         alertsCreated++;
