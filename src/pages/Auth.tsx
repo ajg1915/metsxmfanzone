@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { withTimeout } from "@/utils/asyncTimeout";
 import { isStaleBuildAuthError, recoverFromStaleBuild } from "@/utils/staleBuildRecovery";
 import { trackFailedLogin } from "@/utils/securityAlerts";
+import { useBackgroundSettings } from "@/hooks/useBackgroundSettings";
 import authLogo from "@/assets/metsxmfanzone-logo-auth.png";
 
 const phoneRegex = /^(\+1)?[\s.-]?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
@@ -52,6 +53,12 @@ const Auth = () => {
   const mode = searchParams.get("mode") || "login";
   const isSignup = mode === "signup";
   const isRecovery = mode === "reset";
+  const { data: modeArtwork } = useBackgroundSettings(isSignup ? "auth_signup" : "auth_login");
+  const { data: sharedArtwork } = useBackgroundSettings("auth");
+  const authArtwork = modeArtwork ?? sharedArtwork;
+  const artworkStyle = authArtwork?.background_type === "image"
+    ? { backgroundImage: `linear-gradient(hsl(var(--secondary) / 0.72), hsl(var(--background) / 0.78)), url(${authArtwork.background_value})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : undefined;
 
   const [forgotPassword, setForgotPassword] = useState(false);
   const [signupStep, setSignupStep] = useState(1);
@@ -341,7 +348,7 @@ const Auth = () => {
       <AuthBackground mode={isSignup ? "signup" : "login"} />
 
       <main className="relative z-10 mx-auto grid w-full max-w-5xl overflow-hidden rounded-lg border border-border/50 bg-card/95 shadow-2xl backdrop-blur-xl lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="hidden border-r border-border/40 bg-secondary/20 p-8 lg:flex lg:flex-col lg:justify-between">
+        <section className="hidden border-r border-border/40 bg-secondary/20 p-8 lg:flex lg:flex-col lg:justify-between" style={artworkStyle}>
           <div>
             <img src={authLogo} alt="MetsXMFanZone" className="h-20 w-auto object-contain" />
             <p className="mt-6 text-xs font-semibold uppercase text-primary">Member access</p>

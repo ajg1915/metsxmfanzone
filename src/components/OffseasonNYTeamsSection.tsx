@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Radio, Play, ChevronRight, ChevronLeft, ShieldCheck, Trophy } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import fanartGeneral from "@/assets/fanart-mets-general.jpg";
@@ -28,6 +28,10 @@ const OffseasonNYTeamsSection = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
 
   const nyTeamPages = ['ny-jets', 'ny-giants', 'ny-knicks', 'ny-rangers', 'ny-islanders', 'brooklyn-nets'];
+  const isOffseasonTeamStream = (stream: LiveStream) => {
+    if (stream.assigned_pages?.some((page) => nyTeamPages.includes(page))) return true;
+    return /\b(new york|ny)\s+(jets|giants|knicks|rangers|islanders)\b|\bbrooklyn nets\b/i.test(`${stream.title} ${stream.description || ""}`);
+  };
 
   useEffect(() => {
     fetchStreams();
@@ -56,9 +60,7 @@ const OffseasonNYTeamsSection = () => {
 
       if (error) throw error;
 
-      const filtered = (data || []).filter((s: any) => 
-        s.assigned_pages?.some((p: string) => nyTeamPages.includes(p))
-      );
+      const filtered = (data || []).filter((stream: LiveStream) => isOffseasonTeamStream(stream));
 
       setStreams(filtered as LiveStream[]);
     } catch (error) {
@@ -103,18 +105,26 @@ const OffseasonNYTeamsSection = () => {
             </h2>
           </div>
           <div className="flex items-center gap-2">
-            <button 
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => scroll('left')}
-              className="p-1 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
+              className="h-8 w-8 rounded-full bg-secondary/50"
+              aria-label="Scroll offseason streams left"
             >
               <ChevronLeft className="w-5 h-5" />
-            </button>
-            <button 
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => scroll('right')}
-              className="p-1 rounded-full bg-secondary/50 hover:bg-secondary transition-colors"
+              className="h-8 w-8 rounded-full bg-secondary/50"
+              aria-label="Scroll offseason streams right"
             >
               <ChevronRight className="w-5 h-5" />
-            </button>
+            </Button>
           </div>
         </div>
 
