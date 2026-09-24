@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Radio, Play, ChevronRight, ChevronLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import channelMlb from "@/assets/channel-mlb.jpg";
 import channelSny from "@/assets/channel-sny.jpg";
