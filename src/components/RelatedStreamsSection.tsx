@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Radio, Play, ChevronRight, ShieldCheck } from "lucide-react";
+import { Radio, Play, ChevronRight, ChevronLeft, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import channelMlb from "@/assets/channel-mlb.jpg";
@@ -149,6 +150,7 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
 const RelatedStreamsSection = () => {
   const navigate = useNavigate();
   const [networkStreams, setNetworkStreams] = useState<LiveStreamRecord[]>([]);
+  const [scrollPosition, setScrollPosition] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
