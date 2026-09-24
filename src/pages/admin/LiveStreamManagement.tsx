@@ -93,7 +93,7 @@ interface LiveStream {
   display_order: number;
 }
 
-const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'metsxmfanzone-2': 'MetsXMFanZone Stream 2 24/7 (Sports Network Streams)', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'Game Events (non-Mets)', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
+const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'metsxmfanzone-2': 'MetsXMFanZone Stream 2 24/7 (Sports Network Streams)', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'Game Events (non-Mets)', 'ny-jets': 'New York Jets', 'ny-giants': 'New York Giants', 'ny-knicks': 'New York Knicks', 'ny-rangers': 'New York Rangers', 'ny-islanders': 'New York Islanders', 'brooklyn-nets': 'Brooklyn Nets', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
 
 const WATCH_PAGE_OPTIONS = [
   { value: 'own', label: 'Own stream page (/live/…)' },
@@ -1002,7 +1002,7 @@ export default function LiveStreamManagement() {
                   <Label className="mt-4 block">Also Show In</Label>
                   <div className="space-y-2 mt-2">
                     {(() => {
-                      const defaultPages = ['guide', 'live', 'mlb-network', 'sny-tv', 'msg-network', 'espn-network', 'regular-season-games', 'replay-games'];
+                      const defaultPages = ['guide', 'live', 'ny-jets', 'ny-giants', 'ny-knicks', 'ny-rangers', 'ny-islanders', 'brooklyn-nets', 'mlb-network', 'sny-tv', 'msg-network', 'espn-network', 'regular-season-games', 'replay-games'];
                       const customPages = formData.assigned_pages.filter(p => !defaultPages.includes(p));
                       const allPages = [...defaultPages, ...customPages];
                       return allPages.map((page) => (

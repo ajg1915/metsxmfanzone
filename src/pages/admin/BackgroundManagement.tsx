@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Trash2, Check, Image, Palette, Sparkles } from "lucide-react";
+import { Plus, Trash2, Check, Image, Palette, Sparkles, Upload, Loader2 } from "lucide-react";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
+import { uploadToR2 } from "@/lib/r2Upload";
 
 interface BackgroundSetting {
   id: string;
@@ -23,6 +24,8 @@ interface BackgroundSetting {
 
 const BackgroundManagement = () => {
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const [newBackground, setNewBackground] = useState({
     page_type: "auth",
     background_type: "color",
@@ -132,8 +135,51 @@ const BackgroundManagement = () => {
     }
   };
 
+  const uploadBackground = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Choose an image file");
+      return;
+    }
+    setUploading(true);
+    try {
+      const result = await uploadToR2(file, "auth-backgrounds");
+      setNewBackground((current) => ({ ...current, background_type: "image", background_value: result.publicUrl }));
+      toast.success("Image uploaded");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Image upload failed");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const authBackgrounds = backgrounds?.filter((b) => b.page_type === "auth") || [];
+  const loginBackgrounds = backgrounds?.filter((b) => b.page_type === "auth_login") || [];
+  const signupBackgrounds = backgrounds?.filter((b) => b.page_type === "auth_signup") || [];
   const welcomeBackgrounds = backgrounds?.filter((b) => b.page_type === "welcome") || [];
+  const renderBackgroundGrid = (items: BackgroundSetting[], emptyText: string) => isLoading ? (
+    <p className="text-muted-foreground">Loading...</p>
+  ) : items.length === 0 ? (
+    <p className="text-muted-foreground">{emptyText}</p>
+  ) : (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {items.map((bg) => (
+        <div key={bg.id} className={`relative overflow-hidden rounded-lg border-2 ${bg.is_active ? "border-primary ring-2 ring-primary/20" : "border-border"}`}>
+          <div className="h-32" style={getBackgroundPreview(bg.background_type, bg.background_value)} />
+          <div className="bg-background/95 p-3 backdrop-blur">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 items-center gap-2">{getTypeIcon(bg.background_type)}<span className="truncate text-sm font-medium">{bg.name}</span></div>
+              {bg.is_active && <span className="rounded bg-primary px-2 py-1 text-xs text-primary-foreground">Active</span>}
+            </div>
+            <div className="mt-3 flex gap-2">
+              {!bg.is_active && <Button size="sm" variant="outline" onClick={() => activateMutation.mutate({ id: bg.id, pageType: bg.page_type })} className="flex-1"><Check className="mr-1 h-3 w-3" />Activate</Button>}
+              <Button size="sm" variant="destructive" onClick={() => deleteMutation.mutate(bg.id)} aria-label={`Delete ${bg.name}`}><Trash2 className="h-3 w-3" /></Button>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <AdminPage>
@@ -171,7 +217,9 @@ const BackgroundManagement = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="auth">Login/Auth Screen</SelectItem>
+                     <SelectItem value="auth_login">Login Blue Area</SelectItem>
+                     <SelectItem value="auth_signup">Signup Blue Area</SelectItem>
+                     <SelectItem value="auth">Both Login & Signup</SelectItem>
                     <SelectItem value="welcome">Welcome Screen</SelectItem>
                   </SelectContent>
                 </Select>
@@ -215,15 +263,10 @@ const BackgroundManagement = () => {
                     />
                   </div>
                 ) : (
-                  <Input
-                    value={newBackground.background_value}
-                    onChange={(e) => setNewBackground({ ...newBackground, background_value: e.target.value })}
-                    placeholder={
-                      newBackground.background_type === "gradient"
-                        ? "linear-gradient(135deg, #002D72, #FF5910)"
-                        : "https://example.com/image.jpg"
-                    }
-                  />
+                  <div className="flex gap-2">
+                    <Input value={newBackground.background_value} onChange={(e) => setNewBackground({ ...newBackground, background_value: e.target.value })} placeholder={newBackground.background_type === "gradient" ? "linear-gradient(135deg, #002D72, #FF5910)" : "Image URL or upload"} />
+                    {newBackground.background_type === "image" && <><input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadBackground(file); }} /><Button type="button" variant="outline" size="icon" onClick={() => fileInputRef.current?.click()} disabled={uploading} aria-label="Upload background image">{uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}</Button></>}
+                  </div>
                 )}
               </div>
               <div className="flex items-end">
@@ -249,6 +292,16 @@ const BackgroundManagement = () => {
               </div>
             )}
           </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader><CardTitle>Login Blue Area</CardTitle></CardHeader>
+          <CardContent>{renderBackgroundGrid(loginBackgrounds, "No login image configured")}</CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader><CardTitle>Signup Blue Area</CardTitle></CardHeader>
+          <CardContent>{renderBackgroundGrid(signupBackgrounds, "No signup image configured")}</CardContent>
         </Card>
 
         {/* Auth/Login Backgrounds */}

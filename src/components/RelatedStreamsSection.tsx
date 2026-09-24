@@ -80,6 +80,11 @@ const FALLBACK_STREAMS: RelatedStream[] = [
 const isGameBroadcast = (title: string) =>
   /\b(mets|nym)\b\s*(vs\.?|@|at)\s+/i.test(title) || /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(title);
 
+const OFFSEASON_TEAM_PAGES = new Set(['ny-jets', 'ny-giants', 'ny-knicks', 'ny-rangers', 'ny-islanders', 'brooklyn-nets']);
+const isOffseasonTeamStream = (stream: Pick<LiveStreamRecord, "title" | "description" | "assigned_pages">) =>
+  (stream.assigned_pages?.some((page) => OFFSEASON_TEAM_PAGES.has(page)) ?? false)
+  || /\b(new york|ny)\s+(jets|giants|knicks|rangers|islanders)\b|\bbrooklyn nets\b/i.test(`${stream.title} ${stream.description || ""}`);
+
 const isMlbNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
   if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
@@ -193,7 +198,7 @@ const RelatedStreamsSection = () => {
     // Only show channels that actually exist as live streams in the database.
     return matchers
       .map((matcher, i) => {
-        const stream = networkStreams.find(matcher);
+        const stream = networkStreams.find((candidate) => !isOffseasonTeamStream(candidate) && matcher(candidate));
         return stream ? streamToCard(stream, FALLBACK_STREAMS[i]) : null;
       })
       .filter((s): s is RelatedStream => s !== null);

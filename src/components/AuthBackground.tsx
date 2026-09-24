@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { useBackgroundSettings } from "@/hooks/useBackgroundSettings";
 
-const AuthBackground = () => {
-  const { data: background } = useBackgroundSettings("auth");
+const AuthBackground = ({ mode = "login" }: { mode?: "login" | "signup" }) => {
+  const { data: modeBackground } = useBackgroundSettings(mode === "signup" ? "auth_signup" : "auth_login");
+  const { data: sharedBackground } = useBackgroundSettings("auth");
+  const background = modeBackground ?? sharedBackground;
 
   // Dynamic background style based on settings
   const getDynamicBackground = () => {
