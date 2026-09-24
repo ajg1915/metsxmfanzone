@@ -16,8 +16,9 @@ import BlogShareDialog from "@/components/admin/BlogShareDialog";
 import { validateFile } from "@/utils/fileValidation";
 import {
   ArrowLeft, Save, Loader2, Code2, ImagePlus, Music, CalendarClock,
-  Share2, Eye, CloudUpload, CheckCircle2,
+  Share2, Eye, CloudUpload, CheckCircle2, MonitorSmartphone,
 } from "lucide-react";
+import ArticlePreviewDialog from "@/components/admin/ArticlePreviewDialog";
 import { z } from "zod";
 
 const SITE_URL = "https://metsxmfanzone.com";
@@ -55,6 +56,7 @@ export default function ArticleEditor() {
   const [autoSlug, setAutoSlug] = useState(!id);
   const [htmlMode, setHtmlMode] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [restored, setRestored] = useState(false);
   const [uploading, setUploading] = useState<"featured" | "inline" | "audio" | null>(null);
   const [existingSlugs, setExistingSlugs] = useState<string[]>([]);
@@ -275,6 +277,9 @@ export default function ArticleEditor() {
                 </Button>
               </>
             )}
+            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPreviewOpen(true)}>
+              <MonitorSmartphone className="w-3.5 h-3.5 mr-1" /> Preview
+            </Button>
             <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => save(false)} disabled={saving}>
               <Save className="w-3.5 h-3.5 mr-1" /> Save draft
             </Button>
@@ -497,6 +502,9 @@ export default function ArticleEditor() {
         <Button variant="outline" size="sm" className="h-10 flex-1 text-xs" onClick={() => save(false)} disabled={saving}>
           <Save className="w-4 h-4 mr-1" /> Save draft
         </Button>
+        <Button variant="outline" size="sm" className="h-10 flex-1 text-xs" onClick={() => setPreviewOpen(true)}>
+          <MonitorSmartphone className="w-4 h-4 mr-1" /> Preview
+        </Button>
         <Button size="sm" className="h-10 flex-1 text-xs" onClick={() => save(true)} disabled={saving || slugConflict}>
           {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <CloudUpload className="w-4 h-4 mr-1" />} Publish
         </Button>
@@ -504,6 +512,18 @@ export default function ArticleEditor() {
 
       {savedPost && <Badge className="sr-only">{savedPost.slug}</Badge>}
       <BlogShareDialog open={shareOpen} onOpenChange={setShareOpen} post={savedPost} />
+      <ArticlePreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        title={form.title}
+        category={form.category}
+        content={form.content}
+        featuredImage={form.featured_image_url}
+        readMinutes={readMinutes}
+        publishing={saving}
+        canPublish={!slugConflict}
+        onPublish={async () => { await save(true); setPreviewOpen(false); }}
+      />
     </div>
   );
 }

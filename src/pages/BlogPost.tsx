@@ -11,6 +11,7 @@ import SocialShareButtons from "@/components/SocialShareButtons";
 import { getBlogShareUrl } from "@/lib/blogLinks";
 import RelatedPosts from "@/components/RelatedPosts";
 import ArticleLinkPreviews from "@/components/blog/ArticleLinkPreviews";
+import ArticleBody from "@/components/blog/ArticleBody";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -502,13 +503,8 @@ export default function BlogPost() {
             )}
 
             <Card>
-              <CardContent className="prose prose-lg max-w-none dark:prose-invert py-8">
-                {/* Detect HTML (Tiptap output) vs legacy plain-text content */}
-                {/<\/?[a-z][\s\S]*>/i.test(post.content) ? (
-                  <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                ) : (
-                  <div className="whitespace-pre-wrap">{post.content}</div>
-                )}
+              <CardContent className="py-6 sm:py-8 px-4 sm:px-6">
+                <ArticleBody content={post.content} />
                 <ArticleLinkPreviews content={post.content} />
               </CardContent>
             </Card>
