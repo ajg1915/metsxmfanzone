@@ -6,6 +6,7 @@ import { useFreeStreams } from "@/hooks/useFreeStreams";
 import { useSubscription } from "@/hooks/useSubscription";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Radio, Users, Play, ChevronRight, ChevronLeft, ShieldCheck, GripVertical, Settings2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
