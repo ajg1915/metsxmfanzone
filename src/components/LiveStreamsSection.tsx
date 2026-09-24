@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
 import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
 import { useFreeStreams } from "@/hooks/useFreeStreams";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -213,14 +214,14 @@ const LiveStreamsSection = () => {
 
       const { data: toGoLive } = await supabase
         .from("live_streams")
-        .select("id, title")
+        .select("id, title, assigned_pages")
         .eq("status", "scheduled")
         .eq("published", true)
         .lte("scheduled_start", now)
         .not("scheduled_start", "is", null);
 
-      if (toGoLive && toGoLive.length > 0) {
-        for (const stream of toGoLive) {
+      if (toGoLive && toGoLive.filter(isAutoStartMetsGame).length > 0) {
+        for (const stream of toGoLive.filter(isAutoStartMetsGame)) {
           await supabase
             .from("live_streams")
             .update({ status: "live", actual_start: now })
