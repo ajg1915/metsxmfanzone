@@ -206,6 +206,18 @@ const RelatedStreamsSection = () => {
       .filter((s): s is RelatedStream => s !== null);
   }, [networkStreams]);
 
+  const scroll = (direction: 'left' | 'right') => {
+    const container = document.getElementById('network-streams-scroll');
+    if (container) {
+      const scrollAmount = container.clientWidth * 0.8;
+      const newPosition = direction === 'left'
+        ? Math.max(0, scrollPosition - scrollAmount)
+        : Math.min(container.scrollWidth - container.clientWidth, scrollPosition + scrollAmount);
+      container.scrollTo({ left: newPosition, behavior: 'smooth' });
+      setScrollPosition(newPosition);
+    }
+  };
+
   const handleClick = (s: RelatedStream) => {
     if (s.external) {
       window.open(s.href, "_blank", "noopener,noreferrer");
