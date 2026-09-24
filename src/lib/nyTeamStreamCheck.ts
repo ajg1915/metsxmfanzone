@@ -9,7 +9,7 @@ export const NY_TEAM_PAGES = [
 
 // Shared secondary link used for every NY team event watch page when the
 // stream has no URL of its own.
-export const NY_TEAM_STREAM_URL = "https://metsxmfanzone.metsxmfanzone.com/hls/metsxmfanzone.m3u8";
+export const NY_TEAM_STREAM_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
 
 export const getNYTeamStreamUrl = (stream: {
   stream_url?: string | null;

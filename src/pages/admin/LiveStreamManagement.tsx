@@ -104,8 +104,8 @@ const WATCH_PAGE_OPTIONS = [
   { value: 'pix11-network', label: 'Game Events (non-Mets games & events)' },
 ];
 
-const SPORTS_EVENTS_STREAM_URL = "https://metsxmfanzone.metsxmfanzone.com/hls/metsxmfanzone.m3u8";
-const PIX11_STREAM_URL = "https://video1.getstreamhosting.com:1936/resyweugpd/resyweugpd/playlist.m3u8";
+const SPORTS_EVENTS_STREAM_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
+const PIX11_STREAM_URL = "https://metsxmfanzone.metsxmfanzone.com/hls/metsxmfanzone.m3u8";
 
 const getWatchPage = (pages: string[] | null | undefined) => {
   if (pages?.includes('metsxmfanzone')) return 'metsxmfanzone';
