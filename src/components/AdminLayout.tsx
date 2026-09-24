@@ -111,40 +111,6 @@ function AdminHeader({
 }
 
 export function AdminLayout() {
-  useEffect(() => {
-    if (!isAdmin && !pinOnlyAuth) return;
-
-    let timeoutId: ReturnType<typeof setTimeout>;
-    const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
-
-    const handleInactivity = () => {
-      toast({
-        title: "Session Expired",
-        description: "Admin session closed due to 5 minutes of inactivity.",
-        variant: "destructive",
-      });
-      handleFreshAdminLogin();
-    };
-
-    const resetTimer = () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(handleInactivity, INACTIVITY_LIMIT);
-    };
-
-    const activityEvents = ["mousedown", "mousemove", "keydown", "scroll", "touchstart"];
-    activityEvents.forEach((event) =>
-      document.addEventListener(event, resetTimer, { passive: true })
-    );
-
-    resetTimer();
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      activityEvents.forEach((event) =>
-        document.removeEventListener(event, resetTimer)
-      );
-    };
-  }, [isAdmin, pinOnlyAuth]);
 
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
