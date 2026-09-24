@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
+import { isNYTeamStream, NY_TEAM_PAGES } from "@/lib/nyTeamStreamCheck";
 import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
 import { useFreeStreams } from "@/hooks/useFreeStreams";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -315,9 +316,6 @@ const LiveStreamsSection = () => {
       // here — exclusions are checked BEFORE the game/event title match so a
       // 24/7 feed can never slip back in through its title wording.
       const networkChannelPages = ['mlb-network', 'sny-tv', 'sny.tv', 'msg-network', 'msg', 'espn-network', 'espn', 'pix11-network', 'pix11'];
-      const offseasonTeamPages = ['ny-jets', 'ny-giants', 'ny-knicks', 'ny-rangers', 'ny-islanders', 'brooklyn-nets'];
-      const looksLikeOffseasonTeam = (s: { title: string; description?: string | null }) =>
-        /\b(new york|ny)\s+(jets|giants|knicks|rangers|islanders)\b|\bbrooklyn nets\b/i.test(`${s.title} ${s.description || ''}`);
       const looksLike247 = (s: { title: string; description?: string | null }) => {
         const text = `${s.title} ${s.description || ''}`.toLowerCase();
         return text.includes('24/7') || text.includes('24-7') || text.includes('24x7');
@@ -333,7 +331,7 @@ const LiveStreamsSection = () => {
           .map(p => p.toLowerCase())
           .filter(p => p !== 'live' && p !== 'guide');
 
-        if (pages.some(p => offseasonTeamPages.includes(p)) || looksLikeOffseasonTeam(s)) return false;
+        if (pages.some(p => NY_TEAM_PAGES.includes(p as (typeof NY_TEAM_PAGES)[number])) || isNYTeamStream(s)) return false;
 
         // 2. Entries that only feed a network channel page stay in Sports
         //    Network Streams.
