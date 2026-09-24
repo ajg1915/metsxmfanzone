@@ -509,7 +509,7 @@ export default function WriterArticleEditor() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={20}
-                className="font-mono"
+                className="font-mono text-foreground placeholder:text-muted-foreground"
               />
               <p className="text-xs text-muted-foreground">
                 You can use Markdown formatting for headings, bold, italic, links, etc.
