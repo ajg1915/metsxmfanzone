@@ -9,6 +9,10 @@ import { useSubscription } from "@/hooks/useSubscription";
 import fanartGeneral from "@/assets/fanart-mets-general.jpg";
 import metsxmfanzoneLogo from "@/assets/metsxmfanzone-logo.png";
 import { isNYTeamStream } from "@/lib/nyTeamStreamCheck";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import ClapprPlayer from "@/components/ClapprPlayer";
+
+const SPORTS_EVENT_SECONDARY_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
 
 interface LiveStream {
   id: string;
@@ -28,6 +32,7 @@ const OffseasonNYTeamsSection = () => {
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [activeStream, setActiveStream] = useState<LiveStream | null>(null);
 
   const formatScheduledStart = (value: string | null) => {
     if (!value) return "Time to be announced";
@@ -89,7 +94,7 @@ const OffseasonNYTeamsSection = () => {
 
   const handleStreamClick = (stream: LiveStream) => {
     if (isAdmin || tier === "weekly" || tier === "premium" || tier === "annual") {
-      navigate(`/live/${stream.id}`);
+      setActiveStream(stream);
     } else {
       if (!user) navigate("/auth");
       else navigate("/pricing");
@@ -155,7 +160,8 @@ const OffseasonNYTeamsSection = () => {
             return (
             <article
               key={stream.id}
-              className="flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] group relative snap-start"
+              onClick={() => isLive && handleStreamClick(stream)}
+              className="cursor-pointer flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] group relative snap-start"
             >
               <div className="relative aspect-video rounded-lg overflow-hidden border border-border/50 group-hover:border-primary/50 transition-all duration-300">
                 <img 
@@ -182,7 +188,7 @@ const OffseasonNYTeamsSection = () => {
                   <Button
                     type="button"
                     size="icon"
-                    onClick={() => handleStreamClick(stream)}
+                    onClick={(e) => { e.stopPropagation(); handleStreamClick(stream); }}
                     className="absolute inset-0 m-auto h-12 w-12 rounded-full opacity-0 transition-all group-hover:opacity-100 group-focus-within:opacity-100"
                     aria-label={`Watch ${stream.title}`}
                   >
@@ -209,6 +215,30 @@ const OffseasonNYTeamsSection = () => {
           })}
         </div>
       </div>
+
+      <Dialog open={!!activeStream} onOpenChange={(o) => !o && setActiveStream(null)}>
+        <DialogContent className="max-w-4xl w-[96vw] p-2 sm:p-4 bg-card/95 backdrop-blur-xl">
+          <DialogHeader className="px-1">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Radio className="w-4 h-4 text-destructive animate-pulse" />
+              {activeStream?.title}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              {activeStream?.description || "Live NY sports coverage"}
+            </DialogDescription>
+          </DialogHeader>
+          {activeStream && (
+            <div className="rounded-lg overflow-hidden bg-player">
+              <ClapprPlayer
+                source={SPORTS_EVENT_SECONDARY_URL}
+                showChrome
+                pageTitle={activeStream.title}
+                streamId={activeStream.id}
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
