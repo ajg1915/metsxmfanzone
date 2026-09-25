@@ -50,10 +50,10 @@ export const template = {
   },
 } satisfies TemplateEntry
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '24px', maxWidth: '560px' }
-const h1 = { fontSize: '22px', fontWeight: 'bold', color: '#002D72', margin: '0 0 18px' }
-const text = { fontSize: '15px', color: '#333333', lineHeight: '1.6', margin: '0 0 14px' }
+const main = { backgroundColor: '#0e1c43', color: '#d1d5db', fontFamily: 'Arial, sans-serif' }
+const container = { backgroundColor: '#0e1c43', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', margin: '0 auto', maxWidth: '560px', padding: '24px' }
+const h1 = { fontSize: '22px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 18px' }
+const text = { fontSize: '15px', color: '#d1d5db', lineHeight: '1.6', margin: '0 0 14px' }
 const button = {
   backgroundColor: '#FF5910',
   color: '#ffffff',
@@ -63,4 +63,4 @@ const button = {
   fontWeight: 'bold',
   fontSize: '15px',
 }
-const footer = { fontSize: '13px', color: '#888888', margin: '32px 0 0' }
+const footer = { fontSize: '13px', color: '#8b93a1', margin: '32px 0 0' }
