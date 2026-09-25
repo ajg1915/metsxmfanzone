@@ -41,6 +41,7 @@ const PaymentError = lazyWithRetry(() => import("./pages/PaymentError"), "page-p
 const Gallery = lazyWithRetry(() => import("./pages/Gallery"), "page-gallery");
 const Plans = lazyWithRetry(() => import("./pages/Plans"), "page-plans");
 const ConfirmAccount = lazyWithRetry(() => import("./pages/ConfirmAccount"), "page-confirm-account");
+const AuthConfirm = lazyWithRetry(() => import("./pages/AuthConfirm"), "page-auth-confirm");
 const AdminSetup = lazyWithRetry(() => import("./pages/AdminSetup"), "page-admin-setup");
 const AdminLayout = lazyWithRetry(() => import("./components/AdminLayout").then(m => ({ default: m.AdminLayout })), "component-admin-layout");
 const AdminDashboard = lazyWithRetry(() => import("./pages/admin/Dashboard"), "page-admin-dashboard");
@@ -323,6 +324,7 @@ const AppContent = () => {
             
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-error" element={<PaymentError />} />
+            <Route path="/auth/confirm" element={<AuthConfirm />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/writer-auth" element={<WriterAuth />} />
             <Route path="/writer-register" element={<WriterRegister />} />
