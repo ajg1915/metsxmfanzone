@@ -81,12 +81,12 @@ export const template = {
   },
 } satisfies TemplateEntry
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '24px', maxWidth: '560px' }
-const h1 = { fontSize: '24px', fontWeight: 'bold', color: '#002D72', margin: '0 0 16px' }
-const h2 = { fontSize: '17px', fontWeight: 'bold', color: '#002D72', margin: '20px 0 8px' }
-const text = { fontSize: '15px', color: '#333333', lineHeight: '1.6', margin: '0 0 8px' }
-const meta = { fontSize: '14px', color: '#555555', margin: '8px 0' }
-const totalStyle = { fontSize: '16px', color: '#002D72', margin: '12px 0', fontWeight: 'bold' }
-const hr = { borderColor: '#e5e5e5', margin: '20px 0' }
-const footer = { fontSize: '13px', color: '#888888', margin: '6px 0' }
+const main = { backgroundColor: '#0e1c43', color: '#d1d5db', fontFamily: 'Arial, sans-serif' }
+const container = { backgroundColor: '#0e1c43', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', margin: '0 auto', maxWidth: '560px', padding: '24px' }
+const h1 = { fontSize: '24px', fontWeight: 'bold', color: '#ffffff', margin: '0 0 16px' }
+const h2 = { fontSize: '17px', fontWeight: 'bold', color: '#FF5910', margin: '20px 0 8px' }
+const text = { fontSize: '15px', color: '#d1d5db', lineHeight: '1.6', margin: '0 0 8px' }
+const meta = { fontSize: '14px', color: '#d1d5db', margin: '8px 0' }
+const totalStyle = { fontSize: '16px', color: '#ffffff', margin: '12px 0', fontWeight: 'bold' }
+const hr = { borderColor: 'rgba(255,255,255,0.08)', margin: '20px 0' }
+const footer = { fontSize: '13px', color: '#8b93a1', margin: '6px 0' }

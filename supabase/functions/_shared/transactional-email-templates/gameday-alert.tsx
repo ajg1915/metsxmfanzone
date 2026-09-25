@@ -87,8 +87,8 @@ export const template = {
   },
 } satisfies TemplateEntry
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px', maxWidth: '600px' }
+const main = { backgroundColor: '#0e1c43', color: '#d1d5db', fontFamily: 'Arial, sans-serif' }
+const container = { backgroundColor: '#0e1c43', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', margin: '0 auto', maxWidth: '560px', padding: '20px 25px' }
 const header = { textAlign: 'center' as const, padding: '8px 0 16px' }
 const badge = {
   display: 'inline-block',
@@ -101,17 +101,17 @@ const badge = {
   borderRadius: '999px',
   margin: '0 0 12px',
 }
-const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#002d72', margin: '0 0 8px' }
+const h1 = { fontSize: '24px', fontWeight: 'bold' as const, color: '#ffffff', margin: '0 0 8px' }
 const card = {
-  backgroundColor: '#f5f7fb',
+  backgroundColor: 'rgba(255,255,255,0.04)',
   borderRadius: '12px',
   padding: '24px',
-  border: '1px solid #e5e7eb',
+  border: '1px solid rgba(255,255,255,0.08)',
 }
-const messageStyle = { fontSize: '15px', color: '#1f2937', lineHeight: '1.6', margin: '0 0 16px' }
-const meta = { fontSize: '14px', color: '#374151', margin: '4px 0' }
+const messageStyle = { fontSize: '15px', color: '#d1d5db', lineHeight: '1.6', margin: '0 0 16px' }
+const meta = { fontSize: '14px', color: '#d1d5db', margin: '4px 0' }
 const button = {
-  backgroundColor: '#002d72',
+  backgroundColor: '#FF5910',
   color: '#ffffff',
   fontSize: '15px',
   fontWeight: 'bold' as const,
@@ -120,4 +120,4 @@ const button = {
   textDecoration: 'none',
   display: 'inline-block',
 }
-const footer = { fontSize: '12px', color: '#6b7280', textAlign: 'center' as const, margin: '24px 0 0' }
+const footer = { fontSize: '12px', color: '#8b93a1', textAlign: 'center' as const, margin: '24px 0 0' }
