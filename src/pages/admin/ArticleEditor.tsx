@@ -13,10 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import BlogShareDialog from "@/components/admin/BlogShareDialog";
+import MediaPickerDialog from "@/components/admin/MediaPickerDialog";
 import { validateFile } from "@/utils/fileValidation";
 import {
   ArrowLeft, Save, Loader2, Code2, ImagePlus, Music, CalendarClock,
-  Share2, Eye, CloudUpload, CheckCircle2, MonitorSmartphone,
+  Share2, Eye, CloudUpload, CheckCircle2, MonitorSmartphone, FolderOpen,
 } from "lucide-react";
 import ArticlePreviewDialog from "@/components/admin/ArticlePreviewDialog";
 import { z } from "zod";
@@ -62,9 +63,20 @@ export default function ArticleEditor() {
   const [existingSlugs, setExistingSlugs] = useState<string[]>([]);
   const [savedPost, setSavedPost] = useState<{ id: string; title: string; slug: string; excerpt?: string | null; featured_image_url?: string | null } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [picker, setPicker] = useState<{ open: boolean; target: "featured" | "inline" | "audio" }>({ open: false, target: "featured" });
 
   const ready = useRef(false);
   const inlineInput = useRef<HTMLInputElement>(null);
+
+  const handlePickedFromLibrary = (url: string) => {
+    if (picker.target === "featured") {
+      setForm((f) => ({ ...f, featured_image_url: url }));
+    } else if (picker.target === "audio") {
+      setForm((f) => ({ ...f, audio_url: url }));
+    } else {
+      setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
+    }
+  };
 
   // Load post (edit) + any unsaved local draft
   useEffect(() => {
@@ -328,12 +340,6 @@ export default function ArticleEditor() {
           <div>
             <Label className="text-[11px]">Cover image</Label>
             <div className="flex gap-2 items-center mt-1">
-              <Input
-                value={form.featured_image_url}
-                onChange={(e) => setForm((f) => ({ ...f, featured_image_url: e.target.value }))}
-                placeholder="Paste a link or upload"
-                className="h-9 text-xs flex-1"
-              />
               <label className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-border/50 text-xs cursor-pointer">
                 {uploading === "featured" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
                 Upload
@@ -344,6 +350,14 @@ export default function ArticleEditor() {
                   if (url) setForm((f) => ({ ...f, featured_image_url: url }));
                 }} />
               </label>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 px-3 text-xs"
+                onClick={() => setPicker({ open: true, target: "featured" })}
+              >
+                <FolderOpen className="w-3.5 h-3.5 mr-1" /> Media Library
+              </Button>
             </div>
             {form.featured_image_url && (
               <img src={form.featured_image_url} alt="" className="mt-2 w-full max-h-48 rounded-md object-cover" />
@@ -370,6 +384,7 @@ export default function ArticleEditor() {
                 onChange={(html) => setForm((f) => ({ ...f, content: html }))}
                 placeholder="Start writing… use the toolbar to format."
                 onImageUploadRequest={() => inlineInput.current?.click()}
+                onMediaPick={() => setPicker({ open: true, target: "inline" })}
               />
             )}
             <input ref={inlineInput} type="file" accept="image/*" className="hidden" onChange={async (e) => {
@@ -378,15 +393,21 @@ export default function ArticleEditor() {
               const url = await upload(file, "inline");
               if (url) setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
             }} />
-            {uploading === "inline" && (
-              <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Adding image…</p>
-            )}
-          </div>
+      {uploading === "inline" && (
+            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Adding image…</p>
+          )}
+        </div>
+
+        <MediaPickerDialog
+          open={picker.open}
+          onOpenChange={(open) => setPicker((p) => ({ ...p, open }))}
+          kind={picker.target === "audio" ? "audio" : "image"}
+          onSelect={handlePickedFromLibrary}
+        />
 
           <div>
             <Label className="text-[11px]">Audio version (optional)</Label>
             <div className="flex gap-2 items-center mt-1">
-              <Input value={form.audio_url} onChange={(e) => setForm((f) => ({ ...f, audio_url: e.target.value }))} placeholder="Paste a link or upload" className="h-9 text-xs flex-1" />
               <label className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-border/50 text-xs cursor-pointer">
                 {uploading === "audio" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Music className="w-3.5 h-3.5" />}
                 Upload
@@ -397,6 +418,14 @@ export default function ArticleEditor() {
                   if (url) setForm((f) => ({ ...f, audio_url: url }));
                 }} />
               </label>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 px-3 text-xs"
+                onClick={() => setPicker({ open: true, target: "audio" })}
+              >
+                <FolderOpen className="w-3.5 h-3.5 mr-1" /> Media Library
+              </Button>
             </div>
           </div>
         </TabsContent>
