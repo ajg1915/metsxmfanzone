@@ -340,12 +340,6 @@ export default function ArticleEditor() {
           <div>
             <Label className="text-[11px]">Cover image</Label>
             <div className="flex gap-2 items-center mt-1">
-              <Input
-                value={form.featured_image_url}
-                onChange={(e) => setForm((f) => ({ ...f, featured_image_url: e.target.value }))}
-                placeholder="Paste a link or upload"
-                className="h-9 text-xs flex-1"
-              />
               <label className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-border/50 text-xs cursor-pointer">
                 {uploading === "featured" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
                 Upload
@@ -356,6 +350,14 @@ export default function ArticleEditor() {
                   if (url) setForm((f) => ({ ...f, featured_image_url: url }));
                 }} />
               </label>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 px-3 text-xs"
+                onClick={() => setPicker({ open: true, target: "featured" })}
+              >
+                <FolderOpen className="w-3.5 h-3.5 mr-1" /> Media Library
+              </Button>
             </div>
             {form.featured_image_url && (
               <img src={form.featured_image_url} alt="" className="mt-2 w-full max-h-48 rounded-md object-cover" />
@@ -398,7 +400,6 @@ export default function ArticleEditor() {
           <div>
             <Label className="text-[11px]">Audio version (optional)</Label>
             <div className="flex gap-2 items-center mt-1">
-              <Input value={form.audio_url} onChange={(e) => setForm((f) => ({ ...f, audio_url: e.target.value }))} placeholder="Paste a link or upload" className="h-9 text-xs flex-1" />
               <label className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-border/50 text-xs cursor-pointer">
                 {uploading === "audio" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Music className="w-3.5 h-3.5" />}
                 Upload
@@ -409,6 +410,14 @@ export default function ArticleEditor() {
                   if (url) setForm((f) => ({ ...f, audio_url: url }));
                 }} />
               </label>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-9 px-3 text-xs"
+                onClick={() => setPicker({ open: true, target: "audio" })}
+              >
+                <FolderOpen className="w-3.5 h-3.5 mr-1" /> Media Library
+              </Button>
             </div>
           </div>
         </TabsContent>
