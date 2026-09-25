@@ -1,6 +1,6 @@
 // Real RSS 2.0 feed for the blog, served as application/xml so feed readers
 // and search engines can fetch it without running JavaScript.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL, stripHtml, resolveImage } from "./_lib/article.js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL, stripHtml, resolveImage, cleanText, cleanCategory } from "./_lib/article.js";
 
 function xmlEscape(input) {
   return String(input ?? "").replace(
@@ -12,7 +12,7 @@ function xmlEscape(input) {
 async function fetchPosts() {
   const url =
     `${SUPABASE_URL}/rest/v1/blog_posts` +
-    `?select=title,slug,excerpt,content,category,published_at,created_at,featured_image` +
+    `?select=title,slug,excerpt,content,category,published_at,created_at,featured_image_url` +
     `&published=eq.true&order=published_at.desc&limit=30`;
   const res = await fetch(url, {
     headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
@@ -30,16 +30,17 @@ export default async function handler(req, res) {
         const link = `${SITE_URL}/blog/${encodeURIComponent(post.slug || "")}`;
         const date = new Date(post.published_at || post.created_at || Date.now()).toUTCString();
         const description = stripHtml(post.excerpt || post.content || "").slice(0, 500);
-        const image = post.featured_image ? resolveImage(post.featured_image) : "";
+        const image = post.featured_image_url ? resolveImage(post.featured_image_url) : "";
+        const imageType = /\.png(\?|$)/i.test(image) ? "image/png" : /\.webp(\?|$)/i.test(image) ? "image/webp" : "image/jpeg";
         return [
           "    <item>",
-          `      <title>${xmlEscape(post.title || "Untitled")}</title>`,
+          `      <title>${xmlEscape(cleanText(post.title) || "Untitled")}</title>`,
           `      <link>${xmlEscape(link)}</link>`,
           `      <guid isPermaLink="true">${xmlEscape(link)}</guid>`,
           `      <pubDate>${xmlEscape(date)}</pubDate>`,
-          post.category ? `      <category>${xmlEscape(post.category)}</category>` : null,
+          cleanCategory(post.category) ? `      <category>${xmlEscape(cleanCategory(post.category))}</category>` : null,
           `      <description>${xmlEscape(description)}</description>`,
-          image ? `      <enclosure url="${xmlEscape(image)}" type="image/jpeg" />` : null,
+          image ? `      <enclosure url="${xmlEscape(image)}" length="0" type="${imageType}" />` : null,
           "    </item>",
         ]
           .filter(Boolean)

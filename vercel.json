@@ -28,6 +28,10 @@
       "destination": "/api/blog-rss"
     },
     {
+      "source": "/news-sitemap.xml",
+      "destination": "/api/news-sitemap"
+    },
+    {
       "source": "/blog/:slug*",
       "destination": "/api/blog?slug=:slug*"
     },

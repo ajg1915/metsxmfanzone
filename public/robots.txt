@@ -24,3 +24,4 @@ Disallow: /writer-register
 Disallow: /*.json$
 
 Sitemap: https://metsxmfanzone.com/sitemap.xml
+Sitemap: https://metsxmfanzone.com/news-sitemap.xml
