@@ -14,6 +14,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Search, Globe, FileText, CheckCircle, AlertCircle, RefreshCw, Plus, Pencil, Trash2, Eye, Tag, Shield, Copy } from "lucide-react";
 import { AdminPage, AdminPageHeader, AdminSearch, AdminStatGrid, AdminStat } from "@/components/admin/AdminUI";
+import sharePages from "@/data/share-pages.json";
+import { clearSeoOverrideCache } from "@/lib/seoOverrides";
+
+const SITE_URL = "https://metsxmfanzone.com";
+const isNoindex = (robots?: string | null) => (robots || "").toLowerCase().includes("noindex");
 
 interface SEOSetting {
   id: string;
@@ -28,6 +33,8 @@ interface SEOSetting {
   twitter_card: string | null;
   canonical_url: string | null;
   robots: string | null;
+  include_in_sitemap: boolean;
+  sitemap_priority: number;
   created_at: string;
   updated_at: string;
 }
@@ -144,6 +151,8 @@ export default function SEOManagement() {
         twitter_card: currentSetting.twitter_card || "summary_large_image",
         canonical_url: currentSetting.canonical_url || null,
         robots: currentSetting.robots || "index, follow",
+        include_in_sitemap: currentSetting.include_in_sitemap ?? true,
+        sitemap_priority: currentSetting.sitemap_priority ?? 0.7,
       });
 
       if (error) {
@@ -151,6 +160,7 @@ export default function SEOManagement() {
         toast.error("Failed to create SEO setting");
       } else {
         toast.success("SEO setting created successfully");
+        clearSeoOverrideCache();
         setEditDialogOpen(false);
         fetchSEOSettings();
       }
@@ -169,6 +179,8 @@ export default function SEOManagement() {
           twitter_card: currentSetting.twitter_card || "summary_large_image",
           canonical_url: currentSetting.canonical_url || null,
           robots: currentSetting.robots || "index, follow",
+          include_in_sitemap: currentSetting.include_in_sitemap ?? true,
+          sitemap_priority: currentSetting.sitemap_priority ?? 0.7,
         })
         .eq("id", currentSetting.id);
 
@@ -177,6 +189,7 @@ export default function SEOManagement() {
         toast.error("Failed to update SEO setting");
       } else {
         toast.success("SEO setting updated successfully");
+        clearSeoOverrideCache();
         setEditDialogOpen(false);
         fetchSEOSettings();
       }
@@ -247,6 +260,7 @@ export default function SEOManagement() {
       toast.error("Failed to delete SEO setting");
     } else {
       toast.success("SEO setting deleted");
+      clearSeoOverrideCache();
       fetchSEOSettings();
     }
   };
@@ -284,8 +298,54 @@ export default function SEOManagement() {
     toast.success("Meta tag copied to clipboard");
   };
 
+  // Adds any public page the site knows about that isn't in SEO Settings yet.
+  const [finding, setFinding] = useState(false);
+  const findNewPages = async () => {
+    setFinding(true);
+    const have = new Set(seoSettings.map((s) => s.page_path.toLowerCase()));
+    const missing = sharePages.filter((p) => !have.has(p.path.toLowerCase()));
+    if (missing.length === 0) {
+      toast.success("All pages are already listed");
+      setFinding(false);
+      return;
+    }
+    const { error } = await supabase.from("seo_settings").insert(
+      missing.map((p) => ({
+        page_name: p.label,
+        page_path: p.path,
+        title: p.title,
+        description: p.description,
+        og_image: p.image || null,
+        canonical_url: `${SITE_URL}${p.path === "/" ? "/" : p.path}`,
+        robots: "index, follow",
+        twitter_card: "summary_large_image",
+        include_in_sitemap: false,
+        sitemap_priority: 0.7,
+      })),
+    );
+    if (error) {
+      toast.error("Couldn't add pages: " + error.message);
+    } else {
+      toast.success(`Added ${missing.length} new page${missing.length === 1 ? "" : "s"} — review and turn on "Include in sitemap"`);
+      clearSeoOverrideCache();
+      fetchSEOSettings();
+    }
+    setFinding(false);
+  };
+
+  const quickToggle = async (setting: SEOSetting, patch: Partial<SEOSetting>) => {
+    setSeoSettings((list) => list.map((s) => (s.id === setting.id ? { ...s, ...patch } : s)));
+    const { error } = await supabase.from("seo_settings").update(patch).eq("id", setting.id);
+    if (error) {
+      toast.error("Couldn't save: " + error.message);
+      fetchSEOSettings();
+    } else {
+      clearSeoOverrideCache();
+    }
+  };
+
   const openEditDialog = (setting?: SEOSetting) => {
-    setCurrentSetting(setting || { robots: "index, follow", twitter_card: "summary_large_image" });
+    setCurrentSetting(setting || { robots: "index, follow", twitter_card: "summary_large_image", include_in_sitemap: true, sitemap_priority: 0.7 });
     setEditDialogOpen(true);
   };
 
@@ -338,12 +398,21 @@ export default function SEOManagement() {
                 <RefreshCw className="h-3.5 w-3.5" />
                 Refresh
               </Button>
+              <Button variant="outline" size="sm" onClick={findNewPages} disabled={finding} className="gap-1.5">
+                <Search className="h-3.5 w-3.5" />
+                {finding ? "Checking..." : "Find new pages"}
+              </Button>
               <Button size="sm" onClick={() => openEditDialog()} className="gap-1.5">
                 <Plus className="h-3.5 w-3.5" />
                 Add Page
               </Button>
             </div>
           </div>
+
+          <p className="text-[11px] text-muted-foreground">
+            {seoSettings.length} pages · {seoSettings.filter((s) => !isNoindex(s.robots)).length} open to Google ·{" "}
+            {seoSettings.filter((s) => s.include_in_sitemap && !isNoindex(s.robots)).length} in sitemap. Blog posts are managed in the blog editor.
+          </p>
 
           {/* SEO Settings Table */}
           <Card>
@@ -356,19 +425,21 @@ export default function SEOManagement() {
                       <TableHead className="text-xs">Title</TableHead>
                       <TableHead className="text-xs hidden md:table-cell">Description</TableHead>
                       <TableHead className="text-xs">Status</TableHead>
+                      <TableHead className="text-xs text-center">Google</TableHead>
+                      <TableHead className="text-xs text-center">Sitemap</TableHead>
                       <TableHead className="text-xs text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : filteredSettings.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           No SEO settings found. Add your first page SEO settings.
                         </TableCell>
                       </TableRow>
@@ -392,6 +463,31 @@ export default function SEOManagement() {
                             >
                               {setting.title.length >= 50 && setting.description.length >= 150 ? "Optimized" : "Needs Work"}
                             </Badge>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex flex-col items-center gap-0.5">
+                              <Switch
+                                checked={!isNoindex(setting.robots)}
+                                onCheckedChange={(v) => quickToggle(setting, { robots: v ? "index, follow" : "noindex, nofollow" })}
+                                aria-label="Allow Google to index"
+                              />
+                              <span className={`text-[9px] ${isNoindex(setting.robots) ? "text-red-400" : "text-green-500"}`}>
+                                {isNoindex(setting.robots) ? "Hidden" : "Indexed"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <div className="flex flex-col items-center gap-0.5">
+                              <Switch
+                                checked={setting.include_in_sitemap}
+                                disabled={isNoindex(setting.robots)}
+                                onCheckedChange={(v) => quickToggle(setting, { include_in_sitemap: v })}
+                                aria-label="Include in sitemap"
+                              />
+                              <span className="text-[9px] text-muted-foreground">
+                                {setting.include_in_sitemap && !isNoindex(setting.robots) ? "Listed" : "Not listed"}
+                              </span>
+                            </div>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">
@@ -765,6 +861,47 @@ export default function SEOManagement() {
                   onChange={(e) => setCurrentSetting({ ...currentSetting, robots: e.target.value })}
                   className="h-8 text-xs"
                 />
+              </div>
+            </div>
+
+            <div className="rounded-md border border-border/50 p-3 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label className="text-xs font-semibold">Allow Google to index this page</Label>
+                  <p className="text-[10px] text-muted-foreground">Off = page is hidden from search results (noindex).</p>
+                </div>
+                <Switch
+                  checked={!isNoindex(currentSetting?.robots)}
+                  onCheckedChange={(v) => setCurrentSetting({ ...currentSetting, robots: v ? "index, follow" : "noindex, nofollow" })}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label className="text-xs font-semibold">Include in sitemap</Label>
+                  <p className="text-[10px] text-muted-foreground">Lists the page in /sitemap.xml so Google finds it faster.</p>
+                </div>
+                <Switch
+                  checked={currentSetting?.include_in_sitemap ?? true}
+                  disabled={isNoindex(currentSetting?.robots)}
+                  onCheckedChange={(v) => setCurrentSetting({ ...currentSetting, include_in_sitemap: v })}
+                />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label className="text-xs font-semibold">Sitemap priority</Label>
+                  <p className="text-[10px] text-muted-foreground">How important this page is compared to your others.</p>
+                </div>
+                <Select
+                  value={String(Number(currentSetting?.sitemap_priority ?? 0.7))}
+                  onValueChange={(v) => setCurrentSetting({ ...currentSetting, sitemap_priority: Number(v) })}
+                >
+                  <SelectTrigger className="h-8 w-24 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["1", "0.9", "0.8", "0.7", "0.6", "0.5", "0.3"].map((v) => (
+                      <SelectItem key={v} value={v} className="text-xs">{v === "1" ? "1.0 (top)" : v}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

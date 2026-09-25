@@ -1,5 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import sharePages from "@/data/share-pages.json";
+import { useSeoOverride } from "@/lib/seoOverrides";
 
 interface SEOHeadProps {
   title: string;
@@ -22,6 +23,9 @@ interface SEOHeadProps {
   breadcrumbs?: Array<{ name: string; url: string }>;
   readingTime?: number;
   wordCount?: number;
+  /** Separate social-share title/description (falls back to title/description). */
+  ogTitle?: string;
+  ogDescription?: string;
 }
 
 const BASE_URL = "https://metsxmfanzone.com";
@@ -29,7 +33,28 @@ const DEFAULT_IMAGE = `${BASE_URL}/og-image.png`;
 const SITE_NAME = "MetsXMFanZone";
 const TWITTER_HANDLE = "@metsxmfanzone";
 
-export default function SEOHead({
+export default function SEOHead(props: SEOHeadProps) {
+  // Settings saved in Admin → SEO Settings win over the values hard-coded in each page.
+  const path = typeof window !== "undefined" ? window.location.pathname : "/";
+  const o = useSeoOverride(path);
+  if (!o) return <SEOHeadInner {...props} />;
+  const robots = (o.robots || "").toLowerCase();
+  return (
+    <SEOHeadInner
+      {...props}
+      title={o.title || props.title}
+      description={o.description || props.description}
+      keywords={o.keywords || props.keywords}
+      canonical={o.canonical_url || props.canonical}
+      ogImage={o.og_image || props.ogImage}
+      ogTitle={o.og_title || undefined}
+      ogDescription={o.og_description || undefined}
+      noindex={robots ? robots.includes("noindex") : props.noindex}
+    />
+  );
+}
+
+function SEOHeadInner({
   title,
   description,
   keywords,
@@ -37,6 +62,8 @@ export default function SEOHead({
   ogType = "website",
   ogImage,
   ogImageAlt,
+  ogTitle,
+  ogDescription,
   twitterCard = "summary_large_image",
   publishedTime,
   modifiedTime,
@@ -58,6 +85,8 @@ export default function SEOHead({
   const routeImage = sharePages.find((page) => page.path === currentPath)?.image;
   const finalImage = ogImage || routeImage || DEFAULT_IMAGE;
   const finalImageAlt = ogImageAlt || title;
+  const socialTitle = ogTitle || fullTitle;
+  const socialDescription = ogDescription || trimmedDescription;
   const rawCanonical = canonical || (typeof window !== 'undefined' ? window.location.href.split('?')[0] : BASE_URL);
   // Normalize: strip www. to prevent 3XX redirect issues
   const canonicalUrl = rawCanonical.replace('://www.metsxmfanzone.com', '://metsxmfanzone.com');
@@ -132,8 +161,8 @@ export default function SEOHead({
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={trimmedDescription} />
+      <meta property="og:title" content={socialTitle} />
+      <meta property="og:description" content={socialDescription} />
       <meta property="og:image" content={socialImage} />
       <meta property="og:image:secure_url" content={socialImage} />
       <meta property="og:image:alt" content={finalImageAlt} />
@@ -164,8 +193,8 @@ export default function SEOHead({
       <meta name="twitter:card" content={twitterCard} />
       <meta name="twitter:site" content={TWITTER_HANDLE} />
       <meta name="twitter:creator" content={TWITTER_HANDLE} />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={trimmedDescription} />
+      <meta name="twitter:title" content={socialTitle} />
+      <meta name="twitter:description" content={socialDescription} />
       <meta name="twitter:image" content={socialImage} />
       <meta name="twitter:image:alt" content={finalImageAlt} />
       <meta name="twitter:domain" content="metsxmfanzone.com" />

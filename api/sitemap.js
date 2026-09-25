@@ -1,4 +1,7 @@
 // Live XML sitemap: /sitemap.xml
+// Main pages come from Admin → SEO Settings (seo_settings table): a page is
+// listed when "Include in sitemap" is on and robots doesn't say noindex.
+// MAIN_PAGES below is only a fallback if that table can't be read.
 // Built on every request (cached ~5 min), so newly published posts appear
 // right away without a redeploy. Lists only pages worth ranking; small help
 // and utility pages are left out on purpose so Google spends its crawl
@@ -63,8 +66,31 @@ async function fetchPosts() {
   return Array.isArray(rows) ? rows : [];
 }
 
-function urlEntry(loc, lastmod) {
-  return `  <url><loc>${xmlEscape(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</url>`;
+async function fetchManagedPages() {
+  const url =
+    `${SUPABASE_URL}/rest/v1/seo_settings` +
+    `?select=page_path,sitemap_priority,robots,updated_at` +
+    `&include_in_sitemap=eq.true&order=sitemap_priority.desc,page_path.asc`;
+  const res = await fetch(url, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+  });
+  if (!res.ok) throw new Error(`Supabase ${res.status}`);
+  const rows = await res.json();
+  if (!Array.isArray(rows)) return [];
+  return rows
+    .filter((r) => !String(r?.robots ?? "").toLowerCase().includes("noindex"))
+    .map((r) => {
+      let path = String(r?.page_path ?? "").trim();
+      if (!path.startsWith("/")) path = `/${path}`;
+      if (path !== "/") path = path.replace(/\/+$/, "");
+      return { path, priority: r.sitemap_priority, updated: r.updated_at };
+    })
+    .filter((r) => /^\/[a-z0-9\-\/]*$/i.test(r.path));
+}
+
+function urlEntry(loc, lastmod, priority) {
+  const pr = priority != null && !Number.isNaN(Number(priority)) ? `<priority>${Number(priority).toFixed(1)}</priority>` : "";
+  return `  <url><loc>${xmlEscape(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}${pr}</url>`;
 }
 
 export default async function handler(req, res) {
@@ -76,12 +102,24 @@ export default async function handler(req, res) {
     postsOk = false; // still serve the main pages rather than an error
   }
 
+  let pages = [];
+  let pagesOk = true;
+  try {
+    pages = await fetchManagedPages();
+  } catch {
+    pagesOk = false;
+  }
+  if (!pagesOk || pages.length === 0) {
+    pages = MAIN_PAGES.map((path) => ({ path, priority: null, updated: null }));
+  }
+
   const seen = new Set();
   const lines = [];
-  for (const path of MAIN_PAGES) {
-    const loc = path === "/" ? `${SITE_URL}/` : `${SITE_URL}${path}`;
+  for (const pg of pages) {
+    const loc = pg.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${pg.path}`;
+    if (seen.has(loc)) continue;
     seen.add(loc);
-    lines.push(urlEntry(loc));
+    lines.push(urlEntry(loc, null, pg.priority));
   }
   for (const p of posts) {
     const slug = String(p?.slug ?? "").trim();
@@ -103,7 +141,7 @@ export default async function handler(req, res) {
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
   res.setHeader(
     "Cache-Control",
-    postsOk ? "public, max-age=0, s-maxage=300, stale-while-revalidate=600" : "no-store",
+    postsOk && pagesOk ? "public, max-age=0, s-maxage=300, stale-while-revalidate=600" : "no-store",
   );
   res.status(200).send(xml);
 }
