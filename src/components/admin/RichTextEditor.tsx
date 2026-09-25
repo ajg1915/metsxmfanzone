@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Bold, Italic, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Undo, Redo, Link as LinkIcon,
-  Image as ImageIcon, Code, Minus,
+  Image as ImageIcon, FolderOpen, Code, Minus,
 } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ interface RichTextEditorProps {
   onChange: (html: string) => void;
   placeholder?: string;
   onImageUploadRequest?: () => void;
+  onMediaPick?: () => void;
   className?: string;
 }
 
@@ -25,6 +26,7 @@ export default function RichTextEditor({
   onChange,
   placeholder = "Start writing your article…",
   onImageUploadRequest,
+  onMediaPick,
   className,
 }: RichTextEditorProps) {
   const editor = useEditor({
@@ -116,6 +118,9 @@ export default function RichTextEditor({
         <ToolbarBtn title="Link" active={editor.isActive("link")} onClick={setLink}><LinkIcon className="w-3.5 h-3.5" /></ToolbarBtn>
         {onImageUploadRequest && (
           <ToolbarBtn title="Insert image" onClick={onImageUploadRequest}><ImageIcon className="w-3.5 h-3.5" /></ToolbarBtn>
+        )}
+        {onMediaPick && (
+          <ToolbarBtn title="Insert from media library" onClick={onMediaPick}><FolderOpen className="w-3.5 h-3.5" /></ToolbarBtn>
         )}
         <div className="mx-1 h-4 w-px bg-border/40" />
         <ToolbarBtn title="Undo" onClick={() => editor.chain().focus().undo().run()}><Undo className="w-3.5 h-3.5" /></ToolbarBtn>
