@@ -16,6 +16,16 @@ export function escapeHtml(input) {
   );
 }
 
+/** Removes invisible characters (zero-width spaces etc.) and trims. */
+export function cleanText(input) {
+  return String(input ?? "").replace(/[​-‍⁠﻿]/g, "").trim();
+}
+
+/** "MetsXMFanZone News,  " -> "MetsXMFanZone News" */
+export function cleanCategory(input) {
+  return cleanText(input).replace(/[\s,]+$/g, "").replace(/^[\s,]+/g, "");
+}
+
 export function stripHtml(input) {
   return String(input ?? "")
     .replace(/<[^>]*>/g, " ")
@@ -100,11 +110,12 @@ export function renderArticleBody(post) {
   const image = resolveImage(post.featured_image_url);
   const body = sanitizeArticleHtml(post.content) || `<p>${escapeHtml(stripHtml(post.excerpt))}</p>`;
   const date = (post.published_at || "").slice(0, 10);
+  const title = cleanText(post.title);
   return `<article class="blog-article">
-  <p class="blog-kicker">${escapeHtml(post.category || "Mets News")}</p>
-  <h1>${escapeHtml(post.title || "")}</h1>
+  <p class="blog-kicker">${escapeHtml(cleanCategory(post.category) || "Mets News")}</p>
+  <h1>${escapeHtml(title)}</h1>
   <time datetime="${escapeHtml(post.published_at || "")}">${escapeHtml(date)}</time>
-  <img class="blog-hero" src="${escapeHtml(image)}" alt="${escapeHtml(post.title || "")}" width="1200" height="630">
+  <img class="blog-hero" src="${escapeHtml(image)}" alt="${escapeHtml(title)}" width="1200" height="630">
   ${post.excerpt ? `<p class="blog-excerpt">${escapeHtml(post.excerpt)}</p>` : ""}
   <div class="blog-body">${body}</div>
 </article>`;
@@ -116,21 +127,48 @@ export function buildDescription(post) {
   return raw.length > 200 ? `${raw.slice(0, 197)}...` : raw;
 }
 
+// JSON for a <script> tag: "<" is escaped so article text can never close the tag early.
+function jsonLd(obj) {
+  return JSON.stringify(obj).replace(/</g, "\\u003c");
+}
+
 export function buildMetaTags(post, slug, { canonical } = {}) {
   const postUrl = canonical || `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
   const image = resolveImage(post.featured_image_url);
-  const title = `${post.title} | MetsXMFanZone`;
-  const description = buildDescription(post);
+  const headline = cleanText(post.title);
+  const section = cleanCategory(post.category);
+  const title = `${headline} | MetsXMFanZone`;
+  const description = cleanText(buildDescription(post));
+  const organization = {
+    "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
+    name: "MetsXMFanZone",
+    url: SITE_URL,
+    logo: { "@type": "ImageObject", url: `${SITE_URL}/metsxmfanzone-logo.png` },
+  };
   const schema = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
-    headline: post.title,
+    headline: headline.length > 110 ? `${headline.slice(0, 107)}...` : headline,
     description,
     image: [image],
     datePublished: post.published_at,
     dateModified: post.updated_at || post.published_at,
-    mainEntityOfPage: postUrl,
-    publisher: { "@type": "Organization", name: "MetsXMFanZone" },
+    mainEntityOfPage: { "@type": "WebPage", "@id": postUrl },
+    url: postUrl,
+    inLanguage: "en-US",
+    ...(section ? { articleSection: section } : {}),
+    author: organization,
+    publisher: organization,
+  };
+  const breadcrumbs = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
+      { "@type": "ListItem", position: 3, name: headline, item: postUrl },
+    ],
   };
 
   return `
@@ -145,17 +183,19 @@ export function buildMetaTags(post, slug, { canonical } = {}) {
   <meta property="og:image" content="${escapeHtml(image)}">
   <meta property="og:image:secure_url" content="${escapeHtml(image)}">
   ${image === FALLBACK_IMAGE ? '<meta property="og:image:width" content="1200">\n  <meta property="og:image:height" content="630">' : ""}
-  <meta property="og:image:alt" content="${escapeHtml(post.title || "")}">
+  <meta property="og:image:alt" content="${escapeHtml(headline)}">
   <meta property="og:locale" content="en_US">
   <meta property="article:published_time" content="${escapeHtml(post.published_at || "")}">
-  <meta property="article:section" content="${escapeHtml(post.category || "")}">
+  ${post.updated_at ? `<meta property="article:modified_time" content="${escapeHtml(post.updated_at)}">` : ""}
+  ${section ? `<meta property="article:section" content="${escapeHtml(section)}">` : ""}
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@metsxmfanzone">
   <meta name="twitter:url" content="${escapeHtml(postUrl)}">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(image)}">
-  <script type="application/ld+json">${JSON.stringify(schema)}</script>
+  <script type="application/ld+json">${jsonLd(schema)}</script>
+  <script type="application/ld+json">${jsonLd(breadcrumbs)}</script>
 `;
 }
 

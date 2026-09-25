@@ -1,73 +1,17 @@
 # MetsXMFanZone Robots.txt
-# Last updated: 2026-03-03
+# One group for every crawler (Google, Bing, social previews, etc.), so the
+# private-area rules below apply to all of them.
 
-# Allow all major search engines
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Googlebot-Image
-Allow: /
-
-User-agent: Googlebot-Video
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Slurp
-Allow: /
-Crawl-delay: 1
-
-User-agent: DuckDuckBot
-Allow: /
-Crawl-delay: 1
-
-User-agent: Baiduspider
-Allow: /
-Crawl-delay: 2
-
-User-agent: YandexBot
-Allow: /
-Crawl-delay: 2
-
-# Social Media Crawlers - Allow full access
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: LinkedInBot
-Allow: /
-
-User-agent: Pinterest
-Allow: /
-
-User-agent: Discordbot
-Allow: /
-
-User-agent: Slackbot
-Allow: /
-
-User-agent: WhatsApp
-Allow: /
-
-User-agent: TelegramBot
-Allow: /
-
-# Allow all other bots
 User-agent: *
 Allow: /
-Crawl-delay: 2
+Allow: /manifest.json
 
-# Disallow admin and private areas
+# Private areas
 Disallow: /admin
-Disallow: /admin/*
+Disallow: /admin/
+Disallow: /admin-setup
 Disallow: /api/
 Disallow: /dashboard
-Disallow: /*.json$
 Disallow: /auth
 Disallow: /logout
 Disallow: /confirm-account
@@ -77,17 +21,6 @@ Disallow: /paypal-success
 Disallow: /helcim-checkout
 Disallow: /writer-auth
 Disallow: /writer-register
-Disallow: /admin-setup
+Disallow: /*.json$
 
-# Allow specific public JSON files
-Allow: /manifest.json
-
-# Sitemaps
 Sitemap: https://metsxmfanzone.com/sitemap.xml
-Sitemap: https://rdmrxeplasttewtlfetc.supabase.co/functions/v1/dynamic-sitemap
-
-# Host directive
-Host: https://metsxmfanzone.com
-
-# Important pages to prioritize
-# Homepage, Blog, Podcast, Community, Spring Training, Mets Roster, Shop
