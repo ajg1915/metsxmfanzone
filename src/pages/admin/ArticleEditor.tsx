@@ -13,10 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import BlogShareDialog from "@/components/admin/BlogShareDialog";
+import MediaPickerDialog from "@/components/admin/MediaPickerDialog";
 import { validateFile } from "@/utils/fileValidation";
 import {
   ArrowLeft, Save, Loader2, Code2, ImagePlus, Music, CalendarClock,
-  Share2, Eye, CloudUpload, CheckCircle2, MonitorSmartphone,
+  Share2, Eye, CloudUpload, CheckCircle2, MonitorSmartphone, FolderOpen,
 } from "lucide-react";
 import ArticlePreviewDialog from "@/components/admin/ArticlePreviewDialog";
 import { z } from "zod";
@@ -62,9 +63,20 @@ export default function ArticleEditor() {
   const [existingSlugs, setExistingSlugs] = useState<string[]>([]);
   const [savedPost, setSavedPost] = useState<{ id: string; title: string; slug: string; excerpt?: string | null; featured_image_url?: string | null } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [picker, setPicker] = useState<{ open: boolean; target: "featured" | "inline" | "audio" }>({ open: false, target: "featured" });
 
   const ready = useRef(false);
   const inlineInput = useRef<HTMLInputElement>(null);
+
+  const handlePickedFromLibrary = (url: string) => {
+    if (picker.target === "featured") {
+      setForm((f) => ({ ...f, featured_image_url: url }));
+    } else if (picker.target === "audio") {
+      setForm((f) => ({ ...f, audio_url: url }));
+    } else {
+      setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
+    }
+  };
 
   // Load post (edit) + any unsaved local draft
   useEffect(() => {
