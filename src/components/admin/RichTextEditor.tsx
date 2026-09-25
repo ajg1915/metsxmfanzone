@@ -7,16 +7,20 @@ import { Button } from "@/components/ui/button";
 import {
   Bold, Italic, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Undo, Redo, Link as LinkIcon,
-  Image as ImageIcon, Code, Minus,
+  Image as ImageIcon, Code, Minus, FolderOpen, Loader2,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import MediaLibraryPicker from "@/components/admin/MediaLibraryPicker";
 
 interface RichTextEditorProps {
   value: string;
   onChange: (html: string) => void;
   placeholder?: string;
-  onImageUploadRequest?: () => void;
+  /** Upload a file and return its public URL (or null on failure). Enables the "Upload image" button. */
+  uploadImage?: (file: File) => Promise<string | null>;
+  /** Show the "Media Library" button (default true). */
+  showMediaLibrary?: boolean;
   className?: string;
 }
 
@@ -24,9 +28,14 @@ export default function RichTextEditor({
   value,
   onChange,
   placeholder = "Start writing your article…",
-  onImageUploadRequest,
+  uploadImage,
+  showMediaLibrary = true,
   className,
 }: RichTextEditorProps) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -73,6 +82,22 @@ export default function RichTextEditor({
     editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
   };
 
+  // Insert at the cursor (focus() restores the last selection after a toolbar click or dialog).
+  const insertImage = (src: string, alt = "") => {
+    editor.chain().focus().setImage({ src, alt }).run();
+  };
+
+  const handleFile = async (file: File) => {
+    if (!uploadImage) return;
+    setUploadingImage(true);
+    try {
+      const url = await uploadImage(file);
+      if (url) insertImage(url);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const ToolbarBtn = ({
     active, onClick, children, title,
   }: {
@@ -114,14 +139,49 @@ export default function RichTextEditor({
         <ToolbarBtn title="Divider" onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="w-3.5 h-3.5" /></ToolbarBtn>
         <div className="mx-1 h-4 w-px bg-border/40" />
         <ToolbarBtn title="Link" active={editor.isActive("link")} onClick={setLink}><LinkIcon className="w-3.5 h-3.5" /></ToolbarBtn>
-        {onImageUploadRequest && (
-          <ToolbarBtn title="Insert image" onClick={onImageUploadRequest}><ImageIcon className="w-3.5 h-3.5" /></ToolbarBtn>
+        {uploadImage && (
+          <ToolbarBtn title="Upload image" onClick={() => fileInput.current?.click()}>
+            {uploadingImage ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5" />}
+          </ToolbarBtn>
+        )}
+        {showMediaLibrary && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            title="Insert image from Media Library"
+            onClick={() => setPickerOpen(true)}
+            className="h-7 px-2 rounded text-[11px] gap-1"
+          >
+            <FolderOpen className="w-3.5 h-3.5" /> Media Library
+          </Button>
         )}
         <div className="mx-1 h-4 w-px bg-border/40" />
         <ToolbarBtn title="Undo" onClick={() => editor.chain().focus().undo().run()}><Undo className="w-3.5 h-3.5" /></ToolbarBtn>
         <ToolbarBtn title="Redo" onClick={() => editor.chain().focus().redo().run()}><Redo className="w-3.5 h-3.5" /></ToolbarBtn>
       </div>
       <EditorContent editor={editor} />
+      {uploadImage && (
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            e.target.value = "";
+            if (file) handleFile(file);
+          }}
+        />
+      )}
+      {showMediaLibrary && (
+        <MediaLibraryPicker
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
+          onSelect={(url, name) => insertImage(url, name.replace(/\.[a-z0-9]+$/i, ""))}
+          title="Insert Image from Media Library"
+        />
+      )}
     </div>
   );
 }

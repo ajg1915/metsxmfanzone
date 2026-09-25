@@ -13,10 +13,11 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import BlogShareDialog from "@/components/admin/BlogShareDialog";
+import MediaLibraryPicker from "@/components/admin/MediaLibraryPicker";
 import { validateFile } from "@/utils/fileValidation";
 import {
   ArrowLeft, Save, Loader2, Code2, ImagePlus, Music, CalendarClock,
-  Share2, Eye, CloudUpload, CheckCircle2, MonitorSmartphone,
+  Share2, Eye, CloudUpload, CheckCircle2, MonitorSmartphone, FolderOpen,
 } from "lucide-react";
 import ArticlePreviewDialog from "@/components/admin/ArticlePreviewDialog";
 import { z } from "zod";
@@ -62,9 +63,9 @@ export default function ArticleEditor() {
   const [existingSlugs, setExistingSlugs] = useState<string[]>([]);
   const [savedPost, setSavedPost] = useState<{ id: string; title: string; slug: string; excerpt?: string | null; featured_image_url?: string | null } | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [coverPickerOpen, setCoverPickerOpen] = useState(false);
 
   const ready = useRef(false);
-  const inlineInput = useRef<HTMLInputElement>(null);
 
   // Load post (edit) + any unsaved local draft
   useEffect(() => {
@@ -344,6 +345,9 @@ export default function ArticleEditor() {
                   if (url) setForm((f) => ({ ...f, featured_image_url: url }));
                 }} />
               </label>
+              <Button type="button" variant="outline" size="sm" className="h-9 px-3 text-xs gap-1" onClick={() => setCoverPickerOpen(true)}>
+                <FolderOpen className="w-3.5 h-3.5" /> Media Library
+              </Button>
             </div>
             {form.featured_image_url && (
               <img src={form.featured_image_url} alt="" className="mt-2 w-full max-h-48 rounded-md object-cover" />
@@ -369,15 +373,9 @@ export default function ArticleEditor() {
                 value={form.content}
                 onChange={(html) => setForm((f) => ({ ...f, content: html }))}
                 placeholder="Start writing… use the toolbar to format."
-                onImageUploadRequest={() => inlineInput.current?.click()}
+                uploadImage={(file) => upload(file, "inline")}
               />
             )}
-            <input ref={inlineInput} type="file" accept="image/*" className="hidden" onChange={async (e) => {
-              const file = e.target.files?.[0]; e.target.value = "";
-              if (!file) return;
-              const url = await upload(file, "inline");
-              if (url) setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
-            }} />
             {uploading === "inline" && (
               <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Adding image…</p>
             )}
@@ -511,6 +509,12 @@ export default function ArticleEditor() {
       </div>
 
       {savedPost && <Badge className="sr-only">{savedPost.slug}</Badge>}
+      <MediaLibraryPicker
+        open={coverPickerOpen}
+        onOpenChange={setCoverPickerOpen}
+        onSelect={(url) => setForm((f) => ({ ...f, featured_image_url: url }))}
+        title="Select Cover Image"
+      />
       <BlogShareDialog open={shareOpen} onOpenChange={setShareOpen} post={savedPost} />
       <ArticlePreviewDialog
         open={previewOpen}
