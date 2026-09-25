@@ -384,6 +384,7 @@ export default function ArticleEditor() {
                 onChange={(html) => setForm((f) => ({ ...f, content: html }))}
                 placeholder="Start writing… use the toolbar to format."
                 onImageUploadRequest={() => inlineInput.current?.click()}
+                onMediaPick={() => setPicker({ open: true, target: "inline" })}
               />
             )}
             <input ref={inlineInput} type="file" accept="image/*" className="hidden" onChange={async (e) => {
@@ -392,10 +393,17 @@ export default function ArticleEditor() {
               const url = await upload(file, "inline");
               if (url) setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
             }} />
-            {uploading === "inline" && (
-              <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Adding image…</p>
-            )}
-          </div>
+      {uploading === "inline" && (
+            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Adding image…</p>
+          )}
+        </div>
+
+        <MediaPickerDialog
+          open={picker.open}
+          onOpenChange={(open) => setPicker((p) => ({ ...p, open }))}
+          kind={picker.target === "audio" ? "audio" : "image"}
+          onSelect={handlePickedFromLibrary}
+        />
 
           <div>
             <Label className="text-[11px]">Audio version (optional)</Label>
