@@ -19,7 +19,6 @@ import { TVModeWrapper } from "@/components/TVModeWrapper";
 import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
 import { DesktopWelcomeGate } from "@/components/DesktopWelcomeGate";
-import { UpdatePrompt } from "@/components/UpdatePrompt";
 
 
 
@@ -307,7 +306,6 @@ const AppContent = () => {
         <ForceNotificationPrompt />
         <SweepstakesWheel />
         <DesktopWelcomeGate />
-        <UpdatePrompt />
         <RouteShareMetadata />
         
         <RouteErrorBoundary resetKey={location.pathname}>
