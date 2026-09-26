@@ -16,7 +16,7 @@ All colors MUST be HSL.
     --card-foreground: 0 0% 98%;
 
     /* Menu sidebar — royal blue */
-    --menu-panel: 223 64% 16%;
+    --menu-panel: 211 63% 7%; /* site dark blue (--mets-blue-dark) */
     --menu-panel-foreground: 210 20% 97%;
 
     --player: 0 0% 0%;
@@ -105,7 +105,7 @@ All colors MUST be HSL.
     --card-foreground: 0 0% 98%;
 
     /* Menu sidebar — royal blue */
-    --menu-panel: 223 64% 16%;
+    --menu-panel: 211 63% 7%; /* site dark blue (--mets-blue-dark) */
     --menu-panel-foreground: 210 20% 97%;
     --player: 0 0% 0%;
     --player-foreground: 0 0% 100%;
