@@ -15,6 +15,7 @@ import { usePresenceTracking } from "@/hooks/usePresenceTracking";
 import { StreamExitDialog } from "@/components/StreamExitDialog";
 import { LiveStreamToast } from "@/components/LiveStreamToast";
 import SocialMediaBar from "@/components/SocialMediaBar";
+import FanChat from "@/components/FanChat";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
 import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
@@ -304,6 +305,7 @@ const AppContent = () => {
         {/* Removed: ExitIntentPopup, most toasts. Only Live/Offline kept */}
         <StreamExitDialog />
         <SocialMediaBar />
+        <FanChat />
         <ForceNotificationPrompt />
         <SweepstakesWheel />
         <DesktopWelcomeGate />

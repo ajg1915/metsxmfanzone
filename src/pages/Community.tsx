@@ -21,7 +21,6 @@ import MemberSearch from "@/components/community/MemberSearch";
 import GifPicker from "@/components/community/GifPicker";
 import BusinessAdsSection from "@/components/BusinessAdsSection";
 import Events from "./Events";
-import { CommunityAIChat } from "@/components/CommunityAIChat";
 import { z } from "zod";
 
 interface Post {
@@ -871,7 +870,6 @@ const Community = () => {
       </main>
 
       <Footer />
-      <CommunityAIChat />
     </div>
   );
 };
