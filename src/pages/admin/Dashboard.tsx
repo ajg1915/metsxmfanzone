@@ -24,6 +24,7 @@ import {
   Globe,
   HelpCircle,
   Image as ImageIcon,
+  Link2,
   Loader2,
   Mail,
   Megaphone,
