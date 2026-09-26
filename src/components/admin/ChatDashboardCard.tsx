@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowRight, Bot, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ChatModeSwitch, { type ChatMode } from "@/components/admin/ChatModeSwitch";
 
 type LiveMsg = { id: string; role: "user" | "assistant" | "admin"; content: string; created_at: string };
 type LiveConv = {
@@ -26,6 +27,7 @@ export default function ChatDashboardCard() {
   const navigate = useNavigate();
   const [loaded, setLoaded] = useState(false);
   const [online, setOnline] = useState(false);
+  const [mode, setMode] = useState<ChatMode | null>(null);
   const [gameLabel, setGameLabel] = useState("");
   const [waitingMessages, setWaitingMessages] = useState(0);
   const [chatsToday, setChatsToday] = useState(0);
@@ -41,6 +43,7 @@ export default function ChatDashboardCard() {
         ]);
         if (stopped) return;
         setOnline(!!overview.online);
+        setMode(overview.mode ?? "auto");
         setGameLabel(overview.gameLabel ?? "");
         setWaitingMessages(overview.stats?.pending ?? 0);
         setChatsToday(overview.stats?.chatsToday ?? 0);
@@ -96,6 +99,21 @@ export default function ChatDashboardCard() {
         >
           Open chat <ArrowRight className="h-3.5 w-3.5" />
         </button>
+      </div>
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <span className="adm-chip text-slate-500">Mode</span>
+        <ChatModeSwitch
+          compact
+          mode={mode}
+          onChanged={(m, isOn) => {
+            setMode(m);
+            setOnline(isOn);
+          }}
+        />
+        <span className="text-[11px] text-slate-500">
+          {mode === "online" ? "On — open to fans now" : mode === "offline" ? "Off — fans can leave messages" : "Auto — online during live games"}
+        </span>
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

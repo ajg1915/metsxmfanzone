@@ -5,6 +5,7 @@ import {
   Bot, UserRound, ChevronUp, MessagesSquare, Send,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import ChatModeSwitch, { type ChatMode } from "@/components/admin/ChatModeSwitch";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,6 +34,7 @@ type ChatMsg = {
 
 type Overview = {
   online: boolean;
+  mode?: ChatMode;
   gameLabel: string;
   messages: ChatMsg[];
   stats: { chatsToday: number; chatsWeek: number; pending: number; memberLimit: number; visitorLimit: number };
@@ -329,6 +331,14 @@ const ChatManagement = () => {
         />
       </AdminStatGrid>
       {data?.gameLabel && <p className="text-[10px] text-muted-foreground">{data.gameLabel}</p>}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold">Chat mode</span>
+        <ChatModeSwitch
+          mode={data?.mode ?? "auto"}
+          onChanged={(mode, online) => setData((d) => (d ? { ...d, mode, online } : d))}
+        />
+      </div>
 
       <AdminToolbar>
         <AdminFilterChips
