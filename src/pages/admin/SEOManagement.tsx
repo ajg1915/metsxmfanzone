@@ -81,8 +81,9 @@ export default function SEOManagement() {
       console.error("Error fetching SEO settings:", error);
       toast.error("Failed to load SEO settings");
     } else {
-      setSeoSettings(data || []);
-      calculateSEOScore(data || []);
+      const rows = (data || []) as unknown as SEOSetting[];
+      setSeoSettings(rows);
+      calculateSEOScore(rows);
     }
     setLoading(false);
   };
