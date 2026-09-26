@@ -2583,7 +2583,6 @@ export type Database = {
           created_at: string
           description: string
           id: string
-          include_in_sitemap: boolean
           keywords: string | null
           og_description: string | null
           og_image: string | null
@@ -2591,7 +2590,6 @@ export type Database = {
           page_name: string
           page_path: string
           robots: string | null
-          sitemap_priority: number
           title: string
           twitter_card: string | null
           updated_at: string
@@ -2601,7 +2599,6 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
-          include_in_sitemap?: boolean
           keywords?: string | null
           og_description?: string | null
           og_image?: string | null
@@ -2609,7 +2606,6 @@ export type Database = {
           page_name: string
           page_path: string
           robots?: string | null
-          sitemap_priority?: number
           title: string
           twitter_card?: string | null
           updated_at?: string
@@ -2619,7 +2615,6 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
-          include_in_sitemap?: boolean
           keywords?: string | null
           og_description?: string | null
           og_image?: string | null
@@ -2627,7 +2622,6 @@ export type Database = {
           page_name?: string
           page_path?: string
           robots?: string | null
-          sitemap_priority?: number
           title?: string
           twitter_card?: string | null
           updated_at?: string
