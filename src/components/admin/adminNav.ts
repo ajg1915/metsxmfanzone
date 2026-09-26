@@ -95,6 +95,7 @@ export const ADMIN_NAV: AdminNavSection[] = [
       { title: "Polls", url: "/admin/polls", icon: BarChart3 },
       { title: "Predictions", url: "/admin/predictions", icon: Star },
       { title: "Feedback", url: "/admin/feedbacks", icon: MessageSquare },
+      { title: "Chat", url: "/admin/chat", icon: MessageSquare },
       { title: "Player of Month", url: "/admin/player-of-the-month", icon: Trophy },
       { title: "Business Ads", url: "/admin/business-ads", icon: Megaphone },
       { title: "Sweepstakes", url: "/admin/sweepstakes", icon: Gift },
