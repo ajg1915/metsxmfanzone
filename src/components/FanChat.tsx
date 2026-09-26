@@ -16,7 +16,7 @@ import { useLocation } from "react-router-dom";
 const FAN_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fan-chat`;
 const STATUS_POLL_MS = 60_000;
 
-type ChatMessage = { role: "user" | "assistant"; content: string };
+type ChatMessage = { role: "user" | "assistant"; content: string; id?: string };
 type InboxItem = {
   id: string;
   agent_name: string;
@@ -147,6 +147,8 @@ export const FanChat = () => {
   const [leaveSent, setLeaveSent] = useState<null | { willEmail: boolean }>(null);
   const [leaveError, setLeaveError] = useState("");
   const [showLeaveForm, setShowLeaveForm] = useState(false);
+  const [takenOver, setTakenOver] = useState(false);
+  const [chatStarted, setChatStarted] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // A new chat (new name) every time the panel opens
@@ -157,6 +159,8 @@ export const FanChat = () => {
     setLeaveSent(null);
     setLeaveError("");
     setShowLeaveForm(false);
+    setTakenOver(false);
+    setChatStarted(false);
     try {
       const [status, box] = await Promise.all([
         callFanChat({ action: "status" }, accessToken),
@@ -180,6 +184,36 @@ export const FanChat = () => {
     if (open) startChat();
   }, [open, startChat]);
 
+  // While a chat is going, pick up replies that arrive on their own
+  // (someone from the crew jumping in from the admin portal)
+  useEffect(() => {
+    if (!open || !chatStarted || !conversationId) return;
+    let stopped = false;
+    const poll = async () => {
+      try {
+        const data = await callFanChat({ action: "poll", conversationId }, accessToken);
+        if (stopped) return;
+        setTakenOver(!!data.takenOver);
+        if (data.takenOver) setShowLeaveForm(false);
+        const incoming: ChatMessage[] = (data.messages ?? []).map((m: any) => ({ role: "assistant", content: m.content, id: m.id }));
+        if (incoming.length) {
+          setMessages((cur) => {
+            const seen = new Set(cur.map((m) => m.id).filter(Boolean));
+            const fresh = incoming.filter((m) => !seen.has(m.id));
+            return fresh.length ? [...cur, ...fresh] : cur;
+          });
+        }
+      } catch {
+        /* try again next tick */
+      }
+    };
+    const t = window.setInterval(poll, 3000);
+    return () => {
+      stopped = true;
+      window.clearInterval(t);
+    };
+  }, [open, chatStarted, conversationId, accessToken]);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, typing, inbox, leaveSent]);
@@ -196,6 +230,13 @@ export const FanChat = () => {
     const started = Date.now();
     try {
       const data = await callFanChat({ action: "chat", agentName, conversationId, messages: next }, accessToken);
+      setChatStarted(true);
+      if (data.queued) {
+        // A real person from the crew has this chat — their reply arrives via polling
+        setTakenOver(true);
+        setShowLeaveForm(false);
+        return;
+      }
       // a short, natural "typing" pause
       const wait = Math.max(0, 900 + Math.min(text.length * 15, 1200) - (Date.now() - started));
       await new Promise((r) => setTimeout(r, wait));
@@ -204,7 +245,7 @@ export const FanChat = () => {
         setShowLeaveForm(true);
         setLeaveText(text);
       } else {
-        setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
+        setMessages((m) => (data.id && m.some((x) => x.id === data.id) ? m : [...m, { role: "assistant", content: data.reply, id: data.id }]));
         if (data.busy) {
           setShowLeaveForm(true);
           setLeaveText(text);
@@ -238,7 +279,7 @@ export const FanChat = () => {
     }
   };
 
-  const offlineView = !online || showLeaveForm;
+  const offlineView = (!online && !takenOver) || showLeaveForm;
 
   if (isAdminRoute) return null;
 
@@ -370,7 +411,7 @@ export const FanChat = () => {
           </div>
 
           {/* Input (online only) */}
-          {online && !showLeaveForm && !starting && (
+          {(online || takenOver) && !showLeaveForm && !starting && (
             <form
               onSubmit={(e) => {
                 e.preventDefault();

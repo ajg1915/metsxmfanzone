@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
-import { MessageCircle, Trash2, Reply, Mail, RefreshCw, Clock, CheckCircle2, Users } from "lucide-react";
+import {
+  MessageCircle, Trash2, Reply, Mail, RefreshCw, Clock, CheckCircle2, Users,
+  Bot, UserRound, ChevronUp, MessagesSquare, Send,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +45,184 @@ const callAdmin = async (body: Record<string, unknown>) => {
   return data;
 };
 
+type LiveMsg = { id: string; role: "user" | "assistant" | "admin"; content: string; created_at: string };
+type LiveConv = {
+  id: string;
+  agent_name: string;
+  is_member: boolean;
+  taken_over: boolean;
+  started_at: string;
+  last_message_at: string;
+  messages: LiveMsg[];
+};
+
+// ---------- Live chats: watch conversations and take them over ----------
+const LiveChats = () => {
+  const { toast } = useToast();
+  const [convs, setConvs] = useState<LiveConv[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  const load = async () => {
+    try {
+      const res = await callAdmin({ action: "admin_live", hours: 6 });
+      setConvs(res.conversations ?? []);
+    } catch (e: any) {
+      toast({ title: "Couldn't load live chats", description: e.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Refresh fast while you're in a chat, slower otherwise
+  useEffect(() => {
+    load();
+    const t = window.setInterval(load, openId ? 3000 : 15000);
+    return () => window.clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openId]);
+
+  const open = convs.find((c) => c.id === openId) ?? null;
+  const lastCount = open?.messages.length ?? 0;
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [openId, lastCount]);
+
+  const send = async () => {
+    if (!open || !draft.trim()) return;
+    setSending(true);
+    try {
+      await callAdmin({ action: "admin_send", conversationId: open.id, content: draft.trim() });
+      setDraft("");
+      load();
+    } catch (e: any) {
+      toast({ title: "Couldn't send", description: e.message, variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const release = async (id: string) => {
+    try {
+      await callAdmin({ action: "admin_release", conversationId: id });
+      toast({ title: "Handed back to Chat's AI" });
+      load();
+    } catch (e: any) {
+      toast({ title: "Couldn't hand back", description: e.message, variant: "destructive" });
+    }
+  };
+
+  if (loading) return <AdminLoading label="Loading live chats…" />;
+  if (!convs.length) return <AdminEmpty message="No chats in the last 6 hours. Chats show up here as soon as a fan sends a message." />;
+
+  return (
+    <AdminList>
+      {convs.map((c) => {
+        const last = c.messages[c.messages.length - 1];
+        const fanCount = c.messages.filter((m) => m.role === "user").length;
+        const isOpen = openId === c.id;
+        const waitingOnYou = c.taken_over && last?.role === "user";
+        return (
+          <AdminListCard key={c.id} highlight={waitingOnYou}>
+            <AdminRow
+              title={last ? `${last.role === "user" ? "Fan" : c.agent_name}: ${last.content}` : "(no messages)"}
+              meta={`Chat · ${c.agent_name} · ${c.is_member ? "Member" : "Visitor"} · ${fanCount} fan message${fanCount === 1 ? "" : "s"} · ${formatDistanceToNow(new Date(c.last_message_at), { addSuffix: true })}`}
+              badges={
+                c.taken_over ? (
+                  <Badge variant="outline" className="h-4 text-[9px] text-primary">
+                    <UserRound className="mr-0.5 h-2.5 w-2.5" /> You
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="h-4 text-[9px] text-muted-foreground">
+                    <Bot className="mr-0.5 h-2.5 w-2.5" /> AI
+                  </Badge>
+                )
+              }
+              actions={
+                <>
+                  <AdminIconButton
+                    icon={isOpen ? ChevronUp : MessagesSquare}
+                    title={isOpen ? "Close" : "Open chat"}
+                    tone="primary"
+                    onClick={() => {
+                      setOpenId(isOpen ? null : c.id);
+                      setDraft("");
+                    }}
+                  />
+                  {c.taken_over && (
+                    <AdminIconButton icon={Bot} title="Hand back to AI" onClick={() => release(c.id)} />
+                  )}
+                </>
+              }
+              body={
+                isOpen && (
+                  <div className="space-y-2">
+                    <div className="max-h-80 space-y-1.5 overflow-y-auto rounded-md border border-border/30 bg-background/40 p-2">
+                      {c.messages.map((m) => (
+                        <div key={m.id} className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
+                          <div
+                            className={`max-w-[85%] whitespace-pre-wrap rounded-xl px-2.5 py-1.5 text-xs ${
+                              m.role === "user"
+                                ? "bg-secondary/40 text-foreground"
+                                : m.role === "admin"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-secondary/15 text-muted-foreground"
+                            }`}
+                          >
+                            <span className="mb-0.5 block text-[9px] opacity-70">
+                              {m.role === "user" ? "Fan" : m.role === "admin" ? `You (as ${c.agent_name})` : `${c.agent_name} (AI)`}
+                              {" · "}
+                              {new Date(m.created_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                            </span>
+                            {m.content}
+                          </div>
+                        </div>
+                      ))}
+                      <div ref={bottomRef} />
+                    </div>
+                    <form
+                      className="flex items-end gap-1.5"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        send();
+                      }}
+                    >
+                      <Textarea
+                        value={draft}
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            send();
+                          }
+                        }}
+                        placeholder={`Reply as ${c.agent_name}…`}
+                        className="min-h-[44px] text-xs"
+                        maxLength={2000}
+                      />
+                      <Button type="submit" size="sm" className="h-9" disabled={!draft.trim() || sending}>
+                        <Send className="h-3.5 w-3.5" />
+                      </Button>
+                    </form>
+                    <p className="text-[10px] text-muted-foreground">
+                      {c.taken_over
+                        ? `You have this chat — the AI is paused. Tap the robot icon to hand it back.`
+                        : `Sending a message takes over this chat and pauses the AI.`}
+                    </p>
+                  </div>
+                )
+              }
+            />
+          </AdminListCard>
+        );
+      })}
+    </AdminList>
+  );
+};
+
 const ChatManagement = () => {
   const { toast } = useToast();
   const [data, setData] = useState<Overview | null>(null);
@@ -51,6 +232,7 @@ const ChatManagement = () => {
   const [replyText, setReplyText] = useState("");
   const [sending, setSending] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [tab, setTab] = useState<"live" | "messages">("live");
 
   const load = async () => {
     try {
@@ -150,6 +332,21 @@ const ChatManagement = () => {
 
       <AdminToolbar>
         <AdminFilterChips
+          active={tab}
+          onChange={(k) => setTab(k as "live" | "messages")}
+          filters={[
+            { key: "live", label: "Live chats" },
+            { key: "messages", label: "Left messages", count: counts.pending },
+          ]}
+        />
+      </AdminToolbar>
+
+      {tab === "live" && <LiveChats />}
+
+      {tab === "messages" && (
+      <>
+      <AdminToolbar>
+        <AdminFilterChips
           active={filter}
           onChange={setFilter}
           filters={[
@@ -231,6 +428,8 @@ const ChatManagement = () => {
           ))
         )}
       </AdminList>
+      </>
+      )}
 
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
