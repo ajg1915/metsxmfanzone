@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
     const { data: subscriptions, error: subError } = await supabase
       .from("subscriptions")
       .select("id, user_id, plan_type, status, end_date, paypal_subscription_id")
-      .in("plan_type", ["premium", "annual", "weekly", "ny_sports"])
+      .in("plan_type", ["premium", "annual"])
       .not("end_date", "is", null);
 
     if (subError) throw subError;
