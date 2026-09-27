@@ -187,6 +187,10 @@ IMPORTANT: Always return valid JSON. No markdown, no code blocks.`;
 
 async function executeAction(client: any, action: any, adminId: string) {
   switch (action.type) {
+    case "paypal_billing_report": {
+      return await buildPayPalBillingReport(client);
+    }
+
     case "activate_subscription": {
       const endDate = action.end_date || (() => {
         const d = new Date();
@@ -384,4 +388,140 @@ async function executeAction(client: any, action: any, adminId: string) {
     default:
       return { message: `Unknown action: ${action.type}` };
   }
+}
+
+// ---------------------------------------------------------------------------
+// Read-only PayPal billing report for the admin portal. Asks PayPal directly
+// what every subscription is doing and compares it with the site's records.
+// Never changes billing or data.
+// ---------------------------------------------------------------------------
+async function buildPayPalBillingReport(client: any) {
+  const api = Deno.env.get("PAYPAL_BASE_URL") || "https://api-m.paypal.com";
+  const tokenRes = await fetch(`${api}/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${btoa(`${Deno.env.get("PAYPAL_CLIENT_ID")}:${Deno.env.get("PAYPAL_SECRET")}`)}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+  });
+  if (!tokenRes.ok) throw new Error("Could not sign in to PayPal");
+  const token = (await tokenRes.json()).access_token;
+  const H = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+
+  const { data: rows } = await client
+    .from("subscriptions")
+    .select("id, user_id, plan_type, status, end_date, paypal_subscription_id, paypal_order_id, created_at")
+    .order("created_at", { ascending: false });
+  const { data: profiles } = await client.from("profiles").select("id, email, full_name");
+  const profileById = new Map((profiles || []).map((p: any) => [p.id, p]));
+  const profileByEmail = new Map((profiles || []).filter((p: any) => p.email).map((p: any) => [String(p.email).toLowerCase(), p]));
+
+  const dbById = new Map<string, any>();
+  for (const r of rows || []) {
+    for (const v of [r.paypal_subscription_id, r.paypal_order_id]) {
+      if (v && String(v).startsWith("I-") && !dbById.has(v)) dbById.set(v, r);
+    }
+  }
+
+  // PayPal subscriptions that charged in the last 31 days (finds ones the site never recorded).
+  const charged = new Set<string>();
+  let transactionsAvailable = true;
+  try {
+    const end = new Date();
+    const start = new Date(end.getTime() - 31 * 24 * 60 * 60 * 1000);
+    const fmt = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, "Z");
+    const tx = await fetch(
+      `${api}/v1/reporting/transactions?start_date=${fmt(start)}&end_date=${fmt(end)}&page_size=500&fields=transaction_info`,
+      { headers: H },
+    );
+    if (!tx.ok) throw new Error(String(tx.status));
+    const txData = await tx.json();
+    for (const t of txData.transaction_details || []) {
+      const info = t.transaction_info || {};
+      if (info.paypal_reference_id_type === "RP" && String(info.paypal_reference_id || "").startsWith("I-")) {
+        charged.add(info.paypal_reference_id);
+      }
+    }
+  } catch (_) {
+    transactionsAvailable = false;
+  }
+
+  const ids = new Set<string>([...dbById.keys(), ...charged]);
+  const planNames = new Map<string, string | null>();
+  const items: any[] = [];
+
+  for (const pid of ids) {
+    const res = await fetch(`${api}/v1/billing/subscriptions/${pid}`, { headers: H });
+    const s = res.ok ? await res.json() : null;
+    let planName: string | null = null;
+    if (s?.plan_id) {
+      if (!planNames.has(s.plan_id)) {
+        const p = await fetch(`${api}/v1/billing/plans/${s.plan_id}`, { headers: H });
+        planNames.set(s.plan_id, p.ok ? (await p.json()).name ?? null : null);
+      }
+      planName = planNames.get(s.plan_id) ?? null;
+    }
+    const db = dbById.get(pid) || null;
+    const subscriberEmail = s?.subscriber?.email_address ? String(s.subscriber.email_address).toLowerCase() : null;
+    const member = db ? profileById.get(db.user_id) : (subscriberEmail ? profileByEmail.get(subscriberEmail) : null);
+    const paypalStatus = res.status === 404 ? "NOT_FOUND" : String(s?.status || "UNKNOWN").toUpperCase();
+    const siteActive = !!db && (db.status === "active" || (db.status === "cancelled" && db.end_date && new Date(db.end_date) > new Date()));
+
+    let issue: string | null = null;
+    if (!db && paypalStatus === "ACTIVE") issue = "not_on_site";
+    else if (db && paypalStatus === "ACTIVE" && !siteActive) issue = "charging_but_site_ended";
+    else if (db && db.status === "active" && ["CANCELLED", "EXPIRED", "SUSPENDED", "NOT_FOUND"].includes(paypalStatus)) issue = "site_active_but_paypal_stopped";
+
+    items.push({
+      paypal_id: pid,
+      paypal_status: paypalStatus,
+      plan_name: planName,
+      price: s?.billing_info?.last_payment?.amount?.value ?? s?.plan?.billing_cycles?.[0]?.pricing_scheme?.fixed_price?.value ?? null,
+      last_payment: s?.billing_info?.last_payment?.time ?? null,
+      next_billing: s?.billing_info?.next_billing_time ?? null,
+      failed_payments: s?.billing_info?.failed_payments_count ?? 0,
+      member_id: db?.user_id ?? member?.id ?? null,
+      member_name: member?.full_name ?? (s?.subscriber?.name ? `${s.subscriber.name.given_name ?? ""} ${s.subscriber.name.surname ?? ""}`.trim() : null),
+      member_email: member?.email ?? subscriberEmail,
+      site_plan: db?.plan_type ?? null,
+      site_status: db?.status ?? null,
+      site_end_date: db?.end_date ?? null,
+      on_site: !!db,
+      charged_last_31_days: charged.has(pid),
+      issue,
+    });
+  }
+
+  // Members billed more than once for the same kind of plan.
+  const activeByMember = new Map<string, any[]>();
+  for (const it of items) {
+    if (it.paypal_status !== "ACTIVE" || !it.member_id) continue;
+    const group = /ny sports/i.test(it.plan_name || "") || it.site_plan === "ny_sports" ? "ny" : "mets";
+    const key = `${it.member_id}:${group}`;
+    activeByMember.set(key, [...(activeByMember.get(key) || []), it]);
+  }
+  for (const list of activeByMember.values()) {
+    if (list.length > 1) for (const it of list) it.issue = it.issue || "billed_twice", it.billed_twice = true;
+  }
+
+  const order: Record<string, number> = { billed_twice: 0, not_on_site: 1, charging_but_site_ended: 2, site_active_but_paypal_stopped: 3 };
+  items.sort((a, b) =>
+    (a.issue ? order[a.issue] ?? 9 : 10) - (b.issue ? order[b.issue] ?? 9 : 10) ||
+    Number(b.paypal_status === "ACTIVE") - Number(a.paypal_status === "ACTIVE"),
+  );
+
+  return {
+    message: "PayPal billing report ready",
+    generated_at: new Date().toISOString(),
+    transactions_available: transactionsAvailable,
+    summary: {
+      active_on_paypal: items.filter((i) => i.paypal_status === "ACTIVE").length,
+      billed_twice: new Set(items.filter((i) => i.billed_twice).map((i) => i.member_id)).size,
+      not_on_site: items.filter((i) => i.issue === "not_on_site").length,
+      charging_but_site_ended: items.filter((i) => i.issue === "charging_but_site_ended").length,
+      site_active_but_paypal_stopped: items.filter((i) => i.issue === "site_active_but_paypal_stopped").length,
+    },
+    items,
+  };
 }

@@ -8,13 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Bot, Send, Loader2, Users, CreditCard, Shield,
-  Sparkles, UserPlus, ChevronDown,
+  Sparkles, UserPlus, ChevronDown, ShieldCheck,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import SubscriptionsTab from "@/components/admin/SubscriptionsTab";
 import RolesTab from "@/components/admin/RolesTab";
 import MembersTab from "@/components/admin/MembersTab";
 import SignupsTab from "@/components/admin/SignupsTab";
+import PayPalBillingTab from "@/components/admin/PayPalBillingTab";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
 interface MemberRow {
@@ -256,9 +257,9 @@ const UserManagement = () => {
       )}
       </details>
 
-      {/* Tabs: Members / Signups / Transactions / Roles */}
+      {/* Tabs: Members / Signups / Transactions / PayPal / Roles */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-        <TabsList className="grid h-10 w-full grid-cols-4 rounded-md border border-border/30 bg-card/80 p-1 sm:max-w-2xl">
+        <TabsList className="grid h-10 w-full grid-cols-5 rounded-md border border-border/30 bg-card/80 p-1 sm:max-w-3xl">
           <TabsTrigger value="members" className="gap-1 px-1 text-[10px] sm:text-xs">
             <Users className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Members</span>
           </TabsTrigger>
@@ -267,6 +268,9 @@ const UserManagement = () => {
           </TabsTrigger>
           <TabsTrigger value="transactions" className="gap-1 px-1 text-[10px] sm:text-xs">
             <CreditCard className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Billing</span>
+          </TabsTrigger>
+          <TabsTrigger value="paypal" className="gap-1 px-1 text-[10px] sm:text-xs">
+            <ShieldCheck className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">PayPal</span>
           </TabsTrigger>
           <TabsTrigger value="roles" className="gap-1 px-1 text-[10px] sm:text-xs">
             <Shield className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Roles</span>
@@ -283,6 +287,10 @@ const UserManagement = () => {
 
         <TabsContent value="transactions">
           <SubscriptionsTab />
+        </TabsContent>
+
+        <TabsContent value="paypal">
+          <PayPalBillingTab />
         </TabsContent>
 
         <TabsContent value="roles">
