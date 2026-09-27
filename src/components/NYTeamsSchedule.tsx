@@ -156,12 +156,6 @@ export default function NYTeamsSchedule() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!loading && window.location.hash === "#ny-teams") {
-      requestAnimationFrame(() => document.getElementById("ny-teams")?.scrollIntoView({ behavior: "smooth" }));
-    }
-  }, [loading]);
-
   const teamInfo = TEAMS.find((t) => t.key === team)!;
   const teamGames = useMemo(() => games.filter((g) => g.team_key === team), [games, team]);
 

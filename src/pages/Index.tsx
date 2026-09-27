@@ -32,7 +32,6 @@ const TikTokFeedSection = lazyWithRetry(() => import("@/components/TikTokFeedSec
 
 
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
-const TodaysNYGames = lazyWithRetry(() => import("@/components/TodaysNYGames"), "home-todays-ny-games");
 const FAQSection = lazyWithRetry(() => import("@/components/FAQSection"), "home-faq-section");
 const TestimonialsSection = lazyWithRetry(() => import("@/components/TestimonialsSection"), "home-testimonials-section");
 const MetsStatsSection = lazyWithRetry(() => import("@/components/MetsStatsSection"), "home-mets-stats-section");
@@ -185,10 +184,6 @@ const Index = () => {
         {/* Above-the-fold: mount immediately */}
         <Suspense fallback={<SectionSkeleton height="h-16" />}>
           <GamecastBanner />
-        </Suspense>
-
-        <Suspense fallback={null}>
-          <TodaysNYGames />
         </Suspense>
 
 
