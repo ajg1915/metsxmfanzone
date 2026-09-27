@@ -17,6 +17,7 @@ const FreeTrialExpiryBanner = lazyWithRetry(() => import("@/components/FreeTrial
 const LiveNetworks = lazyWithRetry(() => import("@/components/LiveNetworks"), "home-live-networks");
 const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section-v2");
 const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedStreamsSection"), "home-related-streams-section");
+const OffseasonNYTeamsSection = lazyWithRetry(() => import("@/components/OffseasonNYTeamsSection"), "home-offseason-ny-teams-section");
 
 const SpringTrainingGamesSection = lazyWithRetry(() => import("@/components/SpringTrainingGamesSection"), "home-spring-training-games-section");
 const ReplayGamesSection = lazyWithRetry(() => import("@/components/ReplayGamesSection"), "home-replay-games-section");
@@ -186,6 +187,11 @@ const Index = () => {
           <GamecastBanner />
         </Suspense>
 
+        <Suspense fallback={null}>
+          <TodaysNYGames />
+        </Suspense>
+
+
         <Suspense fallback={<SectionSkeleton />}>
           <LiveNetworks />
         </Suspense>
@@ -194,9 +200,11 @@ const Index = () => {
           <LiveStreamsSection />
         </Suspense>
 
-        <Suspense fallback={null}>
-          <TodaysNYGames />
-        </Suspense>
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <OffseasonNYTeamsSection />
+          </Suspense>
+        </LazySection>
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
