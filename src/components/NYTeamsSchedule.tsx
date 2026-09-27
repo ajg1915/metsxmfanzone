@@ -17,6 +17,7 @@ type NYGame = {
   league: "NFL" | "NBA" | "NHL";
   team_name: string;
   opponent_name: string | null;
+  opponent_logo: string | null;
   is_home: boolean;
   start_time: string;
   venue: string | null;
@@ -74,12 +75,27 @@ function GameCard({ game, color }: { game: NYGame; color: string }) {
               )}
             </div>
 
-            <p className="line-clamp-1 text-sm font-semibold">
-              {game.is_home ? "vs" : "@"} {game.opponent_name ?? "TBD"}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {dayLabel(game.start_time)} • {live ? game.status_detail : timeLabel(game.start_time)}
-            </p>
+            <div className="flex items-center gap-2">
+              {game.opponent_logo && (
+                <img
+                  src={game.opponent_logo}
+                  alt={game.opponent_name ?? "Opponent"}
+                  className="h-8 w-8 shrink-0 object-contain"
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              )}
+              <div className="min-w-0">
+                <p className="line-clamp-1 text-sm font-semibold">
+                  {game.is_home ? "vs" : "@"} {game.opponent_name ?? "TBD"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {dayLabel(game.start_time)} • {live ? game.status_detail : timeLabel(game.start_time)}
+                </p>
+              </div>
+            </div>
 
             {game.venue && (
               <div className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground">
@@ -128,7 +144,7 @@ export default function NYTeamsSchedule() {
     (async () => {
       const { data, error } = await (supabase as any)
         .from("ny_sports_games")
-        .select("event_id, team_key, league, team_name, opponent_name, is_home, start_time, venue, tv, season_type, state, status_detail, team_score, opponent_score, result")
+        .select("event_id, team_key, league, team_name, opponent_name, opponent_logo, is_home, start_time, venue, tv, season_type, state, status_detail, team_score, opponent_score, result")
         .order("start_time", { ascending: true });
       if (cancelled) return;
       if (error) setError(true);
