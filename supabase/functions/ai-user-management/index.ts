@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { cancelPaypalAndDeleteAccount, cancelPaypalAndRetainAccount } from "../_shared/account-cleanup.ts";
+import { cancelPaypalAndDeleteAccount, cancelPaypalAndRetainAccount, stopPaypalBillingForRow } from "../_shared/account-cleanup.ts";
 import { generateCloudflareText } from "../_shared/cloudflareAi.ts";
 
 const corsHeaders = {
@@ -198,10 +198,17 @@ async function executeAction(client: any, action: any, adminId: string) {
       // Check for existing active sub
       const { data: existing } = await client
         .from("subscriptions")
-        .select("id")
+        .select("id, plan_type, paypal_subscription_id")
         .eq("user_id", action.user_id)
         .eq("status", "active")
+        .neq("plan_type", "ny_sports")
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
+
+      if (existing?.paypal_subscription_id && existing.plan_type !== (action.plan_type || "premium")) {
+        await stopPaypalBillingForRow(client, existing.id, "Admin AI changed plan");
+      }
 
       if (existing) {
         await client.from("subscriptions").update({
@@ -312,6 +319,7 @@ async function executeAction(client: any, action: any, adminId: string) {
     }
 
     case "delete_subscription": {
+      await stopPaypalBillingForRow(client, action.subscription_id, "Admin AI deleted subscription");
       await client.from("subscriptions").delete().eq("id", action.subscription_id);
       return { message: "Subscription deleted" };
     }
@@ -363,7 +371,12 @@ async function executeAction(client: any, action: any, adminId: string) {
     }
 
     case "update_subscription": {
-      await client.from("subscriptions").update(action.updates).eq("id", action.subscription_id);
+      const u = action.updates || {};
+      // Changing the plan or ending the membership must stop PayPal billing first.
+      if ("plan_type" in u || ("status" in u && u.status !== "active")) {
+        await stopPaypalBillingForRow(client, action.subscription_id, "Admin AI changed subscription");
+      }
+      await client.from("subscriptions").update(u).eq("id", action.subscription_id);
       return { message: "Subscription updated" };
     }
 

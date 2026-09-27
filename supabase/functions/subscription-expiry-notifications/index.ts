@@ -1,5 +1,6 @@
 import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
 import { renderBrandedEmailFor, escapeHtml } from '../_shared/email-brand.ts'
+import { getPayPalSubscriptionState, syncIfStillBilling } from '../_shared/paypal-status.ts'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -71,8 +72,8 @@ Deno.serve(async (req) => {
 
     const { data: subscriptions, error: subError } = await supabase
       .from("subscriptions")
-      .select("id, user_id, plan_type, status, end_date")
-      .in("plan_type", ["premium", "annual"])
+      .select("id, user_id, plan_type, status, end_date, paypal_subscription_id")
+      .in("plan_type", ["premium", "annual", "weekly", "ny_sports"])
       .not("end_date", "is", null);
 
     if (subError) throw subError;
@@ -81,6 +82,17 @@ Deno.serve(async (req) => {
 
     for (const sub of subscriptions || []) {
       const endDate = new Date(sub.end_date);
+
+      // Auto-renewing PayPal members are not expiring: skip "expires soon"
+      // emails and never mark them expired while PayPal is still billing.
+      if (sub.status === "active" && sub.paypal_subscription_id && endDate <= sevenDaysFromNow) {
+        if (endDate <= now) {
+          if (await syncIfStillBilling(supabase, sub)) continue;
+        } else {
+          const state = await getPayPalSubscriptionState(sub.paypal_subscription_id);
+          if (state.status === "ACTIVE" || state.status === "UNKNOWN") continue;
+        }
+      }
 
       const { data: profile } = await supabase
         .from("profiles")

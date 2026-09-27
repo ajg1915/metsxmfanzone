@@ -151,6 +151,44 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Block duplicate billing: one active PayPal subscription per plan group
+    // (Mets plans vs the NY Sports add-on). Switching needs a cancel first.
+    {
+      const isNY = planType === 'ny_sports';
+      let q = supabase
+        .from('subscriptions')
+        .select('id, paypal_subscription_id, plan_type')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .not('paypal_subscription_id', 'is', null);
+      q = isNY ? q.eq('plan_type', 'ny_sports') : q.in('plan_type', ['weekly', 'premium', 'annual']);
+      const { data: existingSubs } = await q;
+      if (existingSubs && existingSubs.length > 0) {
+        const PAYPAL_API_CHECK = Deno.env.get('PAYPAL_BASE_URL') || 'https://api-m.paypal.com';
+        const checkToken = await getPayPalAccessToken(
+          PAYPAL_API_CHECK,
+          Deno.env.get('PAYPAL_CLIENT_ID')!,
+          Deno.env.get('PAYPAL_SECRET')!,
+        );
+        for (const row of existingSubs) {
+          const r = await fetch(`${PAYPAL_API_CHECK}/v1/billing/subscriptions/${row.paypal_subscription_id}`, {
+            headers: { 'Authorization': `Bearer ${checkToken}`, 'Content-Type': 'application/json' },
+          });
+          if (r.ok && String((await r.json()).status).toUpperCase() === 'ACTIVE') {
+            return new Response(
+              JSON.stringify({
+                error: 'already_subscribed',
+                message: isNY
+                  ? 'You already have NY Sports Streaming. Manage it from your Member Center.'
+                  : 'You already have an active membership. Cancel it from your Member Center before switching plans.',
+              }),
+              { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+      }
+    }
+
     // Use the client's origin for return URLs so it works on web, PWA, and preview
     const baseUrl = returnOrigin || 'https://www.metsxmfanzone.com';
 

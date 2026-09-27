@@ -350,9 +350,11 @@ Deno.serve(async (req: Request) => {
         const { data: cancelledRows, error } = await supabase
           .from('subscriptions')
           .update({
+            // Keep end_date: the member already paid through it, so access
+            // continues until then (matches "cancel anytime" policy).
             status: 'cancelled',
             cancellation_status: 'cancelled',
-            end_date: nowIso,
+            cancellation_requested_at: nowIso,
             updated_at: nowIso,
           })
           .eq('paypal_subscription_id', subscriptionId)

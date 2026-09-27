@@ -56,6 +56,10 @@ async function cancelPayPalSubscription(
   const status = String(sub.status || "").toUpperCase();
 
   if (["CANCELLED", "EXPIRED"].includes(status)) return true;
+  // An abandoned checkout (never approved or never started) can't be billed and
+  // PayPal refuses to cancel it, so treat it as already stopped instead of
+  // failing the member's whole cancellation.
+  if (["APPROVAL_PENDING", "APPROVED"].includes(status)) return true;
 
   const cancelRes = await fetch(`${api}/v1/billing/subscriptions/${subscriptionId}/cancel`, {
     method: "POST",
@@ -66,7 +70,7 @@ async function cancelPayPalSubscription(
   if (cancelRes.status === 204 || cancelRes.ok) return true;
 
   const txt = await cancelRes.text();
-  if (cancelRes.status === 422 && /CANCELL?ED|EXPIRED|INVALID_STATUS/i.test(txt)) return true;
+  if (cancelRes.status === 422 && /CANCELL?ED|EXPIRED|INVALID_STATUS|STATUS_INVALID/i.test(txt)) return true;
 
   console.error("PayPal subscription cancel failed", { status: cancelRes.status, paypalId: "[REDACTED]" });
   return false;
@@ -76,7 +80,12 @@ export async function cancelPaypalAndRetainAccount(
   admin: ServiceClient,
   userId: string,
   reason = "Membership cancellation requested",
-  options: { subscriptionIds?: string[]; planScope?: "ny_sports" | "mets" } = {},
+  options: {
+    subscriptionIds?: string[];
+    planScope?: "ny_sports" | "mets";
+    /** Admin is changing/removing a plan: stop PayPal billing without counting it as the member cancelling. */
+    adminAction?: boolean;
+  } = {},
 ): Promise<MembershipCancellationResult> {
   const { data: allSubs, error: subErr } = await admin
     .from("subscriptions")
@@ -151,7 +160,15 @@ export async function cancelPaypalAndRetainAccount(
     }).in("id", subs.map((s) => s.id));
     if (updateError) throw updateError;
 
-    if (!recentCount) {
+    if (options.adminAction) {
+      await admin.from("subscription_activity").insert({
+        subscription_id: subs[0]?.id,
+        user_id: userId,
+        action: "paypal_stopped_by_admin",
+        details: { reason, paypal_confirmed: true },
+        performed_by: null,
+      });
+    } else if (!recentCount) {
       const subscriptionId = subs[0]?.id;
       if (subscriptionId) {
         const { error: activityError } = await admin.from("subscription_activity").insert({
@@ -166,7 +183,7 @@ export async function cancelPaypalAndRetainAccount(
     }
   }
 
-  const cancellationCount = priorCount + (recentCount ? 0 : 1);
+  const cancellationCount = priorCount + (recentCount || options.adminAction ? 0 : 1);
   return {
     paypalConfirmed: true,
     accountRetained: true,
@@ -366,4 +383,28 @@ export async function cancelPaypalAndDeleteAccount(
       ? "PayPal billing was cancelled and the account was deleted."
       : "PayPal billing was cancelled, but some account records may still need manual review.",
   };
+}
+/**
+ * Before an admin changes the plan/status of a subscription row, or deletes it,
+ * stop that row's PayPal billing so the member is never charged for a plan the
+ * site no longer shows. No-op for rows without a PayPal subscription.
+ */
+export async function stopPaypalBillingForRow(
+  admin: ServiceClient,
+  subscriptionId: string,
+  reason = "Admin changed membership",
+): Promise<void> {
+  const { data: row } = await admin
+    .from("subscriptions")
+    .select("id, user_id, paypal_subscription_id")
+    .eq("id", subscriptionId)
+    .maybeSingle();
+  if (!row?.paypal_subscription_id || !row.user_id) return;
+  const result = await cancelPaypalAndRetainAccount(admin, row.user_id, reason, {
+    subscriptionIds: [row.id],
+    adminAction: true,
+  });
+  if (!result.paypalConfirmed) {
+    throw new Error("PayPal did not confirm the cancellation, so the membership was not changed.");
+  }
 }

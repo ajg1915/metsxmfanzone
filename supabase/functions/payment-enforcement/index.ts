@@ -1,5 +1,6 @@
 import { createServiceClient, queueTransactionalEmail } from '../_shared/queue-email.ts'
 import { renderBrandedEmailFor } from '../_shared/email-brand.ts'
+import { syncIfStillBilling } from '../_shared/paypal-status.ts'
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -24,7 +25,7 @@ Deno.serve(async (req) => {
 
     const { data: expiredSubs, error } = await supabase
       .from("subscriptions")
-      .select("id, user_id, plan_type, status, end_date, payment_method, notes")
+      .select("id, user_id, plan_type, status, end_date, payment_method, notes, paypal_subscription_id")
       .eq("status", "active")
       .not("plan_type", "eq", "free")
       .lt("end_date", now.toISOString());
@@ -34,6 +35,10 @@ Deno.serve(async (req) => {
     const results = { warnings_sent: 0, terminated: 0, errors: [] as string[] };
 
     for (const sub of expiredSubs || []) {
+      // PayPal is the source of truth: if it is still billing this member,
+      // refresh their paid-through date instead of warning/deactivating them.
+      if (await syncIfStillBilling(supabase, sub)) continue;
+
       const endDate = new Date(sub.end_date!);
       const daysPastExpiry = Math.floor((now.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24));
 

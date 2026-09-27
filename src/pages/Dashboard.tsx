@@ -237,7 +237,7 @@ const Dashboard = () => {
 
               <div className="mt-5 grid gap-2 sm:grid-cols-2">
                 <Button onClick={() => navigate("/pricing")}><CreditCard className="mr-2 h-4 w-4" />{paidPlan ? "Change plan" : "Choose a plan"}</Button>
-                {paidPlan && status === "active" ? (
+                {paidPlan && (status === "active" || status === "suspended") ? (
                   <Button variant="outline" onClick={() => { setCancelTarget("mets"); setCancelOpen(true); }}>Cancel membership</Button>
                 ) : (
                   <Button variant="outline" asChild><Link to="/contact"><LifeBuoy className="mr-2 h-4 w-4" />Membership help</Link></Button>

@@ -161,6 +161,36 @@ export default function MembersTab() {
     } catch { /* non-fatal */ }
   };
 
+  /**
+   * If this member is currently billed through PayPal, changing their plan or
+   * status here must stop the PayPal subscription first — otherwise PayPal keeps
+   * charging them for a plan the site no longer shows.
+   * Returns null to abort, or the subscription row id to write to (null = insert a new row,
+   * so a late PayPal "cancelled" notice can't overwrite the new plan).
+   */
+  const stopPayPalFirst = async (m: MemberRow): Promise<{ rowId: string | null } | null> => {
+    if (!m.subscription_id) return { rowId: null };
+    const { data: row } = await supabase
+      .from("subscriptions")
+      .select("paypal_subscription_id, status")
+      .eq("id", m.subscription_id)
+      .maybeSingle();
+    if (!row?.paypal_subscription_id || !["active", "suspended"].includes(row.status || "")) {
+      return { rowId: m.subscription_id };
+    }
+    const ok = window.confirm(
+      "This member is billed through PayPal. Changing their plan here will cancel their PayPal subscription so they are not charged again. Continue?"
+    );
+    if (!ok) return null;
+    const result = await supabase.functions.invoke("cancel-subscription", {
+      body: { userId: m.user_id, planScope: "mets", adminPlanChange: true },
+    });
+    if (result.error || (result.data as any)?.error) {
+      throw new Error((result.data as any)?.error || "PayPal cancellation failed, so the plan was not changed.");
+    }
+    return { rowId: null };
+  };
+
   const changePlan = async (m: MemberRow, plan: string) => {
     // Trials are date-based — hand off so the end date is set correctly.
     if (plan === "trial") return grantTrial({ ...m, plan_type: "free" }, 2);
@@ -169,14 +199,16 @@ export default function MembersTab() {
       const end = new Date();
       const months = planMonths(plan);
       if (months > 0) end.setMonth(end.getMonth() + months);
+      const target = await stopPayPalFirst(m);
+      if (!target) return;
       const payload = {
         plan_type: plan, status: plan === "free" ? "cancelled" : "active",
-        amount: planPrice(plan), payment_method: m.payment_method || "manual",
+        amount: planPrice(plan), payment_method: target.rowId ? (m.payment_method || "manual") : "manual",
         start_date: new Date().toISOString(),
         end_date: months > 0 ? end.toISOString() : new Date().toISOString(),
       };
-      if (m.subscription_id) {
-        const { error } = await supabase.from("subscriptions").update(payload).eq("id", m.subscription_id);
+      if (target.rowId) {
+        const { error } = await supabase.from("subscriptions").update(payload).eq("id", target.rowId);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("subscriptions").insert({ user_id: m.user_id, ...payload });
@@ -209,6 +241,11 @@ export default function MembersTab() {
     }
     setBusyId(m.user_id);
     try {
+      // Suspending/ending a PayPal-billed member must stop PayPal billing too.
+      if (status !== "active") {
+        const target = await stopPayPalFirst(m);
+        if (!target) return;
+      }
       const update: any = { status };
       if (status === "cancelled") update.end_date = new Date().toISOString();
       const { error } = await supabase.from("subscriptions").update(update).eq("id", m.subscription_id);
@@ -254,8 +291,10 @@ export default function MembersTab() {
         start_date: new Date().toISOString(),
         end_date: end.toISOString(),
       };
-      if (m.subscription_id) {
-        const { error } = await supabase.from("subscriptions").update(payload).eq("id", m.subscription_id);
+      const target = await stopPayPalFirst(m);
+      if (!target) return;
+      if (target.rowId) {
+        const { error } = await supabase.from("subscriptions").update(payload).eq("id", target.rowId);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("subscriptions").insert({ user_id: m.user_id, ...payload });

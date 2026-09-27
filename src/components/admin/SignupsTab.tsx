@@ -71,7 +71,17 @@ export default function SignupsTab() {
         plan_type: plan, status: "active", amount: plan === "annual" ? 129.99 : 9.99,
         payment_method: "manual", start_date: new Date().toISOString(), end_date: end.toISOString(),
       };
-      if (r.sub_id) await supabase.from("subscriptions").update(payload).eq("id", r.sub_id);
+      if (r.sub_id) {
+        // Never overwrite a plan PayPal is still billing — that is how members got
+        // charged for plans the site no longer showed.
+        const { data: row } = await supabase.from("subscriptions")
+          .select("paypal_subscription_id, status").eq("id", r.sub_id).maybeSingle();
+        if (row?.paypal_subscription_id && row.status === "active") {
+          toast({ title: "Already billed through PayPal", description: "Change this member's plan from the Members tab so PayPal billing is updated too.", variant: "destructive" });
+          return;
+        }
+        await supabase.from("subscriptions").update(payload).eq("id", r.sub_id);
+      }
       else await supabase.from("subscriptions").insert({ user_id: r.id, ...payload });
       toast({ title: "Activated", description: `${plan} active for ${maskEmail(r.email)}` });
       fetch();

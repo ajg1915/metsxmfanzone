@@ -75,6 +75,15 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
         body: { planType: plan.id, promoCode: null, returnOrigin: window.location.origin },
       });
 
+      if (!error && data?.error === "already_subscribed") {
+        toast({
+          title: "You're already subscribed",
+          description: data.message || "Manage your current plan from your Member Center.",
+        });
+        onOpenChange(false);
+        navigate("/dashboard");
+        return;
+      }
       if (error || data?.error) throw new Error("checkout_failed");
 
       if (data?.approvalUrl) {

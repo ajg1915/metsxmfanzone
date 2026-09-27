@@ -34,6 +34,8 @@ Deno.serve(async (req) => {
     let targetUserId = user.id;
     // Optional: cancel only the NY Sports add-on ("ny_sports") or only the Mets plan ("mets").
     let planScope: "ny_sports" | "mets" | undefined;
+    // Admin changing a plan (not the member cancelling): don't count toward limited access.
+    let adminAction = false;
     try {
       const body = await req.json();
       if (typeof body?.reason === "string" && body.reason.length <= 127) reason = body.reason;
@@ -45,13 +47,17 @@ Deno.serve(async (req) => {
         if (!role) return json({ error: "Forbidden" }, 403);
         targetUserId = body.userId;
         reason = "Admin cancelled membership";
+        if (body?.adminPlanChange === true) {
+          adminAction = true;
+          reason = "Admin changed membership";
+        }
       }
     } catch (_) { /* no body */ }
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
     try {
-       const result = await cancelPaypalAndRetainAccount(admin, targetUserId, reason, { planScope });
+       const result = await cancelPaypalAndRetainAccount(admin, targetUserId, reason, { planScope, adminAction });
       if (!result.paypalConfirmed) return json({ error: result.message }, 502);
       return json({
         success: result.paypalConfirmed,
