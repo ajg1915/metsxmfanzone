@@ -69,7 +69,6 @@ const Auth = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [smsOptIn, setSmsOptIn] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
-  const [loginAgreeToTerms, setLoginAgreeToTerms] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -111,6 +110,32 @@ const Auth = () => {
       localStorage.removeItem(REMEMBER_ME_KEY);
     }
   }, [isRecovery, isSignup]);
+
+  // Reset links now point at metsxmfanzone.com/auth?mode=reset&token_hash=…
+  // We verify the one-time code here (only when the member actually opens the
+  // page), which also stops email link-scanners from using up the link.
+  const [verifyingReset, setVerifyingReset] = useState(false);
+  useEffect(() => {
+    const tokenHash = searchParams.get("token_hash");
+    if (!isRecovery || !tokenHash) return;
+    let cancelled = false;
+    setVerifyingReset(true);
+    void supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" }).then(({ error }) => {
+      if (cancelled) return;
+      setVerifyingReset(false);
+      if (error) {
+        toast({ title: "This reset link has expired", description: "Request a new link below — only the newest email works.", variant: "destructive" });
+        setForgotPassword(true);
+        navigate("/auth?mode=login", { replace: true });
+        return;
+      }
+      window.history.replaceState(null, "", "/auth?mode=reset");
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRecovery, searchParams]);
 
   useEffect(() => {
     if (!loading && !authLoading) {
@@ -253,12 +278,8 @@ const Auth = () => {
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     if (honeypot) return;
-    if (!loginAgreeToTerms) {
-      toast({ title: "Agreement required", description: "Please agree to the Terms and Privacy Policy to sign in.", variant: "destructive" });
-      return;
-    }
     try {
-      const validated = { email: z.string().email().parse(email), password: z.string().min(6).parse(password) };
+      const validated = { email: z.string().email().parse(email.trim().toLowerCase()), password: z.string().min(6).parse(password) };
       setLoading(true);
       const signIn = () => withTimeout(supabase.auth.signInWithPassword(validated), 12000, "Email login timed out");
       let { data, error } = await signIn();
@@ -304,7 +325,7 @@ const Auth = () => {
         body: { email: normalizedEmail, redirectTo: `${window.location.origin}/auth?mode=reset` },
       });
       if (error) throw error;
-      toast({ title: "Check your email", description: "We sent your password reset link." });
+      toast({ title: "Check your email", description: "We sent a reset link (check Spam/Promotions too). Only the newest link works, so use the latest email." });
     } catch {
       toast({ title: "Reset link could not be sent", description: "Check the email address and try again.", variant: "destructive" });
     } finally {
@@ -429,7 +450,7 @@ const Auth = () => {
 
               {!isSignup && !forgotPassword && !isRecovery && (
                 <>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border/40 bg-muted/20 p-3"><Checkbox checked={loginAgreeToTerms} onCheckedChange={(value) => setLoginAgreeToTerms(value === true)} aria-label="Agree to the Terms and Privacy Policy" /><span className="text-xs leading-5 text-muted-foreground">I agree to the <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>. <span className="text-destructive">*</span></span></label>
+                  <p className="text-xs leading-5 text-muted-foreground">By signing in you agree to the <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>.</p>
                   <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground"><Checkbox checked={rememberMe} onCheckedChange={(value) => setRememberMe(value === true)} />Remember this email for 30 days</label>
                 </>
               )}
@@ -439,7 +460,7 @@ const Auth = () => {
               ) : isSignup ? (
                 <div className="grid grid-cols-2 gap-2"><Button type="button" variant="outline" className="h-11" onClick={() => setSignupStep(1)}><ArrowLeft />Back</Button><Button type="submit" className="h-11" disabled={loading || !agreeToTerms}>{loading ? <Loader2 className="animate-spin" /> : "Create account"}</Button></div>
               ) : (
-                <Button type="submit" className="h-11 w-full" disabled={loading || (!isRecovery && !forgotPassword && !loginAgreeToTerms)}>{loading ? <Loader2 className="animate-spin" /> : isRecovery ? "Update password" : forgotPassword ? "Send reset link" : "Sign in"}</Button>
+                <Button type="submit" className="h-11 w-full" disabled={loading || verifyingReset}>{loading ? <Loader2 className="animate-spin" /> : isRecovery ? "Update password" : forgotPassword ? "Send reset link" : "Sign in"}</Button>
               )}
             </form>
 
