@@ -76,12 +76,22 @@ export async function cancelPaypalAndRetainAccount(
   admin: ServiceClient,
   userId: string,
   reason = "Membership cancellation requested",
+  options: { subscriptionIds?: string[]; planScope?: "ny_sports" | "mets" } = {},
 ): Promise<MembershipCancellationResult> {
-  const { data: subs, error: subErr } = await admin
+  const { data: allSubs, error: subErr } = await admin
     .from("subscriptions")
-    .select("id, paypal_subscription_id, status, end_date")
+    .select("id, paypal_subscription_id, status, end_date, plan_type")
     .eq("user_id", userId);
   if (subErr) throw subErr;
+
+  // NY Sports is a separate add-on: cancelling it must never cancel the
+  // member's Mets plan (and vice versa) unless everything is requested.
+  const subs = (allSubs || []).filter((s) => {
+    if (options.subscriptionIds) return options.subscriptionIds.includes(s.id);
+    if (options.planScope === "ny_sports") return s.plan_type === "ny_sports";
+    if (options.planScope === "mets") return s.plan_type !== "ny_sports";
+    return true;
+  });
 
   const paypalIds = Array.from(new Set((subs || []).map((s) => s.paypal_subscription_id).filter(Boolean))) as string[];
   let failedPaypalCount = 0;

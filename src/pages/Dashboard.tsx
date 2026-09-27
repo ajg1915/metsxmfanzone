@@ -42,7 +42,9 @@ const PLAN_PRICES: Record<MemberPlan, string> = {
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
-  const { limitedAccess } = useSubscription();
+  const { limitedAccess, hasNYSports } = useSubscription();
+  // Which membership the cancel dialog is for: the Mets plan or the NY Sports add-on.
+  const [cancelTarget, setCancelTarget] = useState<"mets" | "ny_sports">("mets");
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,7 +77,7 @@ const Dashboard = () => {
       const [subResult, profileResult, postsResult, activityResult] = await Promise.all([
         supabase.from("subscriptions")
           .select("plan_type, status, end_date, payment_method")
-          .eq("user_id", user.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+          .eq("user_id", user.id).neq("plan_type", "ny_sports").order("created_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("profiles").select("full_name, avatar_url").eq("id", user.id).maybeSingle(),
         supabase.from("posts").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("subscription_activity").select("action, created_at").eq("user_id", user.id)
@@ -141,7 +143,9 @@ const Dashboard = () => {
   const handleCancel = async () => {
     setCancelling(true);
     try {
-      const { data, error } = await supabase.functions.invoke("cancel-subscription", { body: {} });
+      const { data, error } = await supabase.functions.invoke("cancel-subscription", {
+        body: hasNYSports || cancelTarget === "ny_sports" ? { planScope: cancelTarget } : {},
+      });
       if (error || (data as { error?: string } | null)?.error) throw new Error("cancel_failed");
       const response = data as { cancellationCount?: number; limitedAccess?: boolean; message?: string } | null;
       const nextCount = Number(response?.cancellationCount || cancellationCount + 1);
@@ -150,7 +154,7 @@ const Dashboard = () => {
         limitedAccess: Boolean(response?.limitedAccess), message: response?.message, at: new Date().toISOString(),
       }));
       setCancellationCount(nextCount);
-      setStatus("cancelled");
+      if (cancelTarget === "mets") setStatus("cancelled");
       setCancelOpen(false);
       navigate("/dashboard/cancellation-status");
     } catch {
@@ -234,11 +238,21 @@ const Dashboard = () => {
               <div className="mt-5 grid gap-2 sm:grid-cols-2">
                 <Button onClick={() => navigate("/pricing")}><CreditCard className="mr-2 h-4 w-4" />{paidPlan ? "Change plan" : "Choose a plan"}</Button>
                 {paidPlan && status === "active" ? (
-                  <Button variant="outline" onClick={() => setCancelOpen(true)}>Cancel membership</Button>
+                  <Button variant="outline" onClick={() => { setCancelTarget("mets"); setCancelOpen(true); }}>Cancel membership</Button>
                 ) : (
                   <Button variant="outline" asChild><Link to="/contact"><LifeBuoy className="mr-2 h-4 w-4" />Membership help</Link></Button>
                 )}
               </div>
+
+              {hasNYSports && (
+                <div className="mt-4 flex flex-col gap-3 rounded-lg border border-primary/40 bg-primary/5 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">NY Sports Streaming · $19.99/month</p>
+                    <p className="text-xs text-muted-foreground">Giants, Jets, Knicks, Rangers, Islanders, Nets and 24/7 sports networks. Billed separately.</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => { setCancelTarget("ny_sports"); setCancelOpen(true); }}>Cancel NY Sports</Button>
+                </div>
+              )}
             </div>
 
             <aside className="rounded-lg border border-border/50 bg-card/70 p-4 sm:p-5">
@@ -293,7 +307,7 @@ const Dashboard = () => {
 
       <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <DialogContent className="grid max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-md grid-rows-[auto_1fr_auto] overflow-hidden p-0">
-          <DialogHeader className="border-b border-border/50 p-5 text-left"><DialogTitle>Before you cancel</DialogTitle><DialogDescription>Your account will stay open after PayPal renewal stops.</DialogDescription></DialogHeader>
+          <DialogHeader className="border-b border-border/50 p-5 text-left"><DialogTitle>{cancelTarget === "ny_sports" ? "Cancel NY Sports Streaming?" : "Before you cancel"}</DialogTitle><DialogDescription>Your account will stay open after PayPal renewal stops.</DialogDescription></DialogHeader>
           <div className="space-y-3 overflow-y-auto p-5 text-sm text-muted-foreground">
             <div className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" /><p>Paid access continues through the current billing period.</p></div>
             <div className="flex gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" /><p>Your profile and membership history remain available.</p></div>

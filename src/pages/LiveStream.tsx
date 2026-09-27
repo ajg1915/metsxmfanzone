@@ -4,6 +4,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { StreamPlayer } from "@/components/StreamPlayer";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
+import { isNYSportsPackageStream } from "@/lib/nyTeamStreamCheck";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -117,7 +118,7 @@ const LiveStream = () => {
   const isLive = stream.status === "live";
 
   return (
-    <StreamTimeLimit streamId={stream.id} pageKey={pageName} allowGuestPreview>
+    <StreamTimeLimit streamId={stream.id} pageKey={pageName} allowGuestPreview nySportsStream={isNYSportsPackageStream(stream, pageName)}>
       <div className="min-h-screen bg-background flex flex-col">
         <SEOHead
           title={`${stream.title} - Live Stream | MetsXMFanZone`}

@@ -4,9 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type SubscriptionTier = "free" | "trial" | "weekly" | "premium" | "annual";
 
+/** Separate $19.99/month add-on for NY team streams + 24/7 sports networks. */
+export const NY_SPORTS_PLAN = "ny_sports";
+
 export const useSubscription = () => {
   const { user, loading: authLoading } = useAuth();
   const [tier, setTier] = useState<SubscriptionTier>("free");
+  const [hasNYSports, setHasNYSports] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [trialEndsAt, setTrialEndsAt] = useState<Date | null>(null);
@@ -23,6 +27,7 @@ export const useSubscription = () => {
     const fetchSubscription = async () => {
       if (!user) {
         setTier("free");
+        setHasNYSports(false);
         setIsAdmin(false);
         setLoading(false);
         return;
@@ -65,19 +70,29 @@ export const useSubscription = () => {
           return;
         }
 
-        // Check subscription status
-        const { data, error } = await supabase
+        // Check subscription status. NY Sports is an add-on, so it is read
+        // separately and never replaces the member's main Mets plan.
+        const { data: rows, error } = await supabase
           .from("subscriptions")
           .select("plan_type, status, end_date, start_date")
           .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .order("created_at", { ascending: false });
+
+        const isRowActive = (row: { status: string | null; end_date: string | null }) => {
+          const end = row.end_date ? new Date(row.end_date) : null;
+          return row.status === "active" || (row.status === "cancelled" && !!end && end > new Date());
+        };
+
+        setHasNYSports(
+          (rows || []).some((row) => row.plan_type === NY_SPORTS_PLAN && isRowActive(row))
+        );
+
+        const data = (rows || []).find((row) => row.plan_type !== NY_SPORTS_PLAN);
 
         if (!error && data) {
           // Check if subscription is still valid
           const endDate = data.end_date ? new Date(data.end_date) : null;
-          const isActive = data.status === "active" || (data.status === "cancelled" && !!endDate && endDate > new Date());
+          const isActive = isRowActive(data);
 
           if (isActive) {
             setTier(data.plan_type as SubscriptionTier);
@@ -112,9 +127,14 @@ export const useSubscription = () => {
   const isPremium = isAdmin || (!limitedAccess && (tier === "weekly" || tier === "premium" || tier === "annual"));
   // Trial members can browse the whole site, but streams are preview-only
   const isTrial = !isAdmin && tier === "trial";
+  // NY team + 24/7 network streams: existing paid Mets plans keep access,
+  // and the NY Sports add-on unlocks them on its own.
+  const canWatchNYSports = isPremium || (!limitedAccess && hasNYSports);
 
   return {
     tier,
+    hasNYSports: isAdmin || (!limitedAccess && hasNYSports),
+    canWatchNYSports,
     loading,
     hasAccess,
     isPremium,

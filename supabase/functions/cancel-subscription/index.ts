@@ -32,9 +32,12 @@ Deno.serve(async (req) => {
 
     let reason = "User requested cancellation";
     let targetUserId = user.id;
+    // Optional: cancel only the NY Sports add-on ("ny_sports") or only the Mets plan ("mets").
+    let planScope: "ny_sports" | "mets" | undefined;
     try {
       const body = await req.json();
       if (typeof body?.reason === "string" && body.reason.length <= 127) reason = body.reason;
+      if (body?.planScope === "ny_sports" || body?.planScope === "mets") planScope = body.planScope;
       if (typeof body?.userId === "string" && body.userId !== user.id) {
         const adminCheck = createClient(SUPABASE_URL, SERVICE_KEY);
         const { data: role } = await adminCheck.from("user_roles").select("role")
@@ -48,7 +51,7 @@ Deno.serve(async (req) => {
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
 
     try {
-       const result = await cancelPaypalAndRetainAccount(admin, targetUserId, reason);
+       const result = await cancelPaypalAndRetainAccount(admin, targetUserId, reason, { planScope });
       if (!result.paypalConfirmed) return json({ error: result.message }, 502);
       return json({
         success: result.paypalConfirmed,

@@ -10,13 +10,15 @@ const corsHeaders = {
 };
 
 // Infers our internal plan name from the PayPal subscription resource.
-function derivePlanType(resource: any): 'weekly' | 'premium' | 'annual' {
+function derivePlanType(resource: any): 'weekly' | 'premium' | 'annual' | 'ny_sports' {
   const interval: string | undefined =
     resource?.billing_info?.cycle_executions?.[0]?.tenure_type &&
     resource?.plan?.billing_cycles?.[0]?.frequency?.interval_unit;
   const raw = `${resource?.plan_id ?? ''} ${interval ?? ''} ${resource?.plan?.name ?? ''}`.toLowerCase();
   const amount = Number(resource?.billing_info?.last_payment?.amount?.value ?? 0);
 
+  // NY Sports Streaming add-on ($19.99/month) must never be treated as a Mets plan.
+  if (raw.includes('ny sports') || Math.abs(amount - 19.99) < 0.01) return 'ny_sports';
   if (raw.includes('year') || raw.includes('annual') || amount >= 100) return 'annual';
   if (raw.includes('week') || (amount > 0 && amount < 6)) return 'weekly';
   return 'premium';
@@ -207,7 +209,7 @@ Deno.serve(async (req: Request) => {
                     email: profile.email,
                     name: profile.full_name,
                     planType: subscription.plan_type,
-                    amount: subscription.amount?.toString() || (subscription.plan_type === 'annual' ? '129.99' : subscription.plan_type === 'weekly' ? '3.99' : '9.99'),
+                    amount: subscription.amount?.toString() || (subscription.plan_type === 'annual' ? '129.99' : subscription.plan_type === 'weekly' ? '3.99' : subscription.plan_type === 'ny_sports' ? '19.99' : '9.99'),
                     transactionDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
                     subscriptionId: orderId,
                   },
@@ -270,7 +272,7 @@ Deno.serve(async (req: Request) => {
               paypal_plan_id: resource?.plan_id ?? null,
               amount: Number(
                 resource?.billing_info?.last_payment?.amount?.value ??
-                  (planType === 'annual' ? 129.99 : planType === 'weekly' ? 3.99 : 9.99),
+                  (planType === 'annual' ? 129.99 : planType === 'weekly' ? 3.99 : planType === 'ny_sports' ? 19.99 : 9.99),
               ),
               currency: resource?.billing_info?.last_payment?.amount?.currency_code || 'USD',
               notes: 'Back-filled from PayPal webhook',
@@ -369,6 +371,7 @@ Deno.serve(async (req: Request) => {
               supabase,
               row.user_id,
               'PayPal cancellation webhook received',
+              { subscriptionIds: [row.id] },
             );
             console.log('PayPal webhook account cleanup completed', {
               paypalConfirmed: cleanup.paypalConfirmed,

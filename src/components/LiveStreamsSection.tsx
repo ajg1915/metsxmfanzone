@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
-import { isNYTeamStream, NY_TEAM_PAGES } from "@/lib/nyTeamStreamCheck";
+import { isNYTeamStream, isNYSportsPackageStream, NY_TEAM_PAGES } from "@/lib/nyTeamStreamCheck";
 import { useFreeTrialConfig } from "@/hooks/useFreeTrial";
 import { useFreeStreams } from "@/hooks/useFreeStreams";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -190,7 +190,7 @@ const SortableStreamCard = ({
 const LiveStreamsSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { tier, isAdmin, loading: subscriptionLoading } = useSubscription();
+  const { tier, isAdmin, hasNYSports, loading: subscriptionLoading } = useSubscription();
   const { config: trialConfig } = useFreeTrialConfig();
   const { isFree } = useFreeStreams();
   const guestPreviewOn = !user && trialConfig.guestPreviewEnabled !== false;
@@ -399,7 +399,7 @@ const LiveStreamsSection = () => {
       else navigate(getStreamPageUrl(stream));
       return;
     }
-    if (isAdmin || tier === "weekly" || tier === "premium" || tier === "annual" || isGuestPreviewStream(stream)) {
+    if (isAdmin || tier === "weekly" || tier === "premium" || tier === "annual" || isGuestPreviewStream(stream) || (hasNYSports && isNYSportsPackageStream(stream))) {
       navigate(getStreamPageUrl(stream));
     } else {
       navigate("/pricing");

@@ -25,7 +25,7 @@ interface LiveStream {
 const OffseasonNYTeamsSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { tier, isAdmin } = useSubscription();
+  const { tier, isAdmin, canWatchNYSports } = useSubscription();
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -89,7 +89,7 @@ const OffseasonNYTeamsSection = () => {
   };
 
   const handleStreamClick = (stream: LiveStream) => {
-    if (isAdmin || tier === "weekly" || tier === "premium" || tier === "annual") {
+    if (isAdmin || canWatchNYSports) {
       navigate(`/live/${stream.id}`);
     } else {
       if (!user) navigate("/auth");

@@ -13,6 +13,8 @@ const PLAN_CONFIG: Record<string, { price: number; interval: string; intervalCou
   'weekly': { price: 3.99, interval: 'WEEK', intervalCount: 1, name: 'Weekly' },
   'premium': { price: 9.99, interval: 'MONTH', intervalCount: 1, name: 'Premium Monthly v2' },
   'annual': { price: 129.99, interval: 'YEAR', intervalCount: 1, name: 'Annual' },
+  // Separate add-on: Giants, Jets, Knicks, Rangers, Islanders, Nets + 24/7 sports networks
+  'ny_sports': { price: 19.99, interval: 'MONTH', intervalCount: 1, name: 'NY Sports Streaming' },
 };
 
 async function getPayPalAccessToken(api: string, clientId: string, secret: string) {

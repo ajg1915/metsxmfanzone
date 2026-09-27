@@ -65,6 +65,37 @@ const Terms = () => {
                 refunds are not provided for partial billing periods. We reserve the right to modify subscription 
                 prices with 30 days notice.
               </p>
+              <p className="text-muted-foreground mb-4">
+                Every membership is a secure plan billed through PayPal, can be watched on the go, works on all your
+                devices (phone, tablet, computer and TV), and can be cancelled anytime from your Member Center. Paid
+                memberships allow streaming on up to 2 devices at the same time.
+              </p>
+            </section>
+
+            <section className="mb-8">
+              <h2 className="text-2xl font-semibold text-foreground mb-4">NY Sports Streaming Package</h2>
+              <p className="text-muted-foreground mb-4">
+                The NY Sports Streaming package is a separate subscription billed at $19.99 per month through
+                PayPal. It is independent of our Mets memberships (Free, Weekly, Monthly and Yearly): it can be added
+                to any Mets membership or purchased on its own, and adding or cancelling it does not change your Mets
+                membership.
+              </p>
+              <p className="text-muted-foreground mb-4">The NY Sports Streaming package covers only:</p>
+              <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
+                <li>New York Giants</li>
+                <li>New York Jets</li>
+                <li>New York Knicks</li>
+                <li>New York Rangers</li>
+                <li>New York Islanders</li>
+                <li>Brooklyn Nets</li>
+                <li>Our 24/7 sports network streams, for as long as they are offered</li>
+              </ul>
+              <p className="text-muted-foreground">
+                It does not include Mets streams, replays or other premium Mets content, which require a Weekly,
+                Monthly or Yearly membership. Game availability depends on each team's schedule and may change. The
+                24/7 sports network streams may be removed from the package in a future season; we will post any
+                change on this page before it takes effect.
+              </p>
             </section>
 
             <section className="mb-8">

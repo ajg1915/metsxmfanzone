@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
+import { isNYSportsPackageStream } from "@/lib/nyTeamStreamCheck";
+import { NY_SPORTS_PLAN } from "@/hooks/useSubscription";
 
 interface StreamTimeLimitProps {
   children: React.ReactNode;
@@ -23,6 +25,8 @@ interface StreamTimeLimitProps {
   pageKey?: string | null;
   /** Scheduled games: let logged-out visitors watch for a limited window first */
   allowGuestPreview?: boolean;
+  /** Stream is covered by the NY Sports Streaming add-on (NY teams + 24/7 networks) */
+  nySportsStream?: boolean;
 }
 
 type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
@@ -30,7 +34,8 @@ type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
 const STORAGE_KEY = "stream_viewing_start";
 const GUEST_STORAGE_KEY = "guest_stream_preview_start";
 
-const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false }: StreamTimeLimitProps) => {
+const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false, nySportsStream }: StreamTimeLimitProps) => {
+  const coveredByNYSports = nySportsStream ?? isNYSportsPackageStream(null, pageKey);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { config, loading: configLoading } = useFreeTrialConfig();
@@ -111,18 +116,23 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
           return;
         }
 
-        const { data: subData } = await supabase
+        const { data: rows } = await supabase
           .from("subscriptions")
           .select("plan_type, end_date")
           .eq("user_id", user.id)
           .eq("status", "active")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .order("created_at", { ascending: false });
 
-        const stillValid =
-          !subData?.end_date || new Date(subData.end_date) > new Date();
-        const plan = (stillValid ? (subData?.plan_type as PlanType) : "free") || "free";
+        const valid = (rows || []).filter(
+          (row) => !row.end_date || new Date(row.end_date) > new Date()
+        );
+        const hasNYSports = valid.some((row) => row.plan_type === NY_SPORTS_PLAN);
+        // Main Mets plan ignores the NY Sports add-on row.
+        const mainPlan = (valid.find((row) => row.plan_type !== NY_SPORTS_PLAN)?.plan_type as PlanType) || "free";
+        const plan: PlanType =
+          hasNYSports && coveredByNYSports && (mainPlan === "free" || mainPlan === "trial")
+            ? "premium" // NY Sports unlocks this stream in full
+            : mainPlan;
         setUserPlan(plan);
       } catch (error) {
         console.error("Error fetching plan:", error);
@@ -137,7 +147,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     } else if (!authLoading) {
       setLoading(false);
     }
-  }, [user, authLoading]);
+  }, [user, authLoading, coveredByNYSports]);
 
 
   // Countdown for preview-tier viewers

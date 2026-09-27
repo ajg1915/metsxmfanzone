@@ -43,3 +43,30 @@ export const isNYTeamStream = (stream: {
 
   return NY_TEAM_NAME_PATTERN.test(eventText);
 };
+// 24/7 sports network channels included with the NY Sports Streaming package
+// (in addition to the six NY team pages above).
+export const NY_SPORTS_NETWORK_PAGES = [
+  "sny-tv",
+  "msg-network",
+  "msg-plus",
+  "espn-network",
+  "mlb-network",
+  "metsxmfanzone-2",
+] as const;
+
+/** True when a stream/page is covered by the NY Sports Streaming add-on. */
+export const isNYSportsPackageStream = (
+  stream: {
+    title?: string | null;
+    description?: string | null;
+    assigned_pages?: string[] | null;
+  } | null,
+  pageKey?: string | null,
+) => {
+  const keys = [pageKey, ...(stream?.assigned_pages || [])]
+    .filter(Boolean)
+    .map((page) => String(page).toLowerCase());
+  const packagePages: readonly string[] = [...NY_TEAM_PAGES, ...NY_SPORTS_NETWORK_PAGES];
+  if (keys.some((key) => packagePages.includes(key))) return true;
+  return !!stream && isNYTeamStream(stream);
+};

@@ -119,6 +119,19 @@ const PremiumContent = () => {
                 </ol>
               </div>
 
+              <div className="space-y-4 pt-6 border-t">
+                <h2 className="text-2xl font-bold text-primary">NY Sports Streaming Package</h2>
+                <p className="text-muted-foreground leading-relaxed">
+                  NY Sports Streaming is a separate add-on plan for $19.99/month, billed through PayPal. It includes
+                  live streams for the New York Giants, Jets, Knicks, Rangers, Islanders and Brooklyn Nets only, plus
+                  our 24/7 sports network streams. Add it to any Mets membership or get it on its own. It does not
+                  include Mets streams or premium Mets content, and your current Mets plan stays the same.
+                </p>
+                <p className="text-muted-foreground leading-relaxed">
+                  Every plan is a secure plan you can watch on the go, on all your devices, and cancel anytime.
+                </p>
+              </div>
+
               <div className="space-y-6 pt-6 border-t">
                 <h2 className="text-2xl font-bold text-primary">Free vs Premium</h2>
                 <div className="overflow-x-auto">

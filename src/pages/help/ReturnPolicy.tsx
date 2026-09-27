@@ -36,7 +36,7 @@ const ReturnPolicy = () => {
                 <h2 className="text-xl font-semibold text-foreground mb-3">Membership Subscription Plans</h2>
                 <div className="space-y-3">
                   <p>
-                    MetsXMFanZone Mmebership plans are billed on a recurring basis (monthly or annually). Due to the
+                    MetsXMFanZone Membership plans are billed on a recurring basis (weekly, monthly or annually). Due to the
                     nature of digital content and immediate access granted upon membership, we generally do not offer
                     refunds for Membership fees.
                   </p>
@@ -65,6 +65,21 @@ const ReturnPolicy = () => {
                       how to cancel your Membership subscription
                     </Link>
                     .
+                  </p>
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-foreground mb-3">NY Sports Streaming Package</h2>
+                <div className="space-y-3">
+                  <p>
+                    The NY Sports Streaming package is a separate $19.99/month subscription covering only the New York
+                    Giants, Jets, Knicks, Rangers, Islanders and Brooklyn Nets, plus our 24/7 sports network streams. It is
+                    billed separately from your Mets membership, and the same refund policy above applies to it.
+                  </p>
+                  <p>
+                    You can cancel NY Sports Streaming anytime from your Member Center without affecting your Mets
+                    membership, and cancelling your Mets membership does not cancel NY Sports Streaming.
                   </p>
                 </div>
               </section>

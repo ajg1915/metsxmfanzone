@@ -55,7 +55,7 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
     setIsProcessing(true);
 
     try {
-      if (plan.id !== "premium" && plan.id !== "annual" && plan.id !== "weekly") {
+      if (plan.id !== "premium" && plan.id !== "annual" && plan.id !== "weekly" && plan.id !== "ny_sports") {
         toast({
           title: "Paid plan required",
           description: "Only paid memberships can be activated.",
