@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, Home, Plane, Loader2, RefreshCw, Swords } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import NYTeamsSchedule from "@/components/NYTeamsSchedule";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import { parseISO } from "date-fns";
@@ -180,6 +181,15 @@ export default function MetsSchedule2026() {
             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
             Refresh Schedule
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => document.getElementById("ny-teams")?.scrollIntoView({ behavior: "smooth" })}
+            className="ml-2 gap-2"
+          >
+            <Calendar className="w-4 h-4" />
+            Jets, Giants, Knicks & more
+          </Button>
         </motion.div>
 
         {loading ? (
@@ -345,6 +355,8 @@ export default function MetsSchedule2026() {
             * Schedule data from MLB Stats API. Subject to change.
           </p>
         </div>
+
+        <NYTeamsSchedule />
       </main>
       
       <Footer />
