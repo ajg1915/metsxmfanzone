@@ -270,6 +270,7 @@ async function executeAction(client: any, action: any, adminId: string) {
           client,
           sub?.user_id || action.user_id,
           "Admin AI cancelled subscription",
+          sub ? { subscriptionIds: [action.subscription_id] } : {},
         );
         if (!result.paypalConfirmed) {
           throw new Error(result.message || "Cancellation failed");
