@@ -347,6 +347,16 @@ Deno.serve(async (req: Request) => {
 
         const nowIso = new Date().toISOString();
 
+        // Rows our own site already cancelled (member or admin) don't need the
+        // follow-up cleanup again — that would double-count the cancellation.
+        const { data: priorRows } = await supabase
+          .from('subscriptions')
+          .select('id, cancellation_status')
+          .eq('paypal_subscription_id', subscriptionId);
+        const alreadyHandled = new Set(
+          (priorRows || []).filter((r: any) => r.cancellation_status === 'cancelled').map((r: any) => r.id),
+        );
+
         const { data: cancelledRows, error } = await supabase
           .from('subscriptions')
           .update({
@@ -367,7 +377,7 @@ Deno.serve(async (req: Request) => {
 
         // Retain the member account and history after PayPal cancellation.
         for (const row of cancelledRows || []) {
-          if (!row.user_id) continue;
+          if (!row.user_id || alreadyHandled.has(row.id)) continue;
           try {
             const cleanup = await cancelPaypalAndRetainAccount(
               supabase,
