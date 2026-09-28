@@ -97,6 +97,28 @@ interface LiveStream {
 
 const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'metsxmfanzone-2': 'MetsXMFanZone Stream 2 24/7 (Sports Network Streams)', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'Game Events (non-Mets)', 'ny-jets': 'New York Jets', 'ny-giants': 'New York Giants', 'ny-knicks': 'New York Knicks', 'ny-rangers': 'New York Rangers', 'ny-islanders': 'New York Islanders', 'brooklyn-nets': 'Brooklyn Nets', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
 
+// Team category tabs for the admin stream list. Each stream lands in the tab
+// of the NY team page it is assigned to; everything else (Mets games, 24/7
+// networks, MetsXMFanZone TV) falls under "Mets & Networks".
+const TEAM_TABS = [
+  { key: "all", label: "All" },
+  { key: "mets", label: "Mets & Networks" },
+  { key: "ny-giants", label: "Giants" },
+  { key: "ny-jets", label: "Jets" },
+  { key: "ny-knicks", label: "Knicks" },
+  { key: "ny-rangers", label: "Rangers" },
+  { key: "ny-islanders", label: "Islanders" },
+  { key: "brooklyn-nets", label: "Nets" },
+] as const;
+
+type TeamTabKey = (typeof TEAM_TABS)[number]["key"];
+
+const getStreamTeam = (stream: { assigned_pages?: string[] | null }): Exclude<TeamTabKey, "all"> => {
+  const pages = (stream.assigned_pages || []).map((p) => p.toLowerCase());
+  const team = NY_TEAM_PAGES.find((teamPage) => pages.includes(teamPage));
+  return team ?? "mets";
+};
+
 const WATCH_PAGE_OPTIONS = [
   { value: 'own', label: 'Own stream page (/live/…)' },
   { value: 'metsxmfanzone', label: 'MetsXMFanZone TV' },
@@ -315,6 +337,19 @@ export default function LiveStreamManagement() {
     applyThumbnail: false,
   });
   const [bulkMediaPickerOpen, setBulkMediaPickerOpen] = useState(false);
+  const [activeTeam, setActiveTeam] = useState<TeamTabKey>("all");
+
+  const teamCounts = streams.reduce<Record<string, number>>((acc, s) => {
+    const team = getStreamTeam(s);
+    acc[team] = (acc[team] || 0) + 1;
+    return acc;
+  }, { all: streams.length });
+
+  const visibleStreams = activeTeam === "all"
+    ? streams
+    : streams.filter((s) => getStreamTeam(s) === activeTeam);
+
+  const allVisibleSelected = visibleStreams.length > 0 && visibleStreams.every((s) => selectedIds.has(s.id));
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -325,10 +360,10 @@ export default function LiveStreamManagement() {
   };
 
   const selectAll = () => {
-    if (selectedIds.size === streams.length) {
+    if (allVisibleSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(streams.map(s => s.id)));
+      setSelectedIds(new Set(visibleStreams.map(s => s.id)));
     }
   };
 
@@ -736,7 +771,7 @@ export default function LiveStreamManagement() {
           {streams.length > 0 && (
             <Button size="sm" variant="outline" className="h-8 min-w-0 px-2 text-xs" onClick={selectAll}>
               <CheckSquare className="w-3.5 h-3.5 mr-1" />
-              {selectedIds.size === streams.length ? "Deselect All" : "Select All"}
+              {allVisibleSelected ? "Deselect All" : "Select All"}
             </Button>
           )}
           {selectedIds.size > 0 && (
@@ -1157,10 +1192,36 @@ export default function LiveStreamManagement() {
       ) : streams.length === 0 ? (
         <AdminEmpty message='No live streams yet. Click "Add Live Stream" to schedule your first stream.' />
       ) : (
+        <>
+        <div className="mb-4 flex min-w-0 gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Filter streams by team">
+          {TEAM_TABS.map((tab) => {
+            const active = activeTeam === tab.key;
+            return (
+              <Button
+                key={tab.key}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                size="sm"
+                variant={active ? "default" : "outline"}
+                className="h-8 shrink-0 px-3 text-xs"
+                onClick={() => { setActiveTeam(tab.key); setSelectedIds(new Set()); }}
+              >
+                {tab.label}
+                <span className={`ml-1.5 rounded px-1.5 text-[10px] ${active ? "bg-primary-foreground/20" : "bg-muted"}`}>
+                  {teamCounts[tab.key] || 0}
+                </span>
+              </Button>
+            );
+          })}
+        </div>
+        {visibleStreams.length === 0 ? (
+          <AdminEmpty message="No streams in this category yet." />
+        ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={streams.map(s => s.id)} strategy={rectSortingStrategy}>
+          <SortableContext items={visibleStreams.map(s => s.id)} strategy={rectSortingStrategy}>
             <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {streams.map((stream) => (
+              {visibleStreams.map((stream) => (
                 <SortableStreamCard
                   key={stream.id}
                   stream={stream}
@@ -1180,6 +1241,8 @@ export default function LiveStreamManagement() {
             </div>
           </SortableContext>
         </DndContext>
+        )}
+        </>
       )}
 
       {/* Bulk Edit Dialog */}
