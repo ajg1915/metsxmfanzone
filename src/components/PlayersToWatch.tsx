@@ -37,6 +37,32 @@ interface PlayerPrediction {
   payout: string | null;
 }
 
+interface NYTeamPick {
+  id: string;
+  event_id: string;
+  team_key: string;
+  league: string;
+  picked_team: string;
+  picked_team_logo: string | null;
+  other_team: string;
+  other_team_logo: string | null;
+  is_home: boolean;
+  game_start: string;
+  confidence: number | null;
+  reasoning: string | null;
+  outcome: string | null;
+}
+
+// Full names of the six NY teams, keyed the same way as ny_team_picks.team_key.
+const NY_TEAM_NAMES: Record<string, string> = {
+  giants: "New York Giants",
+  jets: "New York Jets",
+  knicks: "New York Knicks",
+  nets: "Brooklyn Nets",
+  rangers: "New York Rangers",
+  islanders: "New York Islanders",
+};
+
 const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { user } = useAuth();
@@ -87,6 +113,28 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
   };
 
   const noGameToday = !lineupGameDate;
+
+  // NY team picks show whenever there's no Mets game day (e.g. the off-season).
+  // The Mets predictions below are untouched and return on their own on game days.
+  const { data: teamPicks, isLoading: picksLoading } = useQuery({
+    queryKey: ["ny-team-picks"],
+    enabled: noGameToday,
+    queryFn: async () => {
+      const since = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+      const { data, error } = await supabase
+        .from("ny_team_picks" as any)
+        .select("id, event_id, team_key, league, picked_team, picked_team_logo, other_team, other_team_logo, is_home, game_start, confidence, reasoning, outcome")
+        .eq("published", true)
+        .gte("game_start", since)
+        .order("game_start", { ascending: true })
+        .limit(9);
+      if (error) throw error;
+      return (data ?? []) as unknown as NYTeamPick[];
+    },
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true,
+  });
+  const hasTeamPicks = noGameToday && !!teamPicks && teamPicks.length > 0;
   const shouldGenerate = !noGameToday && !isLoading && (!predictions || predictions.length === 0);
 
   const isPitcherPlayer = (p: PlayerPrediction) => p.is_pitcher === true;
@@ -107,18 +155,41 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
                 </h2>
               {!canViewParlays && <PremiumBadge size="xs" noGlow />}
                 <p className="text-[10px] sm:text-sm text-muted-foreground">
-                  Daily parlay picks & stat projections
+                  {noGameToday ? "NY team picks for upcoming games" : "Daily parlay picks & stat projections"}
                 </p>
               </div>
             </div>
-            {predictions && predictions.length > 0 && (
+            {((predictions && predictions.length > 0 && !noGameToday) || hasTeamPicks) && (
               <div className="text-[9px] sm:text-xs text-muted-foreground bg-card/50 px-2 sm:px-3 py-1 rounded-full w-fit">
                 Updated: {new Date().toLocaleDateString()}
               </div>
             )}
           </div>
 
-          {noGameToday && (
+          {noGameToday && picksLoading && (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="w-8 h-8 text-primary animate-spin" />
+              <span className="ml-3 text-foreground">Loading picks...</span>
+            </div>
+          )}
+
+          {hasTeamPicks && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {teamPicks!.map((pick) => (
+                <TeamPickCard key={pick.id} pick={pick} />
+              ))}
+            </div>
+          )}
+
+          {hasTeamPicks && (
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
+              <span className="text-xs text-primary font-semibold">Anthony Approved</span>
+              <span className="text-xs text-muted-foreground ml-2">🎲 For entertainment purposes. Always bet responsibly.</span>
+            </div>
+          )}
+
+          {noGameToday && !picksLoading && !hasTeamPicks && (
             <div className="flex flex-col items-center justify-center py-12 bg-card/30 rounded-xl border border-border/50">
               <TrendingUp className="w-12 h-12 text-muted-foreground mb-4" />
               <p className="text-foreground font-semibold mb-1">No Game Today</p>
@@ -165,6 +236,79 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
         </GlassCard>
       </div>
     </section>
+  );
+};
+
+// NY team matchup pick card: both logos side by side, the picked team highlighted.
+const TeamPickCard = ({ pick }: { pick: NYTeamPick }) => {
+  const nyName = NY_TEAM_NAMES[pick.team_key] ?? "";
+  const nyIsPicked = pick.picked_team === nyName;
+  const ny = nyIsPicked
+    ? { name: pick.picked_team, logo: pick.picked_team_logo }
+    : { name: pick.other_team, logo: pick.other_team_logo };
+  const opp = nyIsPicked
+    ? { name: pick.other_team, logo: pick.other_team_logo }
+    : { name: pick.picked_team, logo: pick.picked_team_logo };
+  const away = pick.is_home ? opp : ny;
+  const home = pick.is_home ? ny : opp;
+
+  const start = new Date(pick.game_start);
+  const when = start.toLocaleString("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
+  const outcome = (pick.outcome || "").toLowerCase();
+  const isCorrect = outcome === "correct" || outcome === "win" || outcome === "hit";
+  const isMissed = outcome === "incorrect" || outcome === "loss" || outcome === "miss";
+
+  const Side = ({ team }: { team: { name: string; logo: string | null } }) => {
+    const picked = team.name === pick.picked_team;
+    return (
+      <div
+        className={`relative flex flex-1 min-w-0 flex-col items-center gap-2 rounded-xl p-3 border transition-colors ${
+          picked ? "border-primary bg-primary/10 shadow-[0_0_16px_rgba(var(--primary),0.25)]" : "border-border/40 bg-card/30 opacity-70"
+        }`}
+      >
+        {team.logo ? (
+          <img src={team.logo} alt={team.name} className="h-12 w-12 sm:h-14 sm:w-14 object-contain" loading="lazy" />
+        ) : (
+          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full bg-muted" />
+        )}
+        <span className="text-[11px] sm:text-xs font-semibold text-foreground text-center leading-tight line-clamp-2">{team.name}</span>
+        {picked && (
+          <Badge className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0 whitespace-nowrap">Anthony's Pick</Badge>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="rounded-2xl border border-border/50 bg-card/40 p-3 sm:p-4 flex flex-col gap-3 min-w-0">
+      <div className="flex items-center justify-between gap-2">
+        <Badge variant="outline" className="text-[10px] px-2 py-0">{pick.league}</Badge>
+        <span className="text-[10px] sm:text-xs text-muted-foreground">{when} ET</span>
+      </div>
+      <div className="flex items-stretch gap-2">
+        <Side team={away} />
+        <div className="flex items-center text-xs font-bold text-muted-foreground">@</div>
+        <Side team={home} />
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        {pick.confidence != null && (
+          <span className="text-[10px] sm:text-xs text-primary font-semibold">{pick.confidence}% confidence</span>
+        )}
+        {isCorrect && <span className="text-[10px] sm:text-xs font-semibold text-green-500">✓ Correct</span>}
+        {isMissed && <span className="text-[10px] sm:text-xs font-semibold text-red-500">✗ Missed</span>}
+      </div>
+      {pick.reasoning && (
+        <p className="text-[10px] sm:text-xs text-muted-foreground leading-snug">{pick.reasoning}</p>
+      )}
+    </div>
   );
 };
 
