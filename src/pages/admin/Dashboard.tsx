@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchFeedHealth } from "@/lib/feedHealth";
 import ChatDashboardCard from "@/components/admin/ChatDashboardCard";
+import ContentIdeasCard from "@/components/admin/ContentIdeasCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -386,6 +387,9 @@ export default function AdminDashboard() {
           </button>
         ))}
       </section>
+
+      {/* Daily video ideas */}
+      <ContentIdeasCard />
 
       {/* Chat */}
       <ChatDashboardCard />
