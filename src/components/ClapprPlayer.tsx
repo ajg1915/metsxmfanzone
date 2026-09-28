@@ -255,9 +255,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       />
 
 
-      <div className="absolute right-2 top-2 z-40 flex items-center gap-2 sm:right-3 sm:top-3">
-        <StreamIssueDialog streamId={streamId} streamTitle={pageTitle} video={videoRef.current} compact />
+      {/* Top-left so the cast and issue buttons don't cover the logo in the top-right. */}
+      <div className="absolute left-2 top-2 z-40 flex items-center gap-2 sm:left-3 sm:top-3">
         <CastButton source={effectiveSource} title={pageTitle} />
+        <StreamIssueDialog streamId={streamId} streamTitle={pageTitle} video={videoRef.current} compact />
       </div>
 
 
