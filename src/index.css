@@ -674,10 +674,14 @@ All colors MUST be HSL.
       display: flex;
       justify-content: center;
       background: hsl(var(--player));
+      /* Wrap the player tightly; a 16:9 shell here is taller than the
+         shrunken player and leaves a black strip that pushes controls off. */
+      aspect-ratio: auto !important;
+      height: auto !important;
     }
 
     .stream-player-shell .stream-player {
-      height: calc(100dvh - 4.5rem) !important;
+      height: min(calc(100dvh - 4.5rem), calc(100vw * 9 / 16)) !important;
       width: auto !important;
       max-width: 100% !important;
       margin-inline: auto !important;
