@@ -310,9 +310,10 @@ const STALE_CLAIM_MS = 10 * 60_000
  */
 export async function runStoredEvent(supabase: ServiceClient, row: { id: string; payload: PayPalEvent; attempts: number }) {
   const staleBefore = new Date(Date.now() - STALE_CLAIM_MS).toISOString()
+  const claimedAt = new Date().toISOString() // doubles as this worker's lease token
   const { data: claimed, error: claimError } = await supabase
     .from('paypal_webhook_events')
-    .update({ status: 'processing', claimed_at: new Date().toISOString() })
+    .update({ status: 'processing', claimed_at: claimedAt })
     .eq('id', row.id)
     .or(`status.in.(received,failed),and(status.eq.processing,claimed_at.lt.${staleBefore})`)
     .select('id')
@@ -324,12 +325,14 @@ export async function runStoredEvent(supabase: ServiceClient, row: { id: string;
     await supabase.from('paypal_webhook_events')
       .update({ status: outcome, attempts: row.attempts + 1, last_error: null, claimed_at: null, processed_at: new Date().toISOString() })
       .eq('id', row.id)
+      .eq('claimed_at', claimedAt) // only the lease holder records the result
     return { ok: true as const, outcome }
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
     await supabase.from('paypal_webhook_events')
       .update({ status: 'failed', attempts: row.attempts + 1, last_error: message.slice(0, 500), claimed_at: null })
       .eq('id', row.id)
+      .eq('claimed_at', claimedAt)
     return { ok: false as const, error: message }
   }
 }
