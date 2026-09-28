@@ -306,7 +306,7 @@ const ChatManagement = () => {
         title="Chat"
         count={counts.pending}
         countLabel="waiting"
-        description="Fan chat in the bottom bar. Online during live Mets games; offline messages land here."
+        description="MetsXMFanZone AI chat (Claude) in the bottom bar. Online during live Mets and NY team games; offline messages land here."
         actions={
           <Button variant="outline" size="sm" className="h-7 text-[10px]" onClick={load}>
             <RefreshCw className="mr-1 h-3 w-3" /> Refresh
