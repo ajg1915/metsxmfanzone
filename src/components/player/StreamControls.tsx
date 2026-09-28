@@ -55,6 +55,20 @@ export function StreamControls({
   const menuRef = useRef<HTMLDivElement>(null);
   const gearRef = useRef<HTMLButtonElement>(null);
   const menuOpen = menu !== "closed";
+  const [playerHeight, setPlayerHeight] = useState(0);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = () => setPlayerHeight(el.clientHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [containerRef]);
+  // Room above the control bar inside the player (popups must fit in it).
+  const popupMaxHeight = playerHeight ? Math.max(90, playerHeight - (playerHeight < 300 ? 64 : 88)) : undefined;
+  const compact = playerHeight > 0 && playerHeight < 300;
 
   // Close the settings menu on any tap outside it, like YouTube.
   useEffect(() => {
@@ -263,10 +277,15 @@ export function StreamControls({
     : levels.find((l) => l.index === currentLevel)?.label ?? "Auto";
   const hd = (levels.find((l) => l.index === playingLevel)?.height ?? 0) >= 720;
 
-  const btn =
-    "relative flex h-10 w-10 items-center justify-center text-white/90 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-full sm:h-12 sm:w-12";
+  const btn = cn(
+    "relative flex shrink-0 items-center justify-center rounded-full text-white/90 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60",
+    compact ? "h-9 w-9" : "h-10 w-10 sm:h-12 sm:w-12"
+  );
   const VolumeIcon = muted ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
-  const menuItem = "flex w-full items-center gap-3 px-4 py-2.5 text-left text-[13px] text-white hover:bg-white/10";
+  const menuItem = cn(
+    "flex w-full shrink-0 items-center gap-3 text-left text-white hover:bg-white/10",
+    compact ? "px-3 py-1.5 text-xs" : "px-4 py-2.5 text-[13px]"
+  );
 
   return (
     <div
@@ -277,7 +296,10 @@ export function StreamControls({
     >
       {/* Stats for nerds */}
       {showStats && (
-        <div className="absolute bottom-full left-3 mb-2 rounded-md bg-black/80 px-3 py-2 font-mono text-[11px] leading-5 text-white/90">
+        <div
+          style={{ maxHeight: popupMaxHeight }}
+          className="absolute bottom-full left-2 mb-1 max-w-[calc(100%-1rem)] overflow-y-auto rounded-md bg-black/80 px-3 py-2 font-mono text-[11px] leading-5 text-white/90 sm:left-3 sm:mb-2"
+        >
           <div className="mb-1 flex items-center justify-between gap-6">
             <span className="font-sans text-xs font-semibold text-white">Stats for nerds</span>
             <button onClick={() => setShowStats(false)} className="text-white/60 hover:text-white" aria-label="Close stats">✕</button>
@@ -290,7 +312,14 @@ export function StreamControls({
 
       {/* Settings menu (YouTube style) */}
       {menuOpen && (
-        <div ref={menuRef} className="absolute bottom-full right-3 mb-2 min-w-[240px] overflow-hidden rounded-xl bg-[rgba(28,28,28,0.92)] py-2 shadow-2xl backdrop-blur-sm">
+        <div
+          ref={menuRef}
+          style={{ maxHeight: popupMaxHeight }}
+          className={cn(
+            "absolute bottom-full right-2 mb-1 flex max-w-[calc(100%-1rem)] flex-col overflow-y-auto rounded-xl bg-[rgba(28,28,28,0.92)] shadow-2xl backdrop-blur-sm sm:right-3 sm:mb-2",
+            compact ? "min-w-[200px] py-1" : "min-w-[240px] py-2"
+          )}
+        >
           {menu === "main" && (
             <>
               <button className={menuItem} onClick={() => setMenu("quality")}>
@@ -318,7 +347,7 @@ export function StreamControls({
               >
                 <ChevronLeft className="h-4 w-4" /> Quality
               </button>
-              <div className="max-h-[45vh] overflow-y-auto pt-1">
+              <div className="pt-1">
                 {[...levels].sort((a, b) => b.height - a.height).map((l) => (
                   <button key={l.index} className={menuItem} onClick={() => setLevel(l.index)}>
                     <span className="w-4">{currentLevel === l.index && <Check className="h-4 w-4" />}</span>
@@ -338,7 +367,7 @@ export function StreamControls({
         </div>
       )}
 
-      <div className="bg-gradient-to-t from-black/80 via-black/40 to-transparent px-2 pb-1 pt-12 sm:px-3">
+      <div className={cn("bg-gradient-to-t from-black/80 via-black/40 to-transparent px-1.5 pb-0.5 sm:px-3 sm:pb-1", compact ? "pt-6" : "pt-12")}>
         {/* Progress bar: live streams sit at the live edge */}
         <button
           type="button"
