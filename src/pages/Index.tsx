@@ -10,6 +10,7 @@ import LazySection from "@/components/LazySection";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
 import { useAuth } from "@/hooks/useAuth";
+import { SHOW_METS_GAME_CENTER } from "@/config/season";
 
 // Lazy load heavy components that are below the fold
 const ImmersiveBackground = lazyWithRetry(() => import("@/components/ImmersiveBackground"), "home-immersive-background");
@@ -182,9 +183,11 @@ const Index = () => {
 
 
         {/* Above-the-fold: mount immediately */}
-        <Suspense fallback={<SectionSkeleton height="h-16" />}>
-          <GamecastBanner />
-        </Suspense>
+        {SHOW_METS_GAME_CENTER && (
+          <Suspense fallback={<SectionSkeleton height="h-16" />}>
+            <GamecastBanner />
+          </Suspense>
+        )}
 
 
         <Suspense fallback={<SectionSkeleton />}>
@@ -238,16 +241,19 @@ const Index = () => {
           </Suspense>
         </LazySection>
 
-        <LazySection fallback={<SectionSkeleton height="h-48" />}>
-          <Suspense fallback={<SectionSkeleton height="h-48" />}>
-            <HomeLineupCard onLineupLoaded={(gameDate) => {
-              setLineupLoaded(true);
-              setLineupGameDate(gameDate ?? null);
-            }} />
-          </Suspense>
-        </LazySection>
+        {SHOW_METS_GAME_CENTER && (
+          <LazySection fallback={<SectionSkeleton height="h-48" />}>
+            <Suspense fallback={<SectionSkeleton height="h-48" />}>
+              <HomeLineupCard onLineupLoaded={(gameDate) => {
+                setLineupLoaded(true);
+                setLineupGameDate(gameDate ?? null);
+              }} />
+            </Suspense>
+          </LazySection>
+        )}
 
-        {lineupLoaded && (
+        {/* With the Game Center hidden, predictions still show (NY team picks in the off-season). */}
+        {(lineupLoaded || !SHOW_METS_GAME_CENTER) && (
           <>
             <div className="section-divider my-1" />
             <LazySection fallback={<SectionSkeleton />}>

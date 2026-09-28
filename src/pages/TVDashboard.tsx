@@ -9,6 +9,7 @@ import { TVHeroBanner } from "@/components/tv/TVHeroBanner";
 import { TVNavBar } from "@/components/tv/TVNavBar";
 import { TVContentRail } from "@/components/tv/TVContentRail";
 import GamecastBanner from "@/components/GamecastBanner";
+import { SHOW_METS_GAME_CENTER } from "@/config/season";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
@@ -295,7 +296,7 @@ const TVDashboard = () => {
             )}
             <div className="space-y-1 px-6 pb-6 -mt-8 relative z-10">
               {/* Gamecast Banner */}
-              <GamecastBanner />
+              {SHOW_METS_GAME_CENTER && <GamecastBanner />}
 
               {/* Stories */}
               <div ref={storiesRef}>
