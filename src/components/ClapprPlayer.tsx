@@ -1,6 +1,6 @@
 import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Hls from "hls.js";
-import { Loader2, AlertCircle, RotateCw, Play } from "lucide-react";
+import { Loader2, AlertCircle, RotateCw, Play, Volume2 } from "lucide-react";
 import { CastButton } from "./CastButton";
 import { StreamIssueDialog } from "./StreamIssueDialog";
 import { StreamControls } from "./player/StreamControls";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
+import { playWithSound, unmuteFromTap } from "@/lib/playerSound";
 
 interface ClapprPlayerProps {
   pageTitle?: string;
@@ -42,6 +43,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const hlsRef = useRef<Hls | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [needsTap, setNeedsTap] = useState(false);
+  const [needsSound, setNeedsSound] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const notifiedRef = useRef(false);
 
@@ -75,7 +77,15 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   }, [onStandby, effectiveSource]);
 
   const handleTapPlay = useCallback(() => {
-    videoRef.current?.play().then(() => setNeedsTap(false)).catch(() => {});
+    // A tap counts as permission, so start with sound.
+    unmuteFromTap(videoRef.current);
+    setNeedsTap(false);
+    setNeedsSound(false);
+  }, []);
+
+  const handleTapSound = useCallback(() => {
+    unmuteFromTap(videoRef.current);
+    setNeedsSound(false);
   }, []);
 
   const handleRetry = useCallback(() => {
@@ -130,10 +140,11 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     };
 
     const tryAutoplay = () => {
-      video.muted = true;
-      video.play().catch(() => {
-        if (!destroyed) setNeedsTap(true);
-      });
+      playWithSound(
+        video,
+        () => { if (!destroyed) setNeedsSound(true); },
+        () => { if (!destroyed) setNeedsTap(true); },
+      );
       autoplayTimer = window.setTimeout(() => {
         if (!destroyed && video.paused) setNeedsTap(true);
       }, 1500);
@@ -286,8 +297,6 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       <video
         ref={videoRef}
         className="absolute inset-0 h-full w-full object-contain bg-player"
-        autoPlay
-        muted
         playsInline
         onClick={() => {
           const v = videoRef.current;
@@ -339,6 +348,16 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             <RotateCw className="w-3.5 h-3.5" /> Retry
           </Button>
         </div>
+      )}
+
+      {status === "ready" && needsSound && !needsTap && (
+        <button
+          type="button"
+          onClick={handleTapSound}
+          className="absolute left-1/2 top-1/2 z-30 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground shadow-2xl shadow-primary/40 animate-pulse"
+        >
+          <Volume2 className="h-5 w-5" /> Tap for sound
+        </button>
       )}
 
       {status === "ready" && needsTap && (

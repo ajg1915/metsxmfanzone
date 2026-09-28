@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { rememberSound } from "@/lib/playerSound";
 
 interface StreamControlsProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -182,6 +183,8 @@ export function StreamControls({
     if (!v) return;
     v.muted = !v.muted;
     if (!v.muted && v.volume === 0) v.volume = 1;
+    delete v.dataset.autoMuted;
+    rememberSound(v);
   }, [videoRef]);
 
   const changeVolume = (val: number) => {
@@ -189,6 +192,8 @@ export function StreamControls({
     if (!v) return;
     v.volume = val;
     v.muted = val === 0;
+    delete v.dataset.autoMuted;
+    rememberSound(v);
   };
 
   const jumpToLive = () => {

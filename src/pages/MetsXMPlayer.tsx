@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Hls from "hls.js";
 import { supabase } from "@/integrations/supabase/client";
 import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
+import { playWithSound, unmuteFromTap, rememberSound } from "@/lib/playerSound";
 
 // Proxied through Lovable Cloud so HTTPS pages can play the HTTP origin without mixed-content blocking.
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
@@ -18,6 +19,24 @@ export default function MetsXMPlayer() {
   const [description, setDescription] = useState("Watch the Mets game live!");
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMsg, setErrorMsg] = useState("");
+  const [needsSound, setNeedsSound] = useState(false);
+
+  const startPlayback = (video: HTMLVideoElement) =>
+    playWithSound(video, () => setNeedsSound(true), () => {});
+
+  // Remember volume/mute changes made with the built-in controls.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onVolume = () => {
+      if (v.muted && v.dataset.autoMuted === "1") return;
+      delete v.dataset.autoMuted;
+      if (!v.muted) setNeedsSound(false);
+      rememberSound(v);
+    };
+    v.addEventListener("volumechange", onVolume);
+    return () => v.removeEventListener("volumechange", onVolume);
+  }, []);
 
   // Fetch stream from DB if no src param
   useEffect(() => {
@@ -91,7 +110,7 @@ export default function MetsXMPlayer() {
           if (!destroyed) setStatus("ready");
         }, { once: true });
         video.addEventListener("error", () => fail("Playback error"), { once: true });
-        video.play().catch(() => {});
+        startPlayback(video);
         return;
       }
 
@@ -117,7 +136,7 @@ export default function MetsXMPlayer() {
         mediaRecoveries = 0;
         networkRetries = 0;
         setStatus("ready");
-        video.play().catch(() => {});
+        startPlayback(video);
       });
       hls.on(Hls.Events.ERROR, (_evt, data) => {
         if (!data?.fatal || destroyed) return;
@@ -170,13 +189,20 @@ export default function MetsXMPlayer() {
           <video
             ref={videoRef}
             controls
-            autoPlay
-            muted
             playsInline
             style={{ width: "100%", height: "auto", display: "block", background: "#000", aspectRatio: "16 / 9" }}
           >
             Your browser does not support HLS playback.
           </video>
+          {needsSound && (
+            <button
+              type="button"
+              onClick={() => { unmuteFromTap(videoRef.current); setNeedsSound(false); }}
+              style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", background: "#ff6b35", color: "#fff", border: "none", borderRadius: 999, padding: "12px 22px", fontSize: 15, fontWeight: 700, cursor: "pointer", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}
+            >
+              🔊 Tap for sound
+            </button>
+          )}
         </div>
 
         <div style={{ background: "#1a1f3a", padding: 20, color: "#fff", borderRadius: "0 0 12px 12px", marginTop: -4 }}>
