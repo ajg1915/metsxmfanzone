@@ -74,7 +74,12 @@ function GameBox({ gamePk }: { gamePk: number }) {
 }
 
 function TodayGame() {
-  const { data } = useQuery({ queryKey: ["game-stats", "today"], queryFn: () => fetchStats(`teamId=${METS}`) });
+  // Key on the New York date so an open tab moves to the next day's game.
+  const date = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const { data } = useQuery({
+    queryKey: ["game-stats", "today", date],
+    queryFn: () => fetchStats(`teamId=${METS}&date=${date}`),
+  });
   const game = data?.games?.[0];
   if (!game) return null;
   return <GameBox gamePk={game.gamePk} />;

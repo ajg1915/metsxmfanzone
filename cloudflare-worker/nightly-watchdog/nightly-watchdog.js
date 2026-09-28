@@ -23,8 +23,13 @@ async function warmCache(site) {
   const results = await Promise.all(WARM_PATHS.map(async (path) => {
     const t = Date.now()
     try {
-      const res = await fetch(`${site}${path}`, { cf: { cacheEverything: true }, headers: { 'User-Agent': 'MetsXM-Watchdog' } })
-      await res.arrayBuffer()
+      // Bounded, so one stalled page can't hold up the health check below.
+      const res = await fetch(`${site}${path}`, {
+        cf: { cacheEverything: true },
+        headers: { 'User-Agent': 'MetsXM-Watchdog' },
+        signal: AbortSignal.timeout(15_000),
+      })
+      await res.body?.cancel()
       return { path, status: res.status, ms: Date.now() - t }
     } catch (e) {
       return { path, status: 0, ms: Date.now() - t, error: String(e) }

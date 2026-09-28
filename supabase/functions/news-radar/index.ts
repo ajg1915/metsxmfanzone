@@ -103,20 +103,27 @@ Deno.serve(async (req) => {
     .sort((a, b) => b.hit.score - a.hit.score || b.item.published - a.item.published)
 
   let sent = 0
+  const itemErrors: string[] = []
   for (const { item, hit } of fresh) {
     if (sent >= MAX_ALERTS_PER_RUN) break
-    const r = await notifyAdmin(supabase, {
-      dedupeKey: `rumor:${await storyKey(item.title)}`,
-      kind: 'rumor',
-      title: HEADLINE[hit.topic](item.title),
-      body: `${item.summary ? `${item.summary}\n` : ''}Source: ${new URL(item.link).hostname}`,
-      url: item.link,
-      payload: { topic: hit.topic, score: hit.score, source: item.source },
-    })
-    if (r.sent) sent++
+    // One malformed link or failed alert must not stop the rest of the run.
+    try {
+      const link = new URL(item.link, item.source)
+      const r = await notifyAdmin(supabase, {
+        dedupeKey: `rumor:${await storyKey(item.title)}`,
+        kind: 'rumor',
+        title: HEADLINE[hit.topic](item.title),
+        body: `${item.summary ? `${item.summary}\n` : ''}Source: ${link.hostname}`,
+        url: link.href,
+        payload: { topic: hit.topic, score: hit.score, source: item.source },
+      })
+      if (r.sent) sent++
+    } catch (e) {
+      itemErrors.push(`${item.title.slice(0, 60)}: ${(e as Error).message}`)
+    }
   }
 
-  return new Response(JSON.stringify({ scanned: items.length, candidates: fresh.length, sent, feedErrors }), {
+  return new Response(JSON.stringify({ scanned: items.length, candidates: fresh.length, sent, feedErrors, itemErrors }), {
     headers: { 'Content-Type': 'application/json' },
   })
 })

@@ -52,12 +52,16 @@ Deno.serve(async (req) => {
   let row: { id: string; attempts: number } | null | undefined = inserted?.[0]
   if (!row) {
     // Seen before. Skip if it already went through; otherwise try again now.
-    const { data: existing } = await supabase
+    const { data: existing, error: lookupError } = await supabase
       .from('paypal_webhook_events')
       .select('id, attempts, status')
       .eq('id', event.id)
       .single()
-    if (existing?.status === 'processed' || existing?.status === 'ignored') {
+    if (lookupError || !existing) {
+      console.error('Could not load stored PayPal event', lookupError?.message)
+      return json(500, { error: 'Storage lookup failed' }) // PayPal will retry
+    }
+    if (existing.status === 'processed' || existing.status === 'ignored') {
       return json(200, { received: true, duplicate: true })
     }
     row = existing

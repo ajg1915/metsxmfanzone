@@ -10,6 +10,12 @@ import {
   type GameDetail, type GameSummary,
 } from '../_shared/mlb-stats.ts'
 
+const ordinal = (n: number) => {
+  const tens = n % 100
+  if (tens >= 11 && tens <= 13) return `${n}th`
+  return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`
+}
+
 const lastName = (s: string) => s.split(':')[0].trim().split(' ').slice(-1)[0]
 
 function metsSide(g: GameSummary) {
@@ -33,7 +39,7 @@ function suggestHeadlines(d: GameDetail): string[] {
   const walkOff = won && metsHome && last && /^Bot (9|1\d)/.test(last.inning)
     && (before ? before.homeScore <= before.awayScore : true)
   const out: string[] = []
-  if (walkOff) out.push(`Walk-off! Mets stun the ${opp.name} ${m}-${o} in the ${last!.inning.replace('Bot ', '')}th`)
+  if (walkOff) out.push(`Walk-off! Mets stun the ${opp.name} ${m}-${o} in the ${ordinal(Number(last!.inning.replace('Bot ', '')))}`)
   if (won) {
     if (o === 0) out.push(`Mets blank the ${opp.name} ${m}-0${ace ? ` as ${lastName(ace)} deals` : ''}`)
     if (star) out.push(`${lastName(star)} powers Mets past ${opp.name}, ${m}-${o}`)

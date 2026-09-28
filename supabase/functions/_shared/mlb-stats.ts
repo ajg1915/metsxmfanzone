@@ -147,15 +147,16 @@ export async function getGameDetail(gamePk: number): Promise<GameDetail> {
   })
 
   const allPlays: any[] = feed.liveData.plays?.allPlays ?? []
-  const scoringPlays = (feed.liveData.plays?.scoringPlays ?? []).map((i: number) => {
-    const p = allPlays[i]
-    return {
+  // A live feed can list a scoring index before the play itself arrives.
+  const scoringPlays = (feed.liveData.plays?.scoringPlays ?? [])
+    .map((i: number) => allPlays[i])
+    .filter((p: any) => p?.about && p?.result)
+    .map((p: any) => ({
       inning: `${p.about.halfInning === 'top' ? 'Top' : 'Bot'} ${p.about.inning}`,
       description: p.result.description,
       awayScore: p.result.awayScore,
       homeScore: p.result.homeScore,
-    }
-  })
+    }))
 
   return {
     summary,

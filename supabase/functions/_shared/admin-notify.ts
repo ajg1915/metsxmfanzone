@@ -36,7 +36,17 @@ export function requireCronSecret(req: Request): Response | null {
 export async function notifyAdmin(supabase: ServiceClient, alert: AdminAlert): Promise<NotifyResult> {
   const result: NotifyResult = { sent: false, duplicate: false, channels: [], errors: [] }
 
-  // Claim the dedupe key first; a unique violation means it already went out.
+  const configured = {
+    discord: !!Deno.env.get('ADMIN_DISCORD_WEBHOOK_URL'),
+    telegram: !!(Deno.env.get('TELEGRAM_BOT_TOKEN') && Deno.env.get('TELEGRAM_ADMIN_CHAT_ID')),
+    email: true,
+  }
+  const requested = alert.channels ?? (alert.kind === 'rumor' ? ['discord', 'telegram'] : ['discord', 'telegram', 'email'])
+
+  // Claim the dedupe key first. If it exists, this alert went out before:
+  // send only the channels that didn't get it (a failed channel is retried on
+  // the next call), and stop if every channel already has it.
+  let alreadySent: string[] = []
   const { error: claimError } = await supabase.from('admin_alerts').insert({
     dedupe_key: alert.dedupeKey,
     kind: alert.kind,
@@ -45,11 +55,15 @@ export async function notifyAdmin(supabase: ServiceClient, alert: AdminAlert): P
     payload: alert.payload ?? null,
   })
   if (claimError) {
-    if (claimError.code === '23505') return { ...result, duplicate: true }
-    throw new Error(`admin_alerts insert failed: ${claimError.message}`)
+    if (claimError.code !== '23505') throw new Error(`admin_alerts insert failed: ${claimError.message}`)
+    const { data: existing, error: readError } = await supabase
+      .from('admin_alerts').select('channels').eq('dedupe_key', alert.dedupeKey).maybeSingle()
+    if (readError) throw new Error(`admin_alerts read failed: ${readError.message}`)
+    alreadySent = existing?.channels ?? []
   }
+  const wanted = requested.filter((c) => configured[c] && !alreadySent.includes(c))
+  if (claimError && wanted.length === 0) return { ...result, duplicate: true }
 
-  const wanted = alert.channels ?? (alert.kind === 'rumor' ? ['discord', 'telegram'] : ['discord', 'telegram', 'email'])
   const text = `**${alert.title}**\n${alert.body}${alert.url ? `\n${alert.url}` : ''}`
 
   if (wanted.includes('discord')) {
@@ -100,27 +114,31 @@ export async function notifyAdmin(supabase: ServiceClient, alert: AdminAlert): P
         content: `<pre style="white-space:pre-wrap;font-family:inherit">${escapeHtml(alert.body)}</pre>`,
         ...(alert.url ? { cta: { label: 'Open', url: alert.url } } : {}),
       })
+      let delivered = 0
       for (const admin of admins ?? []) {
         if (!admin.email) continue
-        await queueTransactionalEmail(supabase, {
+        const sent = await queueTransactionalEmail(supabase, {
           to: admin.email,
           subject: alert.title,
           html,
           label: `admin_${alert.kind}`,
           idempotencyKey: `admin-alert:${alert.dedupeKey}:${admin.email}`,
         })
+        if (sent.sent) delivered++
       }
-      result.channels.push('email')
+      if (delivered) result.channels.push('email')
+      else result.errors.push('email: no admin address received it')
     } catch (e) {
       result.errors.push(`email: ${(e as Error).message}`)
     }
   }
 
   result.sent = result.channels.length > 0
-  if (result.sent) {
-    await supabase.from('admin_alerts').update({ channels: result.channels }).eq('dedupe_key', alert.dedupeKey)
+  const allSent = [...new Set([...alreadySent, ...result.channels])]
+  if (allSent.length) {
+    await supabase.from('admin_alerts').update({ channels: allSent }).eq('dedupe_key', alert.dedupeKey)
   } else {
-    // Nothing got through: release the key so the next scheduled run retries.
+    // Nothing has ever got through: release the key so the next run retries.
     await supabase.from('admin_alerts').delete().eq('dedupe_key', alert.dedupeKey)
   }
   return result

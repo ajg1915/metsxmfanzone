@@ -48,8 +48,9 @@ CREATE TABLE IF NOT EXISTS public.paypal_webhook_events (
   resource_id text,
   payload jsonb NOT NULL,
   status text NOT NULL DEFAULT 'received'
-    CHECK (status IN ('received', 'processed', 'failed', 'ignored')),
+    CHECK (status IN ('received', 'processing', 'processed', 'failed', 'ignored')),
   attempts int NOT NULL DEFAULT 0,
+  claimed_at timestamptz,                    -- set while one worker processes it
   last_error text,
   received_at timestamptz NOT NULL DEFAULT now(),
   processed_at timestamptz

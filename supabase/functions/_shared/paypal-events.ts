@@ -148,6 +148,15 @@ export async function processPayPalEvent(supabase: ServiceClient, event: PayPalE
       let subs = await findByPayPalId(supabase, r.id)
       if (subs.length === 0) subs = await backfill(supabase, r)
       for (const sub of subs) {
+        if (sub.status === 'active') continue // redelivery: nothing to do
+        if (['cancelled', 'expired', 'refunded'].includes(sub.status)) continue // ended; a late retry must not revive it
+        // pending, or a suspended/past_due member PayPal re-activated. A retried
+        // event can arrive after a later SUSPENDED, so confirm with PayPal first.
+        if (sub.status !== 'pending') {
+          const state = await getPayPalSubscriptionState(r.id)
+          if (state.status === 'UNKNOWN') throw new Error('PayPal unreachable; retry activation later')
+          if (state.status !== 'ACTIVE') continue
+        }
         await setStatus(supabase, sub, { status: 'active', start_date: new Date().toISOString(), end_date: await paidThrough(sub) }, 'paypal_activated', event.id)
       }
       return subs.length ? 'processed' : 'ignored'
@@ -170,8 +179,10 @@ export async function processPayPalEvent(supabase: ServiceClient, event: PayPalE
         paypal_sale_id: r.id,
         notes: 'PayPal webhook',
       })
-      if (payError?.code === '23505') return 'ignored' // this sale was already applied
-      if (payError) throw payError
+      // A redelivered sale is already recorded. Still re-apply the status below,
+      // in case the first attempt failed after recording the payment.
+      const alreadyRecorded = payError?.code === '23505'
+      if (payError && !alreadyRecorded) throw payError
       const endDate = await paidThrough(sub)
       await setStatus(supabase, sub, {
         status: 'active',
@@ -179,7 +190,7 @@ export async function processPayPalEvent(supabase: ServiceClient, event: PayPalE
         last_payment_date: new Date().toISOString(),
         last_payment_amount: amount,
         next_payment_date: endDate,
-        total_payments_received: (sub.total_payments_received ?? 0) + 1,
+        ...(alreadyRecorded ? {} : { total_payments_received: (sub.total_payments_received ?? 0) + 1 }),
       }, 'paypal_payment_completed', event.id)
       await emailMember(supabase, sub, event.id, 'receipt', 'Your MetsXMFanZone payment receipt', 'Payment received',
         `Thanks! We received your <strong>${escapeHtml(sub.plan_type)}</strong> payment and your membership is active.`)
@@ -290,18 +301,34 @@ async function backfill(supabase: ServiceClient, r: any): Promise<Sub[]> {
   return data ?? []
 }
 
-/** Runs one stored event and records the outcome. Used by the webhook and the nightly retry. */
+const STALE_CLAIM_MS = 10 * 60_000
+
+/**
+ * Runs one stored event and records the outcome. Used by the webhook and the
+ * nightly retry. The event is claimed first, so a PayPal redelivery and the
+ * nightly retry can never process the same event at the same time.
+ */
 export async function runStoredEvent(supabase: ServiceClient, row: { id: string; payload: PayPalEvent; attempts: number }) {
+  const staleBefore = new Date(Date.now() - STALE_CLAIM_MS).toISOString()
+  const { data: claimed, error: claimError } = await supabase
+    .from('paypal_webhook_events')
+    .update({ status: 'processing', claimed_at: new Date().toISOString() })
+    .eq('id', row.id)
+    .or(`status.in.(received,failed),and(status.eq.processing,claimed_at.lt.${staleBefore})`)
+    .select('id')
+  if (claimError) return { ok: false as const, error: `claim failed: ${claimError.message}` }
+  if (!claimed?.length) return { ok: true as const, outcome: 'in_progress' as const } // another worker has it, or it's done
+
   try {
     const outcome = await processPayPalEvent(supabase, row.payload)
     await supabase.from('paypal_webhook_events')
-      .update({ status: outcome, attempts: row.attempts + 1, last_error: null, processed_at: new Date().toISOString() })
+      .update({ status: outcome, attempts: row.attempts + 1, last_error: null, claimed_at: null, processed_at: new Date().toISOString() })
       .eq('id', row.id)
     return { ok: true as const, outcome }
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e)
     await supabase.from('paypal_webhook_events')
-      .update({ status: 'failed', attempts: row.attempts + 1, last_error: message.slice(0, 500) })
+      .update({ status: 'failed', attempts: row.attempts + 1, last_error: message.slice(0, 500), claimed_at: null })
       .eq('id', row.id)
     return { ok: false as const, error: message }
   }
