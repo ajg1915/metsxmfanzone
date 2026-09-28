@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'MetsXMFanZone',
   webDir: 'dist',
   server: {
-    url: 'https://727a4464-8bf1-4211-864e-a4f012bbed69.lovableproject.com?forceHideBadge=true',
+    url: 'https://metsxmfanzone.com',
     cleartext: true
   }
 };
