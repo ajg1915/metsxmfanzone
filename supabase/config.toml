@@ -11,3 +11,15 @@ project_id = "rdmrxeplasttewtlfetc"
     verify_jwt = false
   [functions.handle-email-events]
     verify_jwt = false
+  # PayPal and pg_cron send no Supabase JWT. The cron functions check the
+  # x-cron-secret header instead; paypal-webhook checks PayPal's signature.
+  [functions.paypal-webhook]
+    verify_jwt = false
+  [functions.game-stats]
+    verify_jwt = false
+  [functions.daily-health-check]
+    verify_jwt = false
+  [functions.news-radar]
+    verify_jwt = false
+  [functions.admin-prompts]
+    verify_jwt = false
