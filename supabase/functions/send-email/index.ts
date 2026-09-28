@@ -1,5 +1,5 @@
 import { resendFetch } from '../_shared/resend-fetch.ts'
-// Send emails via Resend through the Lovable connector gateway.
+// Send emails directly through Resend.
 // Invoke with: supabase.functions.invoke('send-email', { body: { to, subject, html, text?, from? } })
 
 const corsHeaders = {
@@ -8,7 +8,7 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type',
 }
 
-const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
+const RESEND_API_URL = 'https://api.resend.com'
 const DEFAULT_FROM = 'MetsXMFanZone <noreply@metsxmfanzone.com>'
 
 Deno.serve(async (req) => {
@@ -17,7 +17,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
     
 
     const RESEND_API_KEY =
@@ -38,12 +37,10 @@ Deno.serve(async (req) => {
       )
     }
 
-    const response = await resendFetch(`${GATEWAY_URL}/emails`, {
+    const response = await resendFetch(`${RESEND_API_URL}/emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        'X-Connection-Api-Key': RESEND_API_KEY,
       },
       body: JSON.stringify({
         from: from ?? DEFAULT_FROM,

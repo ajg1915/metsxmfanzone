@@ -1,11 +1,11 @@
 import { resendFetch } from './resend-fetch.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-// Emails are delivered through Resend via the Lovable connector gateway.
+// Emails are delivered directly through Resend with our own API key.
 export const VERIFIED_EMAIL_DOMAIN = 'metsxmfanzone.com'
 export const VERIFIED_FROM_ADDRESS = `MetsXMFanZone <noreply@${VERIFIED_EMAIL_DOMAIN}>`
 
-const RESEND_GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
+const RESEND_API_URL = 'https://api.resend.com'
 
 // deno-lint-ignore no-explicit-any
 type ServiceClient = any
@@ -54,7 +54,7 @@ const logSend = async (
 }
 
 /**
- * Sends an email through Resend (via the Lovable connector gateway).
+ * Sends an email directly through Resend.
  * Suppressed / blocked recipients resolve with { sent: false }; other failures throw.
  */
 export const queueTransactionalEmail = async (
@@ -69,7 +69,6 @@ export const queueTransactionalEmail = async (
     idempotencyKey,
   }: SendEmailOptions
 ): Promise<{ messageId: string; sent: boolean; reason?: 'recipient_suppressed' }> => {
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
   
 
   const resendApiKey =
@@ -107,12 +106,10 @@ export const queueTransactionalEmail = async (
 
   let response: Response
   try {
-    response = await resendFetch(`${RESEND_GATEWAY_URL}/emails`, {
+    response = await resendFetch(`${RESEND_API_URL}/emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${lovableApiKey}`,
-        'X-Connection-Api-Key': resendApiKey,
         'Idempotency-Key': idempotencyKey ?? `${label}:${normalizedTo}:${messageId}`,
       },
       body: JSON.stringify({

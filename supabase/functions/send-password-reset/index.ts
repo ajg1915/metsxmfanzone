@@ -50,7 +50,6 @@ Deno.serve(async (req) => {
     const allowedOrigins = [
       "https://metsxmfanzone.com",
       "https://www.metsxmfanzone.com",
-      "https://metsxmfanzone.lovable.app",
     ];
     const safeRedirect = allowedOrigins.some((origin) => redirectTo.startsWith(origin))
       ? redirectTo

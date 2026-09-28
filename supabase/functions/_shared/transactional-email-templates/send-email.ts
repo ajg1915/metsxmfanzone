@@ -3,12 +3,12 @@ import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { TEMPLATES } from './registry.ts'
 
-// Server-only: reads LOVABLE_API_KEY + RESEND_API_KEY. Import from edge
+// Server-only: reads RESEND_API_KEY. Import from edge
 // functions only — never expose sending to the browser.
 
 const SITE_NAME = "MetsXMFanZone"
 const FROM_DOMAIN = "metsxmfanzone.com"
-const RESEND_GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
+const RESEND_API_URL = 'https://api.resend.com'
 
 export type SendTemplateEmailResult =
   | { sent: true }
@@ -22,15 +22,13 @@ export interface SendTemplateEmailOptions {
 }
 
 /**
- * Renders a registered template and sends it through Resend via the Lovable
- * connector gateway. Failures throw with the provider status and body.
+ * Renders a registered template and sends it directly through Resend. Failures throw with the provider status and body.
  */
 export async function sendTemplateEmail(
   templateName: string,
   to: string,
   options: SendTemplateEmailOptions = {}
 ): Promise<SendTemplateEmailResult> {
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
   
   const resendApiKey =
     Deno.env.get('RESEND_API_KEY_1') ?? Deno.env.get('RESEND_API_KEY')
@@ -61,12 +59,10 @@ export async function sendTemplateEmail(
       ? template.subject(templateData)
       : template.subject
 
-  const response = await resendFetch(`${RESEND_GATEWAY_URL}/emails`, {
+  const response = await resendFetch(`${RESEND_API_URL}/emails`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${lovableApiKey}`,
-      'X-Connection-Api-Key': resendApiKey,
       'Idempotency-Key': options.idempotencyKey || crypto.randomUUID(),
     },
     body: JSON.stringify({

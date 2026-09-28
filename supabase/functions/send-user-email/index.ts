@@ -45,19 +45,16 @@ const sendDirectlyThroughResend = async ({
   html: string;
   label: string;
 }) => {
-  const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
   const resendApiKey = Deno.env.get("RESEND_API_KEY_1") ?? Deno.env.get("RESEND_API_KEY");
   if (!resendApiKey) {
     throw new Error("Email service is not configured");
   }
 
   const normalizedTo = to.trim().toLowerCase();
-  const response = await resendFetch("https://connector-gateway.lovable.dev/resend/emails", {
+  const response = await resendFetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${lovableApiKey}`,
-      "X-Connection-Api-Key": resendApiKey,
       "Idempotency-Key": `${label}:${normalizedTo}:${crypto.randomUUID()}`,
     },
     body: JSON.stringify({
