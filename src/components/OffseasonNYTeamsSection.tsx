@@ -15,11 +15,12 @@ interface LiveStream {
   id: string;
   title: string;
   description: string | null;
-  stream_url: string;
   thumbnail_url: string;
   status: 'live' | 'scheduled' | 'ended';
   scheduled_start: string | null;
   assigned_pages: string[];
+  // Unpublished games are shown as "coming soon" until a link is added and published.
+  published: boolean;
 }
 
 const OffseasonNYTeamsSection = () => {
@@ -62,12 +63,8 @@ const OffseasonNYTeamsSection = () => {
 
   const fetchStreams = async () => {
     try {
-      const { data, error } = await (supabase as any)
-        .from("live_streams_public")
-        .select("*")
-        .eq("published", true)
-        .in("status", ["live", "scheduled"])
-        .order("scheduled_start", { ascending: true });
+      // Upcoming NY team games, published or not (schedule details only, no stream links).
+      const { data, error } = await (supabase as any).rpc("get_ny_sports_schedule", { p_limit: 24 });
 
       if (error) throw error;
 
@@ -153,11 +150,13 @@ const OffseasonNYTeamsSection = () => {
         >
           {streams.map((stream) => {
             const isLive = stream.status === "live";
+            const linkReady = stream.published;
+            const canWatch = isLive && linkReady;
             return (
             <article
               key={stream.id}
-              onClick={() => isLive && handleStreamClick(stream)}
-              className="cursor-pointer flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] group relative snap-start"
+              onClick={() => canWatch && handleStreamClick(stream)}
+              className={`${canWatch ? "cursor-pointer" : "cursor-default"} flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] group relative snap-start`}
             >
               <div className="relative aspect-video rounded-lg overflow-hidden border border-border/50 group-hover:border-primary/50 transition-all duration-300">
                 <img 
@@ -169,7 +168,7 @@ const OffseasonNYTeamsSection = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60" />
                 
                 <div className="absolute top-2 right-2">
-                  <Badge variant={isLive ? "destructive" : "secondary"} className={isLive ? "animate-pulse" : ""}>
+                  <Badge variant={canWatch ? "destructive" : "secondary"} className={canWatch ? "animate-pulse" : ""}>
                     {isLive ? <Radio className="w-3 h-3 mr-1" /> : <CalendarClock className="w-3 h-3 mr-1" />}
                     {isLive ? "LIVE" : "UPCOMING"}
                   </Badge>
@@ -180,7 +179,7 @@ const OffseasonNYTeamsSection = () => {
                   <span className="text-[8px] font-semibold text-accent-foreground uppercase tracking-wide">VPN Secured</span>
                 </div>
 
-                {isLive && (
+                {canWatch && (
                   <Button
                     type="button"
                     size="icon"
@@ -203,6 +202,11 @@ const OffseasonNYTeamsSection = () => {
                   <p className="mt-1 flex items-center gap-1 text-xs font-medium text-primary">
                     <CalendarClock className="h-3.5 w-3.5" />
                     {formatScheduledStart(stream.scheduled_start)}
+                  </p>
+                )}
+                {!linkReady && (
+                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Stream link coming soon
                   </p>
                 )}
               </div>
