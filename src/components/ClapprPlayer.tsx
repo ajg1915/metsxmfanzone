@@ -13,6 +13,8 @@ interface ClapprPlayerProps {
   pageTitle?: string;
   pageDescription?: string;
   source?: string;
+  /** Looping standby playlist shown while `source` isn't live. */
+  fallbackSource?: string;
   showChrome?: boolean;
   streamId?: string;
 }
@@ -30,6 +32,7 @@ const isIos = () => {
 
 export const ClapprPlayer = memo(function ClapprPlayer({
   source,
+  fallbackSource,
   pageTitle = "Live Stream",
   streamId,
 }: ClapprPlayerProps) {
@@ -43,6 +46,33 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const notifiedRef = useRef(false);
 
   const effectiveSource = source?.trim() || "";
+  const standbySource = fallbackSource?.trim() || "";
+  const [onStandby, setOnStandby] = useState(false);
+  const activeSource = onStandby && standbySource ? standbySource : effectiveSource;
+
+  // A new main feed always starts from the main feed, not the standby.
+  useEffect(() => {
+    setOnStandby(false);
+  }, [effectiveSource]);
+
+  // While the standby loop plays, check the main feed and switch back once it's live.
+  useEffect(() => {
+    if (!onStandby || !effectiveSource) return;
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const res = await fetch(effectiveSource, { cache: "no-store" });
+        if (!res.ok) return;
+        const text = await res.text();
+        if (!cancelled && text.includes("#EXT")) setOnStandby(false);
+      } catch {}
+    };
+    const timer = window.setInterval(check, 20000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [onStandby, effectiveSource]);
 
   const handleTapPlay = useCallback(() => {
     videoRef.current?.play().then(() => setNeedsTap(false)).catch(() => {});
@@ -51,6 +81,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const handleRetry = useCallback(() => {
     setStatus("loading");
     notifiedRef.current = false;
+    setOnStandby(false);
     setRetryKey((k) => k + 1);
   }, []);
 
@@ -64,7 +95,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
-    if (!effectiveSource) {
+    if (!activeSource) {
       setStatus("error");
       return;
     }
@@ -78,9 +109,9 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     const candidates = Array.from(
       new Set(
         [
-          effectiveSource,
-          isInsecureUrl(effectiveSource) ? toSecureStreamUrl(effectiveSource) : "",
-          isInsecureUrl(effectiveSource) ? toCorsProxyUrl(effectiveSource) : "",
+          activeSource,
+          isInsecureUrl(activeSource) ? toSecureStreamUrl(activeSource) : "",
+          isInsecureUrl(activeSource) ? toCorsProxyUrl(activeSource) : "",
         ].filter(Boolean)
       )
     );
@@ -115,6 +146,12 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         load();
       } else {
         notifyAdmins();
+        // Main feed is down: play the standby loop instead of an error screen.
+        if (!onStandby && standbySource) {
+          setStatus("loading");
+          setOnStandby(true);
+          return;
+        }
         setStatus("error");
         // Live feeds come and go — keep trying quietly from the top.
         index = 0;
@@ -219,7 +256,15 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     };
 
 
+    // Standby is a finished playlist, so restart it whenever it reaches the end.
+    const onEnded = () => {
+      if (destroyed || !onStandby) return;
+      try { video.currentTime = 0; } catch {}
+      video.play().catch(() => {});
+    };
+
     video.addEventListener("playing", onPlaying);
+    video.addEventListener("ended", onEnded);
     load();
 
     return () => {
@@ -227,13 +272,14 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       if (autoplayTimer) window.clearTimeout(autoplayTimer);
       if (retryTimer) window.clearTimeout(retryTimer);
       video.removeEventListener("playing", onPlaying);
+      video.removeEventListener("ended", onEnded);
       if (hlsRef.current) {
         try { hlsRef.current.destroy(); } catch {}
         hlsRef.current = null;
       }
       try { video.removeAttribute("src"); video.load(); } catch {}
     };
-  }, [effectiveSource, retryKey, notifyAdmins]);
+  }, [activeSource, onStandby, standbySource, retryKey, notifyAdmins]);
 
   return (
     <div ref={containerRef} className="stream-player relative h-full w-full aspect-video overflow-hidden bg-player group">
@@ -257,7 +303,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
       {/* Top-left so the cast and issue buttons don't cover the logo in the top-right. */}
       <div className="absolute left-2 top-2 z-40 flex items-center gap-2 sm:left-3 sm:top-3">
-        <CastButton source={effectiveSource} title={pageTitle} />
+        <CastButton source={activeSource} title={pageTitle} />
         <StreamIssueDialog streamId={streamId} streamTitle={pageTitle} video={videoRef.current} compact />
       </div>
 

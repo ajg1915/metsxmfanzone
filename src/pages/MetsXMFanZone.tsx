@@ -53,6 +53,8 @@ interface ScheduleGame {
 
 // MetsXMFanZone Live always plays this feed.
 const METSXM_STREAM_URL = "https://metsxmfanzone.metsxmfanzone.com/hls/metsxmfanzone.m3u8";
+// Looping standby shown whenever the live feed above isn't up.
+const METSXM_STANDBY_URL = "https://metsxmfanzone.metsxmfanzone.com/hls-standby/metsxmfanzone.m3u8";
 
 const MetsXMFanZone = () => {
   const navigate = useNavigate();
@@ -125,6 +127,7 @@ const MetsXMFanZone = () => {
                 <div className="stream-player-shell relative aspect-video w-full overflow-hidden bg-player sm:rounded-lg">
                   <ClapprPlayer
                     source={streamUrl}
+                    fallbackSource={METSXM_STANDBY_URL}
                     pageTitle="MetsXMFanZone Live Stream"
                     pageDescription="Ultimate Destination Where the Fans Go"
                     showChrome={false}
