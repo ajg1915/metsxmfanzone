@@ -195,7 +195,7 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
   }, [source, title, poster]);
 
   const handleCast = useCallback(async () => {
-    // Cast is blocked inside iframes (Lovable preview / embeds) — open the real site.
+    // Cast is blocked inside iframes (embeds) — open the real site.
     const inIframe = window.self !== window.top;
     if (inIframe) {
       window.open(window.location.href, "_blank", "noopener");

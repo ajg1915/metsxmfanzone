@@ -15,9 +15,6 @@ if (window.location.hostname === "www.metsxmfanzone.com") {
 
 // Register one push-only service worker. It must not intercept page navigation:
 // Android in-app browsers can surface a rejected service-worker fetch as ERR_FAILED.
-// NOTE: the Lovable preview environment can be unstable with a Service Worker enabled
-// (cached JS/CSS can get out of sync during rapid iterations). We disable + fully clean SW
-// on preview hosts to prevent the "Sorry, we ran into an issue starting the live preview" modal.
 
 // Auto-recover from stale dynamic import chunks after a redeploy.
 // When the deployed index.html references new hashed JS files but the user
@@ -32,19 +29,7 @@ const handleStaleChunk = (error: unknown) => {
 window.addEventListener("error", (e) => handleStaleChunk(e?.error ?? e?.message));
 window.addEventListener("unhandledrejection", (e) => handleStaleChunk(e?.reason));
 
-const isPreviewHost =
-  window.location.hostname.includes("id-preview--") ||
-  window.location.hostname.endsWith(".lovableproject.com") ||
-  window.location.hostname === "lovableproject.com";
-
-if (isPreviewHost) {
-  // Unregister all SWs in preview
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistrations().then((regs) =>
-      regs.forEach((r) => r.unregister())
-    );
-  }
-} else if ("serviceWorker" in navigator && import.meta.env.PROD) {
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {
       const registration = await navigator.serviceWorker.register("/service-worker.js", {

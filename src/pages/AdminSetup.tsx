@@ -95,7 +95,7 @@ ON CONFLICT (user_id, role) DO NOTHING;`
             <h3 className="font-semibold">Steps to become an admin:</h3>
             <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
               <li>Copy the SQL query below</li>
-              <li>Open your Backend (Lovable Cloud)</li>
+              <li>Open your Supabase dashboard</li>
               <li>Go to the SQL Editor or Database section</li>
               <li>Paste and run the query</li>
               <li>Come back here and click "Check Admin Status"</li>

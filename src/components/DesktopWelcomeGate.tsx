@@ -68,15 +68,11 @@ export const DesktopWelcomeGate = () => {
         return true;
       }
     })();
-    const isLovablePreview =
+    const isDevOrEmbedded =
       inIframe ||
       host === "localhost" ||
-      host === "127.0.0.1" ||
-      host.includes("id-preview--") ||
-      host.endsWith(".lovableproject.com") ||
-      host.endsWith(".lovable.app") ||
-      window.location.search.includes("__lovable_token=");
-    if (!forcePreview && isLovablePreview) return;
+      host === "127.0.0.1";
+    if (!forcePreview && isDevOrEmbedded) return;
     // Allow tablets (<1024px). Only block true desktop.
     if (!forcePreview && window.innerWidth < 1024) return;
     if (window.location.search.includes("tv=true")) return;

@@ -7,7 +7,7 @@ const RECOVERABLE_DYNAMIC_IMPORT_MESSAGES = [
   "Failed to load module script",
 ];
 
-const CACHE_BUST_QUERY_PARAM = "__lovable_chunk_retry";
+const CACHE_BUST_QUERY_PARAM = "__chunk_retry";
 
 const getErrorMessage = (error: unknown) => {
   if (typeof error === "string") return error;
