@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { RefreshCw, Star, Flame, Snowflake, AlertTriangle, Users, Calendar, Plus, Trash2, PenLine, Link2, TrendingUp } from "lucide-react";
 import { AdminPage, AdminPageHeader, AdminEmpty } from "@/components/admin/AdminUI";
+import NYTeamPicksAdmin from "@/components/admin/NYTeamPicksAdmin";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -297,6 +298,9 @@ export default function PredictionsManagement() {
         countLabel="today"
         description="Manage daily player predictions — use AI or add manually"
       />
+
+      {/* NY team matchup picks (agent picks with admin override) */}
+      <NYTeamPicksAdmin />
 
       {/* Manual Entry Card */}
       <Card className="border-primary/30">
