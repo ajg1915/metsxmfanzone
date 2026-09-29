@@ -35,13 +35,6 @@ const PROBES: Probe[] = [
     url: 'https://www.mlb.com/feeds/news/rss.xml',
     count: (b) => (b.match(/<item[\s>]/g) ?? []).length,
   },
-  {
-    key: 'mets-schedule',
-    label: 'Mets Schedule',
-    source: 'primary',
-    url: 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=121&season=2026&gameType=R',
-    count: (b) => (b.match(/"gamePk"/g) ?? []).length,
-  },
 ];
 
 async function runProbe(p: Probe) {
