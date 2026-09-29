@@ -1,8 +1,7 @@
-// The feed-health checker runs on the Lovable functions host, which is separate
-// from the main app backend, so it is called directly by URL.
-const FEED_HEALTH_URL = "https://clwghkbtkofacsjeyrtk.supabase.co/functions/v1/feed-health";
+// The feed-health checker runs on the personal Supabase project (rdmrxeplasttewtlfetc).
+const FEED_HEALTH_URL = "https://rdmrxeplasttewtlfetc.supabase.co/functions/v1/feed-health";
 const FEED_HEALTH_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsd2doa2J0a29mYWNzamV5cnRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNTI3NDIsImV4cCI6MjA3NzkyODc0Mn0.11mr9r-U-BAwy9Mmr2yrzjLhjljswgOotJeOOXyfllc";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA";
 
 export async function fetchFeedHealth(): Promise<any> {
   const res = await fetch(FEED_HEALTH_URL, {

@@ -13,8 +13,8 @@ export const renderAdminFeedHealth = async (root) => {
   const state = await requireAdmin(root, path);
   if (!state) return;
 
-  const FEED_HEALTH_URL = "https://clwghkbtkofacsjeyrtk.supabase.co/functions/v1/feed-health";
-  const FEED_HEALTH_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsd2doa2J0a29mYWNzamV5cnRrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIzNTI3NDIsImV4cCI6MjA3NzkyODc0Mn0.11mr9r-U-BAwy9Mmr2yrzjLhjljswgOotJeOOXyfllc";
+  const FEED_HEALTH_URL = "https://rdmrxeplasttewtlfetc.supabase.co/functions/v1/feed-health";
+  const FEED_HEALTH_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA";
 
   adminPage(root, path, "Feed Health", '<div id="feed-status" class="status-panel">Checking feed health...</div>');
   const panel = root.querySelector("#feed-status");
