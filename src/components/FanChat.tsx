@@ -7,14 +7,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "react-router-dom";
 
 // ---------------------------------------------------------------------------
-// Fan chat ("Chat · <name>") — talks to the `fan-chat` Supabase function.
-// Online while a Mets game is live; otherwise fans can leave a message.
+// MetsXMFanZone AI chat — talks to the `fan-chat` Supabase function (Claude).
+// Online while a Mets or NY team game is live (or when an admin turns it on);
+// otherwise fans can leave a message.
 // The bottom bar (mobile) uses <FanChatBarButton />; <FanChat /> renders the
 // panel plus a floating button on desktop. Both share the store below.
 // ---------------------------------------------------------------------------
 
 const FAN_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fan-chat`;
 const STATUS_POLL_MS = 60_000;
+const CHAT_NAME = "MetsXMFanZone";
 
 type ChatMessage = { role: "user" | "assistant"; content: string; id?: string };
 type InboxItem = {
@@ -135,7 +137,7 @@ export const FanChat = () => {
   const { open, online, gameLabel } = useChatState();
   useStatusPoller(accessToken);
 
-  const [agentName, setAgentName] = useState("");
+  const [agentName, setAgentName] = useState(CHAT_NAME);
   const [conversationId, setConversationId] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -167,14 +169,14 @@ export const FanChat = () => {
         callFanChat({ action: "inbox" }, accessToken).catch(() => ({ messages: [] })),
       ]);
       setChatState({ online: !!status.online, gameLabel: status.gameLabel ?? "", statusLoaded: true });
-      setAgentName(status.agentName);
+      setAgentName(status.agentName ?? CHAT_NAME);
       setConversationId(status.conversationId);
       setInbox(box.messages ?? []);
       if (status.online) {
-        setMessages([{ role: "assistant", content: `Hey! ${status.agentName} here 👋 What's up?` }]);
+        setMessages([{ role: "assistant", content: `Hey! ${status.agentName ?? CHAT_NAME} here 👋 Ask me about the Mets, tonight's game, streams or your membership.` }]);
       }
     } catch {
-      setAgentName((n) => n || "Chat");
+      setAgentName((n) => n || CHAT_NAME);
     } finally {
       setStarting(false);
     }
@@ -303,17 +305,17 @@ export const FanChat = () => {
       {open && (
         <div
           role="dialog"
-          aria-label="Chat"
+          aria-label={`${CHAT_NAME} chat`}
           className="fixed inset-x-3 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-[60] flex max-h-[70vh] flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-elevation-high md:inset-x-auto md:bottom-6 md:right-6 md:w-[380px] md:max-h-[600px]"
         >
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-border/50 bg-primary/10 px-4 py-3">
-            <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground">
-              {agentName ? agentName[0] : "C"}
+            <div className="relative h-9 w-9 shrink-0">
+              <img src="/logo-192.png" alt="" className="h-9 w-9 rounded-full object-cover" />
               <StatusDot online={online} className="absolute -bottom-0.5 -right-0.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold text-foreground">Chat{agentName ? ` · ${agentName}` : ""}</p>
+              <p className="truncate font-semibold text-foreground">{agentName}</p>
               <p className="truncate text-xs text-muted-foreground">
                 {online ? "Online" : "Offline"}
                 {gameLabel ? ` · ${gameLabel}` : ""}
@@ -367,14 +369,14 @@ export const FanChat = () => {
               ))}
 
             {typing && (
-              <p className="text-xs italic text-muted-foreground">{agentName || "Chat"} is typing…</p>
+              <p className="text-xs italic text-muted-foreground">{agentName} is typing…</p>
             )}
 
             {!starting && offlineView && !leaveSent && (
               <div className="space-y-2">
                 {!online && (
                   <p className="text-sm text-muted-foreground">
-                    We're offline right now — we're online during Mets games. Leave a message and {agentName || "we"}'ll get back to you!
+                    We're offline right now — we're online during Mets and NY team games. Leave a message and {agentName} will get back to you!
                   </p>
                 )}
                 <Textarea
@@ -403,7 +405,7 @@ export const FanChat = () => {
               <div className="flex items-start gap-2 rounded-lg bg-secondary/20 p-3 text-sm text-foreground">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
                 <span>
-                  Got it! {agentName || "We"}'ll get back to you
+                  Got it! {agentName} will get back to you
                   {leaveSent.willEmail ? " — the reply will show up here and in your email." : " — check back here for the reply."}
                 </span>
               </div>

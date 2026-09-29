@@ -1,6 +1,8 @@
 project_id = "rdmrxeplasttewtlfetc"
 
 [functions]
+  [functions.fan-chat]
+    verify_jwt = false
   [functions.register-member]
     verify_jwt = false
   [functions.auth-email-hook]

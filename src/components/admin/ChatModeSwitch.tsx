@@ -5,7 +5,7 @@ import { toast } from "sonner";
 export type ChatMode = "auto" | "online" | "offline";
 
 const OPTIONS: { key: ChatMode; label: string; hint: string }[] = [
-  { key: "auto", label: "Auto", hint: "Online during live Mets games" },
+  { key: "auto", label: "Auto", hint: "Online during live Mets and NY team games" },
   { key: "online", label: "On", hint: "Online now, game or not" },
   { key: "offline", label: "Off", hint: "Offline — fans can leave messages" },
 ];
