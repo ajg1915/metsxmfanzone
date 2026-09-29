@@ -1,11 +1,10 @@
 // Routes external HLS playlists through our own HTTPS proxy so browsers can load
 // playlists, segments, keys, and maps even when the upstream host omits CORS headers.
 
-const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+// Always the personal Supabase project, where hls-proxy is deployed.
+const HLS_PROXY_PROJECT_ID = "rdmrxeplasttewtlfetc";
 
-export const HLS_PROXY_BASE = PROJECT_ID
-  ? `https://${PROJECT_ID}.supabase.co/functions/v1/hls-proxy`
-  : "";
+export const HLS_PROXY_BASE = `https://${HLS_PROXY_PROJECT_ID}.supabase.co/functions/v1/hls-proxy`;
 
 export function toPlayableStreamUrl(url: string): string {
   const src = (url || "").trim();

@@ -61,14 +61,23 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   useEffect(() => {
     if (!onStandby || !effectiveSource) return;
     let cancelled = false;
+    let lastPlaylist = "";
     const check = async () => {
-      try {
-        const res = await fetch(effectiveSource, { cache: "no-store" });
-        if (!res.ok) return;
-        const text = await res.text();
-        if (!cancelled && text.includes("#EXT")) setOnStandby(false);
-      } catch {}
+      // Direct first, then via the proxy in case the server blocks cross-site requests.
+      for (const url of [effectiveSource, toCorsProxyUrl(effectiveSource)]) {
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          if (!res.ok) continue;
+          const text = await res.text();
+          if (!text.includes("#EXT")) return;
+          // A live feed rewrites its playlist; an old leftover file doesn't change.
+          if (!cancelled && lastPlaylist && text !== lastPlaylist) setOnStandby(false);
+          lastPlaylist = text;
+          return;
+        } catch {}
+      }
     };
+    check();
     const timer = window.setInterval(check, 20000);
     return () => {
       cancelled = true;
@@ -115,24 +124,33 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     setStatus("loading");
     setNeedsTap(false);
 
-    // Secure sources load directly; only insecure sources require proxy fallbacks.
+    // Try the link directly first, then through our HTTPS proxy, which adds the
+    // CORS headers browsers need when the stream server doesn't send them.
     const candidates = Array.from(
       new Set(
         [
           activeSource,
           isInsecureUrl(activeSource) ? toSecureStreamUrl(activeSource) : "",
-          isInsecureUrl(activeSource) ? toCorsProxyUrl(activeSource) : "",
+          toCorsProxyUrl(activeSource),
         ].filter(Boolean)
       )
     );
+
+    // With a standby ready, give up on a dead main feed quickly so viewers aren't
+    // left on a blank player while it retries.
+    const quickFail = !onStandby && !!standbySource;
 
     let index = 0;
     let mediaRecoveries = 0;
     let networkRetries = 0;
     let retryTimer: number | undefined;
+    let watchdogTimer: number | undefined;
+    // Set once real video data arrives, so a paused-by-autoplay player isn't treated as dead.
+    let gotMedia = false;
 
     const onPlaying = () => {
       if (destroyed) return;
+      gotMedia = true;
       mediaRecoveries = 0;
       networkRetries = 0;
       setStatus("ready");
@@ -187,6 +205,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       if (!Hls.isSupported() && video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = url;
         video.addEventListener("loadedmetadata", () => {
+          gotMedia = true;
           if (!destroyed) setStatus("ready");
         }, { once: true });
         video.addEventListener("error", fail, { once: true });
@@ -212,10 +231,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         liveDurationInfinity: true,
         highBufferWatchdogPeriod: 2,
         nudgeMaxRetry: 20,
-        manifestLoadingTimeOut: 20000,
-        manifestLoadingMaxRetry: 6,
-        levelLoadingTimeOut: 20000,
-        levelLoadingMaxRetry: 6,
+        manifestLoadingTimeOut: quickFail ? 8000 : 20000,
+        manifestLoadingMaxRetry: quickFail ? 1 : 6,
+        levelLoadingTimeOut: quickFail ? 8000 : 20000,
+        levelLoadingMaxRetry: quickFail ? 1 : 6,
         fragLoadingTimeOut: 30000,
         fragLoadingMaxRetry: 10,
         startFragPrefetch: true,
@@ -229,6 +248,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         setStatus("ready");
         tryAutoplay();
       });
+      hls.on(Hls.Events.FRAG_BUFFERED, () => { gotMedia = true; });
       hls.on(Hls.Events.ERROR, (_e, data) => {
         if (destroyed) return;
 
@@ -253,7 +273,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           } catch {}
         }
 
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR && networkRetries < 3) {
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR && networkRetries < (quickFail ? 1 : 3)) {
           networkRetries += 1;
           try {
             hls.startLoad();
@@ -278,10 +298,22 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     video.addEventListener("ended", onEnded);
     load();
 
+    // If the main feed never actually starts (e.g. an old playlist left on the
+    // server), move to the standby instead of sitting on a blank player.
+    if (quickFail) {
+      watchdogTimer = window.setTimeout(() => {
+        if (destroyed || gotMedia) return;
+        notifyAdmins();
+        setStatus("loading");
+        setOnStandby(true);
+      }, 25000);
+    }
+
     return () => {
       destroyed = true;
       if (autoplayTimer) window.clearTimeout(autoplayTimer);
       if (retryTimer) window.clearTimeout(retryTimer);
+      if (watchdogTimer) window.clearTimeout(watchdogTimer);
       video.removeEventListener("playing", onPlaying);
       video.removeEventListener("ended", onEnded);
       if (hlsRef.current) {
