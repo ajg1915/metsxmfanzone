@@ -1,8 +1,8 @@
-// Fetches latest TikTok posts for @onbmedia.
+// Fetches latest TikTok posts for @metsxmfanzone.
 // Reads the account's public RSS feed through RSSHub mirrors.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-const USERNAME = "onbmedia";
+const USERNAME = "metsxmfanzone";
 
 const RSS_ENDPOINTS = [
   `https://rsshub.app/tiktok/user/@${USERNAME}`,

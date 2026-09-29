@@ -11,7 +11,7 @@ interface TikTokItem {
   publishedAt: string | null;
 }
 
-const USERNAME = "onbmedia";
+const USERNAME = "metsxmfanzone";
 const PROFILE_URL = `https://www.tiktok.com/@${USERNAME}`;
 
 function timeAgo(iso: string | null) {
