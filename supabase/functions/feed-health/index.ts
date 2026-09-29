@@ -24,13 +24,6 @@ const PROBES: Probe[] = [
   {
     key: 'mets-highlights',
     label: 'Mets Highlights',
-    source: 'primary',
-    url: 'https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=121&hydrate=game(content(highlights(highlights)))',
-    count: (b) => (b.match(/"playbacks"/g) ?? []).length,
-  },
-  {
-    key: 'mets-highlights',
-    label: 'Mets Highlights',
     source: 'backup',
     url: 'https://www.mlb.com/mets/video',
     count: (b) => (b.length > 5000 ? 1 : 0),
