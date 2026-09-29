@@ -61,6 +61,14 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
 const todayET = () => new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+// Midnight ET as an ISO timestamp with the right offset (EDT -04:00 / EST -05:00).
+// Probe 05:00Z: that's 00:00 EST / 01:00 EDT, before any 2 AM DST switch.
+const startOfTodayET = () => {
+  const d = todayET();
+  const tz = new Date(`${d}T05:00:00Z`).toLocaleString("en-US", { timeZone: "America/New_York", timeZoneName: "shortOffset" });
+  const off = Number(tz.match(/GMT([+-]\d+)/)?.[1] ?? -5);
+  return `${d}T00:00:00${off < 0 ? "-" : "+"}${String(Math.abs(off)).padStart(2, "0")}:00`;
+};
 const plusDaysET = (days: number) =>
   new Date(Date.now() + days * 864e5).toLocaleDateString("en-CA", { timeZone: "America/New_York" });
 const fmtET = (iso: string, opts: Intl.DateTimeFormatOptions) =>
@@ -462,7 +470,7 @@ Deno.serve(async (req) => {
       if (!role) return json({ error: "Admin access required" }, 403);
 
       if (action === "admin_overview") {
-        const since = `${todayET()}T00:00:00-04:00`;
+        const since = startOfTodayET();
         const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString();
         const [msgs, today, week, pending] = await Promise.all([
           supabase.from("chat_offline_messages")
@@ -609,7 +617,7 @@ Deno.serve(async (req) => {
       const email = typeof body.email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email.trim())
         ? body.email.trim().toLowerCase() : null;
       if (!message) return json({ error: "Message is empty" }, 400);
-      const since = `${todayET()}T00:00:00-04:00`;
+      const since = startOfTodayET();
       let q = supabase.from("chat_offline_messages").select("id", { count: "exact", head: true }).gte("created_at", since);
       q = userId ? q.eq("user_id", userId) : q.eq("visitor_id", visitorId);
       const { count } = await q;
@@ -654,22 +662,23 @@ Deno.serve(async (req) => {
       if (conv.taken_over) return json({ queued: true });
 
       // Rate limits (AI replies only)
-      const since = `${todayET()}T00:00:00-04:00`;
-      const countBy = async (col: string, val: string) => {
-        const { count } = await supabase.from("chat_usage").select("id", { count: "exact", head: true })
-          .eq(col, val).gte("created_at", since);
-        return count ?? 0;
-      };
-      const mine = userId ? await countBy("user_id", userId) : await countBy("visitor_id", visitorId!);
-      const limit = userId ? MEMBER_DAILY_LIMIT : VISITOR_DAILY_LIMIT;
-      if (mine >= limit || (!userId && (await countBy("ip_hash", ipHash)) >= IP_DAILY_LIMIT)) {
+      // Checked and reserved atomically in Postgres so parallel requests can't overshoot
+      const { data: allowed, error: quotaError } = await supabase.rpc("reserve_chat_usage", {
+        p_user_id: userId,
+        p_visitor_id: userId ? null : visitorId,
+        p_ip_hash: ipHash,
+        p_since: startOfTodayET(),
+        p_limit: userId ? MEMBER_DAILY_LIMIT : VISITOR_DAILY_LIMIT,
+        p_ip_limit: IP_DAILY_LIMIT,
+      });
+      if (quotaError) throw quotaError;
+      if (!allowed) {
         const reply = userId
           ? "That's all the chat I've got for today — hit me up again tomorrow! ⚾"
           : "That's all the chat I've got for now! Log in or join (metsxmfanzone.com/plans) and we can keep talking. ⚾";
         const id = await addMessage(supabase, conv.id, "assistant", reply);
         return json({ limited: true, reply, id });
       }
-      await supabase.from("chat_usage").insert({ user_id: userId, visitor_id: userId ? null : visitorId, ip_hash: ipHash });
 
       const siteContext = await getSiteContext(supabase, userId);
       try {
