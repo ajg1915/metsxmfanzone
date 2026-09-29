@@ -11,7 +11,7 @@ import SEOHead from "@/components/SEOHead";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Radio, Tv, Clock, MapPin, Users, Sun, Calendar, TrendingUp, Facebook, BarChart3 } from "lucide-react";
+import { Radio, Tv, Clock, MapPin, Users, Sun, Calendar, TrendingUp, BarChart3 } from "lucide-react";
 
 const getMatchupRoute = (title: string): string | null => {
   const t = title.toLowerCase();
@@ -25,6 +25,7 @@ const getMatchupRoute = (title: string): string | null => {
   return null;
 };
 import logo from "@/assets/metsxmfanzone-logo.png";
+import SocialLinksSection from "@/components/SocialLinksSection";
 
 interface BlogPost {
   id: string;
@@ -137,15 +138,6 @@ const SpringTrainingLive = () => {
                 </div>
                 
                 <div className="flex flex-wrap gap-3 mt-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 bg-white/10 border-white/30 text-white hover:bg-white/20"
-                    onClick={() => window.open("https://facebook.com/metsxmfanzone", "_blank")}
-                  >
-                    <Facebook className="w-4 h-4" />
-                    Follow on Facebook
-                  </Button>
                   <Button
                     variant="default"
                     size="sm"
@@ -266,6 +258,7 @@ const SpringTrainingLive = () => {
             </div>
           </div>
         </section>
+        <SocialLinksSection />
       </main>
 
       <Footer />

@@ -5,7 +5,7 @@
  * directly (no edge function dependency).
  *
  * Behavior:
- *   - Non-crawler traffic → pass through to Lovable SPA untouched.
+ *   - Non-crawler traffic → pass through to the site untouched.
  *   - Crawler hits on /blog/:slug → fetch article from Supabase and return
  *     OG/Twitter-tagged HTML inline.
  *

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Mic, Trophy, Swords, Loader2, Home, Plane } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
+import SocialLinksSection from "@/components/SocialLinksSection";
 
 const MATCHUP_ROUTES: Record<string, string> = {
   'Houston Astros': '/matchup/astros',
@@ -248,6 +249,7 @@ const MetsXMFanZone = () => {
             </div>
           </div>
         </div>
+        <SocialLinksSection />
       </main>
       
       <Footer />

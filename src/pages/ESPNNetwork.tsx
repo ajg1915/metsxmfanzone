@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Radio, Tv, Signal, Clock, MapPin, Newspaper, Mic2, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
+import SocialLinksSection from "@/components/SocialLinksSection";
 
 const ESPNNetwork = () => {
   return (
@@ -184,6 +185,7 @@ const ESPNNetwork = () => {
             </motion.div>
           </div>
         </div>
+        <SocialLinksSection />
       </main>
       
       <Footer />

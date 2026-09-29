@@ -33,7 +33,6 @@ supabase secrets set --project-ref "$PROJECT_REF" \
   HELCIM_API_TOKEN="" \
   HELCIM_ACCOUNT_ID="" \
   ACTIVITY_LOGS_ENCRYPTION_KEY="" \
-  LOVABLE_API_KEY="" \
   R2_ACCOUNT_ID="" \
   R2_ACCESS_KEY_ID="" \
   R2_SECRET_ACCESS_KEY="" \

@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Lock, Sparkles, Radio } from "lucide-react";
 import { GameDayVoiceRooms } from "@/components/gameday/GameDayVoiceRooms";
 import { ScheduledShowsSection } from "@/components/radio/ScheduledShowsSection";
-import { SocialWallSection } from "@/components/radio/SocialWallSection";
+import SocialLinksSection from "@/components/SocialLinksSection";
 import { CreateRoomDialog } from "@/components/radio/CreateRoomDialog";
 import StoriesSection from "@/components/StoriesSection";
 import BlogSection from "@/components/BlogSection";
@@ -123,8 +123,9 @@ const GameDayLive = () => {
 
         <BlogSection />
 
-        <SocialWallSection />
       </div>
+
+      <SocialLinksSection />
 
       <Footer />
     </div>

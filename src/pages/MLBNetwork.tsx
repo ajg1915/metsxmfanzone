@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Radio, Tv, Signal, Clock, MapPin, Trophy, BarChart3, Video } from "lucide-react";
 import { motion } from "framer-motion";
+import SocialLinksSection from "@/components/SocialLinksSection";
 
 const MLBNetwork = () => {
   return (
@@ -187,6 +188,7 @@ const MLBNetwork = () => {
             </motion.div>
           </div>
         </div>
+        <SocialLinksSection />
       </main>
       
       <Footer />

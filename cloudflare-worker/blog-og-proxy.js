@@ -16,7 +16,7 @@
  *        injecting the `apikey` header server-side.
  *     3. Returns the OG-tagged HTML directly to the crawler.
  *     4. Lets all human / non-crawler traffic pass through untouched to
- *        Lovable's hosting (the SPA loads as normal).
+ *        the site's normal hosting (the SPA loads as normal).
  *
  * ----------------------------------------------------------------------
  * SETUP (one-time)
@@ -30,7 +30,7 @@
  * 4. Workers & Pages → your worker → Settings → Variables:
  *      Add Environment Variable:
  *        Name:  SUPABASE_ANON_KEY
- *        Value: <paste the anon key from Lovable Cloud / Supabase>
+ *        Value: <paste the anon key from your Supabase project>
  *        (Encrypt is recommended.)
  * 5. Test:
  *      curl -A "facebookexternalhit/1.1" \
@@ -101,7 +101,7 @@ export default {
 
     const userAgent = request.headers.get("user-agent") || "";
     if (!isCrawler(userAgent)) {
-      // Real human → let Lovable's SPA handle it normally.
+      // Real human → let the site handle it normally.
       return fetch(request);
     }
 

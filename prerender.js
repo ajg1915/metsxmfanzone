@@ -28,7 +28,7 @@ function stripHtml(input) {
 
 function resolveImage(url) {
   if (!url) return FALLBACK_IMAGE;
-  // Rewrite storage URLs from the retired Lovable Cloud project to the
+  // Rewrite storage URLs from the retired old backend project to the
   // current owner backend (same objects were migrated across).
   url = String(url).replace(
     'clwghkbtkofacsjeyrtk.supabase.co',

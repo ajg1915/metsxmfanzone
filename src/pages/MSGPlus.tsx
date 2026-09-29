@@ -6,6 +6,7 @@ import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { Radio, Tv, Signal, Clock, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import SocialLinksSection from "@/components/SocialLinksSection";
 
 const MSGPlus = () => {
   return (
@@ -87,6 +88,7 @@ const MSGPlus = () => {
               />
             </div>
           </div>
+          <SocialLinksSection />
         </main>
 
         <Footer />

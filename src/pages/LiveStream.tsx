@@ -12,6 +12,7 @@ import { Tv, Signal, Eye, Share2, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import SocialLinksSection from "@/components/SocialLinksSection";
 
 interface StreamInfo {
   id: string;
@@ -220,6 +221,7 @@ const LiveStream = () => {
               </div>
             </div>
           </div>
+          <SocialLinksSection />
         </main>
 
         <Footer />

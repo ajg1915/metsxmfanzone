@@ -12,70 +12,6 @@ const allowedSeverities = new Set(['low', 'medium', 'high']);
 const clean = (value: unknown, max: number): string =>
   typeof value === 'string' ? value.trim().replace(/[\u0000-\u001F\u007F]/g, ' ').slice(0, max) : '';
 
-async function classifyTicket(issueType: string, description: string, diagnostics: Record<string, unknown>) {
-  const apiKey = Deno.env.get('LOVABLE_API_KEY');
-  if (!apiKey) return null;
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/responses', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Lovable-API-Key': apiKey,
-      'X-Lovable-AIG-SDK': 'fetch',
-    },
-    body: JSON.stringify({
-      model: 'openai/gpt-6-astra',
-      stream: true,
-      reasoning: { effort: 'low', summary: 'concise' },
-      include: ['reasoning.encrypted_content'],
-      input: `Return JSON only with required keys category, severity, summary, confidence. Category must be buffering, audio, video, casting, access, connection, or other. Severity must be low, medium, high, or critical. Confidence must be 0 to 1. Triage this live-stream viewer report:\n${JSON.stringify({ issueType, description, diagnostics })}`,
-      text: {
-        format: {
-          type: 'json_schema',
-          name: 'stream_ticket_triage',
-          strict: true,
-          schema: {
-            type: 'object',
-            additionalProperties: false,
-            properties: {
-              category: { type: 'string', enum: ['buffering', 'audio', 'video', 'casting', 'access', 'connection', 'other'] },
-              severity: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
-              summary: { type: 'string' },
-              confidence: { type: 'number', minimum: 0, maximum: 1 },
-            },
-            required: ['category', 'severity', 'summary', 'confidence'],
-          },
-        },
-      },
-    }),
-  });
-  if (!response.ok || !response.body) return null;
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let output = '';
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split('\n');
-    buffer = lines.pop() || '';
-    for (const line of lines) {
-      if (!line.startsWith('data: ') || line === 'data: [DONE]') continue;
-      try {
-        const event = JSON.parse(line.slice(6));
-        if (event.type === 'response.output_text.delta' && typeof event.delta === 'string') output += event.delta;
-      } catch { /* Ignore malformed event lines. */ }
-    }
-  }
-  try {
-    const result = JSON.parse(output);
-    if (!result?.category || !result?.severity || !result?.summary) return null;
-    return result as { category: string; severity: string; summary: string; confidence: number };
-  } catch {
-    return null;
-  }
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -118,26 +54,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    let triage: Awaited<ReturnType<typeof classifyTicket>> = null;
-    if (manual) {
-      try { triage = await classifyTicket(issue_type, description, diagnostics); }
-      catch (error) { console.error('Ticket triage unavailable:', error instanceof Error ? error.message : 'Unknown error'); }
-    }
     const storedDescription = manual
       ? [
           '[Viewer ticket]',
           description,
-          `AI: ${triage?.severity || severity} · ${triage?.category || issue_type} · ${triage?.summary || 'Awaiting manual review'}${triage ? ` · ${Math.round(triage.confidence * 100)}%` : ''}`,
+          `Reported: ${severity} · ${issue_type}`,
           `Page: ${pagePath || 'unknown'} · Stream: ${streamTitle || 'unknown'}`,
           `Contact: ${contactEmail || 'not provided'}`,
           `Diagnostics: ${JSON.stringify(diagnostics).slice(0, 800)}`,
         ].join('\n')
       : description;
-    const storedSeverity = triage?.severity === 'critical' ? 'high' : (triage?.severity || severity);
+    const storedSeverity = severity;
 
     const { data: report, error: reportError } = await supabase
       .from('stream_health_reports')
-      .insert({ stream_id, issue_type: triage?.category || issue_type, severity: storedSeverity, description: storedDescription, user_agent: userAgent, session_id })
+      .insert({ stream_id, issue_type, severity: storedSeverity, description: storedDescription, user_agent: userAgent, session_id })
       .select()
       .single();
 
@@ -163,8 +94,8 @@ Deno.serve(async (req) => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${supabaseKey}`, 'X-System-Call': 'true' },
           body: JSON.stringify({
-            title: `Viewer stream issue: ${triage?.severity || severity}`,
-            body: triage?.summary || description.slice(0, 140),
+            title: `Viewer stream issue: ${severity}`,
+            body: description.slice(0, 140),
             icon: '/logo-192.png',
             url: '/admin/stream-issues',
             tag: `stream-ticket-${report.id}`,
@@ -232,7 +163,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-       JSON.stringify({ success: true, report_id: report.id, alert_sent: shouldSendAlert, triaged: !!triage }),
+       JSON.stringify({ success: true, report_id: report.id, alert_sent: shouldSendAlert }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: unknown) {

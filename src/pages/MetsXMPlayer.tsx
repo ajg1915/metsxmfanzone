@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
 import { playWithSound, unmuteFromTap, rememberSound } from "@/lib/playerSound";
 
-// Proxied through Lovable Cloud so HTTPS pages can play the HTTP origin without mixed-content blocking.
+// Proxied through the Supabase hls-proxy so HTTPS pages can play the HTTP origin without mixed-content blocking.
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 const DEFAULT_STREAM_URL = `https://${PROJECT_ID}.supabase.co/functions/v1/hls-proxy/hls/metsxmfanzone.m3u8`;
 

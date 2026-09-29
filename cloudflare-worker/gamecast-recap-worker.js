@@ -7,7 +7,7 @@
  *      `gamecast_archives` table (idempotent — safe to re-run).
  *   2. Reads any archived games that don't yet have a recap.
  *   3. Generates a recap with YOUR OWN AI provider key (OpenAI by default)
- *      so it does NOT count against the Lovable AI Gateway quota.
+ *      so it runs on your own AI usage.
  *   4. Inserts the recap into `game_recaps` and marks the archive done.
  *
  * ──────────────────────────────────────────────────────────────────────────

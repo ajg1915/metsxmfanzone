@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Radio, Tv, Signal, Clock, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
+import SocialLinksSection from "@/components/SocialLinksSection";
 
 const PIX11Network = () => {
   return (
@@ -188,6 +189,7 @@ const PIX11Network = () => {
             </motion.div>
           </div>
         </div>
+        <SocialLinksSection />
       </main>
       
       <Footer />
