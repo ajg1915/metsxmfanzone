@@ -7,7 +7,6 @@ const REPLY_TO = "support@metsxmfanzone.com";
 const ALLOWED_ORIGINS = [
   "https://metsxmfanzone.com",
   "https://www.metsxmfanzone.com",
-  "https://metsxmfanzone.lovable.app",
 ];
 
 export default async function handler(req, res) {
