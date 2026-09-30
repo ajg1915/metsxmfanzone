@@ -53,7 +53,7 @@ interface ScheduleGame {
 }
 
 // MetsXMFanZone Live always plays this feed.
-const METSXM_STREAM_URL = "https://metsxmfanzone.metsxmfanzone.com/hls/metsxmfanzone.m3u8";
+const METSXM_STREAM_URL = "https://stream2.metsxmfanzone.com/hls/mystream.m3u8";
 // Looping standby shown whenever the live feed above isn't up.
 const METSXM_STANDBY_URL = "https://metsxmfanzone.metsxmfanzone.com/hls-standby/metsxmfanzone.m3u8";
 
