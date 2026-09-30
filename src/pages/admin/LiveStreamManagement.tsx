@@ -119,21 +119,30 @@ const getStreamTeam = (stream: { assigned_pages?: string[] | null }): Exclude<Te
   return team ?? "mets";
 };
 
-const WATCH_PAGE_OPTIONS = [
-  { value: 'own', label: 'Own stream page (/live/…)' },
-  { value: 'metsxmfanzone', label: 'MetsXMFanZone TV' },
-  { value: 'metsxmfanzone-2', label: 'MetsXMFanZone Stream 2 24/7' },
-  { value: 'pix11-network', label: 'Game Events (non-Mets games & events)' },
-];
-
 const SPORTS_EVENTS_STREAM_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
 const PIX11_STREAM_URL = "https://metsxmfanzone.metsxmfanzone.com/hls/metsxmfanzone.m3u8";
 
-const getWatchPage = (pages: string[] | null | undefined) => {
-  if (pages?.includes('metsxmfanzone')) return 'metsxmfanzone';
-  if (pages?.includes('metsxmfanzone-2')) return 'metsxmfanzone-2';
-  if (pages?.includes('pix11-network')) return 'pix11-network';
-  return 'own';
+// The watch dropdown picks which M3U8 feed an event plays. Every event keeps
+// its own /live/<id> page, so any number of events can share the same feed.
+const FEED_OPTIONS = [
+  { value: 'tv', label: 'MetsXMFanZone TV feed', url: PIX11_STREAM_URL },
+  { value: 'stream2', label: 'MetsXMFanZone Stream 2 feed', url: SPORTS_EVENTS_STREAM_URL },
+  { value: 'custom', label: 'Custom M3U8 (typed in Stream URL)', url: '' },
+];
+
+// Old page tags that sent an event to a single shared page instead of its own.
+const LEGACY_DESTINATION_PAGES = ['metsxmfanzone', 'metsxmfanzone-2', 'pix11-network'];
+
+const getFeed = (url: string | null | undefined) => {
+  const clean = (url || '').trim();
+  if (clean === PIX11_STREAM_URL) return 'tv';
+  if (clean === SPORTS_EVENTS_STREAM_URL) return 'stream2';
+  return 'custom';
+};
+
+const withoutLegacyDestinations = (pages: string[] | null | undefined) => {
+  const kept = (pages || []).filter(p => !LEGACY_DESTINATION_PAGES.includes(p));
+  return kept.includes('live') ? kept : [...kept, 'live'];
 };
 
 function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, onSelectWatchPage, onToggleLive }: {
@@ -187,21 +196,21 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
           <p>Viewers: {stream.viewers_count}</p>
         </div>
         <div className="mb-3 space-y-1 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
-          <Label className="text-[11px] font-medium">Watch page</Label>
+          <Label className="text-[11px] font-medium">Stream feed (M3U8)</Label>
           <Select
-            value={getWatchPage(stream.assigned_pages)}
+            value={getFeed(stream.stream_url)}
             onValueChange={(v) => onSelectWatchPage(stream.id, v)}
           >
             <SelectTrigger className="h-7 text-[11px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {WATCH_PAGE_OPTIONS.map(o => (
+              {FEED_OPTIONS.map(o => (
                 <SelectItem key={o.value} value={o.value} className="text-xs">{o.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <p className="text-[10px] text-muted-foreground">Where viewers land when they click this event.</p>
+          <p className="text-[10px] text-muted-foreground">Which M3U8 this event plays. Many events can use the same feed.</p>
         </div>
 
 
@@ -249,21 +258,22 @@ export default function LiveStreamManagement() {
   const freeStreams = useFreeStreams();
 
 
-  const handleSelectWatchPage = async (id: string, page: string) => {
+  const handleSelectWatchPage = async (id: string, feed: string) => {
     const stream = streams.find(s => s.id === id);
-    if (!stream) return;
-    const destinations = ['metsxmfanzone', 'metsxmfanzone-2', 'pix11-network'];
-    const kept = (stream.assigned_pages || []).filter(p => !destinations.includes(p));
-    const next = page === 'own' ? kept : [...kept, page];
-    if (!next.includes('live')) next.push('live');
+    const option = FEED_OPTIONS.find(o => o.value === feed);
+    if (!stream || !option || !option.url) return;
+    const next = withoutLegacyDestinations(stream.assigned_pages);
 
-    const { error } = await supabase.from("live_streams").update({ assigned_pages: next }).eq("id", id);
+    const { error } = await supabase
+      .from("live_streams")
+      .update({ stream_url: option.url, assigned_pages: next })
+      .eq("id", id);
     if (error) {
-      toast({ title: "Failed to update watch page", variant: "destructive" });
+      toast({ title: "Failed to update stream feed", description: error.message, variant: "destructive" });
       return;
     }
-    setStreams(prev => prev.map(s => (s.id === id ? { ...s, assigned_pages: next } : s)));
-    toast({ title: "Watch page updated", description: WATCH_PAGE_OPTIONS.find(o => o.value === page)?.label });
+    setStreams(prev => prev.map(s => (s.id === id ? { ...s, stream_url: option.url, assigned_pages: next } : s)));
+    toast({ title: "Stream feed updated", description: option.label });
   };
 
   const handleToggleLive = async (stream: LiveStream, target?: "scheduled") => {
@@ -1046,27 +1056,30 @@ export default function LiveStreamManagement() {
                 </div>
 
                 <div>
-                  <Label htmlFor="watch_page">Watch Page *</Label>
+                  <Label htmlFor="watch_page">Stream Feed (M3U8) *</Label>
                   <Select
-                    value={getWatchPage(formData.assigned_pages)}
-                    onValueChange={(page) => {
-                      const destinations = ['metsxmfanzone', 'metsxmfanzone-2', 'pix11-network'];
-                      const kept = formData.assigned_pages.filter(item => !destinations.includes(item));
-                      const assignedPages = page === 'own' ? kept : [...kept, page];
-                      setFormData({ ...formData, assigned_pages: assignedPages.includes('live') ? assignedPages : [...assignedPages, 'live'] });
+                    value={getFeed(formData.stream_url)}
+                    onValueChange={(feed) => {
+                      const option = FEED_OPTIONS.find(o => o.value === feed);
+                      if (!option || !option.url) return;
+                      setFormData({
+                        ...formData,
+                        stream_url: option.url,
+                        assigned_pages: withoutLegacyDestinations(formData.assigned_pages),
+                      });
                     }}
                   >
                     <SelectTrigger id="watch_page">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {WATCH_PAGE_OPTIONS.map(option => (
+                      {FEED_OPTIONS.map(option => (
                         <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Choose Stream 2 to show this game there. Paste the Game Events M3U8 URL above as its video source.
+                    Pick which M3U8 feed this event plays. Any number of events can use the same feed at the same time.
                   </p>
                   <Label className="mt-4 block">Also Show In</Label>
                   <div className="space-y-2 mt-2">
