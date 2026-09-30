@@ -120,7 +120,7 @@ const getStreamTeam = (stream: { assigned_pages?: string[] | null }): Exclude<Te
 };
 
 const SPORTS_EVENTS_STREAM_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
-const PIX11_STREAM_URL = "https://metsxmfanzone.metsxmfanzone.com/hls/metsxmfanzone.m3u8";
+const PIX11_STREAM_URL = "https://stream2.metsxmfanzone.com/hls/mystream.m3u8";
 
 // The watch dropdown picks which M3U8 feed an event plays. Every event keeps
 // its own /live/<id> page, so any number of events can share the same feed.
