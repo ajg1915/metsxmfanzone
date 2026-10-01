@@ -303,25 +303,34 @@ export const FanChat = () => {
       )}
 
       {open && (
+        <div className="fixed inset-0 z-[59] bg-black/70 md:hidden" onClick={close} aria-hidden="true" />
+      )}
+
+      {open && (
         <div
           role="dialog"
           aria-label={`${CHAT_NAME} chat`}
-          className="fixed inset-x-3 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-[60] flex max-h-[70vh] flex-col overflow-hidden rounded-xl border border-border/50 bg-card shadow-elevation-high md:inset-x-auto md:bottom-6 md:right-6 md:w-[380px] md:max-h-[600px]"
+          className="fixed inset-x-0 bottom-0 top-[120px] z-[60] flex flex-col overflow-hidden rounded-t-[20px] border-t border-primary/45 bg-card shadow-elevation-high max-md:!border-x-0 max-md:!border-b-0 md:inset-x-auto md:bottom-6 md:right-6 md:top-auto md:w-[380px] md:max-h-[600px] md:rounded-xl md:border md:border-border/50"
         >
+          <div className="mx-auto mb-1 mt-2 h-1 w-10 rounded-full bg-muted-foreground/40 md:hidden" aria-hidden="true" />
           {/* Header */}
-          <div className="flex items-center gap-3 border-b border-border/50 bg-primary/10 px-4 py-3">
+          <div className="flex items-center gap-3 border-b border-border/50 bg-primary/10 px-4 py-3 max-md:h-14 max-md:border-0 max-md:bg-transparent">
             <div className="relative h-9 w-9 shrink-0">
               <img src="/logo-192.png" alt="" className="h-9 w-9 rounded-full object-cover" />
               <StatusDot online={online} className="absolute -bottom-0.5 -right-0.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-semibold text-foreground">{agentName}</p>
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="truncate font-semibold text-foreground">
+                <span className="hidden md:inline">{agentName}</span>
+                <span className="font-display text-2xl uppercase leading-none tracking-wide md:hidden">Chat</span>
+              </p>
+              <p className="truncate text-xs text-muted-foreground max-md:text-[12.5px]">
                 {online ? "Online" : "Offline"}
+                <span className="md:hidden">{online ? "" : " right now"}</span>
                 {gameLabel ? ` · ${gameLabel}` : ""}
               </p>
             </div>
-            <Button variant="ghost" size="icon" onClick={close} aria-label="Close chat">
+            <Button variant="ghost" size="icon" onClick={close} aria-label="Close chat" className="max-md:h-11 max-md:w-11">
               <X className="h-5 w-5" />
             </Button>
           </div>
@@ -373,21 +382,28 @@ export const FanChat = () => {
             )}
 
             {!starting && offlineView && !leaveSent && (
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2 max-md:gap-3.5">
                 {!online && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="w-fit max-w-[300px] rounded-[4px_16px_16px_16px] border border-border/40 bg-secondary/20 px-3.5 py-3 text-sm text-foreground max-md:text-[15px] md:max-w-none md:rounded-none md:border-0 md:bg-transparent md:p-0 md:text-muted-foreground">
                     We're offline right now — we're online during Mets and NY team games. Leave a message and {agentName} will get back to you!
                   </p>
                 )}
+                <label htmlFor="chat-msg" className="text-[13px] font-bold text-foreground/80 max-md:order-3 md:hidden">Message</label>
                 <Textarea
+                  id="chat-msg"
                   value={leaveText}
                   onChange={(e) => setLeaveText(e.target.value)}
                   placeholder="Your message…"
                   maxLength={2000}
-                  className="min-h-[80px] resize-none"
+                  className="min-h-[80px] resize-none max-md:order-3 max-md:h-[120px] max-md:text-base"
                 />
                 {!isMember && (
+                  <label htmlFor="chat-email" className="text-[13px] font-bold text-foreground/80 max-md:order-1 md:hidden">Your email</label>
+                )}
+                {!isMember && (
                   <Input
+                    id="chat-email"
+                    className="max-md:order-2 max-md:h-12 max-md:text-base"
                     type="email"
                     value={leaveEmail}
                     onChange={(e) => setLeaveEmail(e.target.value)}
@@ -395,8 +411,8 @@ export const FanChat = () => {
                   />
                 )}
                 {leaveError && <p className="text-xs text-destructive">{leaveError}</p>}
-                <Button onClick={leaveMessage} disabled={!leaveText.trim()} className="w-full">
-                  <Mail className="mr-2 h-4 w-4" /> Leave a message
+                <Button onClick={leaveMessage} disabled={!leaveText.trim()} className="w-full max-md:order-4 max-md:mt-1 max-md:h-[50px] max-md:bg-[#d43700] max-md:text-base max-md:font-bold max-md:text-white max-md:hover:bg-[#d43700]/90">
+                  <Mail className="mr-2 h-4 w-4" /> <span className="md:hidden">Send message</span><span className="hidden md:inline">Leave a message</span>
                 </Button>
               </div>
             )}

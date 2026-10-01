@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Calendar, Tag, Rss } from "lucide-react";
+import { Search, Calendar, Tag, Rss, X } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
@@ -28,6 +28,7 @@ export default function Blog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -102,8 +103,97 @@ export default function Blog() {
       />
       <Navigation />
       
-      <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-12 max-w-7xl">
+      <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-12 max-md:!pt-16 max-md:!pb-24 max-w-7xl">
         <div className="w-full">
+
+          {/* Phone layout */}
+          <div className="-mx-4 md:hidden">
+            <div className="flex items-center justify-between px-4">
+              <h1 className="font-display text-[38px] uppercase leading-none tracking-wide">Blog</h1>
+              <button
+                type="button"
+                aria-label={searchOpen ? "Close search" : "Search posts"}
+                onClick={() => { setSearchOpen((o) => !o); if (searchOpen) setSearchQuery(""); }}
+                className="flex h-11 w-11 items-center justify-center text-foreground"
+              >
+                {searchOpen ? <X className="h-[22px] w-[22px]" /> : <Search className="h-[22px] w-[22px]" />}
+              </button>
+            </div>
+            {searchOpen && (
+              <div className="px-4 pt-2">
+                <Input
+                  autoFocus
+                  placeholder="Search posts..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-12 text-base"
+                />
+              </div>
+            )}
+            <div className="flex gap-2 overflow-x-auto px-4 pt-2.5 scrollbar-hide">
+              {[null, ...categories].map((c) => (
+                <button
+                  key={c ?? "all"}
+                  type="button"
+                  onClick={() => setSelectedCategory(c)}
+                  className={`h-11 shrink-0 rounded-full border px-[18px] text-sm font-bold ${selectedCategory === c ? "border-secondary/70 bg-secondary/40 text-white" : "border-border/60 bg-card text-foreground"}`}
+                >
+                  {c ?? "All"}
+                </button>
+              ))}
+            </div>
+
+            {loading ? (
+              <p className="py-10 text-center text-muted-foreground">Loading...</p>
+            ) : filteredPosts.length === 0 ? (
+              <p className="px-4 py-10 text-center text-muted-foreground">
+                {searchQuery || selectedCategory ? "No posts found matching your criteria" : "No blog posts yet. Check back soon!"}
+              </p>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/blog/${filteredPosts[0].slug}`)}
+                  className="relative mx-4 mt-3.5 block h-[196px] w-[calc(100%-2rem)] overflow-hidden rounded-[14px] border border-border/50 bg-card text-left"
+                >
+                  {filteredPosts[0].featured_image_url && (
+                    <img src={filteredPosts[0].featured_image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/45 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 flex flex-col gap-[5px] px-3.5 pb-3.5">
+                    <span className="text-[11px] font-extrabold tracking-[0.2em] text-primary">FEATURED</span>
+                    <span className="line-clamp-3 text-[23px] font-bold uppercase italic leading-[1.05] text-foreground" style={{ fontFamily: "'Oswald','Bebas Neue',sans-serif" }}>
+                      {filteredPosts[0].title}
+                    </span>
+                    <span className="text-[12.5px] text-foreground/80">{new Date(filteredPosts[0].published_at).toLocaleDateString()}</span>
+                  </div>
+                </button>
+
+                <div className="mt-4 flex flex-col gap-4 px-4">
+                  {filteredPosts.slice(1).map((post) => (
+                    <button
+                      key={post.id}
+                      type="button"
+                      onClick={() => navigate(`/blog/${post.slug}`)}
+                      className="flex items-center gap-3 text-left"
+                    >
+                      <div className="relative h-[78px] w-[104px] shrink-0 overflow-hidden rounded-[10px] border border-border/50 bg-gradient-to-br from-secondary/60 to-card">
+                        {post.featured_image_url && (
+                          <img src={post.featured_image_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="line-clamp-3 text-[15.5px] font-bold leading-tight text-foreground">{post.title}</p>
+                        <p className="mt-1 text-[12.5px] text-muted-foreground">{new Date(post.published_at).toLocaleDateString()}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="hidden md:block">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
             <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">Blog</h1>
             <Button variant="outline" onClick={() => navigate("/blog/rss")} className="w-full sm:w-auto">
@@ -265,6 +355,7 @@ export default function Blog() {
               </div>
             </div>
           )}
+          </div>
         </div>
       </main>
 

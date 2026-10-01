@@ -251,7 +251,10 @@ const Navigation = () => {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
-            <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => navigate("/")}>
+            {location.pathname === "/metsxmfanzone" && (
+              <span className="font-display text-[25px] uppercase leading-none tracking-wide md:hidden">Watch Live</span>
+            )}
+            <div className={`flex items-center gap-1.5 cursor-pointer ${location.pathname === "/metsxmfanzone" ? "max-md:hidden" : ""}`} onClick={() => navigate("/")}>
               <img 
                 src={logo} 
                 alt="MetsXMFanZone Logo" 
