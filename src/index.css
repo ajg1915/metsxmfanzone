@@ -42,8 +42,8 @@ All colors MUST be HSL.
     --destructive-foreground: 0 0% 100%;
 
     /* Mets orange-red borders across the site */
-    --border: 16 100% 50% / 0.55;
-    --input: 16 100% 50% / 0.35;
+    --border: 211 40% 60% / 0.16;
+    --input: 211 40% 60% / 0.22;
     --ring: 16 100% 50%;
     --input-foreground: 0 0% 100%;
 
@@ -58,7 +58,7 @@ All colors MUST be HSL.
 
     /* Glass morphism — indigo tinted */
     --glass-bg: 212 57% 11% / 0.82;
-    --glass-border: 16 100% 50% / 0.35;
+    --glass-border: 211 40% 70% / 0.14;
     --glass-blur: 22px;
     --glass-highlight: 16 100% 50% / 0.12;
 
@@ -94,7 +94,7 @@ All colors MUST be HSL.
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 243 75% 59%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 16 100% 50% / 0.4;
+    --sidebar-border: 211 40% 60% / 0.18;
     --sidebar-ring: 243 75% 59%;
   }
 
@@ -121,8 +121,8 @@ All colors MUST be HSL.
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 16 100% 50% / 0.55;
-    --input: 16 100% 50% / 0.35;
+    --border: 211 40% 60% / 0.16;
+    --input: 211 40% 60% / 0.22;
     --ring: 16 100% 50%;
     --input-foreground: 0 0% 100%;
     --sidebar-background: 211 63% 7%;
@@ -131,7 +131,7 @@ All colors MUST be HSL.
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 211 83% 25%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 16 100% 50% / 0.4;
+    --sidebar-border: 211 40% 60% / 0.18;
     --sidebar-ring: 211 64% 48%;
   }
 }
@@ -1302,13 +1302,13 @@ All colors MUST be HSL.
 .border-zinc-300,
 .border-stone-100,
 .border-stone-200 {
-  border-color: hsl(var(--mets-orange) / 0.55) !important;
+  border-color: hsl(211 40% 65% / 0.16) !important;
 }
 
 .divide-white > :not([hidden]) ~ :not([hidden]),
 .divide-white\/10 > :not([hidden]) ~ :not([hidden]),
 .divide-white\/20 > :not([hidden]) ~ :not([hidden]) {
-  border-color: hsl(var(--mets-orange) / 0.4) !important;
+  border-color: hsl(211 40% 65% / 0.12) !important;
 }
 
 .ring-white,
@@ -1316,7 +1316,7 @@ All colors MUST be HSL.
 .ring-white\/20,
 .ring-white\/30,
 .ring-white\/50 {
-  --tw-ring-color: hsl(var(--mets-orange) / 0.55) !important;
+  --tw-ring-color: hsl(211 40% 65% / 0.16) !important;
 }
 
 /* Catch arbitrary-opacity white borders like border-white/[0.03] and dark slate borders */
@@ -1330,28 +1330,28 @@ All colors MUST be HSL.
 [class*="border-neutral-8"],
 [class*="border-gray-7"],
 [class*="border-gray-8"] {
-  border-color: hsl(var(--mets-orange) / 0.55) !important;
+  border-color: hsl(211 40% 65% / 0.16) !important;
 }
 
 [class*="divide-white/"] > :not([hidden]) ~ :not([hidden]) {
-  border-color: hsl(var(--mets-orange) / 0.4) !important;
+  border-color: hsl(211 40% 65% / 0.12) !important;
 }
 
 /* Final hard stop: any visible border/ring/shadow highlight now reads Mets orange-red, never white. */
 :where(.border, .border-t, .border-r, .border-b, .border-l, .border-x, .border-y, [class*="border-"]):not(.border-transparent):not([class*="border-transparent"]) {
-  border-color: hsl(var(--mets-orange) / 0.62) !important;
+  border-color: hsl(211 40% 65% / 0.16) !important;
 }
 
 :where(input, textarea, select, button, [role="button"]):not(.border-transparent):not([class*="border-transparent"]) {
-  border-color: hsl(var(--mets-orange) / 0.72) !important;
+  border-color: hsl(211 40% 65% / 0.30) !important;
 }
 
 :where([class*="ring-white"], [class*="ring-slate"], [class*="ring-zinc"], [class*="ring-gray"], [class*="ring-neutral"]) {
-  --tw-ring-color: hsl(var(--mets-orange) / 0.55) !important;
+  --tw-ring-color: hsl(211 40% 65% / 0.16) !important;
 }
 
 :where(.glass, .glass-strong, .glass-card) {
-  border-color: hsl(var(--mets-orange) / 0.45) !important;
+  border-color: hsl(211 40% 65% / 0.16) !important;
 }
 
 /* Google Cast launcher: keep it clipped to its badge, never overlay the video */

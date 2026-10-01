@@ -258,7 +258,7 @@ const Navigation = () => {
                 className="h-9 w-auto"
               />
               <div className="font-display text-xl uppercase leading-none sm:text-2xl">
-                <span className="text-secondary">Mets</span>
+                <span className="text-[hsl(211_90%_62%)]">Mets</span>
                 <span className="text-primary">XM</span>
                 <span className="text-foreground">FanZone</span>
               </div>
