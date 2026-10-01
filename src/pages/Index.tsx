@@ -179,8 +179,9 @@ const Index = () => {
           <FreeTrialExpiryBanner />
         </Suspense>
       <main className="relative z-10 homepage-broadcast-feed">
-        <HomeSocialRow />
+        <div className="hidden sm:block sm:h-[72px]" aria-hidden="true" />
         <Hero />
+        <HomeSocialRow />
 
 
         {/* Above-the-fold: mount immediately */}

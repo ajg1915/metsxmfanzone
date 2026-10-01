@@ -134,7 +134,7 @@ const Hero = () => {
 
       {/* Phone hero: full-bleed photo under the floating header */}
       <div
-        className="relative h-[calc(100svh-12.5rem)] min-h-[460px] max-h-[720px] overflow-hidden sm:hidden"
+        className="relative h-[calc(100svh-8.5rem)] min-h-[460px] max-h-[720px] overflow-hidden sm:hidden"
         onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
         onTouchEnd={(e) => onTouchEnd(e.changedTouches[0].clientX)}
       >
