@@ -26,7 +26,6 @@ const Sitemap = () => {
         { url: '/podcast', changefreq: 'weekly', priority: '0.8' },
         { url: '/help-center', changefreq: 'monthly', priority: '0.6' },
         { url: '/contact', changefreq: 'monthly', priority: '0.7' },
-        { url: '/feedback', changefreq: 'monthly', priority: '0.6' },
         { url: '/faqs', changefreq: 'monthly', priority: '0.6' },
         { url: '/privacy', changefreq: 'yearly', priority: '0.3' },
         { url: '/terms', changefreq: 'yearly', priority: '0.3' },

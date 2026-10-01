@@ -68,7 +68,6 @@ const TrialManagement = lazyWithRetry(() => import("./pages/admin/TrialManagemen
 const SubscriptionManagement = lazyWithRetry(() => import("./pages/admin/SubscriptionManagement"), "page-admin-subscription-management");
 const StoriesManagement = lazyWithRetry(() => import("./pages/admin/StoriesManagement"), "page-admin-stories-management");
 const TutorialManagement = lazyWithRetry(() => import("./pages/admin/TutorialManagement"), "page-admin-tutorial-management");
-const FeedbackManagement = lazyWithRetry(() => import("./pages/admin/FeedbackManagement"), "page-admin-feedback-management");
 const ChatManagement = lazyWithRetry(() => import("./pages/admin/ChatManagement"), "page-admin-chat-management");
 
 const NewsletterGenerator = lazyWithRetry(() => import("./pages/admin/NewsletterGenerator"), "page-admin-newsletter-generator");
@@ -101,7 +100,6 @@ const BusinessPartner = lazyWithRetry(() => import("./pages/BusinessPartner"), "
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"), "page-dashboard");
 const CancellationStatus = lazyWithRetry(() => import("./pages/CancellationStatus"), "page-cancellation-status");
 
-const Feedback = lazyWithRetry(() => import("./pages/Feedback"), "page-feedback");
 const Sitemap = lazyWithRetry(() => import("./pages/SitemapRedirect"), "page-sitemap-redirect");
 const DynamicMatchup = lazyWithRetry(() => import("./pages/matchups/DynamicMatchup"), "page-dynamic-matchup");
 const PayPalSuccess = lazyWithRetry(() => import("./pages/PayPalSuccess"), "page-paypal-success");
@@ -360,7 +358,6 @@ const AppContent = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/rewards/claim" element={<RewardClaim />} />
-            <Route path="/feedback" element={<Feedback />} />
             <Route path="/faqs" element={<FAQs />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
@@ -396,7 +393,6 @@ const AppContent = () => {
               <Route path="newsletter" element={<NewsletterGenerator />} />
               <Route path="email-editor" element={<EmailEditor />} />
               <Route path="email-templates" element={<EmailTemplateSettings />} />
-              <Route path="feedbacks" element={<FeedbackManagement />} />
               <Route path="chat" element={<ChatManagement />} />
               <Route path="posts" element={<PostsManagement />} />
               <Route path="business-ads" element={<BusinessAdsManagement />} />

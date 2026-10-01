@@ -49,13 +49,6 @@
     "image": "/share/contact.jpg"
   },
   {
-    "path": "/feedback",
-    "label": "Feedback",
-    "title": "Send Feedback | MetsXMFanZone",
-    "description": "Share ideas and suggestions to help make MetsXMFanZone better for every Mets fan.",
-    "image": "/share/feedback.jpg"
-  },
-  {
     "path": "/faqs",
     "label": "FAQ",
     "title": "Frequently Asked Questions | MetsXMFanZone",
