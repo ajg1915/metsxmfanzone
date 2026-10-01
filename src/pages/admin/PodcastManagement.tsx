@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Trash2, Upload, Loader2, Pencil, X } from "lucide-react";
+import { Trash2, Upload, Loader2, Pencil, X, Download } from "lucide-react";
+import { downloadAudio } from "@/utils/downloadAudio";
 import { Switch } from "@/components/ui/switch";
 import PodcastAudioRecorder from "@/components/PodcastAudioRecorder";
 import { AdminPage, AdminPageHeader, AdminEmpty } from "@/components/admin/AdminUI";
@@ -300,6 +301,15 @@ export default function PodcastManagement() {
                       <p className="text-xs text-muted-foreground line-clamp-2">{podcast.description}</p>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        title="Download audio"
+                        onClick={() => downloadAudio(podcast.audio_url, podcast.title)}
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"

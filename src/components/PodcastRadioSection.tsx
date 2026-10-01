@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Pause, Play, Radio, RotateCcw, RotateCw } from "lucide-react";
+import { ArrowRight, Download, Pause, Play, Radio, RotateCcw, RotateCw } from "lucide-react";
+import { downloadAudio } from "@/utils/downloadAudio";
 import { supabase } from "@/integrations/supabase/client";
 import podcastLogo from "@/assets/podcast-logo.png";
 
@@ -227,6 +228,15 @@ const PodcastRadioSection = () => {
                 <RotateCw className="h-6 w-6" />
               </button>
             </div>
+            {active && (
+              <button
+                type="button"
+                onClick={() => downloadAudio(active.audio_url, active.title)}
+                className="relative mx-auto mt-3 flex h-11 items-center gap-2 rounded-full border border-white/25 px-5 text-sm font-bold text-white hover:bg-white/10"
+              >
+                <Download className="h-4 w-4" /> Download episode
+              </button>
+            )}
             {error && <p role="alert" className="relative mt-2 text-center text-sm text-red-300">Couldn't play that episode. Tap play to try again.</p>}
           </div>
 
@@ -237,12 +247,12 @@ const PodcastRadioSection = () => {
               {episodes.map((ep, i) => {
                 const isActive = ep.id === active?.id;
                 return (
-                  <li key={ep.id}>
+                  <li key={ep.id} className="flex items-center">
                     <button
                       type="button"
                       onClick={() => (isActive ? toggle() : load(ep, true))}
                       aria-label={`${isActive && playing ? "Pause" : "Play"} ${ep.title}`}
-                      className={`flex min-h-[64px] w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors ${isActive ? "bg-primary/10" : "hover:bg-muted/30"}`}
+                      className={`flex min-h-[64px] min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors ${isActive ? "bg-primary/10" : "hover:bg-muted/30"}`}
                     >
                       <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${isActive ? "bg-[#d43700] text-white" : "bg-muted/40 text-foreground"}`}>
                         {isActive && playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
@@ -256,6 +266,14 @@ const PodcastRadioSection = () => {
                       </span>
                       {isActive && <Equalizer active={playing} />}
                       <span className="sr-only">Episode {episodes.length - i}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => downloadAudio(ep.audio_url, ep.title)}
+                      aria-label={`Download ${ep.title}`}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/40 hover:text-foreground"
+                    >
+                      <Download className="h-5 w-5" />
                     </button>
                   </li>
                 );
