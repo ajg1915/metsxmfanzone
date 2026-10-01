@@ -129,14 +129,14 @@ const ReplayGamesSection = () => {
           className="flex items-center justify-between mb-4"
         >
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <RotateCcw className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
-            <h2 className="text-sm sm:text-xl md:text-2xl font-bold text-foreground">
+            <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <h2 className="text-[25px] leading-none tracking-wide sm:text-2xl md:text-3xl font-bold uppercase text-foreground">
               Replay Games
             </h2>
           </div>
           <a
             href="/replay-games"
-            className="flex items-center gap-1 text-xs sm:text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+            className="flex min-h-[44px] items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
           >
             View All Replays
             <ChevronRight className="w-4 h-4" />
@@ -157,10 +157,10 @@ const ReplayGamesSection = () => {
         <div
           id="replay-scroll"
           onScroll={handleScroll}
-          className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide scroll-smooth px-4 sm:px-6 lg:px-8"
+          className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 px-4 sm:px-6 lg:px-8"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          <div className="flex-shrink-0 w-0 lg:w-[calc((100vw-1280px)/2)]" />
+          <div className="hidden flex-shrink-0 lg:block lg:w-[calc((100vw-1280px)/2)]" />
 
           {streams.map((stream, index) => (
             <motion.div
@@ -170,9 +170,9 @@ const ReplayGamesSection = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
               onClick={() => handleStreamClick(stream)}
-              className="flex-shrink-0 w-[240px] sm:w-[280px] md:w-[320px] lg:w-[380px] cursor-pointer group"
+              className="flex-shrink-0 snap-start w-[calc(100vw-4.5rem)] max-w-[340px] md:w-[320px] md:max-w-none lg:w-[380px] cursor-pointer group"
             >
-              <div className="relative overflow-hidden rounded-md sm:rounded-lg transition-all duration-300 group-hover:scale-105 group-hover:z-10 group-hover:shadow-2xl group-hover:shadow-primary/20">
+              <div className="relative overflow-hidden rounded-xl transition-all duration-300 md:group-hover:scale-105 group-hover:z-10 group-hover:shadow-2xl group-hover:shadow-primary/20">
                 <div className="aspect-video relative">
                   {stream.thumbnail_url ? (
                     <img src={stream.thumbnail_url} alt={stream.title} className="w-full h-full object-cover" />
@@ -184,8 +184,8 @@ const ReplayGamesSection = () => {
 
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-transform">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300">
+                    <div className="w-12 h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg transform scale-75 group-hover:scale-100 transition-transform">
                       <Play className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground ml-0.5" fill="currentColor" />
                     </div>
                   </div>
@@ -213,8 +213,8 @@ const ReplayGamesSection = () => {
                   )}
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3 bg-gradient-to-t from-background to-transparent">
-                  <p className="text-foreground text-xs sm:text-sm font-semibold line-clamp-2">
+                <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-background to-transparent">
+                  <p className="text-foreground text-[15px] sm:text-sm font-semibold line-clamp-2">
                     {stream.title}
                   </p>
                 </div>
@@ -222,7 +222,7 @@ const ReplayGamesSection = () => {
             </motion.div>
           ))}
 
-          <div className="flex-shrink-0 w-0 lg:w-[calc((100vw-1280px)/2)]" />
+          <div className="hidden flex-shrink-0 lg:block lg:w-[calc((100vw-1280px)/2)]" />
         </div>
 
         <button

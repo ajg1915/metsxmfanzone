@@ -232,8 +232,8 @@ const RelatedStreamsSection = () => {
       <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <Radio className="w-4 h-4 sm:w-6 sm:h-6 text-primary" />
-            <h2 className="text-sm sm:text-xl md:text-2xl font-bold text-foreground">
+            <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <h2 className="text-[25px] leading-none tracking-wide sm:text-2xl md:text-3xl font-bold uppercase text-foreground">
               Sports Network Streams
             </h2>
           </div>
@@ -243,7 +243,7 @@ const RelatedStreamsSection = () => {
               variant="ghost"
               size="icon"
               onClick={() => scroll('left')}
-              className="h-8 w-8 rounded-full bg-secondary/50"
+              className="hidden h-8 w-8 rounded-full bg-secondary/50 md:inline-flex"
               aria-label="Scroll network streams left"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -253,7 +253,7 @@ const RelatedStreamsSection = () => {
               variant="ghost"
               size="icon"
               onClick={() => scroll('right')}
-              className="h-8 w-8 rounded-full bg-secondary/50"
+              className="hidden h-8 w-8 rounded-full bg-secondary/50 md:inline-flex"
               aria-label="Scroll network streams right"
             >
               <ChevronRight className="w-5 h-5" />
@@ -263,16 +263,16 @@ const RelatedStreamsSection = () => {
 
         <div
           id="network-streams-scroll"
-          className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-4"
+          className="-mx-3 flex gap-3 overflow-x-auto scrollbar-hide snap-x max-md:snap-mandatory scroll-px-4 px-4 pb-4 sm:-mx-6 sm:px-6 md:mx-0 md:gap-4 md:px-0"
           onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
         >
           {streams.map((s) => (
             <button
               key={s.id}
               onClick={() => handleClick(s)}
-              className="flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] group relative snap-start text-left"
+              className="flex-shrink-0 w-[calc(100vw-4.5rem)] max-w-[340px] md:w-[320px] md:max-w-none lg:w-[380px] group relative snap-start text-left"
             >
-              <div className="relative aspect-video rounded-lg overflow-hidden border border-border/50 group-hover:border-primary/50 transition-all duration-300">
+              <div className="relative aspect-video rounded-xl overflow-hidden border border-border/50 group-hover:border-primary/50 transition-all duration-300">
                 {s.thumbnail ? (
                   <img
                     src={s.thumbnail}
@@ -301,21 +301,21 @@ const RelatedStreamsSection = () => {
 
                 <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/80 backdrop-blur-sm">
                   <ShieldCheck className="w-2.5 h-2.5 text-accent-foreground" />
-                  <span className="text-[8px] font-semibold text-accent-foreground uppercase tracking-wide">VPN Secured</span>
+                  <span className="text-[9px] font-semibold text-accent-foreground uppercase tracking-wide">VPN Secured</span>
                 </div>
 
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="absolute inset-0 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
                   <div className="w-12 h-12 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg">
                     <Play className="w-5 h-5 text-primary-foreground ml-0.5" fill="currentColor" />
                   </div>
                 </div>
               </div>
               <div className="mt-2">
-                <h3 className="text-sm font-semibold line-clamp-1 text-foreground group-hover:text-primary transition-colors">
+                <h3 className="text-[15px] font-semibold line-clamp-1 md:text-sm text-foreground group-hover:text-primary transition-colors">
                   {s.title}
                 </h3>
                 <div className="flex items-center justify-between gap-1.5">
-                  <p className="text-xs text-muted-foreground line-clamp-1 flex-1">
+                  <p className="text-[13px] text-muted-foreground line-clamp-1 flex-1 md:text-xs">
                     {s.subtitle}
                   </p>
                   <ChevronRight

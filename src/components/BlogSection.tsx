@@ -104,10 +104,10 @@ const BlogSection = () => {
               <img src={logo} alt="MetsXMFanZone" className="w-5 h-5 sm:w-8 sm:h-8 object-contain" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-xl md:text-2xl font-bold text-foreground leading-tight">
+              <h2 className="text-[25px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-2xl md:text-3xl">
                 Latest Mets News
               </h2>
-              <p className="text-[10px] sm:text-sm text-muted-foreground">From the MetsXMFanZone blog</p>
+              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">From the MetsXMFanZone blog</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -115,7 +115,7 @@ const BlogSection = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate("/whats-new")}
-              className="group glass-card border-primary/50 bg-primary/10 hover:bg-primary/20 transition-all duration-300 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
+              className="group glass-card border-primary/50 bg-primary/10 hover:bg-primary/20 transition-all duration-300 text-sm h-11 sm:h-9 px-3"
             >
               <img src={logo} alt="" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
               <span className="hidden xs:inline ml-1">What's New</span>
@@ -124,7 +124,7 @@ const BlogSection = () => {
               variant="outline"
               size="sm"
               onClick={() => navigate("/blog")}
-              className="group glass-card border-border/30 hover:border-primary/50 transition-all duration-300 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
+              className="group glass-card border-border/30 hover:border-primary/50 transition-all duration-300 text-sm h-11 sm:h-9 px-3"
             >
               View All
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1 sm:ml-2 group-hover:translate-x-1 transition-transform" />
@@ -146,12 +146,12 @@ const BlogSection = () => {
             onKeyDown={(e) => e.key === "Enter" && openPost(highlightPost.slug)}
           >
             <article className="flex flex-col sm:flex-row">
-              <div className="relative w-full sm:w-2/5 overflow-hidden bg-black flex items-center justify-center">
+              <div className="relative h-[210px] w-full overflow-hidden bg-card sm:h-auto sm:min-h-[260px] sm:w-2/5">
                 {highlightPost.featured_image_url ? (
                   <img
                     src={highlightPost.featured_image_url}
                     alt={highlightPost.title}
-                    className="w-full h-auto max-h-[480px] object-contain group-hover:scale-105 transition-transform duration-500"
+                    className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => { const t = e.currentTarget; if (!t.dataset.fbk) { t.dataset.fbk = "1"; t.src = "/placeholder.svg"; } }}
                   />
                 ) : (
@@ -159,7 +159,7 @@ const BlogSection = () => {
                     <img src={logo} alt="" className="w-16 h-16 opacity-30" />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:bg-gradient-to-r sm:from-transparent sm:to-card/30" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent sm:bg-gradient-to-r sm:from-transparent sm:to-card/30" />
                 <div className="absolute top-3 left-3">
                   <Badge className="text-xs px-2 py-0.5 bg-primary text-primary-foreground border-0 shadow-lg">
                     <Sparkles className="w-3 h-3 mr-1" />
@@ -172,7 +172,7 @@ const BlogSection = () => {
                       {highlightPost.category}
                     </Badge>
                   )}
-                  <h3 className="text-base font-bold text-white line-clamp-2 drop-shadow-lg">
+                  <h3 className="text-[22px] font-bold leading-[1.05] text-white line-clamp-3 drop-shadow-lg">
                     {highlightPost.title}
                   </h3>
                 </div>
@@ -217,7 +217,7 @@ const BlogSection = () => {
         )}
 
         {/* Remaining Posts */}
-        <div className="space-y-2">
+        <div className="space-y-3 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 lg:grid-cols-3">
           {otherPosts.map((post, index) => (
             <motion.div
               key={post.id}
@@ -231,8 +231,8 @@ const BlogSection = () => {
               tabIndex={0}
               onKeyDown={(e) => e.key === "Enter" && openPost(post.slug)}
             >
-              <article className="flex gap-3 p-2.5">
-                <div className="relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-card">
+              <article className="flex items-center gap-3 p-2.5">
+                <div className="relative h-[78px] w-[104px] flex-shrink-0 overflow-hidden rounded-[10px] bg-card">
                   {post.featured_image_url ? (
                     <img
                       src={post.featured_image_url}
@@ -254,12 +254,12 @@ const BlogSection = () => {
                         {post.category}
                       </Badge>
                     )}
-                    <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-tight">
+                    <h3 className="text-[15.5px] font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-3 leading-tight md:text-[15px]">
                       {post.title}
                     </h3>
                   </div>
 
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-1">
+                  <div className="mt-1.5 flex items-center gap-1 text-[12.5px] text-muted-foreground">
                     <Clock className="w-3 h-3" />
                     <span>{getTimeAgo(post.published_at || post.created_at)}</span>
                   </div>
