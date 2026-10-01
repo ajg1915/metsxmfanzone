@@ -1,6 +1,3 @@
-import heroImage from "@/assets/hero-mets.png";
-import visitorImage from "@/assets/fanart-mets-home.jpg";
-import memberImage from "@/assets/fanart-mets-general.jpg";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
@@ -36,6 +33,8 @@ const Hero = () => {
   const { isPremium } = useSubscription();
   const [memberSlides, setMemberSlides] = useState<HeroSlide[]>([]);
   const [publicSlides, setPublicSlides] = useState<HeroSlide[]>([]);
+  const [membersLoaded, setMembersLoaded] = useState(false);
+  const [publicLoaded, setPublicLoaded] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [isLiveNow, setIsLiveNow] = useState(false);
   const navigate = useNavigate();
@@ -74,26 +73,28 @@ const Hero = () => {
     const fetch = async () => {
       const { data } = await supabase.from("hero_slides").select("*").eq("is_for_members", true).eq("published", true).order("display_order");
       if (data?.length) setMemberSlides(data);
+      setMembersLoaded(true);
     };
-    if (user) fetch();
+    if (user) fetch(); else setMembersLoaded(false);
   }, [user]);
 
   useEffect(() => {
     const fetch = async () => {
       const { data } = await supabase.from("hero_slides").select("*").eq("is_for_members", false).eq("published", true).order("display_order");
       if (data) setPublicSlides(data);
+      setPublicLoaded(true);
     };
     fetch();
   }, []);
 
   const defaultSlides = [
-    { title: "METSXMFANZONE.TV", description: "Connect with thousands of passionate Mets fans. Watch live streams, highlights, podcasts and more.", image: heroImage, link_url: null, link_text: null, show_watch_live: true, show_reminder: true, tag: "STREAMING" },
-    { title: "Live Game Coverage", description: "Watch exclusive live streams, game highlights, and expert analysis. Never miss a moment.", image: heroImage, link_url: "/metsxmfanzone", link_text: "Watch Now", show_watch_live: false, show_reminder: true, tag: "LIVE" },
-    { title: "MetsXMFanZone Podcast", description: "Join Anthony and the Mets Universe on the daily MetsXMFanZone podcast.", image: heroImage, link_url: "/podcast", link_text: "Listen", show_watch_live: false, show_reminder: false, tag: "PODCAST" },
+    { title: "METSXMFANZONE.TV", description: "Connect with thousands of passionate Mets fans. Watch live streams, highlights, podcasts and more.", image: null as string | null, link_url: null, link_text: null, show_watch_live: true, show_reminder: true, tag: "STREAMING" },
+    { title: "Live Game Coverage", description: "Watch exclusive live streams, game highlights, and expert analysis. Never miss a moment.", image: null as string | null, link_url: "/metsxmfanzone", link_text: "Watch Now", show_watch_live: false, show_reminder: true, tag: "LIVE" },
+    { title: "MetsXMFanZone Podcast", description: "Join Anthony and the Mets Universe on the daily MetsXMFanZone podcast.", image: null as string | null, link_url: "/podcast", link_text: "Listen", show_watch_live: false, show_reminder: false, tag: "PODCAST" },
   ];
 
   const mapDbSlides = (slides: HeroSlide[], tag: string) => slides.map(s => ({
-    title: s.title, description: s.description, image: s.image_url || heroImage,
+    title: s.title, description: s.description, image: s.image_url || null,
     link_url: s.link_url, link_text: s.link_text, show_watch_live: s.show_watch_live ?? true, show_reminder: s.show_reminder ?? false, tag,
   }));
 
@@ -103,11 +104,11 @@ const Hero = () => {
 
   const mobileSlides = slidesToShow.map((sl, i) => ({
     ...sl,
-    // Phones get the fan photos from the new look unless an admin set their own image.
-    image: sl.image && sl.image !== heroImage ? sl.image : (user ? memberImage : visitorImage),
+    image: sl.image,
     key: i,
   }));
   const mSlide = mobileSlides[Math.min(mobileIndex, mobileSlides.length - 1)];
+  const slidesReady = user ? membersLoaded : publicLoaded;
   const reminderOn = permission === "granted" && isSubscribed;
 
   const onTouchEnd = (x: number) => {
@@ -128,6 +129,18 @@ const Hero = () => {
     url.startsWith("http") ? window.open(url, "_blank") : navigate(url);
   };
 
+  // Until the slides load, show a plain dark block: no stock photo flashes in first.
+  if (!slidesReady) {
+    return (
+      <section className="home-hero-shell relative max-sm:!p-0 sm:pt-2" aria-busy="true" aria-label="Loading featured content">
+        <div className="h-[calc(100svh-8.5rem)] min-h-[460px] max-h-[720px] bg-gradient-to-b from-[#0b3e75]/40 to-[#07111d] sm:hidden" />
+        <div className="home-feed-shell hidden overflow-hidden sm:block">
+          <div className="aspect-[16/8] rounded-md border border-border/40 bg-gradient-to-br from-[#0b3e75]/40 to-[#07111d] lg:aspect-[16/7]" />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="group/hero home-hero-shell relative max-sm:!p-0 sm:pt-2">
       <AdminEditBadge to="/admin/hero" label="Edit Hero" />
@@ -138,7 +151,9 @@ const Hero = () => {
         onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
         onTouchEnd={(e) => onTouchEnd(e.changedTouches[0].clientX)}
       >
-        {/\.(mp4|webm|mov|m4v)(\?|$)/i.test(mSlide.image || "") ? (
+        {!mSlide.image ? (
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0b3e75] to-[#07111d]" />
+        ) : /\.(mp4|webm|mov|m4v)(\?|$)/i.test(mSlide.image) ? (
           <video key={mSlide.image} src={mSlide.image} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />
         ) : (
           <img src={mSlide.image} alt="" className="absolute inset-0 h-full w-full object-cover object-[48%_40%]" />
@@ -253,11 +268,13 @@ const Hero = () => {
                     />
                   );
                 }
-                return (
+                return url ? (
                   <div
                     className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${url})` }}
                   />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#0b3e75] to-[#07111d]" />
                 );
               })()}
 
