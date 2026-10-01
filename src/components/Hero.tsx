@@ -26,7 +26,7 @@ interface HeroSlide {
 }
 
 const Hero = () => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: false, watchDrag: false, duration: 0 });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: false, watchDrag: true, duration: 25 });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const { user } = useAuth();
   const { isPremium } = useSubscription();
@@ -156,7 +156,7 @@ const Hero = () => {
                 {/* Logo + tag */}
                 <div className="flex items-center gap-2 mb-2 sm:mb-3">
                   <img src={logo} alt="MetsXMFanZone" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
-                  <span className="mx-eyebrow text-primary">
+                  <span className="mx-eyebrow">
                     {slide.tag}
                   </span>
                   {isLiveNow && (

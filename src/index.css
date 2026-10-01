@@ -84,9 +84,9 @@ All colors MUST be HSL.
     --gradient-blue: linear-gradient(135deg, hsl(243 75% 59%), hsl(240 51% 40%));
     --gradient-radial-blue: radial-gradient(ellipse at center, hsl(243 75% 55% / 0.35), transparent 70%);
     --gradient-radial-orange: radial-gradient(ellipse at center, hsl(16 100% 50% / 0.22), transparent 70%);
-    --glow-blue: 0 0 60px hsl(243 75% 59% / 0.45);
-    --glow-orange: 0 0 60px hsl(16 100% 50% / 0.3);
-    --glow-subtle: 0 0 120px hsl(243 60% 40% / 0.22);
+    --glow-blue: 0 0 40px hsl(243 75% 59% / 0.16);
+    --glow-orange: 0 0 40px hsl(16 100% 50% / 0.12);
+    --glow-subtle: 0 0 80px hsl(243 60% 40% / 0.08);
 
     --sidebar-background: 211 63% 7%;
     --sidebar-foreground: 0 0% 100%;
@@ -1206,7 +1206,7 @@ All colors MUST be HSL.
   font-size: 10px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: hsl(var(--secondary) / 0.9);
+  color: hsl(211 90% 72%);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
