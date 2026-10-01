@@ -237,8 +237,8 @@ const Navigation = () => {
   return (
     <>
       <UpgradePrompt open={showUpgradePrompt} onOpenChange={setShowUpgradePrompt} />
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
-        <div className="container mx-auto px-3 sm:px-4">
+      <nav className={`fixed top-0 left-0 right-0 z-50 glass-nav ${isHomePage ? "max-md:!border-0 max-md:!bg-transparent max-md:!shadow-none max-md:![backdrop-filter:none] max-md:px-3 max-md:pt-3" : ""}`}>
+        <div className={`container mx-auto px-3 sm:px-4 ${isHomePage ? "max-md:rounded-full max-md:border max-md:border-[rgba(255,255,255,0.14)] max-md:bg-background/55 max-md:pl-3.5 max-md:pr-1.5 max-md:backdrop-blur-xl" : ""}`}>
         <div className="flex h-14 items-center justify-between sm:h-16">
           <div className="flex items-center gap-2">
             {!isHomePage && (
@@ -258,7 +258,7 @@ const Navigation = () => {
                 className="h-9 w-auto"
               />
               <div className="font-display text-xl uppercase leading-none sm:text-2xl">
-                <span className="text-secondary">Mets</span>
+                <span className={isHomePage ? "text-secondary max-md:text-foreground" : "text-secondary"}>Mets</span>
                 <span className="text-primary">XM</span>
                 <span className="text-foreground">FanZone</span>
               </div>
@@ -356,6 +356,30 @@ const Navigation = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            {isHomePage && !user && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/auth?mode=login")}
+                className="h-11 rounded-full bg-white/15 px-4 text-sm font-bold text-white hover:bg-white/25 md:hidden"
+              >
+                Log in
+              </Button>
+            )}
+            {isHomePage && user && (
+              <button
+                type="button"
+                aria-label="My account"
+                onClick={() => navigate("/dashboard")}
+                className="flex h-11 w-11 items-center justify-center md:hidden"
+              >
+                <Avatar className="h-[34px] w-[34px] border border-white/25">
+                  <AvatarImage src={userProfile.avatar_url || undefined} alt="Profile" />
+                  <AvatarFallback className="bg-white/15 text-xs font-bold text-white">
+                    {userProfile.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            )}
             {user ? (
               <>
                 <DropdownMenu>
@@ -533,7 +557,7 @@ const Navigation = () => {
             {/* Mobile menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open menu" className="h-9 w-9 rounded-sm border border-border/40 bg-card/70 transition-colors hover:bg-muted md:hidden">
+                <Button variant="ghost" size="icon" aria-label="Open menu" className={`h-9 w-9 rounded-sm border border-border/40 bg-card/70 transition-colors hover:bg-muted md:hidden ${isHomePage ? "max-md:h-11 max-md:w-11 max-md:rounded-full max-md:border-0 max-md:bg-transparent" : ""}`}>
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>

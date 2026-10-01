@@ -1,4 +1,6 @@
 import heroImage from "@/assets/hero-mets.png";
+import visitorImage from "@/assets/fanart-mets-home.jpg";
+import memberImage from "@/assets/fanart-mets-general.jpg";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import useEmblaCarousel from "embla-carousel-react";
 import { useCallback, useEffect, useState } from "react";
@@ -28,6 +30,8 @@ interface HeroSlide {
 const Hero = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: false, watchDrag: false, duration: 0 });
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [mobileIndex, setMobileIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const { user } = useAuth();
   const { isPremium } = useSubscription();
   const [memberSlides, setMemberSlides] = useState<HeroSlide[]>([]);
@@ -97,6 +101,24 @@ const Hero = () => {
     ? (memberSlides.length > 0 ? mapDbSlides(memberSlides, "MEMBER") : defaultSlides)
     : (publicSlides.length > 0 ? mapDbSlides(publicSlides, "FEATURED") : defaultSlides);
 
+  const mobileSlides = slidesToShow.map((sl, i) => ({
+    ...sl,
+    // Phones get the fan photos from the new look unless an admin set their own image.
+    image: sl.image && sl.image !== heroImage ? sl.image : (user ? memberImage : visitorImage),
+    key: i,
+  }));
+  const mSlide = mobileSlides[Math.min(mobileIndex, mobileSlides.length - 1)];
+  const reminderOn = permission === "granted" && isSubscribed;
+
+  const onTouchEnd = (x: number) => {
+    if (touchStartX === null || mobileSlides.length < 2) return;
+    const dx = x - touchStartX;
+    if (Math.abs(dx) > 50) {
+      setMobileIndex((i) => (dx < 0 ? (i + 1) % mobileSlides.length : (i - 1 + mobileSlides.length) % mobileSlides.length));
+    }
+    setTouchStartX(null);
+  };
+
   const premiumRoutes = ['/live', '/metsxmfanzone', '/mlb-network', '/espn-network', '/pix11-network', '/spring-training-live'];
   const requiresPremium = (url: string) => premiumRoutes.some(r => url.toLowerCase().includes(r.toLowerCase().replace('/', '')));
 
@@ -107,9 +129,102 @@ const Hero = () => {
   };
 
   return (
-    <section className="group/hero home-hero-shell relative pt-16 sm:pt-20">
+    <section className="group/hero home-hero-shell relative max-sm:!p-0 pt-16 sm:pt-20">
       <AdminEditBadge to="/admin/hero" label="Edit Hero" />
-      <div ref={emblaRef} className="home-feed-shell overflow-hidden">
+
+      {/* Phone hero: full-bleed photo under the floating header */}
+      <div
+        className="relative h-[650px] overflow-hidden sm:hidden"
+        onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+        onTouchEnd={(e) => onTouchEnd(e.changedTouches[0].clientX)}
+      >
+        {/\.(mp4|webm|mov|m4v)(\?|$)/i.test(mSlide.image || "") ? (
+          <video key={mSlide.image} src={mSlide.image} autoPlay muted loop playsInline className="absolute inset-x-0 top-0 h-[470px] w-full object-cover" />
+        ) : (
+          <img src={mSlide.image} alt="" className="absolute inset-x-0 top-0 h-[470px] w-full object-cover object-[48%_40%]" />
+        )}
+        <div className="absolute inset-x-0 top-0 h-[470px] " style={{ backgroundImage: "linear-gradient(to bottom, hsl(var(--background) / 0.7) 0%, hsl(var(--background) / 0) 24%, hsl(var(--background) / 0.15) 42%, hsl(var(--background) / 0.92) 80%, hsl(var(--background)) 100%)" }} />
+
+        <div className="absolute inset-x-5 top-[270px] flex flex-col" style={user ? { top: 300 } : undefined}>
+          {user ? (
+            <div className="flex items-center gap-2.5">
+              {isLiveNow && (
+                <span className="inline-flex items-center gap-1.5 rounded bg-red-700 px-2 py-[3px] text-[11px] font-extrabold tracking-[0.08em] text-white">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                  LIVE NOW
+                </span>
+              )}
+              <span className="text-[11px] font-extrabold tracking-[0.2em] text-primary">WELCOME BACK</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <span className="h-0.5 w-4 bg-primary" />
+              <span className="text-[11px] font-extrabold tracking-[0.2em] text-primary">NEW YORK METS FAN COMMUNITY</span>
+            </div>
+          )}
+
+          <h1 className="mx-wordmark mt-2.5 font-display uppercase italic leading-[0.98] text-foreground drop-shadow-lg" style={{ fontFamily: "'Oswald','Bebas Neue',sans-serif", fontWeight: 700, fontSize: user ? 38 : 35 }}>
+            {user ? mSlide.title : "The ultimate destination where the fans go"}
+          </h1>
+          <p className="mt-2.5 text-[14.5px] leading-snug text-foreground/80">
+            {user ? (mSlide.description || "Watch live on MetsXMFanZone TV") : "Live games, highlights and podcasts, built by fans."}
+          </p>
+
+          {user ? (
+            <>
+              <div className="mt-4 flex gap-2.5">
+                <Button
+                  onClick={() => handleNav("/metsxmfanzone")}
+                  className="h-[52px] flex-1 gap-2 rounded-xl bg-[#d43700] text-base font-bold text-white hover:bg-[#d43700]/90"
+                >
+                  <Play className="h-[18px] w-[18px] fill-current" />
+                  {isLiveNow ? "Watch Live" : "Watch"}
+                </Button>
+                <Button
+                  onClick={handleSetReminder}
+                  variant="outline"
+                  aria-label={reminderOn ? "Reminder on" : "Remind me when games go live"}
+                  className={`h-[52px] w-[52px] rounded-xl p-0 ${reminderOn ? "border-primary/40 bg-primary/20 text-primary" : "border-foreground/30 bg-background/50 text-foreground"}`}
+                >
+                  {reminderOn ? <BellRing className="h-[22px] w-[22px]" /> : <Bell className="h-[22px] w-[22px]" />}
+                </Button>
+              </div>
+              {mobileSlides.length > 1 && (
+                <div className="mt-4 flex items-center justify-center gap-1.5">
+                  {mobileSlides.map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      aria-label={`Show story ${i + 1}`}
+                      onClick={() => setMobileIndex(i)}
+                      className="flex h-6 items-center px-0.5"
+                    >
+                      <span className={`block rounded-full ${mobileIndex === i ? "h-[5px] w-5 bg-primary" : "h-[5px] w-[5px] bg-muted-foreground/50"}`} />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <Button onClick={() => navigate("/auth?mode=signup")} className="mt-4 h-[52px] rounded-xl bg-[#d43700] text-base font-bold text-white hover:bg-[#d43700]/90">
+                Join MetsXMFanZone
+              </Button>
+              <div className="mt-1.5 flex h-11 items-center justify-center gap-1.5 text-sm text-foreground/80">
+                Already a member?
+                <button type="button" onClick={() => navigate("/auth?mode=login")} className="h-11 px-1 font-bold text-foreground underline">
+                  Log in
+                </button>
+              </div>
+              <div className="mt-0.5 flex items-center justify-center gap-2 text-xs font-semibold text-muted-foreground">
+                <span>Watch on the go</span><span className="text-primary">&bull;</span><span>All devices</span><span className="text-primary">&bull;</span><span>Cancel anytime</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <div ref={emblaRef} className="home-feed-shell hidden overflow-hidden sm:block">
         <div className="flex">
           {slidesToShow.map((slide, index) => (
             <div
@@ -244,7 +359,7 @@ const Hero = () => {
 
 
       {/* Slide indicators */}
-      <div className="relative z-20 mt-3 flex justify-center gap-1 sm:gap-1.5">
+      <div className="relative z-20 mt-3 hidden justify-center gap-1 sm:flex sm:gap-1.5">
         {slidesToShow.map((_, i) => (
           <Button
             key={i}
