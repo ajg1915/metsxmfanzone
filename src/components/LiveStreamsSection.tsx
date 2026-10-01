@@ -87,7 +87,7 @@ const SortableStreamCard = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] snap-start group relative"
+      className="flex-shrink-0 w-[calc(100vw-4.5rem)] max-w-[340px] md:w-[320px] md:max-w-none lg:w-[380px] snap-start group relative"
     >
       {adminMode && (
         <div
@@ -120,7 +120,7 @@ const SortableStreamCard = ({
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onStreamClick(stream); }}
-            className="absolute inset-0 m-auto h-12 w-12 rounded-full opacity-0 transition-all group-hover:opacity-100 group-focus-within:opacity-100 flex items-center justify-center bg-primary text-primary-foreground"
+            className="absolute inset-0 m-auto h-12 w-12 rounded-full opacity-100 md:opacity-0 transition-all md:group-hover:opacity-100 group-focus-within:opacity-100 flex items-center justify-center bg-primary text-primary-foreground"
             aria-label={`Watch ${stream.title}`}
           >
             <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
@@ -200,6 +200,7 @@ const LiveStreamsSection = () => {
   const [loading, setLoading] = useState(true);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [activeCard, setActiveCard] = useState(0);
   const [adminMode, setAdminMode] = useState(false);
 
   const sensors = useSensors(
@@ -477,7 +478,13 @@ const LiveStreamsSection = () => {
   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    setScrollPosition(e.currentTarget.scrollLeft);
+    const el = e.currentTarget;
+    setScrollPosition(el.scrollLeft);
+    const first = el.firstElementChild as HTMLElement | null;
+    if (first) {
+      const step = first.offsetWidth + 12; // card width + mobile gap
+      setActiveCard(Math.max(0, Math.round(el.scrollLeft / step)));
+    }
   };
 
   if (loading) {
@@ -535,7 +542,7 @@ const LiveStreamsSection = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => scroll('left')}
-                className="h-8 w-8 rounded-full bg-secondary/50"
+                className="hidden md:inline-flex h-8 w-8 rounded-full bg-secondary/50"
                 aria-label="Scroll live streams left"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -545,7 +552,7 @@ const LiveStreamsSection = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => scroll('right')}
-                className="h-8 w-8 rounded-full bg-secondary/50"
+                className="hidden md:inline-flex h-8 w-8 rounded-full bg-secondary/50"
                 aria-label="Scroll live streams right"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -565,7 +572,7 @@ const LiveStreamsSection = () => {
               <div
                 id="streams-scroll"
                 onScroll={handleScroll}
-                className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-4 px-3 sm:px-6 lg:px-8"
+                className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide snap-x max-md:snap-mandatory scroll-px-4 pb-4 px-4 sm:px-6 sm:scroll-px-6 lg:px-8 lg:scroll-px-8"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {visibleStreams.map((stream) => (
@@ -585,6 +592,23 @@ const LiveStreamsSection = () => {
               </div>
             </SortableContext>
           </DndContext>
+
+          {/* Page dots (phones only) */}
+          {visibleStreams.length > 1 && (
+            <div className="md:hidden flex items-center justify-center gap-1.5 pt-1" aria-hidden="true">
+              {visibleStreams.map((s, i) => (
+                <span
+                  key={s.id}
+                  className={cn(
+                    "h-[5px] rounded-full transition-all",
+                    i === Math.min(activeCard, visibleStreams.length - 1)
+                      ? "w-5 bg-primary"
+                      : "w-[5px] bg-muted-foreground/45"
+                  )}
+                />
+              ))}
+            </div>
+          )}
 
           {visibleStreams.length === 0 && isAdmin && adminMode && (
             <div className="text-center py-8 text-muted-foreground text-sm">

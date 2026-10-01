@@ -116,13 +116,13 @@ export const FanChatBarButton = () => {
       variant="ghost"
       onClick={openFanChat}
       aria-label={`Chat, ${online ? "online" : "offline"}`}
-      className="relative h-auto min-w-0 flex-col gap-0.5 rounded-sm px-2 py-1 text-muted-foreground hover:bg-secondary/20 hover:text-foreground"
+      className="relative h-auto min-h-[56px] min-w-0 flex-1 flex-col gap-1 rounded-sm px-0 py-1 text-muted-foreground hover:bg-secondary/20 hover:text-foreground"
     >
-      <span className="relative">
-        <MessageCircle className="h-7 w-7" />
+      <span className="relative flex h-7 items-center justify-center">
+        <MessageCircle className="h-6 w-6" />
         <StatusDot online={online} className="absolute -right-0.5 -top-0.5" />
       </span>
-      <span className="text-[10px] font-semibold">Chat</span>
+      <span className="text-[10.5px] font-bold leading-none">Chat</span>
     </Button>
   );
 };

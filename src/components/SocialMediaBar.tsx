@@ -68,45 +68,54 @@ const SocialMediaBar = () => {
     navigate(item.path.replace("/#", "/"));
   };
 
+  const isActive = (item: NavItem) =>
+    item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
+
   return (
-    <div className="pointer-events-none fixed bottom-0 left-0 right-0 z-50 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
-      <div className="pointer-events-auto mx-auto flex max-w-md items-center justify-around rounded-lg border border-border/40 bg-card/95 px-2 py-2 shadow-elevation-high backdrop-blur-xl">
+    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+      <div className="flex items-stretch border-t border-primary/40 bg-card/95 px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 shadow-elevation-high backdrop-blur-xl">
         {navItems.map((item) => {
           const showProLock = item.requiresPremium && !isPremium && !isAdmin;
-          
+          const active = isActive(item);
+
           const buttonInner = (
             <>
-              {showProLock && (
-                <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-primary">
-                  <Lock className="w-1.5 h-1.5 text-primary-foreground" />
-                </span>
+              {active && (
+                <span className="absolute -top-1.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-b-full bg-primary" />
               )}
-              {item.label === "Home" ? (
-                <img src={metsLogo} alt={item.label} className="h-12 w-12 object-contain" />
-              ) : item.label === "Watch Live" ? (
-                <Tv className="h-7 w-7" />
-              ) : item.label === "Blog" ? (
-
-                <BookOpen className="h-7 w-7" />
-              ) : item.label === "Podcast" ? (
-                <Mic className="h-7 w-7" />
-              ) : item.label === "Games" ? (
-                <CalendarDays className="h-7 w-7" />
-              ) : (
-                <img src={metsLogo} alt={item.label} className="h-7 w-7 object-contain" />
-              )}
-              <span className={`text-[10px] font-semibold ${item.label === "Watch Live" ? "text-primary" : ""}`}>{item.label}</span>
+              <span className="relative flex h-7 items-center justify-center">
+                {item.label === "Home" ? (
+                  <img src={metsLogo} alt="" className={`h-7 w-auto object-contain ${active ? "" : "opacity-75"}`} />
+                ) : item.label === "Watch Live" ? (
+                  <Tv className="h-6 w-6" />
+                ) : item.label === "Blog" ? (
+                  <BookOpen className="h-6 w-6" />
+                ) : item.label === "Podcast" ? (
+                  <Mic className="h-6 w-6" />
+                ) : item.label === "Games" ? (
+                  <CalendarDays className="h-6 w-6" />
+                ) : (
+                  <img src={metsLogo} alt="" className="h-6 w-auto object-contain" />
+                )}
+                {showProLock && (
+                  <span className="absolute -right-2 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary">
+                    <Lock className="h-2 w-2 text-primary-foreground" />
+                  </span>
+                )}
+              </span>
+              <span className="text-[10.5px] font-bold leading-none">{item.label}</span>
             </>
           );
-
-
 
           return (
             <Button
               key={item.label}
               variant="ghost"
               onClick={() => handleClick(item)}
-              className={`relative h-auto min-w-0 flex-col gap-0.5 rounded-sm px-2 py-1 text-muted-foreground hover:bg-secondary/20 hover:text-foreground ${item.label === "Home" ? "text-primary" : ""}`}
+              aria-current={active ? "page" : undefined}
+              className={`relative h-auto min-h-[56px] min-w-0 flex-1 flex-col gap-1 rounded-sm px-0 py-1 hover:bg-secondary/20 ${
+                active ? "text-primary hover:text-primary" : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               {buttonInner}
             </Button>

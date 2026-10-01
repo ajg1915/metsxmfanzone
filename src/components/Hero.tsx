@@ -114,7 +114,7 @@ const Hero = () => {
           {slidesToShow.map((slide, index) => (
             <div
               key={index}
-              className="relative flex-[0_0_100%] min-w-0 aspect-[16/10] sm:aspect-[16/8] lg:aspect-[16/7] overflow-hidden rounded-md border border-border/40 bg-card shadow-elevation-high"
+              className="relative flex-[0_0_100%] min-w-0 h-[224px] sm:h-auto sm:aspect-[16/8] lg:aspect-[16/7] overflow-hidden rounded-xl sm:rounded-md border border-border/40 bg-card shadow-elevation-high"
               style={{
                 opacity: selectedIndex === index ? 1 : 0,
                 zIndex: selectedIndex === index ? 10 : 0,
@@ -153,10 +153,10 @@ const Hero = () => {
               <div
                 className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8"
               >
-                {/* Logo + tag */}
-                <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                  <img src={logo} alt="MetsXMFanZone" className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
-                  <span className="mx-eyebrow text-primary">
+                {/* Logo + tag (logo already in the mobile nav, so hidden on phones) */}
+                <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
+                  <img src={logo} alt="MetsXMFanZone" className="hidden sm:block w-8 h-8 object-contain" />
+                  <span className="mx-eyebrow rounded-sm bg-background/75 px-2 py-0.5 text-primary sm:bg-transparent sm:p-0">
                     {slide.tag}
                   </span>
                   {isLiveNow && (
@@ -179,7 +179,7 @@ const Hero = () => {
                 )}
 
                 {/* Description */}
-                <p className="mb-3 max-w-md line-clamp-2 text-xs leading-relaxed text-foreground/75 sm:mb-4 sm:text-sm sm:line-clamp-3">
+                <p className="mb-3 max-w-md line-clamp-1 text-[13px] leading-snug text-foreground/80 sm:mb-4 sm:text-sm sm:line-clamp-3 sm:leading-relaxed">
                   {slide.description}
                 </p>
 
@@ -190,7 +190,7 @@ const Hero = () => {
                       {isLiveNow && <div className="absolute -inset-1 rounded-lg bg-destructive/40 blur-lg" />}
                       <Button
                         onClick={() => handleNav("/metsxmfanzone")}
-                        className={`relative h-9 gap-1.5 rounded-sm px-4 text-xs font-bold sm:px-6 sm:text-sm ${isLiveNow ? "ring-2 ring-destructive/50" : ""}`}
+                        className={`relative h-11 gap-2 rounded-lg px-6 text-[15px] font-bold sm:h-9 sm:gap-1.5 sm:rounded-sm sm:text-sm ${isLiveNow ? "ring-2 ring-destructive/50" : ""}`}
                       >
                         <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
                         {isLiveNow ? "Watch Live" : "Watch"}
@@ -201,7 +201,7 @@ const Hero = () => {
                     <Button
                       onClick={() => slide.link_url && handleNav(slide.link_url)}
                       variant="outline"
-                      className="h-9 gap-1.5 rounded-sm border-foreground/20 bg-foreground/10 px-3 text-xs text-foreground hover:bg-foreground/20 sm:px-5 sm:text-sm"
+                      className="h-11 gap-1.5 rounded-lg border-foreground/20 bg-foreground/10 px-4 text-sm text-foreground hover:bg-foreground/20 sm:h-9 sm:rounded-sm sm:px-5"
                     >
                       <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       {slide.link_text}
@@ -211,7 +211,8 @@ const Hero = () => {
                     <Button
                       onClick={handleSetReminder}
                       variant="outline"
-                      className={`gap-1.5 h-8 sm:h-9 md:h-10 text-xs sm:text-sm px-3 sm:px-5 rounded-sm ${
+                      aria-label={permission === "granted" && isSubscribed ? "Reminder on" : "Set reminder"}
+                      className={`gap-1.5 h-11 w-11 p-0 rounded-lg sm:h-9 sm:w-auto md:h-10 text-xs sm:text-sm sm:px-5 sm:rounded-sm ${
                         permission === "granted" && isSubscribed
                           ? "bg-primary/20 border-primary/40 text-primary hover:bg-primary/30"
                           : "bg-foreground/10 border-foreground/20 text-foreground hover:bg-foreground/20 hover:border-foreground/40"
@@ -222,7 +223,7 @@ const Hero = () => {
                       ) : (
                         <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       )}
-                      {permission === "granted" && isSubscribed ? "Reminder On" : "Set Reminder"}
+                      <span className="hidden sm:inline">{permission === "granted" && isSubscribed ? "Reminder On" : "Set Reminder"}</span>
                     </Button>
                   )}
                 </div>

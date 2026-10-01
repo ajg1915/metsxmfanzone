@@ -2,6 +2,7 @@ import { Suspense, useState } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
+import HomeQuickLinks from "@/components/HomeQuickLinks";
 
 
 import Footer from "@/components/Footer";
@@ -197,6 +198,11 @@ const Index = () => {
         <Suspense fallback={<SectionSkeleton />}>
           <LiveStreamsSection />
         </Suspense>
+
+        {/* Phone-only shortcuts under the streams */}
+        <div className="md:hidden">
+          <HomeQuickLinks />
+        </div>
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
