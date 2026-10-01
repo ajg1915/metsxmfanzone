@@ -8,6 +8,7 @@ import { Calendar, MapPin, Home, Plane, Loader2, RefreshCw, Swords } from "lucid
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import NYTeamsSchedule from "@/components/NYTeamsSchedule";
+import TVGuide from "@/components/TVGuide";
 import SEOHead from "@/components/SEOHead";
 import { supabase } from "@/integrations/supabase/client";
 import { parseISO } from "date-fns";
@@ -356,6 +357,7 @@ export default function MetsSchedule2026() {
           </p>
         </div>
 
+        <TVGuide className="mb-10" initialTeam={new URLSearchParams(window.location.search).get("team") ?? "all"} />
         <NYTeamsSchedule />
       </main>
       

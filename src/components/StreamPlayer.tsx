@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { StreamAlertBanner } from "./StreamAlertBanner";
 import { NewPostAlert } from "./NewPostAlert";
 import ClapprPlayer from "./ClapprPlayer";
 import { getNYTeamStreamUrl } from "@/lib/nyTeamStreamCheck";
@@ -118,7 +117,6 @@ export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPla
 
   return (
     <div className="mb-8 space-y-4">
-      <StreamAlertBanner streamId={stream.id} />
       <div className="stream-player-shell relative overflow-hidden bg-player max-sm:!mx-0 max-sm:!w-full sm:rounded-lg">
         <NewPostAlert />
         <ClapprPlayer
