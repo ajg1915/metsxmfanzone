@@ -181,7 +181,7 @@ function writeRoute(routePath, html) {
 /* --------------------------------- routes --------------------------------- */
 
 const STATIC_ROUTES = [
-  ['/', 'MetsXMFanZone — #1 New York Mets Fan Community', 'Live games, podcasts, news, highlights, and the most passionate New York Mets fan community. Built by fans, for fans.'],
+  ['/', 'MetsXMFanZone — Mets & NY Sports Live Streams, News & Podcasts', 'The #1 New York Mets fan community. Watch live streams, podcasts, news, trade rumors and game-day coverage — on any device. Built by fans, for fans.'],
   ['/blog', 'Mets Blog — News, Analysis & Trade Rumors | MetsXMFanZone', 'The latest New York Mets news, analysis, trade rumors, and feature articles from the MetsXMFanZone editorial team.'],
   ['/podcast', 'Mets Podcast — The MetsXMFanZone Show', 'Game recaps, interviews, and unfiltered Mets fan takes every week on the official MetsXMFanZone podcast.'],
   ['/community', 'Mets Fan Community — Join the Conversation | MetsXMFanZone', 'Connect with thousands of New York Mets fans. Share your takes, photos, and game-day reactions.'],
