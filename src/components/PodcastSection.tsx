@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Music2, Facebook, Headphones, Music, Podcast, Radio, Mic, ArrowRight, Waves, Volume2, Disc3 } from "lucide-react";
+import { Download, Play, Pause, Music2, Facebook, Headphones, Music, Podcast, Radio, Mic, ArrowRight, Waves, Volume2, Disc3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/metsxmfanzone-logo.png";
+import { downloadAudio } from "@/utils/downloadAudio";
 import PremiumBadge from "@/components/PremiumBadge";
 import { useSubscription } from "@/hooks/useSubscription";
 import { motion } from "framer-motion";
@@ -261,6 +262,13 @@ const PodcastSection = () => {
                       <source src={podcast.audio_url} type="audio/mpeg" />
                       Your browser does not support the audio element.
                     </audio>
+                    <button
+                      type="button"
+                      onClick={() => downloadAudio(podcast.audio_url, podcast.title)}
+                      className="mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border/50 text-sm font-semibold text-foreground hover:border-[hsl(var(--mets-orange)/0.5)]"
+                    >
+                      <Download className="h-4 w-4" /> Download
+                    </button>
                   </div>
                 </motion.div>
               ))}

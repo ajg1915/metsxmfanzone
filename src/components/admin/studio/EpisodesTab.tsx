@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Pencil, Mic, Video, Loader2 } from "lucide-react";
+import { Trash2, Pencil, Mic, Video, Loader2, Download } from "lucide-react";
+import { downloadAudio } from "@/utils/downloadAudio";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -173,6 +174,11 @@ export default function EpisodesTab({ onEditEpisode }: EpisodesTabProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
+                        {ep.type === "podcast" && ep.url && (
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Download audio" onClick={() => downloadAudio(ep.url as string, ep.title)}>
+                            <Download className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onEditEpisode(ep.id)}>
                           <Pencil className="w-3.5 h-3.5" />
                         </Button>
