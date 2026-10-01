@@ -151,13 +151,6 @@ export const adminCollections = [
     empty: "No popup alerts yet.",
   },
   {
-    path: "/admin/feedback",
-    table: "feedbacks",
-    title: "Feedback",
-    description: "Feedback submitted by fans.",
-    empty: "No feedback yet.",
-  },
-  {
     path: "/admin/support",
     table: "contact_submissions",
     title: "Support messages",

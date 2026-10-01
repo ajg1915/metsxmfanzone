@@ -37,7 +37,6 @@ MetsXMFanZone is an independent fan platform covering the New York Mets. Members
 - [Help Center](/help-center): Account, payment, and playback help articles.
 - [Contact](/contact): Customer support form.
 - [FAQs](/faqs): Frequently asked questions.
-- [Feedback](/feedback): Share feedback with the team.
 - [Business Partner](/business-partner): Partnership inquiries.
 - [Podcaster Application](/podcaster-application): Apply to host on the network.
 - [Privacy](/privacy): Privacy policy.

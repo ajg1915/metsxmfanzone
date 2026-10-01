@@ -18,20 +18,6 @@ const FORMS = {
     ],
     success: "Thanks — your message is with our support team.",
   },
-  "/feedback": {
-    eyebrow: "Feedback",
-    heading: "Tell us what you think",
-    intro: "Ideas, bugs, or something you'd love to see on MetsXMFanZone? We read every note.",
-    table: "feedbacks",
-    requiresAuth: true,
-    fields: [
-      { name: "display_name", label: "Display name", type: "text", required: false },
-      { name: "location", label: "Where are you watching from?", type: "text", required: false },
-      { name: "rating", label: "Rating out of 5", type: "number", required: false },
-      { name: "content", label: "Your feedback", type: "textarea", required: true },
-    ],
-    success: "Thanks for the feedback — it really helps.",
-  },
 };
 
 export const formPaths = Object.keys(FORMS);

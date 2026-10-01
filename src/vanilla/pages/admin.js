@@ -18,7 +18,6 @@ const SECTIONS = [
   ["/admin/media", "Media"],
   ["/admin/popups", "Popups"],
   ["/admin/community", "Community"],
-  ["/admin/feedback", "Feedback"],
   ["/admin/support", "Support"],
   ["/admin/users", "Members"],
   ["/admin/subscriptions", "Subscriptions"],

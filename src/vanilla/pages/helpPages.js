@@ -843,95 +843,6 @@ const contact = {
     });
   },
 };
-
-// ---------------------------------------------------------------------------
-// Feedback (insert -> feedbacks, requires auth)
-// ---------------------------------------------------------------------------
-const feedback = {
-  path: "/feedback",
-  async render(root, ctx) {
-    const pathname = ctx?.pathname || "/feedback";
-    setPageMetadata({
-      title: "Share Your Feedback - Help Us Improve",
-      description: "Share your feedback and suggestions with MetsXMFanZone. Help us improve your experience and make the platform better for all Mets fans.",
-      path: pathname,
-    });
-
-    const content = `
-      <section class="content-width" style="padding-block:32px 60px;max-width:640px;margin-inline:auto">
-        <div class="card-panel">
-          <h1>Share Your Feedback</h1>
-          <p class="form-note">Let us know what you think! Your feedback helps us improve.</p>
-          <form class="stacked-form" id="feedback-form" style="max-width:none">
-            <label>Rating (Optional)
-              <div class="rating-stars" role="radiogroup" aria-label="Rating">
-                ${[1, 2, 3, 4, 5].map((star) => `<button type="button" data-star="${star}" aria-label="${star} star">★</button>`).join("")}
-              </div>
-            </label>
-            <input type="hidden" name="rating" value="0">
-            <label>Your Feedback *<textarea name="content" rows="6" required placeholder="Tell us what you think..."></textarea></label>
-            <p class="form-error" id="feedback-error" hidden role="alert"></p>
-            <button class="button primary" type="submit">Submit Feedback</button>
-          </form>
-        </div>
-      </section>`;
-
-    mount(root, pathname, content);
-
-    const form = root.querySelector("#feedback-form");
-    const ratingInput = form.querySelector("input[name=rating]");
-    const stars = [...form.querySelectorAll(".rating-stars button")];
-    const paintStars = (value) => stars.forEach((star) => star.classList.toggle("is-active", Number(star.dataset.star) <= value));
-    stars.forEach((star) => {
-      star.addEventListener("click", () => {
-        ratingInput.value = star.dataset.star;
-        paintStars(Number(star.dataset.star));
-      });
-    });
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const error = root.querySelector("#feedback-error");
-      const submit = form.querySelector("button[type=submit]");
-      const content = form.querySelector("textarea[name=content]").value.trim();
-      const rating = Number(ratingInput.value) || 0;
-
-      const { user } = await auth.ready();
-      if (!user) {
-        window.location.assign("/auth");
-        return;
-      }
-      if (!content) {
-        error.textContent = "Please write your feedback before submitting.";
-        error.hidden = false;
-        return;
-      }
-
-      submit.disabled = true;
-      error.hidden = true;
-      const { error: insertError } = await backend.from("feedbacks").insert({
-        user_id: user.id,
-        content,
-        rating: rating > 0 ? rating : null,
-      });
-
-      if (insertError) {
-        error.textContent = insertError.message || "Failed to submit feedback. Please try again.";
-        error.hidden = false;
-      } else {
-        form.reset();
-        ratingInput.value = "0";
-        paintStars(0);
-        submit.textContent = "Thank you!";
-        setTimeout(() => {
-          submit.textContent = "Submit Feedback";
-        }, 2500);
-      }
-      submit.disabled = false;
-    });
-  },
-};
-
 // ---------------------------------------------------------------------------
 // Business Partner (insert -> business_ads)
 // ---------------------------------------------------------------------------
@@ -1373,7 +1284,6 @@ export const helpRoutes = [
   privacy,
   terms,
   contact,
-  feedback,
   businessPartner,
   podcasterApplication,
   install,

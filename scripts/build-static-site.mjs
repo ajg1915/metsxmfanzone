@@ -135,7 +135,7 @@ const extraFor = (p) => {
       ).join("")}
     </section>`;
   }
-  if (p === "/contact" || p === "/feedback" || p === "/business-partner" || p === "/podcaster-application") {
+  if (p === "/contact" || p === "/business-partner" || p === "/podcaster-application") {
     return `<section class="section content-width"><h2>Get in touch</h2>${contactForm}</section>`;
   }
   return "";
