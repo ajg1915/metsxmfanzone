@@ -78,7 +78,7 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
         .select("*")
         .eq("prediction_date", today)
         .order("created_at", { ascending: true })
-        .limit(6);
+        .limit(10);
       if (todayError) throw todayError;
       if (todayData && todayData.length > 0) return todayData as PlayerPrediction[];
 
@@ -88,7 +88,7 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
         .select("*")
         .order("prediction_date", { ascending: false })
         .order("created_at", { ascending: true })
-        .limit(6);
+        .limit(10);
       if (recentError) throw recentError;
       return (recentData ?? []) as PlayerPrediction[];
     },
@@ -126,7 +126,7 @@ const PlayersToWatch = ({ lineupGameDate }: { lineupGameDate?: string | null }) 
         .eq("published", true)
         .gte("game_start", since)
         .order("game_start", { ascending: true })
-        .limit(9);
+        .limit(10);
       if (error) throw error;
       return (data ?? []) as unknown as NYTeamPick[];
     },

@@ -33,7 +33,7 @@ const BlogSection = () => {
           .select("id, title, slug, excerpt, featured_image_url, category, published_at, created_at")
           .eq("published", true)
           .order("published_at", { ascending: false })
-          .limit(6);
+          .limit(7);
 
         if (error) throw error;
         if (!cancelled) setPosts((data || []) as BlogPost[]);
@@ -51,7 +51,7 @@ const BlogSection = () => {
   }, []);
 
   const highlightPost = posts[0];
-  const otherPosts = posts.slice(1, 6);
+  const otherPosts = posts.slice(1, 7);
 
   const getTimeAgo = (date: string | null) => {
     if (!date) return "";
