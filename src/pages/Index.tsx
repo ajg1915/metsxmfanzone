@@ -65,9 +65,9 @@ const homepageSchema = {
   "@type": "WebPage",
   "@id": "https://www.metsxmfanzone.com/#webpage",
   url: "https://www.metsxmfanzone.com/",
-  name: "MetsXMFanZone - The Ultimate Destination Where the Fans Go",
+  name: "MetsXMFanZone — Mets & NY Sports Live Streams, News & Podcasts",
   description:
-    "The ultimate Mets fan community. Watch live game streams, highlights, podcasts, and exclusive Mets coverage. Join thousands of passionate New York Mets fans.",
+    "The #1 New York Mets fan community. Watch live streams, podcasts, news, trade rumors and game-day coverage — on any device. Built by fans, for fans.",
   isPartOf: {
     "@id": "https://www.metsxmfanzone.com/#website",
   },
@@ -163,8 +163,8 @@ const Index = () => {
       </Suspense>
 
       <SEOHead
-        title="MetsXMFanZone — NY Mets Live Games, News & Podcasts"
-        description="The ultimate Mets fan community. Watch live game streams, highlights, podcasts, and exclusive Mets coverage. Join thousands of passionate New York Mets fans."
+        title="MetsXMFanZone — Mets & NY Sports Live Streams, News & Podcasts"
+        description="The #1 New York Mets fan community. Watch live streams, podcasts, news, trade rumors and game-day coverage — on any device. Built by fans, for fans."
         keywords="Mets live streams, New York Mets, Mets highlights, Mets podcast, Mets fan community, MLB streams, Mets games, baseball live stream, Spring Training, Francisco Lindor, Pete Alonso, Citi Field"
         canonical="https://metsxmfanzone.com/"
         ogType="website"
