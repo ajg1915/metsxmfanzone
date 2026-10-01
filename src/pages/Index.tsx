@@ -31,7 +31,6 @@ const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/Regu
 const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
 const HomeLineupCard = lazyWithRetry(() => import("@/components/HomeLineupCard"), "home-lineup-card");
 const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadioSection"), "home-podcast-radio-section");
-const TikTokFeedSection = lazyWithRetry(() => import("@/components/TikTokFeedSection"), "home-tiktok-feed-section");
 
 
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
@@ -181,8 +180,8 @@ const Index = () => {
           <FreeTrialExpiryBanner />
         </Suspense>
       <main className="relative z-10 homepage-broadcast-feed">
-        <Hero />
         <HomeSocialRow />
+        <Hero />
 
 
         {/* Above-the-fold: mount immediately */}
@@ -286,13 +285,6 @@ const Index = () => {
             </LazySection>
           </>
         )}
-
-        <div className="section-divider my-1" />
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <TikTokFeedSection />
-          </Suspense>
-        </LazySection>
 
         <div className="section-divider my-1" />
 

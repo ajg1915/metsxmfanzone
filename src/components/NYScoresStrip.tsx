@@ -33,7 +33,7 @@ type TeamCard = {
   league: string;
   color: string;
   href: string;
-  main: ScoreGame;
+  main: ScoreGame | null;
   next: ScoreGame | null;
 };
 
@@ -60,17 +60,20 @@ const whenLabel = (iso: string) =>
 const etDate = (d: Date) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: ET, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 
-// live game first, else a final from the last 7 days, else the next game
-function pick(games: ScoreGame[]): { main: ScoreGame; next: ScoreGame | null } | null {
+// live game first, then today's game (final or still to play), else the latest
+// final from the last 7 days, else the next game. A team with nothing in range
+// still gets a card (main = null) so all of them always show.
+function pick(games: ScoreGame[]): { main: ScoreGame | null; next: ScoreGame | null } {
   const sorted = [...games].sort((a, b) => +new Date(a.start) - +new Date(b.start));
   const live = sorted.find((g) => g.state === "in");
+  const today = etDate(new Date());
+  const todays = sorted.filter((g) => etDate(new Date(g.start)) === today);
   const weekAgo = Date.now() - 7 * MS_DAY;
   const finals = sorted.filter((g) => g.state === "post" && +new Date(g.start) >= weekAgo);
   const upcoming = sorted.filter((g) => g.state === "pre");
-  const main = live ?? finals[finals.length - 1] ?? upcoming[0] ?? null;
-  if (!main) return null;
-  const next = main.state === "pre" ? null : upcoming[0] ?? null;
-  return { main, next };
+  const main = live ?? todays[todays.length - 1] ?? finals[finals.length - 1] ?? upcoming[0] ?? null;
+  const next = main && main.state !== "pre" ? upcoming.find((g) => g.id !== main.id) ?? null : null;
+  return { main, next: main ? next : upcoming[0] ?? null };
 }
 
 async function loadEspnTeams(): Promise<Record<string, ScoreGame[]>> {
@@ -153,6 +156,27 @@ async function loadMets(): Promise<ScoreGame[]> {
 function ScoreCard({ card }: { card: TeamCard }) {
   const navigate = useNavigate();
   const { main, next } = card;
+  if (!main) {
+    return (
+      <button
+        type="button"
+        onClick={() => navigate(card.href)}
+        aria-label={`${card.label}: no game in the next two months, tap for the schedule`}
+        className="flex min-h-[136px] w-[172px] shrink-0 snap-start flex-col gap-1.5 rounded-xl border border-border/40 bg-card p-3 text-left transition-colors hover:bg-card/80"
+        style={{ borderLeft: `4px solid ${card.color}` }}
+      >
+        <span className="text-sm font-bold leading-none text-foreground">
+          {card.label} <span className="text-[10px] font-semibold text-muted-foreground">{card.league}</span>
+        </span>
+        <span className="mt-1 text-sm font-semibold leading-snug text-foreground">No game today</span>
+        {next ? (
+          <span className="text-xs text-muted-foreground">Next: {whenLabel(next.start)}</span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Schedule coming soon</span>
+        )}
+      </button>
+    );
+  }
   const live = main.state === "in";
   const final = main.state === "post";
   const hasScore = (live || final) && main.teamScore != null && main.oppScore != null;
@@ -241,11 +265,10 @@ export default function NYScoresStrip() {
 
       const built: TeamCard[] = [];
       for (const t of TEAMS) {
-        const picked = pick(t.key === "mets" ? metsGames : espnGames[t.key] ?? []);
-        if (picked) built.push({ ...t, ...picked });
+        built.push({ ...t, ...pick(t.key === "mets" ? metsGames : espnGames[t.key] ?? []) });
       }
       // live games jump to the front; everything else keeps the team order above
-      built.sort((a, b) => Number(b.main.state === "in") - Number(a.main.state === "in"));
+      built.sort((a, b) => Number(b.main?.state === "in") - Number(a.main?.state === "in"));
       setFailed(false);
       setCards(built);
     };
@@ -258,9 +281,9 @@ export default function NYScoresStrip() {
     };
   }, []);
 
-  if (failed || (cards && cards.length === 0)) return null;
+  if (failed) return null;
 
-  const anyLive = !!cards?.some((c) => c.main.state === "in");
+  const anyLive = !!cards?.some((c) => c.main?.state === "in");
 
   return (
     <section aria-label="New York team scores" className="relative py-4">
@@ -271,7 +294,7 @@ export default function NYScoresStrip() {
               className={cn("h-2.5 w-2.5 rounded-full", anyLive ? "animate-pulse bg-red-500" : "bg-muted-foreground/50")}
               aria-hidden="true"
             />
-            <h2 className="text-sm font-bold text-foreground sm:text-xl md:text-2xl">NY Scores</h2>
+            <h2 className="text-[25px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-2xl md:text-3xl">NY Scores</h2>
           </div>
           <button
             type="button"
@@ -287,7 +310,7 @@ export default function NYScoresStrip() {
       <div className="flex scroll-px-4 snap-x gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide sm:scroll-px-6 sm:px-6 lg:scroll-px-8 lg:px-8">
         {cards
           ? cards.map((c) => <ScoreCard key={c.key} card={c} />)
-          : Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[136px] w-[172px] shrink-0 rounded-xl" />)}
+          : Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[136px] w-[172px] shrink-0 rounded-xl" />)}
       </div>
     </section>
   );

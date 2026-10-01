@@ -129,23 +129,23 @@ const Hero = () => {
   };
 
   return (
-    <section className="group/hero home-hero-shell relative max-sm:!p-0 pt-16 sm:pt-20">
+    <section className="group/hero home-hero-shell relative max-sm:!p-0 sm:pt-2">
       <AdminEditBadge to="/admin/hero" label="Edit Hero" />
 
       {/* Phone hero: full-bleed photo under the floating header */}
       <div
-        className="relative h-[650px] overflow-hidden sm:hidden"
+        className="relative h-[calc(100svh-12.5rem)] min-h-[460px] max-h-[720px] overflow-hidden sm:hidden"
         onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
         onTouchEnd={(e) => onTouchEnd(e.changedTouches[0].clientX)}
       >
         {/\.(mp4|webm|mov|m4v)(\?|$)/i.test(mSlide.image || "") ? (
-          <video key={mSlide.image} src={mSlide.image} autoPlay muted loop playsInline className="absolute inset-x-0 top-0 h-[470px] w-full object-cover" />
+          <video key={mSlide.image} src={mSlide.image} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />
         ) : (
-          <img src={mSlide.image} alt="" className="absolute inset-x-0 top-0 h-[470px] w-full object-cover object-[48%_40%]" />
+          <img src={mSlide.image} alt="" className="absolute inset-0 h-full w-full object-cover object-[48%_40%]" />
         )}
-        <div className="absolute inset-x-0 top-0 h-[470px] " style={{ backgroundImage: "linear-gradient(to bottom, hsl(var(--background) / 0.7) 0%, hsl(var(--background) / 0) 24%, hsl(var(--background) / 0.15) 42%, hsl(var(--background) / 0.92) 80%, hsl(var(--background)) 100%)" }} />
+        <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(to bottom, hsl(var(--background) / 0.25) 0%, hsl(var(--background) / 0) 20%, hsl(var(--background) / 0.35) 45%, hsl(var(--background) / 0.92) 75%, hsl(var(--background)) 100%)" }} />
 
-        <div className="absolute inset-x-5 top-[270px] flex flex-col" style={user ? { top: 300 } : undefined}>
+        <div className="absolute inset-x-5 bottom-3 flex flex-col">
           {user ? (
             <div className="flex items-center gap-2.5">
               {isLiveNow && (
@@ -163,7 +163,7 @@ const Hero = () => {
             </div>
           )}
 
-          <h1 className="mx-wordmark mt-2.5 font-display uppercase italic leading-[0.98] text-foreground drop-shadow-lg" style={{ fontFamily: "'Oswald','Bebas Neue',sans-serif", fontWeight: 700, fontSize: user ? 38 : 35 }}>
+          <h1 className="mx-wordmark mt-2.5 font-display uppercase italic leading-[0.98] text-foreground drop-shadow-lg" style={{ fontFamily: "'Oswald','Bebas Neue',sans-serif", fontWeight: 700, fontSize: user ? "clamp(28px, 9.5vw, 38px)" : "clamp(26px, 9vw, 35px)" }}>
             {user ? mSlide.title : "The ultimate destination where the fans go"}
           </h1>
           <p className="mt-2.5 text-[14.5px] leading-snug text-foreground/80">

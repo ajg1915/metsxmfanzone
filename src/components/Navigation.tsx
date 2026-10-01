@@ -240,7 +240,7 @@ const Navigation = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 glass-nav ${isHomePage ? "max-md:!border-0 max-md:!bg-transparent max-md:!shadow-none max-md:![backdrop-filter:none] max-md:px-3 max-md:pt-3" : ""}`}>
         <div className={`container mx-auto px-3 sm:px-4 ${isHomePage ? "max-md:rounded-full max-md:border max-md:border-[rgba(255,255,255,0.14)] max-md:bg-background/55 max-md:pl-3.5 max-md:pr-1.5 max-md:backdrop-blur-xl" : ""}`}>
         <div className="flex h-14 items-center justify-between sm:h-16">
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             {!isHomePage && (
               <Button
                 variant="ghost"
@@ -254,13 +254,13 @@ const Navigation = () => {
             {location.pathname === "/metsxmfanzone" && (
               <span className="font-display text-[25px] uppercase leading-none tracking-wide md:hidden">Watch Live</span>
             )}
-            <div className={`flex items-center gap-1.5 cursor-pointer ${location.pathname === "/metsxmfanzone" ? "max-md:hidden" : ""}`} onClick={() => navigate("/")}>
+            <div className={`flex min-w-0 items-center gap-1.5 cursor-pointer ${location.pathname === "/metsxmfanzone" ? "max-md:hidden" : ""}`} onClick={() => navigate("/")}>
               <img 
                 src={logo} 
                 alt="MetsXMFanZone Logo" 
-                className="h-9 w-auto"
+                className="h-9 w-auto max-md:h-8 shrink-0"
               />
-              <div className="font-display text-xl uppercase leading-none sm:text-2xl">
+              <div className="min-w-0 font-display text-xl uppercase leading-none max-md:text-[clamp(12px,4.5vw,20px)] whitespace-nowrap sm:text-2xl">
                 <span className={isHomePage ? "text-secondary max-md:text-foreground" : "text-secondary"}>Mets</span>
                 <span className="text-primary">XM</span>
                 <span className="text-foreground">FanZone</span>
@@ -358,12 +358,12 @@ const Navigation = () => {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             {isHomePage && !user && (
               <Button
                 variant="ghost"
                 onClick={() => navigate("/auth?mode=login")}
-                className="h-11 rounded-full bg-white/15 px-4 text-sm font-bold text-white hover:bg-white/25 md:hidden"
+                className="h-10 shrink-0 rounded-full bg-white/15 px-2.5 text-[13px] min-[360px]:h-11 min-[360px]:text-sm font-bold text-white hover:bg-white/25 min-[360px]:px-4 md:hidden"
               >
                 Log in
               </Button>

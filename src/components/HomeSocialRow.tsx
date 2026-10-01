@@ -2,7 +2,7 @@ import { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
 
 // Small swipe row of every official account, sitting right under the hero.
 const HomeSocialRow = () => (
-  <nav aria-label="Follow MetsXMFanZone" className="relative z-10 -mt-1 pb-1 pt-2">
+  <nav aria-label="Follow MetsXMFanZone" className="relative z-10 pb-2 pt-[70px] sm:pt-[72px]">
     <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 scrollbar-hide sm:px-6 lg:px-8">
       <span className="shrink-0 pr-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary">Follow</span>
       {METSXMFANZONE_SOCIALS.map(({ name, url, Icon }) => (
