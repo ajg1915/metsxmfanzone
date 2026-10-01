@@ -297,7 +297,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                     <span className="absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-70 animate-ping" />
                     <span className="relative inline-flex rounded-full h-full w-full bg-orange-400" />
                   </span>
-                  <p className="text-[8px] sm:text-[10px] uppercase tracking-[0.25em] text-orange-300 font-black">Live · 2026 Season</p>
+                  <p className="text-[10px] sm:text-[10px] uppercase tracking-[0.25em] text-orange-300 font-black">Live · 2026 Season</p>
                 </div>
                 <h2 className="text-lg sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-none uppercase truncate">
                   Mets <span className="text-orange-400">Game Center</span>
@@ -351,10 +351,10 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <div className="flex items-center gap-2">
                     <div className="h-[3px] w-6 sm:w-8 rounded-full bg-orange-400" />
-                    <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.28em] font-black text-orange-300">Today's Matchup</p>
+                    <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.28em] font-black text-orange-300">Today's Matchup</p>
                   </div>
                   {lineupCard && (
-                    <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] bg-white/10 border border-white/15 backdrop-blur-md rounded-full px-2.5 sm:px-3 py-1">
+                    <div className="flex items-center gap-1.5 text-[11px] sm:text-[10px] font-black uppercase tracking-[0.15em] bg-white/10 border border-white/15 backdrop-blur-md rounded-full px-2.5 sm:px-3 py-1">
                       <Clock className="w-3 h-3 text-orange-400" />
                       <span>{format(new Date(lineupCard.game_date), "EEE MMM d")}</span>
                       <span className="text-white/40">·</span>
@@ -374,9 +374,9 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                       </div>
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-white/60">Home</p>
+                      <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-white/60">Home</p>
                       <p className="font-black text-lg sm:text-2xl leading-none uppercase tracking-tight text-white">Mets</p>
-                      <p className="text-[9px] sm:text-[11px] font-bold text-orange-300/90 mt-1 uppercase tracking-wider">
+                      <p className="text-[11px] sm:text-[11px] font-bold text-orange-300/90 mt-1 uppercase tracking-wider">
                         {metsStanding ? `${metsStanding.wins}–${metsStanding.losses}` : "2026 Season"}
                       </p>
                     </div>
@@ -395,11 +395,11 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                   {/* Opponent side */}
                   <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1 justify-end text-right">
                     <div className="min-w-0">
-                      <p className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-white/60">Away</p>
+                      <p className="text-[11px] sm:text-[10px] uppercase tracking-[0.2em] font-bold text-white/60">Away</p>
                       <p className="font-black text-lg sm:text-2xl leading-none uppercase tracking-tight text-white truncate">
                         {lineupCard ? lineupCard.opponent : "TBD"}
                       </p>
-                      <p className="text-[9px] sm:text-[11px] font-bold text-white/50 mt-1 uppercase tracking-wider">Visitors</p>
+                      <p className="text-[11px] sm:text-[11px] font-bold text-white/50 mt-1 uppercase tracking-wider">Visitors</p>
                     </div>
                     <div className="relative shrink-0">
                       <div className="absolute inset-0 bg-white/15 blur-xl" aria-hidden />
@@ -418,7 +418,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
 
                 {/* Action row */}
                 <div className="flex items-center justify-between gap-2 mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-white/10">
-                  <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] uppercase tracking-[0.18em] font-bold text-white/60">
+                  <div className="flex items-center gap-1.5 text-[11px] sm:text-[10px] uppercase tracking-[0.18em] font-bold text-white/60">
                     <span className="relative flex h-1.5 w-1.5">
                       <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-70 animate-ping" />
                       <span className="relative inline-flex rounded-full h-full w-full bg-emerald-400" />
@@ -461,9 +461,9 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-[11px] sm:text-xs lg:text-sm truncate lg:whitespace-normal lg:truncate-none group-hover:text-foreground transition-colors leading-tight">{player.name}</p>
-                            <p className="text-[9px] lg:text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider mt-0.5">{player.fieldPosition}</p>
+                            <p className="text-[11px] lg:text-[10px] text-muted-foreground/70 font-semibold uppercase tracking-wider mt-0.5">{player.fieldPosition}</p>
                           </div>
-                          <span className="text-[8px] sm:text-[9px] lg:text-[10px] text-muted-foreground font-mono font-black bg-muted/40 group-hover:bg-primary group-hover:text-primary-foreground transition-all px-1 sm:px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-md border border-border/20 shrink-0">
+                          <span className="text-[10px] sm:text-[11px] lg:text-[10px] text-muted-foreground font-mono font-black bg-muted/40 group-hover:bg-primary group-hover:text-primary-foreground transition-all px-1 sm:px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-md border border-border/20 shrink-0">
                             {player.fieldPosition}
                           </span>
                         </button>
@@ -471,8 +471,8 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                     </div>
                   </div>
 
-                  {/* Right Column */}
-                  <div className="space-y-4">
+                  {/* Right Column (phones: flattened so predictions can lead) */}
+                  <div className="space-y-4 max-sm:contents">
                     {/* Starting Pitcher */}
                     {pitcher && (
                       <div>
@@ -496,51 +496,64 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
 
                     {/* Anthony's Predictions */}
                     {hasPredictions && (
-                      <div className="relative">
-                        <div className="flex items-center gap-1.5 mb-3">
-                          <div className="w-1 h-4 rounded-full bg-secondary" />
-                          <p className="text-[10px] font-black uppercase tracking-[0.15em] text-muted-foreground flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 text-secondary" />
-                            Anthony's Predictions
-                          </p>
+                      <div className="relative overflow-hidden rounded-2xl border border-primary/30 max-sm:order-first bg-gradient-to-br from-primary/15 via-card/60 to-card/40 p-3.5 sm:p-4">
+                        <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl" aria-hidden />
+                        <div className="relative mb-3 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-primary" />
+                            <h3 className="font-display text-[22px] uppercase leading-none tracking-wide text-foreground sm:text-2xl">
+                              Anthony's Predictions
+                            </h3>
+                          </div>
                         </div>
                         {!user ? (
                           <div className="relative">
-                            <div className="space-y-1.5 blur-sm pointer-events-none select-none">
-                              {predictions!.slice(0, 3).map((pred: any) => (
-                                <div key={pred.id} className="flex items-center gap-2 p-2 rounded-xl bg-secondary/5 border border-secondary/15">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-[11px] truncate">{pred.player_name}</p>
-                                    <p className="text-[9px] text-muted-foreground truncate">{pred.description}</p>
+                            <div className="pointer-events-none select-none space-y-2 blur-sm">
+                              {predictions!.slice(0, 3).map((pred: any, i: number) => (
+                                <div key={pred.id} className="flex items-center gap-3 rounded-xl border border-border/40 bg-background/50 p-3">
+                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-black text-primary">{i + 1}</span>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-[15px] font-bold">{pred.player_name}</p>
+                                    <p className="truncate text-[13px] text-muted-foreground">{pred.description}</p>
                                   </div>
                                 </div>
                               ))}
                             </div>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px] rounded-xl">
-                              <Lock className="w-6 h-6 text-secondary mb-1.5" />
-                              <p className="text-[11px] font-bold text-foreground">Sign in to unlock</p>
-                              <Link to="/auth" className="text-[10px] text-secondary hover:text-secondary/80 font-semibold mt-1 transition-colors">
-                                Log In →
+                            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-background/70 px-4 text-center backdrop-blur-[2px]">
+                              <Lock className="mb-1.5 h-6 w-6 text-primary" />
+                              <p className="text-[15px] font-bold text-foreground">Members get Anthony's picks</p>
+                              <Link to="/auth" className="mt-2 inline-flex h-11 items-center rounded-lg bg-[#d43700] px-5 text-sm font-bold text-white">
+                                Log in to unlock
                               </Link>
                             </div>
                           </div>
                         ) : (
-                          <div className="space-y-1.5">
-                            {predictions!.slice(0, 3).map((pred: any) => (
-                              <div key={pred.id} className="flex items-center gap-2 p-2 rounded-xl bg-secondary/5 border border-secondary/15 hover:border-secondary/30 transition-all">
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-semibold text-[11px] truncate">{pred.player_name}</p>
-                                  <p className="text-[9px] text-muted-foreground truncate">{pred.description}</p>
+                          <div className="relative space-y-2">
+                            {predictions!.slice(0, 3).map((pred: any, i: number) => (
+                              <div key={pred.id} className="rounded-xl border border-border/40 bg-background/50 p-3 transition-colors hover:border-primary/40">
+                                <div className="flex items-start gap-3">
+                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-black text-primary">{i + 1}</span>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <p className="text-[15px] font-bold leading-tight text-foreground">{pred.player_name}</p>
+                                      {pred.confidence && (
+                                        <span className="shrink-0 rounded-md bg-primary/15 px-2 py-0.5 text-[13px] font-extrabold text-primary" style={{ fontVariantNumeric: "tabular-nums" }}>
+                                          {pred.confidence}%
+                                        </span>
+                                      )}
+                                    </div>
+                                    <p className="mt-1 text-[13px] leading-snug text-muted-foreground line-clamp-3">{pred.description}</p>
+                                    {pred.confidence && (
+                                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted/50" role="presentation">
+                                        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, Number(pred.confidence)))}%` }} />
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                                {pred.confidence && (
-                                  <span className="text-[9px] font-bold text-secondary bg-secondary/10 px-1.5 py-0.5 rounded-md shrink-0">
-                                    {pred.confidence}%
-                                  </span>
-                                )}
                               </div>
                             ))}
-                            <Link to="/mets-lineup-card" className="flex items-center justify-center gap-1 text-[10px] text-secondary hover:text-secondary/80 font-bold pt-1 transition-colors">
-                              View All Predictions <ArrowRight className="w-3 h-3" />
+                            <Link to="/mets-lineup-card" className="flex h-11 items-center justify-center gap-1.5 text-sm font-bold text-primary transition-colors hover:text-primary/80">
+                              View all predictions <ArrowRight className="h-4 w-4" />
                             </Link>
                           </div>
                         )}
@@ -560,7 +573,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                           <div key={stat.label} className="relative rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 border border-border/30 p-2.5 lg:p-4 text-center overflow-hidden group hover:border-primary/30 transition-all">
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-60" />
                             <p className={`text-xl lg:text-3xl font-black leading-none tracking-tight ${stat.accent}`} style={{ fontVariantNumeric: "tabular-nums" }}>{stat.value}</p>
-                            <p className="text-[9px] lg:text-[10px] text-muted-foreground font-bold uppercase tracking-[0.1em] mt-1.5 whitespace-nowrap">{stat.label}</p>
+                            <p className="text-[11px] lg:text-[10px] text-muted-foreground font-bold uppercase tracking-[0.1em] mt-1.5 whitespace-nowrap">{stat.label}</p>
                           </div>
                         ))}
                       </div>
@@ -580,7 +593,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                                 <p className="font-semibold text-xs truncate">
                                   {game.isHome ? "vs" : "@"} {game.opponent}
                                 </p>
-                                <p className="text-[9px] text-muted-foreground font-medium">
+                                <p className="text-[11px] text-muted-foreground font-medium">
                                   {formatGameDateET(game.date)} • {game.time}
                                 </p>
                               </div>
@@ -600,7 +613,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                                       <p className="text-[10px] font-bold text-primary truncate">
                                         {game.probablePitcher.name}
                                       </p>
-                                      <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
+                                      <p className="text-[10px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
                                     </div>
                                   </div>
                                 ) : (
@@ -638,7 +651,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-xs text-muted-foreground/40 italic">TBA</p>
                           </div>
-                          <span className="text-[9px] text-muted-foreground/30 font-mono">--</span>
+                          <span className="text-[11px] text-muted-foreground/30 font-mono">--</span>
                         </div>
                       ))}
                     </div>
@@ -672,7 +685,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                         ].map((stat) => (
                           <div key={stat.label} className="rounded-xl bg-muted/20 border border-border/20 p-2.5 text-center">
                             <p className="text-lg font-black text-primary leading-none">{stat.value}</p>
-                            <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider mt-1">{stat.label}</p>
+                            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mt-1">{stat.label}</p>
                           </div>
                         ))}
                       </div>
@@ -692,7 +705,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                                 <p className="font-semibold text-xs truncate">
                                   {game.isHome ? "vs" : "@"} {game.opponent}
                                 </p>
-                                <p className="text-[9px] text-muted-foreground font-medium">
+                                <p className="text-[11px] text-muted-foreground font-medium">
                                   {formatGameDateET(game.date)} • {game.time}
                                 </p>
                               </div>
@@ -712,7 +725,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
                                       <p className="text-[10px] font-bold text-primary truncate">
                                         {game.probablePitcher.name}
                                       </p>
-                                      <p className="text-[8px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
+                                      <p className="text-[10px] text-muted-foreground font-mono">{game.probablePitcher.hand || "—"}</p>
                                     </div>
                                   </div>
                                 ) : (

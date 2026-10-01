@@ -115,7 +115,7 @@ const OffseasonNYTeamsSection = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <img src={metsxmfanzoneLogo} alt="MetsXMFanZone" className="w-5 h-5 sm:w-6 sm:h-6 rounded object-contain" />
-            <h2 className="text-xl md:text-2xl font-bold text-foreground">
+            <h2 className="text-[25px] leading-none tracking-wide sm:text-2xl md:text-3xl font-bold uppercase text-foreground">
               NY Sports Teams Events
             </h2>
           </div>
@@ -125,7 +125,7 @@ const OffseasonNYTeamsSection = () => {
               variant="ghost"
               size="icon"
               onClick={() => scroll('left')}
-              className="h-8 w-8 rounded-full bg-secondary/50"
+              className="hidden h-8 w-8 rounded-full bg-secondary/50 md:inline-flex"
               aria-label="Scroll offseason streams left"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -135,7 +135,7 @@ const OffseasonNYTeamsSection = () => {
               variant="ghost"
               size="icon"
               onClick={() => scroll('right')}
-              className="h-8 w-8 rounded-full bg-secondary/50"
+              className="hidden h-8 w-8 rounded-full bg-secondary/50 md:inline-flex"
               aria-label="Scroll offseason streams right"
             >
               <ChevronRight className="w-5 h-5" />
@@ -145,7 +145,7 @@ const OffseasonNYTeamsSection = () => {
 
         <div 
           id="ny-teams-scroll"
-          className="flex gap-4 overflow-x-auto scrollbar-hide snap-x pb-4"
+          className="-mx-4 flex gap-3 overflow-x-auto scrollbar-hide snap-x max-md:snap-mandatory scroll-px-4 px-4 pb-4 md:mx-0 md:gap-4 md:px-0"
           onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
         >
           {streams.map((stream) => {
@@ -156,9 +156,9 @@ const OffseasonNYTeamsSection = () => {
             <article
               key={stream.id}
               onClick={() => canWatch && handleStreamClick(stream)}
-              className={`${canWatch ? "cursor-pointer" : "cursor-default"} flex-shrink-0 w-[280px] md:w-[320px] lg:w-[380px] group relative snap-start`}
+              className={`${canWatch ? "cursor-pointer" : "cursor-default"} flex-shrink-0 w-[calc(100vw-4.5rem)] max-w-[340px] md:w-[320px] md:max-w-none lg:w-[380px] group relative snap-start`}
             >
-              <div className="relative aspect-video rounded-lg overflow-hidden border border-border/50 group-hover:border-primary/50 transition-all duration-300">
+              <div className="relative aspect-video rounded-xl overflow-hidden border border-border/50 group-hover:border-primary/50 transition-all duration-300">
                 <img 
                   src={stream.thumbnail_url || fanartGeneral} 
                   alt={stream.title}
@@ -176,7 +176,7 @@ const OffseasonNYTeamsSection = () => {
 
                 <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-accent/80 backdrop-blur-sm">
                   <ShieldCheck className="w-2.5 h-2.5 text-accent-foreground" />
-                  <span className="text-[8px] font-semibold text-accent-foreground uppercase tracking-wide">VPN Secured</span>
+                  <span className="text-[9px] font-semibold text-accent-foreground uppercase tracking-wide">VPN Secured</span>
                 </div>
 
                 {canWatch && (
@@ -184,7 +184,7 @@ const OffseasonNYTeamsSection = () => {
                     type="button"
                     size="icon"
                     onClick={(e) => { e.stopPropagation(); handleStreamClick(stream); }}
-                    className="absolute inset-0 m-auto h-12 w-12 rounded-full opacity-90 transition-all group-hover:opacity-100 group-focus-within:opacity-100"
+                    className="absolute inset-0 m-auto h-14 w-14 rounded-full opacity-95 md:h-12 md:w-12 transition-all group-hover:opacity-100 group-focus-within:opacity-100"
                     aria-label={`Watch ${stream.title}`}
                   >
                     <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
@@ -192,10 +192,10 @@ const OffseasonNYTeamsSection = () => {
                 )}
               </div>
               <div className="mt-2">
-                <h3 className="text-sm font-semibold line-clamp-1 text-foreground group-hover:text-primary transition-colors">
+                <h3 className="text-[15px] font-semibold line-clamp-1 md:text-sm text-foreground group-hover:text-primary transition-colors">
                   {stream.title}
                 </h3>
-                <p className="text-xs text-muted-foreground line-clamp-1">
+                <p className="text-[13px] text-muted-foreground line-clamp-1 md:text-xs">
                   {stream.description || 'Live NY sports coverage'}
                 </p>
                 {!isLive && (
