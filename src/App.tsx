@@ -439,7 +439,7 @@ const AppContent = () => {
             <Route path="/writer" element={<WriterDashboard />} />
             <Route path="/writer/new-article" element={<WriterArticleEditor />} />
             <Route path="/writer/edit/:id" element={<WriterArticleEditor />} />
-            {/* Spring Training page removed */}
+            <Route path="/spring-training-live" element={<SpringTrainingLive />} />
             <Route path="/replay-games" element={<ReplayGames />} />
             <Route path="/mets-schedule-2026" element={<MetsSchedule2026 />} />
             <Route path="/broadcast-schedule" element={<TVBroadcastSchedule />} />

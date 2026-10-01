@@ -25,6 +25,8 @@ export type NetworkPageConfig = {
   facts: string[];
   features: Feature[];
   player: { title: string; description: string };
+  /** optional block rendered between the player facts and the channel switcher */
+  extra?: ReactNode;
 };
 
 // Every stream channel page links to its siblings so people can flip channels.
@@ -34,6 +36,7 @@ const CHANNELS: { label: string; to: string; key: string }[] = [
   { label: "MSG", to: "/msg-network", key: "msg-network" },
   { label: "MSG+", to: "/msg-plus", key: "msg-plus" },
   { label: "Game Events", to: "/pix11-network", key: "pix11-network" },
+  { label: "Spring Training", to: "/spring-training-live", key: "spring-training-live" },
   { label: "MetsXMFanZone TV", to: "/metsxmfanzone", key: "metsxmfanzone" },
 ];
 
@@ -94,6 +97,8 @@ const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
                 </span>
               ))}
             </div>
+
+            {cfg.extra}
 
             {/* Channel switcher */}
             <nav aria-label="Switch channel" className="mt-5">

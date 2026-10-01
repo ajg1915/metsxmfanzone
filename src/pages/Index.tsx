@@ -35,7 +35,6 @@ const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadi
 
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
 const FAQSection = lazyWithRetry(() => import("@/components/FAQSection"), "home-faq-section");
-const TestimonialsSection = lazyWithRetry(() => import("@/components/TestimonialsSection"), "home-testimonials-section");
 const MetsStatsSection = lazyWithRetry(() => import("@/components/MetsStatsSection"), "home-mets-stats-section");
 const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSection"), "home-app-install-section");
 const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
@@ -292,16 +291,6 @@ const Index = () => {
           <LazySection fallback={<SectionSkeleton />}>
             <Suspense fallback={<SectionSkeleton />}>
               <FAQSection />
-            </Suspense>
-          </LazySection>
-        )}
-
-        <div className="section-divider my-1" />
-
-        {!user && (
-          <LazySection fallback={<SectionSkeleton />}>
-            <Suspense fallback={<SectionSkeleton />}>
-              <TestimonialsSection />
             </Suspense>
           </LazySection>
         )}
