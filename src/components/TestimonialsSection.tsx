@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { Star, Quote, Send, MapPin } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { MapPin, Quote, Send, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -14,268 +15,220 @@ interface Testimonial {
   location: string | null;
   display_name: string | null;
   created_at: string;
-  user_id: string;
-  profile?: {
-    full_name: string | null;
-    avatar_url: string | null;
-  };
 }
+
+const MAX_CHARS = 500;
+const SHOWN = 12;
+
+const Stars = ({ value, size = "h-4 w-4" }: { value: number; size?: string }) => (
+  <div className="flex gap-0.5" role="img" aria-label={`${value} out of 5 stars`}>
+    {[1, 2, 3, 4, 5].map((n) => (
+      <Star key={n} className={`${size} ${n <= value ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/50"}`} />
+    ))}
+  </div>
+);
 
 const TestimonialsSection = () => {
   const { user } = useAuth();
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const navigate = useNavigate();
+  const [reviews, setReviews] = useState<Testimonial[]>([]);
+  const [total, setTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [newReview, setNewReview] = useState("");
-  const [newRating, setNewRating] = useState(5);
-  const [newLocation, setNewLocation] = useState("");
-  const [newDisplayName, setNewDisplayName] = useState("");
+  const [text, setText] = useState("");
+  const [rating, setRating] = useState(5);
+  const [name, setName] = useState("");
+  const [place, setPlace] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [justPosted, setJustPosted] = useState(false);
 
-  // Get display name - prioritize custom display_name, then first name from profile
-  const getDisplayName = (testimonial: Testimonial): string => {
-    if (testimonial.display_name) return testimonial.display_name;
-    if (testimonial.profile?.full_name) return testimonial.profile.full_name.split(" ")[0];
-    return "Mets Fan";
-  };
-
-  const fetchTestimonials = async () => {
+  const load = async () => {
     try {
       // Only non-identifying columns are readable by the app; submitter
       // identity (user_id) stays restricted at the database level.
-      const { data: feedbacks, error } = await supabase
+      const { data, error, count } = await supabase
         .from("feedbacks")
-        .select("id, content, rating, location, display_name, created_at")
+        .select("id, content, rating, location, display_name, created_at", { count: "exact" })
         .order("created_at", { ascending: false })
-        .limit(8);
-
+        .limit(50);
       if (error) throw error;
-
-      setTestimonials((feedbacks || []).map((feedback) => ({
-        ...feedback,
-        user_id: "",
-        profile: null,
-      })) as Testimonial[]);
-    } catch (error) {
-      console.error("Error fetching testimonials:", error);
+      setReviews((data ?? []) as Testimonial[]);
+      setTotal(count ?? data?.length ?? 0);
+    } catch (e) {
+      console.error("Error fetching testimonials:", e);
     } finally {
       setLoading(false);
     }
   };
 
-
   useEffect(() => {
-    fetchTestimonials();
+    load();
   }, []);
 
-  const handleSubmitReview = async () => {
+  const average = useMemo(() => {
+    const rated = reviews.filter((r) => r.rating);
+    if (!rated.length) return null;
+    return rated.reduce((s, r) => s + (r.rating ?? 0), 0) / rated.length;
+  }, [reviews]);
+
+  const submit = async () => {
     if (!user) {
-      toast.error("Please log in to submit a review");
+      navigate("/auth");
       return;
     }
-
-    if (!newReview.trim()) {
-      toast.error("Please write a review");
+    if (!text.trim()) {
+      toast.error("Please write a few words first");
       return;
     }
-
     setSubmitting(true);
     try {
       const { error } = await supabase.from("feedbacks").insert({
         user_id: user.id,
-        content: newReview.trim(),
-        rating: newRating,
-        location: newLocation.trim() || null,
-        display_name: newDisplayName.trim() || null
+        content: text.trim(),
+        rating,
+        location: place.trim() || null,
+        display_name: name.trim() || null,
       });
-
       if (error) throw error;
-
-      toast.success("Thank you for your review!");
-      setNewReview("");
-      setNewRating(5);
-      setNewLocation("");
-      setNewDisplayName("");
-      setShowForm(false);
-      fetchTestimonials();
-    } catch (error) {
-      console.error("Error submitting review:", error);
-      toast.error("Failed to submit review");
+      toast.success("Thanks! Your review is on the site.");
+      setText("");
+      setRating(5);
+      setName("");
+      setPlace("");
+      setJustPosted(true);
+      load();
+    } catch (e) {
+      console.error("Error submitting review:", e);
+      toast.error("Couldn't post your review. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const renderStars = (rating: number | null) => {
-    const stars = rating || 5;
-    return (
-      <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`w-4 h-4 ${
-              star <= stars ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground"
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
-
-  const renderRatingSelector = () => (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          onClick={() => setNewRating(star)}
-          className="transition-transform hover:scale-110"
-        >
-          <Star
-            className={`w-6 h-6 ${
-              star <= newRating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground"
-            }`}
-          />
-        </button>
-      ))}
-    </div>
-  );
-
   return (
-    <section className="py-6 sm:py-8 md:py-12 px-4">
-      <div className="max-w-6xl mx-auto glass-card glow-blue rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8">
-        <div className="text-center mb-5 sm:mb-6 md:mb-8">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-1.5 sm:mb-2 leading-tight">
-            What Fans Are Saying
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Join our community and share your experience
-          </p>
+    <section aria-labelledby="fan-reviews-title" className="py-6 sm:py-10">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="mb-1 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary">
+              <span className="h-0.5 w-4 bg-primary" /> From the community
+            </p>
+            <h2 id="fan-reviews-title" className="text-[25px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-3xl">
+              What Fans Are Saying
+            </h2>
+          </div>
+          {average !== null && (
+            <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card/70 px-3.5 py-2">
+              <span className="font-display text-[34px] font-bold leading-none text-foreground">{average.toFixed(1)}</span>
+              <div>
+                <Stars value={Math.round(average)} />
+                <p className="mt-0.5 text-xs text-muted-foreground">{total} reviews</p>
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* Reviews */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-card/50 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 animate-pulse">
-                <div className="h-3 sm:h-4 bg-muted rounded w-3/4 mb-3 sm:mb-4" />
-                <div className="h-12 sm:h-16 bg-muted rounded mb-3 sm:mb-4" />
-                <div className="h-3 sm:h-4 bg-muted rounded w-1/2" />
-              </div>
+          <div className="-mx-4 flex gap-3 overflow-hidden px-4 sm:mx-0 sm:px-0">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-[190px] w-[82vw] max-w-[340px] shrink-0 animate-pulse rounded-2xl bg-card/60 md:w-1/3 md:max-w-none" />
             ))}
           </div>
-        ) : testimonials.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {testimonials.map((testimonial) => (
-              <div
-                key={testimonial.id}
-                className="bg-card/80 backdrop-blur-sm border border-border/50 rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 relative group hover:border-primary/30 transition-all duration-300"
-              >
-                <Quote className="absolute top-3 right-3 sm:top-4 sm:right-4 w-5 h-5 sm:w-6 sm:h-6 text-primary/20" />
-                <div className="mb-2 sm:mb-3">{renderStars(testimonial.rating)}</div>
-                <p className="text-foreground/90 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4 line-clamp-4">
-                  "{testimonial.content}"
-                </p>
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-xs sm:text-sm">
-                    {getDisplayName(testimonial)?.charAt(0)?.toUpperCase() || "F"}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-xs sm:text-sm font-medium text-foreground/80">
-                      {getDisplayName(testimonial)}
+        ) : reviews.length > 0 ? (
+          <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 scrollbar-hide sm:mx-0 sm:px-0 md:grid md:snap-none md:grid-cols-2 md:overflow-visible lg:grid-cols-3">
+            {reviews.slice(0, SHOWN).map((r) => {
+              const who = r.display_name || "Mets Fan";
+              return (
+                <figure
+                  key={r.id}
+                  className="relative flex w-[82vw] max-w-[340px] shrink-0 snap-start flex-col rounded-2xl border border-border/50 bg-card/80 p-4 md:w-auto md:max-w-none"
+                >
+                  <Quote className="absolute right-3 top-3 h-6 w-6 text-primary/25" aria-hidden="true" />
+                  <Stars value={r.rating || 5} />
+                  <blockquote className="mt-3 line-clamp-6 flex-1 text-[15px] leading-relaxed text-foreground/90">“{r.content}”</blockquote>
+                  <figcaption className="mt-4 flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/20 text-sm font-bold text-primary" aria-hidden="true">
+                      {who.charAt(0).toUpperCase()}
                     </span>
-                    {testimonial.location && (
-                      <span className="text-[10px] sm:text-xs text-muted-foreground flex items-center gap-0.5 sm:gap-1">
-                        <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                        {testimonial.location}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold text-foreground">{who}</span>
+                      {r.location && (
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="h-3 w-3" aria-hidden="true" />
+                          <span className="truncate">{r.location}</span>
+                        </span>
+                      )}
+                    </span>
+                  </figcaption>
+                </figure>
+              );
+            })}
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No reviews yet. Be the first to share your experience!</p>
-          </div>
+          <p className="py-6 text-center text-muted-foreground">No reviews yet. Be the first to share your experience!</p>
         )}
 
-        {/* Write Review Section */}
-        {user && (
-          <div className="mt-8 text-center">
-            {!showForm ? (
-              <Button
-                onClick={() => setShowForm(true)}
-                className="bg-primary hover:bg-primary/90"
-              >
-                Write a Review
-              </Button>
-            ) : (
-              <div className="max-w-md mx-auto bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">
-                  Share Your Experience
-                </h3>
-                <div className="mb-4">
-                  <label className="block text-sm text-muted-foreground mb-2">
-                    Your Rating
-                  </label>
-                  {renderRatingSelector()}
+        {/* Composer: always visible */}
+        <div className="mt-5 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-card/70 to-card/60 p-4 sm:p-6">
+          <h3 className="font-display text-2xl font-bold uppercase leading-none tracking-wide text-foreground">Share your experience</h3>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            {user ? "Tell other fans what you love about MetsXMFanZone. It shows up on the site right away." : "Log in to leave a review. It takes less than a minute."}
+          </p>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-[1fr_280px]">
+            <div>
+              <fieldset className="mb-3">
+                <legend className="mb-1 text-[13px] font-bold text-foreground/80">Your rating</legend>
+                <div className="-ml-1 flex">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      onClick={() => setRating(n)}
+                      aria-label={`${n} star${n > 1 ? "s" : ""}`}
+                      aria-pressed={n === rating}
+                      className="flex h-11 w-11 items-center justify-center"
+                    >
+                      <Star className={`h-7 w-7 transition-transform active:scale-90 ${n <= rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/60"}`} />
+                    </button>
+                  ))}
                 </div>
-                <Textarea
-                  value={newReview}
-                  onChange={(e) => setNewReview(e.target.value)}
-                  placeholder="Tell us what you love about MetsXMFanZone..."
-                  className="mb-4 min-h-[100px]"
-                  maxLength={500}
-                />
-                <div className="mb-4">
-                  <label className="block text-sm text-muted-foreground mb-2">
-                    Your Name (optional)
-                  </label>
-                  <Input
-                    value={newDisplayName}
-                    onChange={(e) => setNewDisplayName(e.target.value)}
-                    placeholder="How would you like to be called?"
-                    maxLength={30}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm text-muted-foreground mb-2">
-                    Where are you from? (optional)
-                  </label>
-                  <Input
-                    value={newLocation}
-                    onChange={(e) => setNewLocation(e.target.value)}
-                    placeholder="e.g. Queens, NY"
-                    maxLength={50}
-                  />
-                </div>
-                <div className="flex gap-3 justify-end">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowForm(false);
-                      setNewReview("");
-                      setNewRating(5);
-                      setNewLocation("");
-                      setNewDisplayName("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSubmitReview}
-                    disabled={submitting || !newReview.trim()}
-                    className="gap-2"
-                  >
-                    <Send className="w-4 h-4" />
-                    {submitting ? "Submitting..." : "Submit"}
-                  </Button>
-                </div>
+              </fieldset>
+              <label htmlFor="review-text" className="mb-1 block text-[13px] font-bold text-foreground/80">Your review</label>
+              <Textarea
+                id="review-text"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="What do you like most? Streams, podcast, community…"
+                maxLength={MAX_CHARS}
+                className="min-h-[120px] text-base"
+              />
+              <p className="mt-1 text-right text-xs text-muted-foreground" style={{ fontVariantNumeric: "tabular-nums" }}>
+                {text.length}/{MAX_CHARS}
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <div>
+                <label htmlFor="review-name" className="mb-1 block text-[13px] font-bold text-foreground/80">Name (optional)</label>
+                <Input id="review-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="How should we call you?" maxLength={30} className="h-12 text-base" />
               </div>
-            )}
+              <div>
+                <label htmlFor="review-place" className="mb-1 block text-[13px] font-bold text-foreground/80">Where are you from? (optional)</label>
+                <Input id="review-place" value={place} onChange={(e) => setPlace(e.target.value)} placeholder="e.g. Queens, NY" maxLength={50} className="h-12 text-base" />
+              </div>
+              <Button
+                onClick={submit}
+                disabled={submitting || (!!user && !text.trim())}
+                className="mt-auto h-[50px] gap-2 bg-[#d43700] text-base font-bold text-white hover:bg-[#d43700]/90"
+              >
+                <Send className="h-4 w-4" />
+                {!user ? "Log in to post" : submitting ? "Posting…" : "Post review"}
+              </Button>
+              {justPosted && <p role="status" className="text-center text-sm text-green-400">Posted. Thank you!</p>}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </section>
   );

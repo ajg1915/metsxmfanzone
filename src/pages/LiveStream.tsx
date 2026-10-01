@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { StreamPlayer } from "@/components/StreamPlayer";
@@ -8,7 +8,7 @@ import { isNYSportsPackageStream } from "@/lib/nyTeamStreamCheck";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Tv, Signal, Eye, Share2, Users } from "lucide-react";
+import { Tv, Signal, Share2, Radio, CalendarClock } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,11 @@ interface StreamInfo {
   assigned_pages: string[];
 }
 
+type MoreStream = { id: string; title: string; thumbnail_url: string | null; status: string; scheduled_start: string | null };
+
 const LiveStream = () => {
   const { streamId } = useParams<{ streamId: string }>();
+  const [more, setMore] = useState<MoreStream[]>([]);
   const [stream, setStream] = useState<StreamInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -71,6 +74,25 @@ const LiveStream = () => {
     };
     fetchStream();
   }, [streamId]);
+
+  useEffect(() => {
+    if (!stream) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("live_streams")
+        .select("id, title, thumbnail_url, status, scheduled_start")
+        .eq("published", true)
+        .in("status", ["live", "scheduled"])
+        .neq("id", stream.id)
+        .order("scheduled_start", { ascending: true })
+        .limit(8);
+      if (!cancelled && data) setMore(data as MoreStream[]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [stream]);
 
   const handleShare = async () => {
     if (!stream) return;
@@ -132,92 +154,92 @@ const LiveStream = () => {
         />
         <Navigation />
 
-        <main className="flex-1 pt-12">
+        <main className="flex-1 pt-14 max-md:pb-24 sm:pt-16">
           <div className="relative">
             {stream.thumbnail_url && (
               <div
-                className="absolute inset-0 h-[420px] bg-cover bg-center opacity-30"
+                className="absolute inset-x-0 top-0 h-[360px] bg-cover bg-center opacity-25"
                 style={{ backgroundImage: `url(${stream.thumbnail_url})` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+                <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
               </div>
             )}
 
-            <div className="container mx-auto px-4 py-6 sm:py-8 relative z-10">
-              <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-5">
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="bg-player sm:overflow-hidden sm:rounded-lg"
-                  >
-                    <StreamPlayer
-                      pageName={pageName}
-                      pageTitle={stream.title}
-                      pageDescription={stream.description || "Live stream on MetsXMFanZone"}
-                    />
-                  </motion.div>
+            <div className="container relative z-10 mx-auto max-w-6xl px-0 sm:px-4 sm:pt-5">
+              {/* Player: edge to edge on phones */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.35 }}
+                className="bg-player sm:overflow-hidden sm:rounded-xl"
+              >
+                <StreamPlayer
+                  pageName={pageName}
+                  pageTitle={stream.title}
+                  pageDescription={stream.description || "Live stream on MetsXMFanZone"}
+                />
+              </motion.div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.1 }}
-                    className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl p-4 sm:p-6"
-                  >
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      {isLive ? (
-                        <motion.div
-                          animate={{ opacity: [1, 0.6, 1] }}
-                          transition={{ duration: 1.6, repeat: Infinity }}
-                          className="inline-flex items-center gap-1.5 bg-destructive text-destructive-foreground px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide"
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                          LIVE NOW
-                        </motion.div>
-                      ) : (
-                        <Badge variant="secondary" className="text-[11px]">
-                          {stream.status.toUpperCase()}
-                        </Badge>
-                      )}
-                      <Badge variant="outline" className="text-[11px] gap-1">
-                        <Signal className="w-3 h-3" /> HD Stream
-                      </Badge>
-                      <Badge variant="outline" className="text-[11px] gap-1">
-                        <Tv className="w-3 h-3" /> MetsXMFanZone
-                      </Badge>
-                    </div>
-
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground leading-tight tracking-tight">
-                      {stream.title}
-                    </h1>
-
-                    {stream.description && (
-                      <p className="mt-2 text-sm sm:text-base text-muted-foreground leading-relaxed">
-                        {stream.description}
-                      </p>
-                    )}
-
-                    <div className="mt-4 pt-4 border-t border-border/50 flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="inline-flex items-center gap-1.5">
-                          <Eye className="w-3.5 h-3.5 text-primary" /> Live audience
-                        </span>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Users className="w-3.5 h-3.5 text-primary" /> Fans watching
-                        </span>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={handleShare}
-                        className="h-8 text-xs"
-                      >
-                        <Share2 className="w-3.5 h-3.5" /> Share
-                      </Button>
-                    </div>
-                  </motion.div>
+              <div className="px-4 pt-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  {isLive ? (
+                    <span className="inline-flex items-center gap-1.5 rounded bg-red-700 px-2.5 py-1 text-[11px] font-extrabold tracking-[0.1em] text-white">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                      LIVE NOW
+                    </span>
+                  ) : (
+                    <Badge variant="secondary" className="text-[11px]">
+                      {stream.status.toUpperCase()}
+                    </Badge>
+                  )}
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-foreground">
+                    <Signal className="h-3 w-3" /> HD
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-bold text-foreground">
+                    <Tv className="h-3 w-3" /> MetsXMFanZone
+                  </span>
                 </div>
+
+                <div className="mt-2 flex items-start justify-between gap-3">
+                  <h1 className="font-display text-[30px] font-bold uppercase leading-[1.02] tracking-wide text-foreground sm:text-5xl">
+                    {stream.title}
+                  </h1>
+                  <Button size="icon" variant="outline" onClick={handleShare} aria-label="Share this stream" className="h-11 w-11 shrink-0 rounded-full">
+                    <Share2 className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                {stream.description && (
+                  <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">{stream.description}</p>
+                )}
+
+                {more.length > 0 && (
+                  <section aria-label="More streams" className="mt-7">
+                    <h2 className="mb-3 font-display text-[25px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-3xl">More streams</h2>
+                    <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide sm:mx-0 sm:px-0">
+                      {more.map((m) => (
+                        <Link
+                          key={m.id}
+                          to={`/live/${m.id}`}
+                          className="group w-[72vw] max-w-[300px] shrink-0 snap-start sm:w-[280px]"
+                        >
+                          <div className="relative aspect-video overflow-hidden rounded-xl border border-border/50 bg-gradient-to-br from-secondary/60 to-card">
+                            {m.thumbnail_url && <img src={m.thumbnail_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+                            <span
+                              className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide text-white ${
+                                m.status === "live" ? "bg-red-700" : "bg-black/60"
+                              }`}
+                            >
+                              {m.status === "live" ? <Radio className="h-3 w-3" /> : <CalendarClock className="h-3 w-3" />}
+                              {m.status === "live" ? "LIVE" : "UPCOMING"}
+                            </span>
+                          </div>
+                          <p className="mt-2 line-clamp-2 text-[15px] font-semibold leading-tight text-foreground group-hover:text-primary">{m.title}</p>
+                        </Link>
+                      ))}
+                    </div>
+                  </section>
+                )}
               </div>
             </div>
           </div>
