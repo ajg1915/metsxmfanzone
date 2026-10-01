@@ -10,7 +10,9 @@ import AdminAlertsFeed from "@/components/AdminAlertsFeed";
 import SEOHead from "@/components/SEOHead";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users, Mic, Trophy, Swords, Loader2, Home, Plane } from "lucide-react";
+import { Users, Mic, Trophy, Swords, Loader2, Home, Plane, Signal, Tv } from "lucide-react";
+import { ChannelSwitcher, METS_BRAND, StreamBrandHeader } from "@/components/streaming/StreamChrome";
+import fanzoneLogo from "@/assets/metsxmfanzone-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import SocialLinksSection, { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
@@ -121,6 +123,14 @@ const MetsXMFanZone = () => {
       <Navigation />
       
       <main className="flex-1 pt-12 max-md:pt-14">
+        <StreamBrandHeader
+          brand={METS_BRAND}
+          mark={<img src={fanzoneLogo} alt="" className="h-full w-full object-contain p-1.5" />}
+          title="MetsXMFanZone"
+          titleAccent="TV"
+          badges={[<><Signal className="h-3 w-3" /> Live now</>, <><Tv className="h-3 w-3" /> HD Quality</>]}
+        />
+
         {/* Ambient backdrop */}
         <div className="relative">
           <div className="absolute inset-0 h-[520px] pointer-events-none overflow-hidden">
@@ -154,15 +164,6 @@ const MetsXMFanZone = () => {
 
                 {/* Phone: stream title, follow chips, more streams */}
                 <div className="flex flex-col gap-4 px-4 md:hidden">
-                  <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-bold uppercase italic leading-[1.05]" style={{ fontFamily: "'Oswald','Bebas Neue',sans-serif" }}>
-                      MetsXMFanZone.TV
-                    </h1>
-                    <p className="flex items-center gap-2 text-[13px] text-muted-foreground">
-                      <span className="h-2 w-2 rounded-full bg-red-500" />
-                      Live now
-                    </p>
-                  </div>
                   <div className="-mx-4">
                     <p className="mb-2 px-4 text-[11px] font-extrabold tracking-[0.18em] text-primary">FOLLOW @METSXMFANZONE</p>
                     <div className="flex gap-2 overflow-x-auto px-4 scrollbar-hide">
@@ -203,6 +204,8 @@ const MetsXMFanZone = () => {
                     </div>
                   )}
                 </div>
+
+                <ChannelSwitcher activeKey="metsxmfanzone" className="max-md:px-4" />
 
                 {/* Channel info pills */}
                 <div className="hidden grid-cols-3 gap-2 sm:gap-3 md:grid">

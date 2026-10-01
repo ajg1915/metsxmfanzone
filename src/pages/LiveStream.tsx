@@ -13,6 +13,8 @@ import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import SocialLinksSection from "@/components/SocialLinksSection";
+import { ChannelSwitcher, METS_BRAND, StreamBrandHeader } from "@/components/streaming/StreamChrome";
+import logo from "@/assets/metsxmfanzone-logo.png";
 
 interface StreamInfo {
   id: string;
@@ -155,6 +157,13 @@ const LiveStream = () => {
         <Navigation />
 
         <main className="flex-1 pt-14 max-md:pb-24 sm:pt-16">
+          <StreamBrandHeader
+            brand={METS_BRAND}
+            mark={<img src={logo} alt="" className="h-full w-full object-contain p-1.5" />}
+            title={stream.title}
+            badges={[<><Signal className="h-3 w-3" /> HD</>, <><Tv className="h-3 w-3" /> MetsXMFanZone</>]}
+            action={<Button size="icon" variant="outline" onClick={handleShare} aria-label="Share this stream" className="h-11 w-11 shrink-0 rounded-full border-white/30 bg-white/10 text-white hover:bg-white/20"><Share2 className="h-5 w-5" /></Button>}
+          />
           <div className="relative">
             {stream.thumbnail_url && (
               <div
@@ -200,18 +209,11 @@ const LiveStream = () => {
                   </span>
                 </div>
 
-                <div className="mt-2 flex items-start justify-between gap-3">
-                  <h1 className="font-display text-[30px] font-bold uppercase leading-[1.02] tracking-wide text-foreground sm:text-5xl">
-                    {stream.title}
-                  </h1>
-                  <Button size="icon" variant="outline" onClick={handleShare} aria-label="Share this stream" className="h-11 w-11 shrink-0 rounded-full">
-                    <Share2 className="h-5 w-5" />
-                  </Button>
-                </div>
-
                 {stream.description && (
                   <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">{stream.description}</p>
                 )}
+
+                <ChannelSwitcher className="mt-5" />
 
                 {more.length > 0 && (
                   <section aria-label="More streams" className="mt-7">
