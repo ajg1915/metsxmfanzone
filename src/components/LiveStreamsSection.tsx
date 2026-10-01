@@ -332,7 +332,9 @@ const LiveStreamsSection = () => {
           .map(p => p.toLowerCase())
           .filter(p => p !== 'live' && p !== 'guide');
 
-        if (pages.some(p => NY_TEAM_PAGES.includes(p as (typeof NY_TEAM_PAGES)[number])) || isNYTeamStream(s)) return false;
+        // NY team games (Rangers, Jets, Giants, Knicks, Islanders, Nets) belong
+        // here too once they are live, alongside the Mets cards.
+        if (pages.some(p => NY_TEAM_PAGES.includes(p as (typeof NY_TEAM_PAGES)[number])) || isNYTeamStream(s)) return true;
 
         // 2. Entries that only feed a network channel page stay in Sports
         //    Network Streams.
