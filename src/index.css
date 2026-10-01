@@ -144,7 +144,13 @@ All colors MUST be HSL.
   }
 
   html {
-    @apply overflow-x-hidden scroll-smooth;
+    @apply scroll-smooth;
+    /* clip (not hidden) hides sideways overflow without turning html/body into scroll
+       containers, which on iPhone/iPad lets the fixed header scroll with the page.
+       Old browsers ignore clip and keep hidden. */
+    overflow-x: hidden;
+    overflow-x: clip;
+    overscroll-behavior-y: none;
     width: 100%;
     max-width: 100vw;
     /* Fluid base font: smoothly scales between 320px–1920px viewports */
@@ -154,7 +160,9 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground overflow-x-hidden;
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+    overflow-x: clip;
     margin: 0;
     padding: 0;
     width: 100%;
