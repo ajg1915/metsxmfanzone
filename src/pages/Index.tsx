@@ -3,6 +3,7 @@ import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import NYScoresStrip from "@/components/NYScoresStrip";
+import HomeSocialRow from "@/components/HomeSocialRow";
 
 
 import Footer from "@/components/Footer";
@@ -29,7 +30,7 @@ const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/Regu
 
 const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
 const HomeLineupCard = lazyWithRetry(() => import("@/components/HomeLineupCard"), "home-lineup-card");
-const FindUsSection = lazyWithRetry(() => import("@/components/FindUsSection"), "home-find-us-section");
+const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadioSection"), "home-podcast-radio-section");
 const TikTokFeedSection = lazyWithRetry(() => import("@/components/TikTokFeedSection"), "home-tiktok-feed-section");
 
 
@@ -181,6 +182,7 @@ const Index = () => {
         </Suspense>
       <main className="relative z-10 homepage-broadcast-feed">
         <Hero />
+        <HomeSocialRow />
 
 
         {/* Above-the-fold: mount immediately */}
@@ -237,6 +239,12 @@ const Index = () => {
           </Suspense>
         </LazySection>
 
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <PodcastRadioSection />
+          </Suspense>
+        </LazySection>
+
         <div className="section-divider my-1" />
 
         <LazySection fallback={<SectionSkeleton />}>
@@ -283,13 +291,6 @@ const Index = () => {
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
             <TikTokFeedSection />
-          </Suspense>
-        </LazySection>
-
-        <div className="section-divider my-1" />
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <FindUsSection />
           </Suspense>
         </LazySection>
 
