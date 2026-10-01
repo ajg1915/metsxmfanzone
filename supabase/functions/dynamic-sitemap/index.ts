@@ -32,7 +32,6 @@ const staticPages = [
   { url: "/nl-scores", changefreq: "daily", priority: "0.7" },
   { url: "/help-center", changefreq: "monthly", priority: "0.6" },
   { url: "/contact", changefreq: "monthly", priority: "0.65" },
-  { url: "/feedback", changefreq: "monthly", priority: "0.6" },
   { url: "/faqs", changefreq: "monthly", priority: "0.6" },
   { url: "/whats-new", changefreq: "weekly", priority: "0.65" },
   { url: "/business-partner", changefreq: "monthly", priority: "0.5" },

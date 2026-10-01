@@ -68,7 +68,6 @@ Deno.serve(async (req) => {
       { url: '/whats-new', changefreq: 'weekly', priority: '0.65' },
       { url: '/help-center', changefreq: 'monthly', priority: '0.6' },
       { url: '/contact', changefreq: 'monthly', priority: '0.65' },
-      { url: '/feedback', changefreq: 'monthly', priority: '0.6' },
       { url: '/faqs', changefreq: 'monthly', priority: '0.6' },
       { url: '/business-partner', changefreq: 'monthly', priority: '0.5' },
       { url: '/podcaster-application', changefreq: 'monthly', priority: '0.5' },
