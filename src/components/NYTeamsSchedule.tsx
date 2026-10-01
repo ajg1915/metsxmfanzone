@@ -136,8 +136,18 @@ export default function NYTeamsSchedule() {
   const [games, setGames] = useState<NYGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [team, setTeam] = useState<TeamKey>("jets");
+  // Home page score cards link here as /mets-schedule-2026?team=knicks#ny-teams
+  const [team, setTeam] = useState<TeamKey>(() => {
+    if (typeof window === "undefined") return "jets";
+    const wanted = new URLSearchParams(window.location.search).get("team");
+    return TEAMS.some((t) => t.key === wanted) ? (wanted as TeamKey) : "jets";
+  });
   const [view, setView] = useState<View>("upcoming");
+
+  useEffect(() => {
+    if (loading || typeof window === "undefined" || window.location.hash !== "#ny-teams") return;
+    document.getElementById("ny-teams")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [loading]);
 
   useEffect(() => {
     let cancelled = false;

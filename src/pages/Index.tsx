@@ -2,7 +2,7 @@ import { Suspense, useState } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
-import HomeQuickLinks from "@/components/HomeQuickLinks";
+import NYScoresStrip from "@/components/NYScoresStrip";
 
 
 import Footer from "@/components/Footer";
@@ -199,10 +199,8 @@ const Index = () => {
           <LiveStreamsSection />
         </Suspense>
 
-        {/* Phone-only shortcuts under the streams */}
-        <div className="md:hidden">
-          <HomeQuickLinks />
-        </div>
+        {/* New York team scores, in the middle of the page */}
+        <NYScoresStrip />
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
