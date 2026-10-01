@@ -1430,10 +1430,8 @@ google-cast-launcher,
   font-weight: 700;
 }
 
-/* Tablets and larger phones in the installed app (status bar is translucent):
-   keep the fixed header and page content below the clock / battery area.
-   env() is 0 in a normal browser, so nothing changes there. */
-@media (min-width: 600px) {
-  #root { padding-top: env(safe-area-inset-top, 0px); }
-  nav.glass-nav { top: env(safe-area-inset-top, 0px) !important; }
-}
+/* Installed app (status bar is translucent): keep the fixed header and page content
+   below the clock / battery area on phones and tablets. env() is 0 in a normal
+   browser, so nothing changes there. */
+#root { padding-top: env(safe-area-inset-top, 0px); }
+nav.glass-nav { top: env(safe-area-inset-top, 0px) !important; }
