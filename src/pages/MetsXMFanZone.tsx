@@ -141,7 +141,7 @@ const MetsXMFanZone = () => {
                 </div>
 
                 {/* 16:9 Player */}
-                <div className="stream-player-shell relative aspect-video w-full overflow-hidden bg-player sm:rounded-lg">
+                <div className="stream-player-shell relative aspect-video w-full overflow-hidden bg-player max-sm:!mx-0 sm:rounded-lg">
                   <ClapprPlayer
                     source={streamUrl}
                     fallbackSource={METSXM_STANDBY_URL}
