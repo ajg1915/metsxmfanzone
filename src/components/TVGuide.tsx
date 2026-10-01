@@ -221,7 +221,7 @@ const TVGuide = ({ initialTeam = "all", className = "" }: { initialTeam?: string
   const selected = TEAM_BY_KEY[filter];
 
   return (
-    <section aria-label="TV guide" className={className}>
+    <div role="region" aria-label="TV guide" className={className}>
       <div className="mb-3 flex items-end justify-between gap-3">
         <div>
           <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff5a1f]">Mets + all 6 NY teams</p>
@@ -288,7 +288,7 @@ const TVGuide = ({ initialTeam = "all", className = "" }: { initialTeam?: string
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2 md:items-start">
           {visibleDays.map(([key, list]) => (
             <div key={key} className="overflow-hidden rounded-2xl border border-border/50 bg-card">
               <h3 className="border-b border-border/40 bg-background/40 px-3 py-2 text-[13px] font-extrabold uppercase tracking-[0.1em] text-foreground">{dayLabel(key, list[0].start)}</h3>
@@ -296,13 +296,13 @@ const TVGuide = ({ initialTeam = "all", className = "" }: { initialTeam?: string
             </div>
           ))}
           {days.length > daysShown && (
-            <button type="button" onClick={() => setDaysShown((n) => n + PAGE_DAYS)} className="flex h-12 w-full items-center justify-center rounded-xl border border-border/60 bg-card text-sm font-bold text-foreground hover:border-primary/50">
+            <button type="button" onClick={() => setDaysShown((n) => n + PAGE_DAYS)} className="flex h-12 w-full items-center justify-center rounded-xl border border-border/60 bg-card text-sm font-bold text-foreground hover:border-primary/50 md:col-span-2">
               Show more days
             </button>
           )}
         </div>
       )}
-    </section>
+    </div>
   );
 };
 

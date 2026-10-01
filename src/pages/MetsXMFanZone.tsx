@@ -96,6 +96,8 @@ const MetsXMFanZone = () => {
                   <NewPostAlert />
                 </div>
 
+                <TVGuide className="max-md:mx-4" />
+
                 {/* Phone: stream title, follow chips, more streams */}
                 <div className="flex flex-col gap-4 px-4 md:hidden">
                   <div className="-mx-4">
@@ -160,7 +162,6 @@ const MetsXMFanZone = () => {
                   </div>
                 </div>
 
-                <TVGuide className="max-md:mx-4" />
               </div>
 
             </div>

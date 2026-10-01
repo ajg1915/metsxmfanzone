@@ -221,7 +221,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
         {!guestExpired && (
           <>
             {guestRemaining !== null && guestRemaining > 0 && (
-              <div className="fixed top-20 right-4 z-50 max-md:bottom-24 max-md:top-auto bg-background/90 backdrop-blur-sm border border-primary rounded-lg px-4 py-2 shadow-lg">
+              <div className="fixed bottom-24 left-4 z-50 md:bottom-6 bg-background/90 backdrop-blur-sm border border-primary rounded-lg px-4 py-2 shadow-lg">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                   <span className="text-sm font-medium text-foreground">
@@ -273,7 +273,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
         {!showUpgradePrompt && (
           <>
             {timeRemaining !== null && timeRemaining > 0 && (
-              <div className="fixed top-20 right-4 z-50 max-md:bottom-24 max-md:top-auto bg-background/90 backdrop-blur-sm border border-primary rounded-lg px-4 py-2 shadow-lg">
+              <div className="fixed bottom-24 left-4 z-50 md:bottom-6 bg-background/90 backdrop-blur-sm border border-primary rounded-lg px-4 py-2 shadow-lg">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                   <span className="text-sm font-medium text-foreground">

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import SocialLinksSection from "@/components/SocialLinksSection";
 import { ChannelSwitcher, METS_BRAND, StreamBrandHeader } from "@/components/streaming/StreamChrome";
 import logo from "@/assets/metsxmfanzone-logo.png";
+import TVGuide from "@/components/TVGuide";
 
 interface StreamInfo {
   id: string;
@@ -213,7 +214,9 @@ const LiveStream = () => {
                   <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">{stream.description}</p>
                 )}
 
-                <ChannelSwitcher className="mt-5" />
+                <TVGuide className="mt-6" />
+
+                <ChannelSwitcher className="mt-6" />
 
                 {more.length > 0 && (
                   <section aria-label="More streams" className="mt-7">

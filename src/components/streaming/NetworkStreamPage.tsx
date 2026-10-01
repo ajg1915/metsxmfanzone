@@ -8,6 +8,7 @@ import StreamTimeLimit from "@/components/StreamTimeLimit";
 import SEOHead from "@/components/SEOHead";
 import SocialLinksSection from "@/components/SocialLinksSection";
 import { ChannelSwitcher, StreamBrandHeader } from "@/components/streaming/StreamChrome";
+import TVGuide from "@/components/TVGuide";
 
 type Feature = { icon: ComponentType<{ className?: string; style?: CSSProperties }>; title: string; text: string };
 
@@ -70,6 +71,8 @@ const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
             </div>
 
             {cfg.extra}
+
+            <TVGuide className="mt-6" />
 
             <ChannelSwitcher activeKey={cfg.pageKey} brand={brand} />
 

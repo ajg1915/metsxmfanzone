@@ -1,4 +1,4 @@
-import { Tv, BookOpen, Mic, Lock, CalendarDays } from "lucide-react";
+import { Tv, BookOpen, Lock, CalendarDays } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,7 +20,6 @@ const navItems: NavItem[] = [
   { label: "Home", path: "/", requiresPremium: false },
   { label: "Watch Live", path: "/metsxmfanzone", requiresPremium: true },
   { label: "Blog", path: "/blog", requiresPremium: false },
-  { label: "Podcast", path: "/podcast", requiresPremium: true },
   { label: "Games", path: "/mets-schedule-2026", requiresPremium: false },
 ];
 
@@ -90,8 +89,6 @@ const SocialMediaBar = () => {
                   <Tv className="h-6 w-6" />
                 ) : item.label === "Blog" ? (
                   <BookOpen className="h-6 w-6" />
-                ) : item.label === "Podcast" ? (
-                  <Mic className="h-6 w-6" />
                 ) : item.label === "Games" ? (
                   <CalendarDays className="h-6 w-6" />
                 ) : (
