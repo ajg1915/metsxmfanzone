@@ -15,8 +15,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import SocialLinksSection, { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
 
-// MetsXMFanZone Live always plays this feed.
-const METSXM_STREAM_URL = "https://stream2.metsxmfanzone.com/hls/mystream.m3u8";
+// MetsXMFanZone Live (the Watch Live page) always plays this feed — the main
+// mystream feed, not Stream 2.
+const METSXM_STREAM_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
 // Looping standby shown whenever the live feed above isn't up.
 const METSXM_STANDBY_URL = "https://metsxmfanzone.metsxmfanzone.com/hls-standby/metsxmfanzone.m3u8";
 
