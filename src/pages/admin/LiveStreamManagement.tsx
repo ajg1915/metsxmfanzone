@@ -119,14 +119,15 @@ const getStreamTeam = (stream: { assigned_pages?: string[] | null }): Exclude<Te
   return team ?? "mets";
 };
 
-const SPORTS_EVENTS_STREAM_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
-const PIX11_STREAM_URL = "https://stream2.metsxmfanzone.com/hls/mystream.m3u8";
+// MetsXMFanZone TV = the main feed (mystream). Stream 2 = the second feed (stream2).
+const MAIN_FEED_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
+const STREAM2_FEED_URL = "https://stream2.metsxmfanzone.com/hls/mystream.m3u8";
 
 // The watch dropdown picks which M3U8 feed an event plays. Every event keeps
 // its own /live/<id> page, so any number of events can share the same feed.
 const FEED_OPTIONS = [
-  { value: 'tv', label: 'MetsXMFanZone TV feed', url: PIX11_STREAM_URL },
-  { value: 'stream2', label: 'MetsXMFanZone Stream 2 feed', url: SPORTS_EVENTS_STREAM_URL },
+  { value: 'tv', label: 'MetsXMFanZone TV feed (main)', url: MAIN_FEED_URL },
+  { value: 'stream2', label: 'MetsXMFanZone Stream 2 feed', url: STREAM2_FEED_URL },
   { value: 'custom', label: 'Custom M3U8 (typed in Stream URL)', url: '' },
 ];
 
@@ -135,8 +136,8 @@ const LEGACY_DESTINATION_PAGES = ['metsxmfanzone', 'metsxmfanzone-2', 'pix11-net
 
 const getFeed = (url: string | null | undefined) => {
   const clean = (url || '').trim();
-  if (clean === PIX11_STREAM_URL) return 'tv';
-  if (clean === SPORTS_EVENTS_STREAM_URL) return 'stream2';
+  if (clean === MAIN_FEED_URL) return 'tv';
+  if (clean === STREAM2_FEED_URL) return 'stream2';
   return 'custom';
 };
 
@@ -558,7 +559,7 @@ export default function LiveStreamManagement() {
       );
       const streamData = {
         ...formData,
-        stream_url: formData.stream_url || (isNYTeamEvent ? SPORTS_EVENTS_STREAM_URL : formData.stream_url),
+        stream_url: formData.stream_url || (isNYTeamEvent ? MAIN_FEED_URL : formData.stream_url),
         published: formData.status === "live" ? true : formData.published,
         assigned_pages: formData.assigned_pages.includes("live")
           ? formData.assigned_pages
@@ -877,22 +878,22 @@ export default function LiveStreamManagement() {
                   className="mt-2 h-8 text-xs"
                   onClick={() => setFormData({
                     ...formData,
-                    stream_url: PIX11_STREAM_URL,
+                    stream_url: STREAM2_FEED_URL,
                     assigned_pages: formData.assigned_pages.includes("live")
                       ? formData.assigned_pages
                       : [...formData.assigned_pages, "live"],
                   })}
                 >
-                  Use Game Events Stream
+                  Use Stream 2 feed
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   className="mt-2 ml-2 h-8 text-xs"
-                  onClick={() => setFormData({ ...formData, stream_url: SPORTS_EVENTS_STREAM_URL })}
+                  onClick={() => setFormData({ ...formData, stream_url: MAIN_FEED_URL })}
                 >
-                  Use Sports Events Stream
+                  Use MetsXMFanZone TV feed
                 </Button>
 
               </div>
