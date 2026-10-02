@@ -60,18 +60,31 @@ const whenLabel = (iso: string) =>
 const etDate = (d: Date) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: ET, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 
-// live game first, then today's game (final or still to play), else the latest
-// final from the last 7 days, else the next game. A team with nothing in range
-// still gets a card (main = null) so all of them always show.
+// live game first, then today's final if it's already played, then a final from the
+// last ~30 hours (so last night's score still shows while today's game hasn't started),
+// then today's upcoming game, else the latest final from the last 7 days, else the next
+// game. A team with nothing in range still gets a card (main = null) so all of them
+// always show.
+const RECENT_FINAL_MS = 30 * 60 * 60 * 1000;
+
 function pick(games: ScoreGame[]): { main: ScoreGame | null; next: ScoreGame | null } {
   const sorted = [...games].sort((a, b) => +new Date(a.start) - +new Date(b.start));
   const live = sorted.find((g) => g.state === "in");
   const today = etDate(new Date());
   const todays = sorted.filter((g) => etDate(new Date(g.start)) === today);
+  const todaysFinals = todays.filter((g) => g.state === "post");
   const weekAgo = Date.now() - 7 * MS_DAY;
   const finals = sorted.filter((g) => g.state === "post" && +new Date(g.start) >= weekAgo);
+  const recentFinals = finals.filter((g) => Date.now() - +new Date(g.start) <= RECENT_FINAL_MS);
   const upcoming = sorted.filter((g) => g.state === "pre");
-  const main = live ?? todays[todays.length - 1] ?? finals[finals.length - 1] ?? upcoming[0] ?? null;
+  const main =
+    live ??
+    todaysFinals[todaysFinals.length - 1] ??
+    recentFinals[recentFinals.length - 1] ??
+    todays[todays.length - 1] ??
+    finals[finals.length - 1] ??
+    upcoming[0] ??
+    null;
   const next = main && main.state !== "pre" ? upcoming.find((g) => g.id !== main.id) ?? null : null;
   return { main, next: main ? next : upcoming[0] ?? null };
 }
