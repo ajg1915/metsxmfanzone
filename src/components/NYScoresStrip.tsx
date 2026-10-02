@@ -1,289 +1,231 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-// Scores for every New York team in one swipe strip.
-// Jets / Giants / Knicks / Nets / Rangers / Islanders come from the `ny_sports_games`
-// table (refreshed about hourly from ESPN's schedule feed); the Mets come straight
-// from MLB's free stats feed.
+// Scores for the six New York teams (Giants, Jets, Knicks, Nets, Rangers, Islanders)
+// in one swipeable row. Data comes from the `ny-scores` Cloudflare Worker
+// (cloudflare-worker/ny-scores-worker.js), which reads ESPN live — no Supabase.
 
+const SCORES_URL =
+  (import.meta.env.VITE_NY_SCORES_URL as string | undefined) || "https://ny-scores.metsxmfan.workers.dev";
+const REFRESH_MS = 30_000;
+const REFRESH_LIVE_MS = 15_000;
 const ET = "America/New_York";
-const MS_DAY = 86_400_000;
-const METS_ID = 121;
 
-type ScoreGame = {
+type Side = { name: string; abbr: string | null; logo: string | null; score: string | null };
+type Game = {
   id: string;
-  isHome: boolean;
-  opponent: string;
-  opponentLogo: string | null;
-  start: string; // ISO
+  start: string;
   state: "pre" | "in" | "post";
   detail: string | null;
-  teamScore: string | null;
-  oppScore: string | null;
+  isHome: boolean;
+  team: Side;
+  opponent: Side;
   result: "W" | "L" | "T" | null;
+  tv: string | null;
 };
+type TeamScores = { key: string; label: string; league: string; main: Game | null; next: Game | null };
+type Feed = { updatedAt: string; anyLive: boolean; teams: TeamScores[] };
 
-type TeamCard = {
-  key: string;
-  label: string;
-  league: string;
-  color: string;
-  href: string;
-  main: ScoreGame | null;
-  next: ScoreGame | null;
-};
-
-type TeamDef = { key: string; label: string; league: string; color: string; href: string };
-
-const TEAMS: TeamDef[] = [
-  { key: "mets", label: "Mets", league: "MLB", color: "#2c78c9", href: "/mets-scores" },
-  { key: "giants", label: "Giants", league: "NFL", color: "#3d6fd1", href: "/mets-schedule-2026?team=giants#ny-teams" },
-  { key: "jets", label: "Jets", league: "NFL", color: "#1f9a6e", href: "/mets-schedule-2026?team=jets#ny-teams" },
-  { key: "knicks", label: "Knicks", league: "NBA", color: "#f58426", href: "/mets-schedule-2026?team=knicks#ny-teams" },
-  { key: "rangers", label: "Rangers", league: "NHL", color: "#4a7be0", href: "/mets-schedule-2026?team=rangers#ny-teams" },
-  { key: "islanders", label: "Islanders", league: "NHL", color: "#f0a25a", href: "/mets-schedule-2026?team=islanders#ny-teams" },
-  { key: "nets", label: "Nets", league: "NBA", color: "#a1a1aa", href: "/mets-schedule-2026?team=nets#ny-teams" },
-];
+const scheduleHref = (key: string) => `/mets-schedule-2026?team=${key}#ny-teams`;
 
 const fmtET = (iso: string, opts: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat("en-US", { timeZone: ET, ...opts }).format(new Date(iso));
-const whenLabel = (iso: string) =>
-  `${fmtET(iso, { weekday: "short", month: "short", day: "numeric" })}, ${fmtET(iso, {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  })} ET`;
-const etDate = (d: Date) =>
+const etDay = (d: Date) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: ET, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 
-// live game first, then today's game (final or still to play), else the latest
-// final from the last 7 days, else the next game. A team with nothing in range
-// still gets a card (main = null) so all of them always show.
-function pick(games: ScoreGame[]): { main: ScoreGame | null; next: ScoreGame | null } {
-  const sorted = [...games].sort((a, b) => +new Date(a.start) - +new Date(b.start));
-  const live = sorted.find((g) => g.state === "in");
-  const today = etDate(new Date());
-  const todays = sorted.filter((g) => etDate(new Date(g.start)) === today);
-  const weekAgo = Date.now() - 7 * MS_DAY;
-  const finals = sorted.filter((g) => g.state === "post" && +new Date(g.start) >= weekAgo);
-  const upcoming = sorted.filter((g) => g.state === "pre");
-  const main = live ?? todays[todays.length - 1] ?? finals[finals.length - 1] ?? upcoming[0] ?? null;
-  const next = main && main.state !== "pre" ? upcoming.find((g) => g.id !== main.id) ?? null : null;
-  return { main, next: main ? next : upcoming[0] ?? null };
+// "Tonight 6:30 PM", "Sun 1:00 PM", "Oct 21, 7:30 PM"
+function whenLabel(iso: string) {
+  const d = new Date(iso);
+  const time = fmtET(iso, { hour: "numeric", minute: "2-digit", hour12: true });
+  const now = new Date();
+  if (etDay(d) === etDay(now)) return `${Number(fmtET(iso, { hour: "numeric", hour12: false })) >= 17 ? "Tonight" : "Today"} ${time}`;
+  if (etDay(d) === etDay(new Date(now.getTime() + 86_400_000))) return `Tomorrow ${time}`;
+  if (d.getTime() - now.getTime() < 6 * 86_400_000) return `${fmtET(iso, { weekday: "short" })} ${time}`;
+  return `${fmtET(iso, { month: "short", day: "numeric" })}, ${time}`;
 }
 
-async function loadEspnTeams(): Promise<Record<string, ScoreGame[]>> {
-  const from = new Date(Date.now() - 7 * MS_DAY).toISOString();
-  const to = new Date(Date.now() + 60 * MS_DAY).toISOString();
-  // ny_sports_games isn't in the generated Supabase types yet
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any)
-    .from("ny_sports_games")
-    .select("event_id, team_key, opponent_name, opponent_logo, is_home, start_time, state, status_detail, team_score, opponent_score, result")
-    .gte("start_time", from)
-    .lte("start_time", to)
-    .order("start_time", { ascending: true });
-  if (error) throw error;
-
-  const byTeam: Record<string, ScoreGame[]> = {};
-  for (const r of data ?? []) {
-    (byTeam[r.team_key] ??= []).push({
-      id: String(r.event_id),
-      isHome: !!r.is_home,
-      opponent: r.opponent_name ?? "TBD",
-      opponentLogo: r.opponent_logo ?? null,
-      start: r.start_time,
-      state: r.state === "in" || r.state === "post" ? r.state : "pre",
-      detail: r.status_detail ?? null,
-      teamScore: r.team_score,
-      oppScore: r.opponent_score,
-      result: r.result ?? null,
-    });
-  }
-  return byTeam;
+function TeamRow({ side, bold, showScore, prefix }: { side: Side; bold: boolean; showScore: boolean; prefix?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="flex min-w-0 items-center gap-2">
+        {side.logo ? (
+          <img
+            src={side.logo}
+            alt=""
+            className="h-6 w-6 shrink-0 object-contain"
+            loading="lazy"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.visibility = "hidden";
+            }}
+          />
+        ) : (
+          <span className="h-6 w-6 shrink-0" />
+        )}
+        <span className={cn("truncate text-sm", bold ? "font-bold text-foreground" : "text-muted-foreground")}>
+          {prefix && <span className="mr-1 text-xs font-normal text-muted-foreground">{prefix}</span>}
+          {side.name}
+        </span>
+      </span>
+      {showScore ? (
+        <span
+          className={cn(
+            "shrink-0 text-xl leading-none tabular-nums",
+            bold ? "font-extrabold text-foreground" : "font-semibold text-muted-foreground",
+          )}
+        >
+          {side.score ?? "–"}
+        </span>
+      ) : (
+        <span className="shrink-0 text-base text-muted-foreground/60">–</span>
+      )}
+    </div>
+  );
 }
 
-async function loadMets(): Promise<ScoreGame[]> {
-  const start = etDate(new Date(Date.now() - 7 * MS_DAY));
-  const end = etDate(new Date(Date.now() + 14 * MS_DAY));
-  const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${METS_ID}&startDate=${start}&endDate=${end}&hydrate=team,linescore`;
-  const res = await fetch(url);
-  if (!res.ok) return [];
-  const json = await res.json();
-  const out: ScoreGame[] = [];
-  for (const day of json?.dates ?? []) {
-    for (const g of day.games ?? []) {
-      const detailed: string = g.status?.detailedState ?? "";
-      if (/postponed|cancel/i.test(detailed)) continue;
-      const abstract: string = g.status?.abstractGameState ?? "";
-      const home = g.teams?.home;
-      const away = g.teams?.away;
-      if (!home || !away) continue;
-      const isHome = home.team?.id === METS_ID;
-      const mine = isHome ? home : away;
-      const opp = isHome ? away : home;
-      const state: ScoreGame["state"] = abstract === "Live" ? "in" : abstract === "Final" ? "post" : "pre";
-      const ls = g.linescore;
-      const detail =
-        state === "in"
-          ? [ls?.inningState?.slice(0, 3), ls?.currentInningOrdinal].filter(Boolean).join(" ") || "Live"
-          : state === "post"
-            ? "Final"
-            : null;
-      const ms = Number(mine.score);
-      const os = Number(opp.score);
-      out.push({
-        id: String(g.gamePk),
-        isHome,
-        opponent: opp.team?.name ?? "TBD",
-        opponentLogo: opp.team?.id ? `https://www.mlbstatic.com/team-logos/${opp.team.id}.svg` : null,
-        start: g.gameDate,
-        state,
-        detail,
-        teamScore: state === "pre" || Number.isNaN(ms) ? null : String(ms),
-        oppScore: state === "pre" || Number.isNaN(os) ? null : String(os),
-        result: state === "post" && !Number.isNaN(ms) && !Number.isNaN(os) ? (ms > os ? "W" : ms < os ? "L" : "T") : null,
-      });
-    }
-  }
-  return out;
+function Badge({ game }: { game: Game }) {
+  if (game.state === "in")
+    return (
+      <span className="inline-flex items-center gap-1 rounded bg-destructive px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-destructive-foreground">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive-foreground" />
+        Live
+      </span>
+    );
+  if (game.state === "post" && game.result)
+    return (
+      <span
+        className={cn(
+          "rounded px-1.5 py-0.5 text-[10px] font-extrabold",
+          game.result === "W" ? "bg-green-500/15 text-green-400" : game.result === "L" ? "bg-red-500/15 text-red-400" : "bg-muted text-muted-foreground",
+        )}
+      >
+        {game.result}
+      </span>
+    );
+  return <span className="text-[11px] font-medium text-muted-foreground">{game.state === "post" ? "Final" : "Next"}</span>;
 }
 
-function ScoreCard({ card }: { card: TeamCard }) {
+function ScoreCard({ t }: { t: TeamScores }) {
   const navigate = useNavigate();
-  const { main, next } = card;
-  if (!main) {
+  const g = t.main;
+  const base =
+    "flex min-h-[138px] w-[190px] shrink-0 snap-start flex-col gap-2 rounded-xl border bg-card p-3 text-left transition-colors hover:bg-card/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+
+  if (!g) {
     return (
       <button
         type="button"
-        onClick={() => navigate(card.href)}
-        aria-label={`${card.label}: no game in the next two months, tap for the schedule`}
-        className="flex min-h-[136px] w-[172px] shrink-0 snap-start flex-col gap-1.5 rounded-xl border border-border/40 bg-card p-3 text-left transition-colors hover:bg-card/80"
-        style={{ borderLeft: `4px solid ${card.color}` }}
+        onClick={() => navigate(scheduleHref(t.key))}
+        aria-label={`${t.label}: no games scheduled, open the schedule`}
+        className={cn(base, "border-border/40")}
       >
-        <span className="text-sm font-bold leading-none text-foreground">
-          {card.label} <span className="text-[10px] font-semibold text-muted-foreground">{card.league}</span>
+        <span className="text-xs font-semibold text-muted-foreground">
+          {t.label} · {t.league}
         </span>
-        <span className="mt-1 text-sm font-semibold leading-snug text-foreground">No game today</span>
-        {next ? (
-          <span className="text-xs text-muted-foreground">Next: {whenLabel(next.start)}</span>
-        ) : (
-          <span className="text-xs text-muted-foreground">Schedule coming soon</span>
-        )}
+        <span className="mt-1 text-sm font-semibold text-foreground">No games scheduled</span>
+        <span className="mt-auto text-xs text-muted-foreground">Tap for the schedule</span>
       </button>
     );
   }
-  const live = main.state === "in";
-  const final = main.state === "post";
-  const hasScore = (live || final) && main.teamScore != null && main.oppScore != null;
-  const summary = hasScore
-    ? `${card.label} ${main.teamScore}, ${main.opponent} ${main.oppScore}, ${live ? "live" : "final"}`
-    : `${card.label} ${main.isHome ? "vs" : "at"} ${main.opponent}, ${whenLabel(main.start)}`;
+
+  const live = g.state === "in";
+  const played = g.state !== "pre";
+  const us = Number(g.team.score);
+  const them = Number(g.opponent.score);
+  const usBold = !played || us >= them;
+  const themBold = played && them > us;
+
+  let footer: string;
+  if (live) footer = g.detail || "Live";
+  else if (played) footer = [g.detail || "Final", t.next ? `Next ${whenLabel(t.next.start)}` : null].filter(Boolean).join(" · ");
+  else footer = [whenLabel(g.start), g.tv].filter(Boolean).join(" · ");
+
+  const summary = played
+    ? `${t.label} ${g.team.score}, ${g.opponent.name} ${g.opponent.score}, ${live ? `live, ${g.detail ?? ""}` : "final"}`
+    : `${t.label} ${g.isHome ? "vs" : "at"} ${g.opponent.name}, ${whenLabel(g.start)}${g.tv ? ` on ${g.tv}` : ""}`;
 
   return (
     <button
       type="button"
-      onClick={() => navigate(card.href)}
+      onClick={() => navigate(scheduleHref(t.key))}
       aria-label={summary}
-      className="flex min-h-[136px] w-[172px] shrink-0 snap-start flex-col gap-1.5 rounded-xl border border-border/40 bg-card p-3 text-left transition-colors hover:bg-card/80"
-      style={{ borderLeft: `4px solid ${card.color}` }}
+      className={cn(base, live ? "border-destructive/70" : "border-border/40")}
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-bold leading-none text-foreground">
-          {card.label} <span className="text-[10px] font-semibold text-muted-foreground">{card.league}</span>
+        <span className="text-xs font-semibold text-muted-foreground">
+          {t.label} · {t.league}
         </span>
-        {live ? (
-          <span className="inline-flex items-center gap-1 rounded bg-destructive px-1.5 py-0.5 text-[10px] font-extrabold uppercase text-destructive-foreground">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-destructive-foreground" />
-            Live
-          </span>
-        ) : final ? (
-          <span className="text-[10px] font-extrabold uppercase tracking-wide text-muted-foreground">Final</span>
-        ) : null}
+        <Badge game={g} />
       </div>
 
-      <div className="flex items-center gap-1.5">
-        {main.opponentLogo && (
-          <img
-            src={main.opponentLogo}
-            alt=""
-            className="h-5 w-5 shrink-0 object-contain"
-            loading="lazy"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
-          />
+      <div className="flex flex-col gap-1.5">
+        <TeamRow side={{ ...g.team, name: t.label }} bold={usBold} showScore={played} />
+        <TeamRow side={g.opponent} bold={themBold} showScore={played} prefix={g.isHome ? "vs" : "@"} />
+      </div>
+
+      <span
+        className={cn(
+          "mt-auto line-clamp-1 text-xs",
+          live ? "font-semibold text-destructive" : "text-muted-foreground",
         )}
-        <span className="line-clamp-1 text-xs text-muted-foreground">
-          {main.isHome ? "vs" : "@"} {main.opponent}
-        </span>
-      </div>
-
-      {hasScore ? (
-        <div className="flex items-baseline gap-2">
-          <span
-            className={cn(
-              "text-2xl font-extrabold leading-none tabular-nums",
-              main.result === "W" ? "text-green-400" : main.result === "L" ? "text-red-400" : "text-foreground",
-            )}
-          >
-            {main.teamScore}–{main.oppScore}
-          </span>
-          {final && main.result && <span className="text-xs font-bold text-muted-foreground">{main.result}</span>}
-        </div>
-      ) : (
-        <span className="text-sm font-semibold leading-snug text-foreground">{whenLabel(main.start)}</span>
-      )}
-
-      {live && main.detail && <span className="text-xs font-semibold text-destructive">{main.detail}</span>}
-      {next && <span className="mt-auto text-[11px] leading-tight text-muted-foreground">Next: {whenLabel(next.start)}</span>}
+      >
+        {footer}
+      </span>
     </button>
   );
 }
 
 export default function NYScoresStrip() {
   const navigate = useNavigate();
-  const [cards, setCards] = useState<TeamCard[] | null>(null);
+  const [feed, setFeed] = useState<Feed | null>(null);
   const [failed, setFailed] = useState(false);
+  const liveRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
+    let timer: number | undefined;
 
-    const load = async () => {
-      const [espn, mets] = await Promise.allSettled([loadEspnTeams(), loadMets()]);
-      if (cancelled) return;
-      if (espn.status === "rejected" && mets.status === "rejected") {
-        setFailed(true);
-        return;
-      }
-      const espnGames = espn.status === "fulfilled" ? espn.value : {};
-      const metsGames = mets.status === "fulfilled" ? mets.value : [];
+    const schedule = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(load, liveRef.current ? REFRESH_LIVE_MS : REFRESH_MS);
+    };
 
-      const built: TeamCard[] = [];
-      for (const t of TEAMS) {
-        built.push({ ...t, ...pick(t.key === "mets" ? metsGames : espnGames[t.key] ?? []) });
+    async function load() {
+      if (document.hidden) return schedule(); // don't poll a background tab
+      try {
+        const res = await fetch(SCORES_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = (await res.json()) as Feed;
+        if (cancelled || !Array.isArray(data?.teams)) return;
+        liveRef.current = !!data.anyLive;
+        setFeed(data);
+        setFailed(false);
+      } catch {
+        // keep showing the last scores we had; only hide if we never got any
+        if (!cancelled) setFailed(true);
+      } finally {
+        if (!cancelled) schedule();
       }
-      // live games jump to the front; everything else keeps the team order above
-      built.sort((a, b) => Number(b.main?.state === "in") - Number(a.main?.state === "in"));
-      setFailed(false);
-      setCards(built);
+    }
+
+    const onVisible = () => {
+      if (!document.hidden) load();
     };
 
     load();
-    const timer = window.setInterval(load, 120_000);
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
-      window.clearInterval(timer);
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 
-  if (failed) return null;
+  if (failed && !feed) return null;
 
-  const anyLive = !!cards?.some((c) => c.main?.state === "in");
+  const anyLive = !!feed?.anyLive;
 
   return (
     <section aria-label="New York team scores" className="relative py-4">
@@ -307,10 +249,10 @@ export default function NYScoresStrip() {
         </div>
       </div>
 
-      <div className="flex scroll-px-4 snap-x gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide sm:scroll-px-6 sm:px-6 lg:scroll-px-8 lg:px-8">
-        {cards
-          ? cards.map((c) => <ScoreCard key={c.key} card={c} />)
-          : Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[136px] w-[172px] shrink-0 rounded-xl" />)}
+      <div className="flex scroll-px-4 snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 scrollbar-hide sm:scroll-px-6 sm:px-6 lg:scroll-px-8 lg:px-8">
+        {feed
+          ? feed.teams.map((t) => <ScoreCard key={t.key} t={t} />)
+          : Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-[138px] w-[190px] shrink-0 rounded-xl" />)}
       </div>
     </section>
   );
