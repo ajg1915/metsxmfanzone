@@ -29,7 +29,7 @@ export const DEFAULT_BRAND: EmailBrand = {
   text_color: '#d1d5db',
   footer_text: '© 2026 MetsXMFanZone — The Ultimate Mets Fan Community',
   button_border_radius: '10px',
-  logo_width: 85,
+  logo_width: 64,
 }
 
 export const escapeHtml = (value: unknown) =>

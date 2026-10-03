@@ -8,7 +8,7 @@ export const BrandHeader = () => (
   <Section style={{ textAlign: 'center', marginBottom: '18px' }}>
     <Img
       src="https://media.metsxmfanzone.com/email-assets/metsxmfanzone-logo.png"
-      width={85}
+      width={64}
       alt="MetsXMFanZone"
       style={{ borderRadius: '12px', margin: '0 auto 10px' }}
     />

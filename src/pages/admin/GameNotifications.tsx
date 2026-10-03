@@ -45,6 +45,7 @@ const GameNotifications = () => {
     pregame_20min: false,
     pregame_5min: false,
     game_live: true,
+    ny_sports_live: false,
   });
 
   useEffect(() => {
@@ -59,7 +60,7 @@ const GameNotifications = () => {
       .from("gameday_email_settings")
       .select("trigger_type, enabled");
     if (data) {
-      const map: Record<string, boolean> = { pregame_20min: false, pregame_5min: false, game_live: true };
+      const map: Record<string, boolean> = { pregame_20min: false, pregame_5min: false, game_live: true, ny_sports_live: false };
       data.forEach((r: any) => { map[r.trigger_type] = r.enabled; });
       setEmailToggles(map);
     }
@@ -74,7 +75,7 @@ const GameNotifications = () => {
       toast({ title: "Failed to update", description: error.message, variant: "destructive" });
       fetchEmailToggles();
     } else {
-      toast({ title: enabled ? "Email enabled" : "Email disabled", description: triggerType === 'game_live' ? 'Game is live' : triggerType === 'pregame_20min' ? '20 min to first pitch' : '5 min to first pitch' });
+      toast({ title: enabled ? "Email enabled" : "Email disabled", description: triggerType === 'game_live' ? 'Game is live' : triggerType === 'ny_sports_live' ? 'NY Sports game is live' : triggerType === 'pregame_20min' ? '20 min to first pitch' : '5 min to first pitch' });
     }
   };
 
@@ -219,7 +220,7 @@ const GameNotifications = () => {
             Gameday Email Triggers
           </CardTitle>
           <CardDescription className="text-xs">
-            Pick which automatic gameday emails go out. Push notifications always run.
+            Pick which automatic gameday emails go out. Mets push notifications always run.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-3 pt-0 space-y-2">
@@ -251,6 +252,16 @@ const GameNotifications = () => {
             <Switch
               checked={emailToggles.pregame_5min}
               onCheckedChange={(v) => updateToggle('pregame_5min', v)}
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-md border border-border/50 p-2">
+            <div className="min-w-0">
+              <p className="text-xs font-medium">🗽 NY Sports Game Is Live</p>
+              <p className="text-[10px] text-muted-foreground">Email + push to all members when a Giants, Jets, Knicks, Nets, Rangers or Islanders event goes live</p>
+            </div>
+            <Switch
+              checked={emailToggles.ny_sports_live}
+              onCheckedChange={(v) => updateToggle('ny_sports_live', v)}
             />
           </div>
         </CardContent>

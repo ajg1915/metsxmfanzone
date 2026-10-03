@@ -18,7 +18,7 @@ const loadEmailStyle = async (supabase: any) => {
   const defaults = {
     bgColor: "#0a0a1a", cardBgColor: "#1a1a3e", textColor: "#ffffff", mutedTextColor: "#a0a0c0",
     accentColor: "#ff6b35", primaryColor: "#002D72", borderColor: "#2a2a5a", borderRadius: 12,
-    logoUrl: "https://rdmrxeplasttewtlfetc.supabase.co/storage/v1/object/public/email-assets/logo-192.png", logoWidth: 60,
+    logoUrl: "https://media.metsxmfanzone.com/email-assets/metsxmfanzone-logo.png", logoWidth: 64,
   };
   return { ...defaults, ...(data?.setting_value || {}) };
 };
