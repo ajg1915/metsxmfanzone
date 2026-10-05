@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import DesktopNavMenu from "@/components/DesktopNavMenu";
+import MobileSportsMenu from "@/components/MobileSportsMenu";
 import { Button } from "@/components/ui/button";
 import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, ChevronRight, PenLine, ShoppingBag, Bell, Newspaper, Trophy, Loader2, X } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -492,171 +493,19 @@ const Navigation = () => {
               </SheetTrigger>
               <SheetContent
                 side="right"
-                className="flex w-[min(92vw,390px)] flex-col border-l border-primary/30 bg-menu-panel p-0 text-menu-panel-foreground [&>button]:hidden"
+                className="w-full max-w-none border-0 p-0 sm:max-w-[440px] sm:border-l sm:border-primary/30 [&>button]:hidden"
               >
-                <SheetHeader className="flex-row items-center justify-between border-b border-border/25 px-5 py-5 text-left">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <img src={logo} alt="MetsXMFanZone" className="h-10 w-10 shrink-0 object-contain" />
-                    <div className="min-w-0">
-                      <SheetTitle className="truncate text-base font-bold text-player-foreground">MetsXMFanZone</SheetTitle>
-                      <SheetDescription className="text-[10px] font-bold uppercase text-primary">Fan Command Center</SheetDescription>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setMobileMenuOpen(false)}
-                    aria-label="Close menu"
-                    className="h-10 w-10 shrink-0 rounded-full border border-border/30 text-muted-foreground hover:bg-muted hover:text-player-foreground"
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
-                </SheetHeader>
-
-                <div className="flex-1 overflow-y-auto px-5 py-5">
-                  {user && (
-                    <div className="mb-6 flex items-center gap-3 border-b border-border/20 pb-5">
-                      <Avatar className="h-10 w-10 border border-border/40">
-                        <AvatarImage src={userProfile.avatar_url || undefined} alt="Profile" />
-                        <AvatarFallback className="bg-muted text-sm font-bold text-primary">
-                          {userProfile.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 text-left">
-                        <p className="truncate text-sm font-bold text-player-foreground">{userProfile.full_name || "Member"}</p>
-                        <p className="truncate text-[10px] text-muted-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  <nav aria-label="Mobile navigation" className="space-y-1">
-                    <NavLink
-                      to="/"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="group flex min-h-14 items-center justify-between border-b border-border/15 px-1 py-3 text-player-foreground transition-colors hover:text-primary"
-                    >
-                      <span>
-                        <span className="block text-lg font-bold">Home</span>
-                        <span className="block text-[10px] text-muted-foreground">Latest Mets news and updates</span>
-                      </span>
-                      <ChevronRight className="h-5 w-5 text-primary" />
-                    </NavLink>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => { setMobileMenuOpen(false); handleProtectedNavigation("/community"); }}
-                      className="group h-auto min-h-14 w-full justify-between rounded-none border-b border-border/15 px-1 py-3 text-left text-player-foreground hover:bg-transparent hover:text-primary"
-                    >
-                      <span>
-                        <span className="block text-lg font-bold">Community</span>
-                        <span className="block text-[10px] font-normal text-muted-foreground">Posts and conversations with fans</span>
-                      </span>
-                      <ChevronRight className="h-5 w-5 text-primary" />
-                    </Button>
-
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => { setMobileMenuOpen(false); handleProNavigation("/podcast"); }}
-                      className="group h-auto min-h-14 w-full justify-between rounded-none border-b border-border/15 px-1 py-3 text-left text-player-foreground hover:bg-transparent hover:text-primary"
-                    >
-                      <span>
-                        <span className="block text-lg font-bold">Podcast</span>
-                        <span className="block text-[10px] font-normal text-muted-foreground">Listen to MetsXMFanZone shows</span>
-                      </span>
-                      <ChevronRight className="h-5 w-5 text-primary" />
-                    </Button>
-
-                    {!user && (
-                      <NavLink
-                        to="/pricing"
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="group flex min-h-14 items-center justify-between border-b border-border/15 px-1 py-3 text-player-foreground transition-colors hover:text-primary"
-                      >
-                        <span>
-                          <span className="block text-lg font-bold">Membership</span>
-                          <span className="block text-[10px] text-muted-foreground">Compare plans and member access</span>
-                        </span>
-                        <ChevronRight className="h-5 w-5 text-primary" />
-                      </NavLink>
-                    )}
-
-                    <Collapsible open={tvScheduleOpen} onOpenChange={setTvScheduleOpen}>
-                      <CollapsibleTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          className="h-auto min-h-14 w-full justify-between rounded-none border-b border-border/15 px-1 py-3 text-left text-player-foreground hover:bg-transparent hover:text-primary"
-                        >
-                          <span>
-                            <span className="block text-lg font-bold text-primary">More</span>
-                            <span className="block text-[10px] font-normal text-muted-foreground">Schedule, roster, highlights and recaps</span>
-                          </span>
-                          <ChevronDown className={`h-5 w-5 text-primary transition-transform ${tvScheduleOpen ? "rotate-180" : ""}`} />
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="border-b border-border/15 py-2 pl-4">
-                        <Button type="button" variant="ghost" onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); handleProtectedNavigation("/mets-schedule-2026"); }} className="h-10 w-full justify-start gap-3 rounded-sm text-sm text-muted-foreground hover:text-player-foreground">
-                          <CalendarDays className="h-4 w-4 text-primary" /> Schedule
-                        </Button>
-                        {user && (
-                          <Button type="button" variant="ghost" onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); navigate("/mets-roster"); }} className="h-10 w-full justify-start gap-3 rounded-sm text-sm text-muted-foreground hover:text-player-foreground">
-                            <Users className="h-4 w-4 text-primary" /> Roster
-                          </Button>
-                        )}
-                        <Button type="button" variant="ghost" onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); handleProNavigation("/video-gallery"); }} className="h-10 w-full justify-start gap-3 rounded-sm text-sm text-muted-foreground hover:text-player-foreground">
-                          <Tv className="h-4 w-4 text-primary" /> Highlights
-                        </Button>
-                        <Button type="button" variant="ghost" onClick={() => { setTvScheduleOpen(false); setMobileMenuOpen(false); navigate("/mets-game-recaps"); }} className="h-10 w-full justify-start gap-3 rounded-sm text-sm text-muted-foreground hover:text-player-foreground">
-                          <Newspaper className="h-4 w-4 text-primary" /> Game Recaps
-                        </Button>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </nav>
-
-                  {user && (
-                    <div className="mt-6">
-                      <p className="mb-2 text-[10px] font-bold uppercase text-muted-foreground">Your account</p>
-                      <Button type="button" variant="ghost" onClick={() => { navigate("/dashboard"); setMobileMenuOpen(false); }} className="h-11 w-full justify-between rounded-sm px-1 text-player-foreground hover:bg-muted">
-                        <span className="flex items-center gap-3"><LayoutDashboard className="h-4 w-4 text-primary" /> Dashboard</span><ChevronRight className="h-4 w-4" />
-                      </Button>
-                      {isWriter && (
-                        <Button type="button" variant="ghost" onClick={() => { navigate("/writer"); setMobileMenuOpen(false); }} className="h-11 w-full justify-between rounded-sm px-1 text-player-foreground hover:bg-muted">
-                          <span className="flex items-center gap-3"><PenLine className="h-4 w-4 text-primary" /> Writers Portal</span><ChevronRight className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {isAdmin && (
-                        <>
-                          <Button type="button" variant="ghost" onClick={() => { navigate("/admin/stories"); setMobileMenuOpen(false); }} className="h-11 w-full justify-between rounded-sm px-1 text-player-foreground hover:bg-muted">
-                            <span className="flex items-center gap-3"><Sparkles className="h-4 w-4 text-primary" /> Admin Stories</span><ChevronRight className="h-4 w-4" />
-                          </Button>
-                          <Button type="button" variant="ghost" onClick={() => { navigate("/admin"); setMobileMenuOpen(false); }} className="h-11 w-full justify-between rounded-sm px-1 text-player-foreground hover:bg-muted">
-                            <span className="flex items-center gap-3"><Shield className="h-4 w-4 text-primary" /> Admin Portal</span><ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="border-t border-primary/25 bg-menu-panel px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4">
-                  {user ? (
-                    <Button type="button" variant="outline" onClick={async () => { await handleAuthClick(); }} className="h-12 w-full rounded-sm border-border/40 bg-transparent font-bold text-player-foreground hover:bg-muted">
-                      <LogOut className="h-4 w-4" /> Sign Out
-                    </Button>
-                  ) : (
-                    <div className="space-y-2">
-                      <Button type="button" onClick={() => { navigate("/auth?mode=signup"); setMobileMenuOpen(false); }} className="h-12 w-full rounded-sm text-sm font-bold">
-                        Create Account
-                      </Button>
-                      <Button type="button" variant="ghost" onClick={() => { navigate("/auth?mode=login"); setMobileMenuOpen(false); }} className="h-11 w-full rounded-sm text-sm font-bold text-player-foreground hover:bg-muted">
-                        Login
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                <MobileSportsMenu
+                  user={user}
+                  profile={userProfile}
+                  isAdmin={isAdmin}
+                  isWriter={isWriter}
+                  close={() => setMobileMenuOpen(false)}
+                  go={(path) => navigate(path)}
+                  goProtected={handleProtectedNavigation}
+                  goPro={handleProNavigation}
+                  onSignOut={async () => { await handleAuthClick(); }}
+                />
               </SheetContent>
             </Sheet>
           </div>
