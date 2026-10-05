@@ -12,12 +12,12 @@ import { SheetTitle, SheetDescription } from "@/components/ui/sheet";
 // Full-screen, sports-app style mobile menu (used inside the nav Sheet).
 
 const NY_TEAMS = [
-  { key: "giants", label: "Giants", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png" },
-  { key: "jets", label: "Jets", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png" },
-  { key: "knicks", label: "Knicks", logo: "https://a.espncdn.com/i/teamlogos/nba/500/ny.png" },
-  { key: "nets", label: "Nets", logo: "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png" },
-  { key: "rangers", label: "Rangers", logo: "https://a.espncdn.com/i/teamlogos/nhl/500/nyr.png" },
-  { key: "islanders", label: "Isles", logo: "https://a.espncdn.com/i/teamlogos/nhl/500/nyi.png" },
+  { key: "giants", label: "Giants", logo: "https://media.metsxmfanzone.com/team-logos/nfl/nyg.png" },
+  { key: "jets", label: "Jets", logo: "https://media.metsxmfanzone.com/team-logos/nfl/nyj.png" },
+  { key: "knicks", label: "Knicks", logo: "https://media.metsxmfanzone.com/team-logos/nba/ny.png" },
+  { key: "nets", label: "Nets", logo: "https://media.metsxmfanzone.com/team-logos/nba/bkn.png" },
+  { key: "rangers", label: "Rangers", logo: "https://media.metsxmfanzone.com/team-logos/nhl/nyr.png" },
+  { key: "islanders", label: "Isles", logo: "https://media.metsxmfanzone.com/team-logos/nhl/nyi.png" },
 ];
 
 type Props = {

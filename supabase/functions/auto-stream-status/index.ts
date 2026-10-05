@@ -1,9 +1,31 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { queueTransactionalEmail } from "../_shared/queue-email.ts";
 import { renderNyLiveEmail } from "../_shared/ny-live-email.ts";
-import { NY_TEAM_BY_PAGE } from "../_shared/team-logos.ts";
+import { NY_TEAM_BY_PAGE, TEAMS, espnLogo, r2LogoKey } from "../_shared/team-logos.ts";
+import { uploadBytesToR2 } from "../_shared/r2.ts";
 
 const NY_PAGES = Object.keys(NY_TEAM_BY_PAGE);
+
+// Uploads a PNG to R2: with the R2 keys if this project has them, otherwise
+// through the site's r2-sign-upload worker (the same path site uploads use).
+const R2_SIGNER = "https://r2-sign-upload.metsxmfan.workers.dev";
+async function uploadLogo(key: string, bytes: Uint8Array): Promise<string> {
+  try {
+    return await uploadBytesToR2(key, bytes, "image/png");
+  } catch (e) {
+    if (!String((e as Error)?.message).includes("not configured")) throw e;
+  }
+  const sign = await fetch(R2_SIGNER, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ key, action: "put", contentType: "image/png" }),
+  });
+  const signed = await sign.json().catch(() => ({}));
+  if (!sign.ok || !signed?.uploadUrl) throw new Error(`signer ${sign.status}: ${signed?.error ?? "no upload URL"}`);
+  const put = await fetch(signed.uploadUrl, { method: "PUT", headers: { "Content-Type": "image/png" }, body: bytes });
+  if (!put.ok) throw new Error(`R2 PUT ${put.status}`);
+  return signed.publicUrl;
+}
 const NY_EMAIL_WINDOW_MS = 6 * 60 * 60 * 1000; // only email events that went live in the last 6h
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -109,16 +131,49 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    const body = await req.json().catch(() => ({}));
+    const isAdminEmail = async (email: unknown) => {
+      const e = String(email || "").trim().toLowerCase();
+      if (!e) return false;
+      const { data: prof } = await supabase.from("profiles").select("id").eq("email", e).maybeSingle();
+      if (!prof) return false;
+      const { data: role } = await supabase.from("user_roles").select("role").eq("user_id", prof.id).eq("role", "admin").maybeSingle();
+      return !!role;
+    };
+
+    // Admin action: { importTeamLogos: true, by: <admin email> } copies every
+    // NFL/NBA/NHL logo PNG from ESPN into R2 at team-logos/<league>/<abbr>.png.
+    if (body?.importTeamLogos) {
+      if (!(await isAdminEmail(body.by))) {
+        return new Response(JSON.stringify({ error: "Admins only" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const results: { team: string; ok: boolean; url?: string; error?: string }[] = [];
+      for (let i = 0; i < TEAMS.length; i += 8) {
+        await Promise.all(TEAMS.slice(i, i + 8).map(async (t) => {
+          try {
+            const res = await fetch(espnLogo(t));
+            if (!res.ok) throw new Error(`ESPN ${res.status}`);
+            const bytes = new Uint8Array(await res.arrayBuffer());
+            const url = await uploadLogo(r2LogoKey(t), bytes);
+            results.push({ team: `${t.league} ${t.name}`, ok: true, url });
+          } catch (e) {
+            results.push({ team: `${t.league} ${t.name}`, ok: false, error: String((e as Error)?.message ?? e) });
+          }
+        }));
+      }
+      const failed = results.filter((r) => !r.ok);
+      return new Response(JSON.stringify({ uploaded: results.length - failed.length, failed, sample: results.find((r) => r.ok)?.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Test mode: { testTo, testStreamId } sends that event's NY live email to ONE
     // address, and only if that address belongs to an admin. Nothing else runs.
-    const body = await req.json().catch(() => ({}));
     if (body?.testTo && body?.testStreamId) {
       const to = String(body.testTo).trim().toLowerCase();
-      const { data: prof } = await supabase.from("profiles").select("id").eq("email", to).maybeSingle();
-      const { data: role } = prof
-        ? await supabase.from("user_roles").select("role").eq("user_id", prof.id).eq("role", "admin").maybeSingle()
-        : { data: null };
-      if (!role) {
+      if (!(await isAdminEmail(to))) {
         return new Response(JSON.stringify({ error: "Test emails can only go to an admin account" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });

@@ -51,12 +51,12 @@ const METS: Entry[] = [
 ];
 
 const NY_TEAMS = [
-  { key: "giants", label: "Giants", league: "NFL", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png" },
-  { key: "jets", label: "Jets", league: "NFL", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png" },
-  { key: "knicks", label: "Knicks", league: "NBA", logo: "https://a.espncdn.com/i/teamlogos/nba/500/ny.png" },
-  { key: "nets", label: "Nets", league: "NBA", logo: "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png" },
-  { key: "rangers", label: "Rangers", league: "NHL", logo: "https://a.espncdn.com/i/teamlogos/nhl/500/nyr.png" },
-  { key: "islanders", label: "Islanders", league: "NHL", logo: "https://a.espncdn.com/i/teamlogos/nhl/500/nyi.png" },
+  { key: "giants", label: "Giants", league: "NFL", logo: "https://media.metsxmfanzone.com/team-logos/nfl/nyg.png" },
+  { key: "jets", label: "Jets", league: "NFL", logo: "https://media.metsxmfanzone.com/team-logos/nfl/nyj.png" },
+  { key: "knicks", label: "Knicks", league: "NBA", logo: "https://media.metsxmfanzone.com/team-logos/nba/ny.png" },
+  { key: "nets", label: "Nets", league: "NBA", logo: "https://media.metsxmfanzone.com/team-logos/nba/bkn.png" },
+  { key: "rangers", label: "Rangers", league: "NHL", logo: "https://media.metsxmfanzone.com/team-logos/nhl/nyr.png" },
+  { key: "islanders", label: "Islanders", league: "NHL", logo: "https://media.metsxmfanzone.com/team-logos/nhl/nyi.png" },
 ];
 
 const WATCH_PATHS = ["/metsxmfanzone", "/game-events", "/pix11-network", "/tv", "/msg-network", "/msg-plus", "/espn-network", "/mlb-network", "/live/"];

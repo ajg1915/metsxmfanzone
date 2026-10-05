@@ -65,8 +65,13 @@ const build = (league: League, rows: [string, string, string][]): Team[] =>
 
 export const TEAMS: Team[] = [...build('NFL', nfl), ...build('NBA', nba), ...build('NHL', nhl)]
 
-export const teamLogo = (t: Pick<Team, 'league' | 'abbr'>) =>
+// Original source (ESPN). Copies live in our R2 bucket under team-logos/<league>/<abbr>.png.
+export const espnLogo = (t: Pick<Team, 'league' | 'abbr'>) =>
   `https://a.espncdn.com/i/teamlogos/${t.league.toLowerCase()}/500/${t.abbr}.png`
+
+export const r2LogoKey = (t: Pick<Team, 'league' | 'abbr'>) => `team-logos/${t.league.toLowerCase()}/${t.abbr}.png`
+
+export const teamLogo = (t: Pick<Team, 'league' | 'abbr'>) => `https://media.metsxmfanzone.com/${r2LogoKey(t)}`
 
 // The six NY teams, keyed by the page tag used on live_streams.assigned_pages.
 export const NY_TEAM_BY_PAGE: Record<string, { league: League; abbr: string }> = {
