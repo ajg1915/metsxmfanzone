@@ -1,0 +1,228 @@
+// mxf-scheduler — Cloudflare Worker for MetsXMFanZone
+// Runs the site's timed jobs on Cloudflare instead of Supabase's scheduler, and
+// only touches Supabase when there is real work to do.
+//
+// Every 2 minutes:
+//   1. One call to Supabase (scheduler_flags) asks "is anything due?"
+//        - an event needs to go live / end, or a NY Sports live email is pending
+//          → runs the auto-stream-status function
+//        - emails are waiting in the queue → runs the process-email-queue function
+//   2. Mets games (straight from MLB, no Supabase) → runs auto-game-alerts only
+//      when a Mets game is about to start, just started, or just finished.
+// Once an hour (minute 6–7):
+//   3. Fetches the Giants/Jets/Knicks/Nets/Rangers/Islanders schedules from ESPN
+//      and saves them to the ny_sports_games table in one write (TV Guide,
+//      NY schedules page, team picks).
+//
+// SETUP (Cloudflare dashboard → Workers & Pages → mxf-scheduler):
+//   Settings → Variables and Secrets:
+//     SUPABASE_URL               (Text)   https://rdmrxeplasttewtlfetc.supabase.co
+//     SUPABASE_SERVICE_ROLE_KEY  (Secret) Supabase → Project Settings → API Keys → service_role
+//   Settings → Triggers → Cron Triggers → Add:  */2 * * * *
+//
+// Visiting the worker's URL shows what the last run did (no secrets, no actions).
+
+const METS_ID = 121;
+const ET = "America/New_York";
+const R2 = "https://media.metsxmfanzone.com/team-logos";
+
+const NY_TEAMS = [
+  { key: "jets", league: "NFL", path: "football/nfl", slug: "nyj", abbr: "NYJ" },
+  { key: "giants", league: "NFL", path: "football/nfl", slug: "nyg", abbr: "NYG" },
+  { key: "knicks", league: "NBA", path: "basketball/nba", slug: "ny", abbr: "NY" },
+  { key: "nets", league: "NBA", path: "basketball/nba", slug: "bkn", abbr: "BKN" },
+  { key: "rangers", league: "NHL", path: "hockey/nhl", slug: "nyr", abbr: "NYR" },
+  { key: "islanders", league: "NHL", path: "hockey/nhl", slug: "nyi", abbr: "NYI" },
+];
+
+// Team abbreviations that have a logo copy in R2 (team-logos/<league>/<abbr>.png)
+const R2_LOGOS = {
+  nfl: "ari atl bal buf car chi cin cle dal den det gb hou ind jax kc lv lac lar mia min ne no nyg nyj phi pit sf sea tb ten wsh",
+  nba: "atl bos bkn cha chi cle dal den det gs hou ind lac lal mem mia mil min no ny okc orl phi phx por sac sa tor utah wsh",
+  nhl: "ana bos buf cgy car chi col cbj dal det edm fla la min mtl nsh nj nyi nyr ott phi pit sj sea stl tb tor uta van vgk wsh wpg",
+};
+const hasR2 = (league, abbr) => (R2_LOGOS[league.toLowerCase()] || "").split(" ").includes(String(abbr || "").toLowerCase());
+
+let lastRun = null; // shown on GET, per worker instance
+const alerted = new Set(); // "gamePk:trigger" already sent by this instance
+
+// ---------- Supabase helpers ----------
+function sb(env) {
+  const url = String(env.SUPABASE_URL || "").replace(/\/+$/, "");
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+  const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
+  return {
+    rpc: async (fn, args = {}) => {
+      const r = await fetch(`${url}/rest/v1/rpc/${fn}`, { method: "POST", headers, body: JSON.stringify(args) });
+      if (!r.ok) throw new Error(`rpc ${fn} ${r.status}: ${(await r.text()).slice(0, 200)}`);
+      return r.json();
+    },
+    fn: async (name, body = {}) => {
+      const r = await fetch(`${url}/functions/v1/${name}`, { method: "POST", headers, body: JSON.stringify(body) });
+      return { status: r.status, body: (await r.text()).slice(0, 300) };
+    },
+    upsert: async (table, rows, onConflict) => {
+      const r = await fetch(`${url}/rest/v1/${table}?on_conflict=${onConflict}`, {
+        method: "POST",
+        headers: { ...headers, Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify(rows),
+      });
+      if (!r.ok) throw new Error(`upsert ${table} ${r.status}: ${(await r.text()).slice(0, 200)}`);
+      return rows.length;
+    },
+  };
+}
+
+const etDate = (d = new Date()) =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: ET, year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
+
+// ---------- 1. Streams + email queue ----------
+async function runDueWork(api) {
+  const flags = await api.rpc("scheduler_flags");
+  const out = { flags };
+  if (flags.streams_due || flags.streams_to_end || flags.ny_email_pending) {
+    out.autoStreamStatus = await api.fn("auto-stream-status");
+  }
+  if (Number(flags.email_queue) > 0) {
+    out.emailQueue = await api.fn("process-email-queue");
+  }
+  return out;
+}
+
+// ---------- 2. Mets game alerts (MLB direct) ----------
+// Mirrors the windows used by auto-game-alerts, but only calls it at the moment
+// a window opens instead of every few minutes all day.
+async function runMetsAlerts(api, now = Date.now()) {
+  const day = etDate(new Date(now));
+  const r = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${METS_ID}&date=${day}`);
+  if (!r.ok) return { mlb: r.status };
+  const data = await r.json();
+  const games = (data.dates && data.dates[0] && data.dates[0].games) || [];
+  if (!games.length) return { games: 0 };
+
+  const calls = [];
+  for (const g of games) {
+    const mins = (Date.parse(g.gameDate) - now) / 60000;
+    const state = g.status && g.status.abstractGameState; // Preview | Live | Final
+    const want = [];
+    if (state === "Preview") {
+      if (mins >= 120 && mins < 122) want.push("pregame");
+      if (mins >= 20 && mins < 22) want.push("pregame_20min");
+      if (mins >= 4 && mins < 6) want.push("pregame_5min");
+    }
+    if (state === "Live" && mins > -45) want.push("game_live");
+    if (state === "Final" && mins > -360) want.push("final_score");
+    for (const trigger of want) {
+      const id = `${g.gamePk}:${trigger}`;
+      if (alerted.has(id)) continue; // the function also de-duplicates per day
+      alerted.add(id);
+      calls.push({ trigger, ...(await api.fn("auto-game-alerts", { triggerType: trigger })) });
+    }
+  }
+  return { games: games.length, calls };
+}
+
+// ---------- 3. NY team schedules (ESPN → ny_sports_games) ----------
+function scoreOf(c) {
+  const s = c && c.score;
+  if (s == null) return null;
+  if (typeof s === "object") return s.displayValue ?? (s.value != null ? String(s.value) : null);
+  return String(s);
+}
+
+function rowsFrom(json, team, seasonType, seenAt) {
+  const rows = [];
+  for (const ev of (json && json.events) || []) {
+    const comp = ev.competitions && ev.competitions[0];
+    if (!comp || !ev.date) continue;
+    const cs = comp.competitors || [];
+    const us = cs.find((c) => c.team && c.team.abbreviation === team.abbr);
+    const them = cs.find((c) => c !== us);
+    if (!us || !them) continue;
+    const type = (comp.status && comp.status.type) || {};
+    const oppAbbr = them.team && them.team.abbreviation;
+    const espnLogo = them.team && them.team.logos && them.team.logos[0] && them.team.logos[0].href;
+    const tv = [...new Set((comp.broadcasts || []).map((b) => b.media && b.media.shortName).filter(Boolean))].join(", ") || null;
+    rows.push({
+      event_id: String(ev.id),
+      team_key: team.key,
+      league: team.league,
+      team_name: (us.team && us.team.displayName) || null,
+      team_abbr: team.abbr,
+      opponent_name: (them.team && them.team.displayName) || null,
+      opponent_abbr: oppAbbr || null,
+      opponent_logo: hasR2(team.league, oppAbbr)
+        ? `${R2}/${team.league.toLowerCase()}/${oppAbbr.toLowerCase()}.png`
+        : espnLogo || null,
+      is_home: us.homeAway === "home",
+      start_time: new Date(ev.date).toISOString(),
+      venue: (comp.venue && comp.venue.fullName) || null,
+      tv,
+      season_type: seasonType,
+      season_type_name: (ev.seasonType && ev.seasonType.name) || null,
+      state: type.state || null,
+      status_detail: type.shortDetail || type.detail || null,
+      team_score: scoreOf(us),
+      opponent_score: scoreOf(them),
+      result: type.state === "post" ? (us.winner === true ? "W" : them.winner === true ? "L" : null) : null,
+      last_seen_at: seenAt,
+    });
+  }
+  return rows;
+}
+
+async function runNySchedules(api, now = new Date()) {
+  const month = Number(new Intl.DateTimeFormat("en-US", { timeZone: ET, month: "numeric" }).format(now));
+  const year = Number(new Intl.DateTimeFormat("en-US", { timeZone: ET, year: "numeric" }).format(now));
+  const nflSeason = month >= 3 ? year : year - 1;
+  const winterSeason = month >= 7 ? year + 1 : year;
+  const seenAt = now.toISOString();
+  const rows = [];
+  const errors = [];
+  await Promise.all(
+    NY_TEAMS.flatMap((t) =>
+      [1, 2, 3].map(async (st) => {
+        const season = t.league === "NFL" ? nflSeason : winterSeason;
+        const url = `https://site.web.api.espn.com/apis/site/v2/sports/${t.path}/teams/${t.slug}/schedule?season=${season}&seasontype=${st}`;
+        try {
+          const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          rows.push(...rowsFrom(await r.json(), t, st, seenAt));
+        } catch (e) {
+          errors.push(`${t.key}/${st}: ${e.message || e}`);
+        }
+      }),
+    ),
+  );
+  // one game can appear in two season-type feeds; keep one row per (event, team)
+  const unique = [...new Map(rows.map((r) => [`${r.event_id}|${r.team_key}`, r])).values()];
+  const saved = unique.length ? await api.upsert("ny_sports_games", unique, "event_id,team_key") : 0;
+  return { saved, errors };
+}
+
+// ---------- entry points ----------
+async function tick(env, when = new Date()) {
+  const api = sb(env);
+  const result = { at: when.toISOString() };
+  const step = async (name, fn) => {
+    try { result[name] = await fn(); } catch (e) { result[name] = { error: String((e && e.message) || e) }; }
+  };
+  await step("due", () => runDueWork(api));
+  await step("mets", () => runMetsAlerts(api, when.getTime()));
+  const minute = when.getUTCMinutes();
+  if (minute === 6 || minute === 7) await step("nySchedules", () => runNySchedules(api, when));
+  lastRun = result;
+  return result;
+}
+
+export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(tick(env, new Date(event.scheduledTime)));
+  },
+  async fetch() {
+    return new Response(JSON.stringify({ worker: "mxf-scheduler", lastRun }, null, 2), {
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
+  },
+};
