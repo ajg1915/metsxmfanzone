@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink } from "@/components/NavLink";
+import DesktopNavMenu from "@/components/DesktopNavMenu";
 import { Button } from "@/components/ui/button";
 import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, ChevronRight, PenLine, ShoppingBag, Bell, Newspaper, Trophy, Loader2, X } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -240,7 +241,7 @@ const Navigation = () => {
       <nav className={`fixed top-0 left-0 right-0 z-50 glass-nav ${isHomePage ? "max-md:!border-0 max-md:!bg-transparent max-md:!shadow-none max-md:![backdrop-filter:none] max-md:px-3 max-md:pt-3" : ""}`}>
         <div className={`container mx-auto px-3 sm:px-4 ${isHomePage ? "max-md:rounded-full max-md:border max-md:border-[rgba(255,255,255,0.14)] max-md:bg-background/55 max-md:pl-3.5 max-md:pr-1.5 max-md:backdrop-blur-xl" : ""}`}>
         <div className="flex h-14 items-center justify-between sm:h-16">
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2 lg:shrink-0">
             {!isHomePage && (
               <Button
                 variant="ghost"
@@ -254,13 +255,13 @@ const Navigation = () => {
             {location.pathname === "/metsxmfanzone" && (
               <span className="font-display text-[25px] uppercase leading-none tracking-wide md:hidden">Watch Live</span>
             )}
-            <div className={`flex min-w-0 items-center gap-1.5 cursor-pointer ${location.pathname === "/metsxmfanzone" ? "max-md:hidden" : ""}`} onClick={() => navigate("/")}>
+            <div className={`flex min-w-0 items-center gap-1.5 cursor-pointer lg:shrink-0 ${location.pathname === "/metsxmfanzone" ? "max-md:hidden" : ""}`} onClick={() => navigate("/")}>
               <img 
                 src={logo} 
                 alt="MetsXMFanZone Logo" 
                 className="h-9 w-auto max-md:h-8 shrink-0"
               />
-              <div className="min-w-0 font-display text-xl uppercase leading-none max-md:text-[clamp(12px,4.5vw,20px)] whitespace-nowrap sm:text-2xl">
+              <div className="min-w-0 font-display text-xl uppercase leading-none lg:max-[1439px]:hidden max-md:text-[clamp(12px,4.5vw,20px)] whitespace-nowrap sm:text-2xl">
                 <span className={isHomePage ? "text-secondary max-md:text-foreground" : "text-secondary"}>Mets</span>
                 <span className="text-primary">XM</span>
                 <span className="text-foreground">FanZone</span>
@@ -268,97 +269,21 @@ const Navigation = () => {
             </div>
           </div>
           
-          <div className="hidden md:flex items-center gap-3 text-xs">
-            <NavLink 
-              to="/" 
-              className="text-foreground hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Home
-            </NavLink>
-            {/* Community Dropdown */}
-            <div className="relative group">
-              <button className="text-foreground hover:text-primary transition-colors py-2">
-                Community
-              </button>
-              <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <div className="bg-background border border-border rounded-lg shadow-lg min-w-[180px] py-1">
-                  <button
-                    onClick={() => handleProtectedNavigation("/community")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <Users className="w-4 h-4" />
-                    Community
-                  </button>
-                  {/* Radio moved into Podcast dropdown */}
-                </div>
-              </div>
-            </div>
-
-            {/* Podcast */}
-            <NavLink
-              to="/podcast"
-              className="text-foreground hover:text-primary transition-colors"
-              activeClassName="text-primary"
-            >
-              Podcast
-            </NavLink>
-
-
-            {/* Mets Dropdown */}
-            <div className="relative group">
-              <button className="text-foreground hover:text-primary transition-colors py-2">
-                Mets Connect
-              </button>
-              <div className="absolute left-0 top-full pt-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                <div className="bg-background border border-border rounded-lg shadow-lg min-w-[160px] py-1">
-                  <button
-                    onClick={() => handleProtectedNavigation("/mets-schedule-2026")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Schedule
-                  </button>
-                  {user && (
-                    <button
-                      onClick={() => navigate("/mets-roster")}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                    >
-                      <Users className="w-4 h-4" />
-                      Roster
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleProNavigation("/video-gallery")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <Tv className="w-4 h-4" />
-                    Highlights
-                  </button>
-                  <button
-                    onClick={() => navigate("/mets-game-recaps")}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
-                  >
-                    <CalendarDays className="w-4 h-4" />
-                    Game Recaps
-                  </button>
-                </div>
-              </div>
-            </div>
-
-
-
-            {!user && (
-              <NavLink 
-                to="/pricing" 
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                Pricing
-              </NavLink>
-            )}
-          </div>
+          <DesktopNavMenu
+            isLoggedIn={!!user}
+            goProtected={handleProtectedNavigation}
+            goPro={handleProNavigation}
+          />
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => handleProNavigation("/metsxmfanzone")}
+              className="hidden h-9 gap-2 rounded-full px-4 text-sm font-bold md:inline-flex lg:hidden"
+            >
+              <span className="h-2 w-2 rounded-full bg-white" /> Watch Live
+            </Button>
             {isHomePage && !user && (
               <Button
                 variant="ghost"
@@ -387,14 +312,15 @@ const Navigation = () => {
               <>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="hidden md:flex gap-1.5 text-xs h-8 px-2">
-                      <Avatar className="h-5 w-5">
+                    <Button variant="ghost" size="sm" className="hidden lg:flex h-10 gap-2 rounded-full px-2.5 text-sm font-semibold hover:bg-white/[0.07]">
+                      <Avatar className="h-7 w-7 ring-1 ring-white/15">
                         <AvatarImage src={userProfile.avatar_url || undefined} alt="Profile" />
                         <AvatarFallback className="text-[10px]">
                           {userProfile.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="max-w-[120px] truncate">{userProfile.full_name || user.email}</span>
+                      <span className="max-w-[140px] truncate">{userProfile.full_name || user.email}</span>
+                      <ChevronDown className="h-3.5 w-3.5 opacity-70" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -541,14 +467,14 @@ const Navigation = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="hidden md:flex text-xs h-8 px-3"
+                  className="hidden lg:flex h-10 rounded-full px-4 text-sm font-semibold hover:bg-white/[0.07]"
                   onClick={() => navigate("/auth?mode=login")}
                 >
                   Login
                 </Button>
                 <Button 
                   size="sm" 
-                  className="hidden md:flex text-xs h-8 px-3"
+                  className="hidden lg:flex h-10 rounded-full px-5 text-sm font-bold shadow-lg shadow-primary/25"
                   onClick={() => navigate("/auth?mode=signup")}
                 >
                   Sign Up
@@ -560,7 +486,7 @@ const Navigation = () => {
             {/* Mobile menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open menu" className={`h-9 w-9 rounded-sm border border-border/40 bg-card/70 transition-colors hover:bg-muted md:hidden ${isHomePage ? "max-md:h-11 max-md:w-11 max-md:rounded-full max-md:border-0 max-md:bg-transparent" : ""}`}>
+                <Button variant="ghost" size="icon" aria-label="Open menu" className={`h-9 w-9 rounded-sm border border-border/40 bg-card/70 transition-colors hover:bg-muted lg:hidden ${isHomePage ? "max-md:h-11 max-md:w-11 max-md:rounded-full max-md:border-0 max-md:bg-transparent" : ""}`}>
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
