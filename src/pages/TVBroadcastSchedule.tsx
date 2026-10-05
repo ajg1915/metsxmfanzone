@@ -268,7 +268,7 @@ const TVBroadcastSchedule = () => {
       />
       <Navigation />
 
-      <main className="flex-1 container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <main className="flex-1 container mx-auto px-3 sm:px-4 py-4 sm:py-8 md:pt-24">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 sm:mb-6">
           <div className="flex items-center gap-2">

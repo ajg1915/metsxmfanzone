@@ -159,7 +159,7 @@ export default function MetsSchedule2026() {
       
       <Navigation />
       
-      <main className="flex-1 container mx-auto px-4 pt-12 pb-8 max-w-7xl">
+      <main className="flex-1 container mx-auto px-4 pt-12 md:pt-24 pb-8 max-w-7xl">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

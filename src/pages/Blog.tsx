@@ -103,7 +103,7 @@ export default function Blog() {
       />
       <Navigation />
       
-      <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-12 max-md:!pt-16 max-md:!pb-24 max-w-7xl">
+      <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 pt-12 md:pt-24 max-md:!pt-16 max-md:!pb-24 max-w-7xl">
         <div className="w-full">
 
           {/* Phone layout */}

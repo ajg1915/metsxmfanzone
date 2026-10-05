@@ -242,7 +242,7 @@ const NLScores = () => {
       <div className="min-h-screen bg-background">
         <Navigation />
         
-        <main className="container mx-auto px-4 pt-12 pb-4">
+        <main className="container mx-auto px-4 pt-12 md:pt-24 pb-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-foreground">

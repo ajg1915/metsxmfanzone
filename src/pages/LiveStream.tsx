@@ -117,7 +117,7 @@ const LiveStream = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navigation />
-        <main className="flex-1 pt-12 container mx-auto px-4 py-8">
+        <main className="flex-1 pt-12 md:pt-24 container mx-auto px-4 py-8">
           <Skeleton className="h-10 w-64 mb-4" />
           <Skeleton className="aspect-video w-full max-w-6xl" />
         </main>
@@ -130,7 +130,7 @@ const LiveStream = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Navigation />
-        <main className="flex-1 pt-12 container mx-auto px-4 py-16 text-center">
+        <main className="flex-1 pt-12 md:pt-24 container mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-2">Stream Not Found</h1>
           <p className="text-muted-foreground">This stream doesn't exist or has been removed.</p>
         </main>
