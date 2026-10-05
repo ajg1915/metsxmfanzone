@@ -20,6 +20,11 @@
 //     SUPABASE_SERVICE_ROLE_KEY  (Secret) Supabase → Project Settings → API Keys → service_role
 //   Settings → Triggers → Cron Triggers → Add:  */2 * * * *
 //
+//   4. Every 10 minutes: new published blog posts become hero slides on the home page
+//      (one for visitors, one for members), newest first. Keeps the 5 newest automatic
+//      slides per audience, switches a slide off when its post is unpublished.
+//      Slides made by hand in Hero Management are never touched.
+//
 // Visiting the worker's URL shows what the last run did (no secrets, no actions).
 
 const METS_ID = 121;
@@ -61,6 +66,20 @@ function sb(env) {
     fn: async (name, body = {}) => {
       const r = await fetch(`${url}/functions/v1/${name}`, { method: "POST", headers, body: JSON.stringify(body) });
       return { status: r.status, body: (await r.text()).slice(0, 300) };
+    },
+    get: async (path) => {
+      const r = await fetch(`${url}/rest/v1/${path}`, { headers });
+      if (!r.ok) throw new Error(`get ${path.split("?")[0]} ${r.status}: ${(await r.text()).slice(0, 200)}`);
+      return r.json();
+    },
+    insert: async (table, rows) => {
+      const r = await fetch(`${url}/rest/v1/${table}`, { method: "POST", headers: { ...headers, Prefer: "return=minimal" }, body: JSON.stringify(rows) });
+      if (!r.ok) throw new Error(`insert ${table} ${r.status}: ${(await r.text()).slice(0, 200)}`);
+      return rows.length;
+    },
+    patch: async (path, body) => {
+      const r = await fetch(`${url}/rest/v1/${path}`, { method: "PATCH", headers: { ...headers, Prefer: "return=minimal" }, body: JSON.stringify(body) });
+      if (!r.ok) throw new Error(`patch ${path.split("?")[0]} ${r.status}: ${(await r.text()).slice(0, 200)}`);
     },
     upsert: async (table, rows, onConflict) => {
       const r = await fetch(`${url}/rest/v1/${table}?on_conflict=${onConflict}`, {
@@ -201,6 +220,71 @@ async function runNySchedules(api, now = new Date()) {
   return { saved, errors };
 }
 
+// ---------- 4. Blog posts → hero slides ----------
+const HERO_KEEP = 5;
+const AUTO = "auto_blog";
+
+const isLive = (p) => p.published === true && p.is_draft === false && (p.approval_status || "approved") === "approved";
+
+async function runBlogHero(api, now = new Date()) {
+  const since = new Date(now.getTime() - 3 * 86400000).toISOString();
+  const posts = await api.get(
+    `blog_posts?select=id,title,slug,excerpt,featured_image_url,published,is_draft,approval_status` +
+      `&published=eq.true&is_draft=eq.false&approval_status=eq.approved&published_at=gte.${since}&order=published_at.asc&limit=20`,
+  );
+  const out = { posts: posts.length, created: 0, switchedOff: 0 };
+
+  if (posts.length) {
+    const ids = posts.map((p) => p.id).join(",");
+    const have = await api.get(`hero_slides?select=blog_post_id,is_for_members&blog_post_id=in.(${ids})`);
+    const haveSet = new Set(have.map((h) => `${h.blog_post_id}:${h.is_for_members}`));
+    const todo = [];
+    for (const p of posts) for (const aud of [false, true]) if (!haveSet.has(`${p.id}:${aud}`)) todo.push({ p, aud });
+
+    if (todo.length) {
+      // oldest first, each new slide goes in front of everything else for its audience
+      const first = {};
+      for (const aud of [false, true]) {
+        const r = await api.get(`hero_slides?select=display_order&is_for_members=eq.${aud}&order=display_order.asc&limit=1`);
+        first[aud] = r.length && r[0].display_order != null ? r[0].display_order : 1;
+      }
+      const rows = todo.map(({ p, aud }) => {
+        first[aud] -= 1;
+        const desc = (p.excerpt || "").trim() || p.title.trim();
+        return {
+          title: p.title.trim(), description: desc, image_url: p.featured_image_url || null,
+          link_url: `/blog/${p.slug}`, link_text: "Read Article", blog_post_id: p.id,
+          display_order: first[aud], is_for_members: aud, published: true, show_watch_live: true,
+          show_reminder: false, is_ai_generated: false, ai_source_type: AUTO,
+        };
+      });
+      await api.insert("hero_slides", rows);
+      out.created = rows.length;
+    }
+  }
+
+  // Keep the newest few automatic slides on; switch off older ones and ones whose post is no longer live.
+  const auto = await api.get(
+    `hero_slides?select=id,blog_post_id,is_for_members,created_at&ai_source_type=eq.${AUTO}&published=eq.true&order=created_at.desc&limit=100`,
+  );
+  if (auto.length) {
+    const postIds = [...new Set(auto.map((a) => a.blog_post_id).filter(Boolean))].join(",");
+    const state = postIds ? await api.get(`blog_posts?select=id,published,is_draft,approval_status&id=in.(${postIds})`) : [];
+    const liveIds = new Set(state.filter(isLive).map((x) => x.id));
+    const seen = { true: 0, false: 0 };
+    const off = [];
+    for (const a of auto) {
+      if (!a.blog_post_id || !liveIds.has(a.blog_post_id)) { off.push(a.id); continue; }
+      if (++seen[a.is_for_members] > HERO_KEEP) off.push(a.id);
+    }
+    if (off.length) {
+      await api.patch(`hero_slides?id=in.(${off.join(",")})`, { published: false });
+      out.switchedOff = off.length;
+    }
+  }
+  return out;
+}
+
 // ---------- entry points ----------
 async function tick(env, when = new Date()) {
   const api = sb(env);
@@ -212,6 +296,7 @@ async function tick(env, when = new Date()) {
   await step("mets", () => runMetsAlerts(api, when.getTime()));
   const minute = when.getUTCMinutes();
   if (minute === 6 || minute === 7) await step("nySchedules", () => runNySchedules(api, when));
+  if (minute % 10 === 4 || minute % 10 === 5) await step("blogHero", () => runBlogHero(api, when));
   lastRun = result;
   return result;
 }
