@@ -20,7 +20,6 @@ const FreeTrialExpiryBanner = lazyWithRetry(() => import("@/components/FreeTrial
 const LiveNetworks = lazyWithRetry(() => import("@/components/LiveNetworks"), "home-live-networks");
 const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section-v2");
 const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedStreamsSection"), "home-related-streams-section");
-const OffseasonNYTeamsSection = lazyWithRetry(() => import("@/components/OffseasonNYTeamsSection"), "home-offseason-ny-teams-section");
 
 const SpringTrainingGamesSection = lazyWithRetry(() => import("@/components/SpringTrainingGamesSection"), "home-spring-training-games-section");
 const ReplayGamesSection = lazyWithRetry(() => import("@/components/ReplayGamesSection"), "home-replay-games-section");
@@ -65,7 +64,7 @@ const homepageSchema = {
   "@type": "WebPage",
   "@id": "https://www.metsxmfanzone.com/#webpage",
   url: "https://www.metsxmfanzone.com/",
-  name: "MetsXMFanZone — Mets & NY Sports Live Streams, News & Podcasts",
+  name: "MetsXMFanZone — Mets Live Streams, News & Podcasts",
   description:
     "The #1 New York Mets fan community. Watch live streams, podcasts, news, trade rumors and game-day coverage — on any device. Built by fans, for fans.",
   isPartOf: {
@@ -163,7 +162,7 @@ const Index = () => {
       </Suspense>
 
       <SEOHead
-        title="MetsXMFanZone — Mets & NY Sports Live Streams, News & Podcasts"
+        title="MetsXMFanZone — Mets Live Streams, News & Podcasts"
         description="The #1 New York Mets fan community. Watch live streams, podcasts, news, trade rumors and game-day coverage — on any device. Built by fans, for fans."
         keywords="Mets live streams, New York Mets, Mets highlights, Mets podcast, Mets fan community, MLB streams, Mets games, baseball live stream, Spring Training, Francisco Lindor, Pete Alonso, Citi Field"
         canonical="https://metsxmfanzone.com/"
@@ -202,12 +201,6 @@ const Index = () => {
 
         {/* New York team scores, in the middle of the page */}
         <NYScoresStrip />
-
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <OffseasonNYTeamsSection />
-          </Suspense>
-        </LazySection>
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>

@@ -4,15 +4,15 @@
 //
 // Every 2 minutes:
 //   1. One call to Supabase (scheduler_flags) asks "is anything due?"
-//        - an event needs to go live / end, or a NY Sports live email is pending
-//          → runs the auto-stream-status function
+//        - a live event needs to start or end → runs the auto-stream-status function
 //        - emails are waiting in the queue → runs the process-email-queue function
 //   2. Mets games (straight from MLB, no Supabase) → runs auto-game-alerts only
 //      when a Mets game is about to start, just started, or just finished.
-// Once an hour (minute 6–7):
-//   3. Fetches the Giants/Jets/Knicks/Nets/Rangers/Islanders schedules from ESPN
-//      and saves them to the ny_sports_games table in one write (TV Guide,
-//      NY schedules page, team picks).
+// Every 10 minutes:
+//   3. New published blog posts become hero slides on the home page (one for visitors,
+//      one for members), newest first. Keeps the 5 newest automatic slides per audience
+//      and switches a slide off when its post is unpublished. Slides made by hand in
+//      Hero Management are never touched.
 //
 // SETUP (Cloudflare dashboard → Workers & Pages → mxf-scheduler):
 //   Settings → Variables and Secrets:
@@ -20,33 +20,10 @@
 //     SUPABASE_SERVICE_ROLE_KEY  (Secret) Supabase → Project Settings → API Keys → service_role
 //   Settings → Triggers → Cron Triggers → Add:  */2 * * * *
 //
-//   4. Every 10 minutes: new published blog posts become hero slides on the home page
-//      (one for visitors, one for members), newest first. Keeps the 5 newest automatic
-//      slides per audience, switches a slide off when its post is unpublished.
-//      Slides made by hand in Hero Management are never touched.
-//
 // Visiting the worker's URL shows what the last run did (no secrets, no actions).
 
 const METS_ID = 121;
 const ET = "America/New_York";
-const R2 = "https://media.metsxmfanzone.com/team-logos";
-
-const NY_TEAMS = [
-  { key: "jets", league: "NFL", path: "football/nfl", slug: "nyj", abbr: "NYJ" },
-  { key: "giants", league: "NFL", path: "football/nfl", slug: "nyg", abbr: "NYG" },
-  { key: "knicks", league: "NBA", path: "basketball/nba", slug: "ny", abbr: "NY" },
-  { key: "nets", league: "NBA", path: "basketball/nba", slug: "bkn", abbr: "BKN" },
-  { key: "rangers", league: "NHL", path: "hockey/nhl", slug: "nyr", abbr: "NYR" },
-  { key: "islanders", league: "NHL", path: "hockey/nhl", slug: "nyi", abbr: "NYI" },
-];
-
-// Team abbreviations that have a logo copy in R2 (team-logos/<league>/<abbr>.png)
-const R2_LOGOS = {
-  nfl: "ari atl bal buf car chi cin cle dal den det gb hou ind jax kc lv lac lar mia min ne no nyg nyj phi pit sf sea tb ten wsh",
-  nba: "atl bos bkn cha chi cle dal den det gs hou ind lac lal mem mia mil min no ny okc orl phi phx por sac sa tor utah wsh",
-  nhl: "ana bos buf cgy car chi col cbj dal det edm fla la min mtl nsh nj nyi nyr ott phi pit sj sea stl tb tor uta van vgk wsh wpg",
-};
-const hasR2 = (league, abbr) => (R2_LOGOS[league.toLowerCase()] || "").split(" ").includes(String(abbr || "").toLowerCase());
 
 let lastRun = null; // shown on GET, per worker instance
 const alerted = new Set(); // "gamePk:trigger" already sent by this instance
@@ -100,7 +77,7 @@ const etDate = (d = new Date()) =>
 async function runDueWork(api) {
   const flags = await api.rpc("scheduler_flags");
   const out = { flags };
-  if (flags.streams_due || flags.streams_to_end || flags.ny_email_pending) {
+  if (flags.streams_due || flags.streams_to_end) {
     out.autoStreamStatus = await api.fn("auto-stream-status");
   }
   if (Number(flags.email_queue) > 0) {
@@ -142,85 +119,7 @@ async function runMetsAlerts(api, now = Date.now()) {
   return { games: games.length, calls };
 }
 
-// ---------- 3. NY team schedules (ESPN → ny_sports_games) ----------
-function scoreOf(c) {
-  const s = c && c.score;
-  if (s == null) return null;
-  if (typeof s === "object") return s.displayValue ?? (s.value != null ? String(s.value) : null);
-  return String(s);
-}
-
-function rowsFrom(json, team, seasonType, seenAt) {
-  const rows = [];
-  for (const ev of (json && json.events) || []) {
-    const comp = ev.competitions && ev.competitions[0];
-    if (!comp || !ev.date) continue;
-    const cs = comp.competitors || [];
-    const us = cs.find((c) => c.team && c.team.abbreviation === team.abbr);
-    const them = cs.find((c) => c !== us);
-    if (!us || !them) continue;
-    const type = (comp.status && comp.status.type) || {};
-    const oppAbbr = them.team && them.team.abbreviation;
-    const espnLogo = them.team && them.team.logos && them.team.logos[0] && them.team.logos[0].href;
-    const tv = [...new Set((comp.broadcasts || []).map((b) => b.media && b.media.shortName).filter(Boolean))].join(", ") || null;
-    rows.push({
-      event_id: String(ev.id),
-      team_key: team.key,
-      league: team.league,
-      team_name: (us.team && us.team.displayName) || null,
-      team_abbr: team.abbr,
-      opponent_name: (them.team && them.team.displayName) || null,
-      opponent_abbr: oppAbbr || null,
-      opponent_logo: hasR2(team.league, oppAbbr)
-        ? `${R2}/${team.league.toLowerCase()}/${oppAbbr.toLowerCase()}.png`
-        : espnLogo || null,
-      is_home: us.homeAway === "home",
-      start_time: new Date(ev.date).toISOString(),
-      venue: (comp.venue && comp.venue.fullName) || null,
-      tv,
-      season_type: seasonType,
-      season_type_name: (ev.seasonType && ev.seasonType.name) || null,
-      state: type.state || null,
-      status_detail: type.shortDetail || type.detail || null,
-      team_score: scoreOf(us),
-      opponent_score: scoreOf(them),
-      result: type.state === "post" ? (us.winner === true ? "W" : them.winner === true ? "L" : null) : null,
-      last_seen_at: seenAt,
-    });
-  }
-  return rows;
-}
-
-async function runNySchedules(api, now = new Date()) {
-  const month = Number(new Intl.DateTimeFormat("en-US", { timeZone: ET, month: "numeric" }).format(now));
-  const year = Number(new Intl.DateTimeFormat("en-US", { timeZone: ET, year: "numeric" }).format(now));
-  const nflSeason = month >= 3 ? year : year - 1;
-  const winterSeason = month >= 7 ? year + 1 : year;
-  const seenAt = now.toISOString();
-  const rows = [];
-  const errors = [];
-  await Promise.all(
-    NY_TEAMS.flatMap((t) =>
-      [1, 2, 3].map(async (st) => {
-        const season = t.league === "NFL" ? nflSeason : winterSeason;
-        const url = `https://site.web.api.espn.com/apis/site/v2/sports/${t.path}/teams/${t.slug}/schedule?season=${season}&seasontype=${st}`;
-        try {
-          const r = await fetch(url, { signal: AbortSignal.timeout(15000) });
-          if (!r.ok) throw new Error(`HTTP ${r.status}`);
-          rows.push(...rowsFrom(await r.json(), t, st, seenAt));
-        } catch (e) {
-          errors.push(`${t.key}/${st}: ${e.message || e}`);
-        }
-      }),
-    ),
-  );
-  // one game can appear in two season-type feeds; keep one row per (event, team)
-  const unique = [...new Map(rows.map((r) => [`${r.event_id}|${r.team_key}`, r])).values()];
-  const saved = unique.length ? await api.upsert("ny_sports_games", unique, "event_id,team_key") : 0;
-  return { saved, errors };
-}
-
-// ---------- 4. Blog posts → hero slides ----------
+// ---------- 3. Blog posts → hero slides ----------
 const HERO_KEEP = 5;
 const AUTO = "auto_blog";
 
@@ -295,7 +194,6 @@ async function tick(env, when = new Date()) {
   await step("due", () => runDueWork(api));
   await step("mets", () => runMetsAlerts(api, when.getTime()));
   const minute = when.getUTCMinutes();
-  if (minute === 6 || minute === 7) await step("nySchedules", () => runNySchedules(api, when));
   if (minute % 10 === 4 || minute % 10 === 5) await step("blogHero", () => runBlogHero(api, when));
   lastRun = result;
   return result;

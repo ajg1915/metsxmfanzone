@@ -34,7 +34,7 @@ type Entry = {
 
 const WATCH: Entry[] = [
   { label: "MetsXMFanZone TV", hint: "Live shows, games and the 24/7 channel", icon: MonitorPlay, to: "/metsxmfanzone", gate: "pro" },
-  { label: "Game Events", hint: "Live NY team games", icon: Trophy, to: "/game-events" },
+  { label: "Game Events", hint: "Live game events", icon: Trophy, to: "/game-events" },
   { label: "TV Guide", hint: "What's on and when", icon: CalendarDays, to: "/tv" },
   { label: "MSG Network", hint: "24/7 network stream", icon: Tv, to: "/msg-network" },
   { label: "ESPN Network", hint: "24/7 network stream", icon: Tv, to: "/espn-network" },
@@ -48,15 +48,6 @@ const METS: Entry[] = [
   { label: "Highlights", hint: "Video clips and top plays", icon: Film, to: "/video-gallery", gate: "pro" },
   { label: "Game Recaps", hint: "Breakdowns of every game", icon: Newspaper, to: "/mets-game-recaps" },
   { label: "Mets History", hint: "Moments and legends", icon: Landmark, to: "/mets-history" },
-];
-
-const NY_TEAMS = [
-  { key: "giants", label: "Giants", league: "NFL", logo: "https://media.metsxmfanzone.com/team-logos/nfl/nyg.png" },
-  { key: "jets", label: "Jets", league: "NFL", logo: "https://media.metsxmfanzone.com/team-logos/nfl/nyj.png" },
-  { key: "knicks", label: "Knicks", league: "NBA", logo: "https://media.metsxmfanzone.com/team-logos/nba/ny.png" },
-  { key: "nets", label: "Nets", league: "NBA", logo: "https://media.metsxmfanzone.com/team-logos/nba/bkn.png" },
-  { key: "rangers", label: "Rangers", league: "NHL", logo: "https://media.metsxmfanzone.com/team-logos/nhl/nyr.png" },
-  { key: "islanders", label: "Islanders", league: "NHL", logo: "https://media.metsxmfanzone.com/team-logos/nhl/nyi.png" },
 ];
 
 const WATCH_PATHS = ["/metsxmfanzone", "/game-events", "/pix11-network", "/tv", "/msg-network", "/msg-plus", "/espn-network", "/mlb-network", "/live/"];
@@ -130,10 +121,9 @@ export default function DesktopNavMenu({
   goProtected: Go;
   goPro: Go;
 }) {
-  const { pathname, search, hash } = useLocation();
+  const { pathname } = useLocation();
   const on = (paths: string[]) => paths.some((p) => pathname.startsWith(p));
-  const nyActive = pathname.startsWith("/mets-schedule-2026") && (search.includes("team=") || hash === "#ny-teams");
-  const metsActive = on(METS_PATHS) && !nyActive;
+  const metsActive = on(METS_PATHS);
 
   const go = (e: Entry) => (e.gate === "pro" ? goPro(e.to) : goProtected(e.to));
   const mets = METS.filter((e) => !e.membersOnly || isLoggedIn);
@@ -167,48 +157,6 @@ export default function DesktopNavMenu({
           <NavMenu.Content className={panel}>
             <div className={cn(card, "w-[320px]")}>
               {mets.map((e) => <Row key={e.label} e={e} onGo={go} />)}
-            </div>
-          </NavMenu.Content>
-        </NavMenu.Item>
-
-        <NavMenu.Item className="relative">
-          <NavMenu.Trigger className={cn(pill, nyActive && activePill)}>
-            NY Sports
-            <ChevronDown className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 [[data-state=open]>&]:rotate-180" aria-hidden />
-          </NavMenu.Trigger>
-          <NavMenu.Content className={panel}>
-            <div className={cn(card, "w-[380px] p-3")}>
-              <p className="px-1 pb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Schedules and scores</p>
-              <div className="grid grid-cols-2 gap-1">
-                {NY_TEAMS.map((t) => (
-                  <NavMenu.Link asChild key={t.key}>
-                    <Link
-                      to={`/mets-schedule-2026?team=${t.key}#ny-teams`}
-                      className="group flex items-center gap-2.5 rounded-xl px-2 py-2 outline-none transition-colors hover:bg-white/[0.06] focus-visible:bg-white/[0.06]"
-                    >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] ring-1 ring-white/10">
-                        <img src={t.logo} alt="" className="h-7 w-7 object-contain" loading="lazy" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-[14px] font-semibold leading-tight text-foreground">{t.label}</span>
-                        <span className="block text-[11px] text-muted-foreground">{t.league}</span>
-                      </span>
-                    </Link>
-                  </NavMenu.Link>
-                ))}
-              </div>
-              <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/10 px-1 pt-2.5">
-                <NavMenu.Link asChild>
-                  <Link to="/mets-schedule-2026#ny-teams" className="inline-flex items-center gap-1 text-[13px] font-semibold text-primary outline-none hover:underline focus-visible:underline">
-                    All NY schedules <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </NavMenu.Link>
-                <NavMenu.Link asChild>
-                  <Link to="/pricing" className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-bold text-primary outline-none ring-1 ring-primary/25 hover:bg-primary hover:text-primary-foreground focus-visible:ring-2">
-                    NY Sports Streaming · $19.99/mo
-                  </Link>
-                </NavMenu.Link>
-              </div>
             </div>
           </NavMenu.Content>
         </NavMenu.Item>

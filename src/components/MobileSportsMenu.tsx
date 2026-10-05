@@ -10,15 +10,6 @@ import { SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 // Full-screen, sports-app style mobile menu (used inside the nav Sheet).
 
-const NY_TEAMS = [
-  { key: "giants", label: "Giants", logo: "https://media.metsxmfanzone.com/team-logos/nfl/nyg.png" },
-  { key: "jets", label: "Jets", logo: "https://media.metsxmfanzone.com/team-logos/nfl/nyj.png" },
-  { key: "knicks", label: "Knicks", logo: "https://media.metsxmfanzone.com/team-logos/nba/ny.png" },
-  { key: "nets", label: "Nets", logo: "https://media.metsxmfanzone.com/team-logos/nba/bkn.png" },
-  { key: "rangers", label: "Rangers", logo: "https://media.metsxmfanzone.com/team-logos/nhl/nyr.png" },
-  { key: "islanders", label: "Isles", logo: "https://media.metsxmfanzone.com/team-logos/nhl/nyi.png" },
-];
-
 type Props = {
   user: { email?: string | null } | null;
   profile: { full_name: string | null; avatar_url: string | null };
@@ -102,23 +93,6 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
               <Icon className="h-6 w-6 text-primary" />
               <span className="text-[15px] font-bold">{label}</span>
             </button>
-          ))}
-        </div>
-
-        <Label>NY Teams</Label>
-        <div className="grid grid-cols-6 gap-1">
-          {NY_TEAMS.map((t) => (
-            <Link
-              key={t.key}
-              to={`/mets-schedule-2026?team=${t.key}#ny-teams`}
-              onClick={close}
-              className="flex flex-col items-center gap-1.5 rounded-xl py-1.5 text-[11px] font-semibold text-[#c9d4e5] active:bg-white/5"
-            >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/15 bg-white/[0.06]">
-                <img src={t.logo} alt="" className="h-9 w-9 object-contain" loading="lazy" />
-              </span>
-              {t.label}
-            </Link>
           ))}
         </div>
 

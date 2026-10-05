@@ -25,7 +25,7 @@ const Plans = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { tier, hasNYSports, loading: subscriptionLoading } = useSubscription();
+  const { tier, loading: subscriptionLoading } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [activatingFree, setActivatingFree] = useState(false);
@@ -109,7 +109,7 @@ const Plans = () => {
     // If checkout was completed successfully, clear the pending plan
     if (!open && selectedPlan && selectedPlan !== "free") {
       // Check if subscription was created
-      if (tier === "weekly" || tier === "premium" || tier === "annual" || hasNYSports) {
+      if (tier === "weekly" || tier === "premium" || tier === "annual") {
         localStorage.removeItem("pending_signup_plan");
         setHasPlanSelected(true);
       }
@@ -188,29 +188,7 @@ const Plans = () => {
   // Included with every membership, shown on each plan card.
   const sharedPerks = ["Secure plan", "Watch on the go", "View on all your devices", "Cancel anytime"];
 
-  const nySportsPlan = {
-    id: "ny_sports",
-    name: "NY Sports Streaming",
-    price: "$19.99",
-    priceValue: 19.99,
-    period: "per month",
-    billingNote: "Billed monthly through PayPal · Separate from Mets plans",
-    description: "Live streams for New York's pro teams",
-    features: [
-      "New York Giants",
-      "New York Jets",
-      "New York Knicks",
-      "New York Rangers",
-      "New York Islanders",
-      "Brooklyn Nets",
-      "24/7 sports network streams",
-      "HD streaming",
-    ],
-    cta: "Add NY Sports",
-    popular: false,
-  };
-
-  const plans = [...allPlans, nySportsPlan];
+  const plans = allPlans;
   const mainPlans = allPlans;
 
   const selectedPlanData = plans.find((p) => p.id === selectedPlan);
@@ -220,11 +198,6 @@ const Plans = () => {
       question: "What is included with each membership?",
       answer:
         "Free includes public news and community access. Weekly, Monthly, and Yearly include live streams, replays, highlights, and premium content.",
-    },
-    {
-      question: "What is the NY Sports Streaming package?",
-      answer:
-        "NY Sports Streaming is a separate $19.99/month plan for live streams of the New York Giants, Jets, Knicks, Rangers, Islanders and Brooklyn Nets, plus our 24/7 sports network streams. It is billed on its own through PayPal, can be added to any Mets membership or bought by itself, and does not include Mets streams or premium Mets content. Your current Mets plan stays exactly the same.",
     },
     {
       question: "Why does the Free membership need PayPal?",
@@ -244,7 +217,7 @@ const Plans = () => {
     {
       question: "Can I cancel my subscription anytime?",
       answer:
-        "Yes! Every plan, including NY Sports Streaming, can be cancelled at any time from your account settings. Your access will continue until the end of your billing period.",
+        "Yes! Every plan can be cancelled at any time from your account settings. Your access will continue until the end of your billing period.",
     },
     {
       question: "Is there a refund policy?",
@@ -254,7 +227,7 @@ const Plans = () => {
     {
       question: "Can I watch on multiple devices?",
       answer:
-        "Yes. Every plan works on your phone, tablet, computer and TV, so you can watch on the go. Paid memberships (including NY Sports Streaming) allow streaming on up to 2 devices at the same time. Accounts found accessing from more than 2 devices at once may be restricted.",
+        "Yes. Every plan works on your phone, tablet, computer and TV, so you can watch on the go. Paid memberships allow streaming on up to 2 devices at the same time. Accounts found accessing from more than 2 devices at once may be restricted.",
     },
   ];
 
@@ -277,7 +250,7 @@ const Plans = () => {
                 <div>
                   <h3 className="font-semibold text-foreground">Please Select a Plan</h3>
                    <p className="text-sm text-muted-foreground">
-                     Complete your setup with Free, Weekly, Monthly, Yearly, or NY Sports Streaming.
+                     Complete your setup with Free, Weekly, Monthly, or Yearly.
                   </p>
                 </div>
               </div>
@@ -345,48 +318,6 @@ const Plans = () => {
                   </CardContent>
                 </Card>
               ))}
-            </div>
-
-            {/* NY Sports Streaming add-on */}
-            <div className="mb-12 max-w-3xl mx-auto">
-              <div className="text-center mb-4">
-                <Badge variant="outline" className="mb-2">Add-on package</Badge>
-                <h2 className="text-2xl sm:text-3xl font-bold text-foreground">NY Sports Streaming</h2>
-                <p className="text-sm text-muted-foreground mt-2">
-                  A separate plan for New York's pro teams. Keep your Mets membership and add this on, or get it by itself.
-                </p>
-              </div>
-              <Card className="border-primary/60 bg-card/90">
-                <CardContent className="p-5 sm:p-7 grid gap-6 sm:grid-cols-2">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-3">{nySportsPlan.description}</p>
-                    <div className="mb-2">
-                      <span className="text-4xl font-bold text-foreground">{nySportsPlan.price}</span>
-                      <span className="text-muted-foreground ml-1">/month</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-5">{nySportsPlan.billingNote}</p>
-                    <Button
-                      className="w-full"
-                      onClick={() => void handleSelectPlan(nySportsPlan.id)}
-                      disabled={hasNYSports}
-                    >
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      {hasNYSports ? "Current plan" : nySportsPlan.cta}
-                    </Button>
-                    <p className="text-[11px] text-muted-foreground mt-3">
-                      Covers only the Giants, Jets, Knicks, Rangers, Islanders and Nets, plus the 24/7 sports network streams. Mets streams and premium Mets content need a Weekly, Monthly or Yearly plan.
-                    </p>
-                  </div>
-                  <div className="space-y-3">
-                    {[...nySportsPlan.features, ...sharedPerks].map((feature) => (
-                      <div key={feature} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-foreground">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             <div className="mb-12 grid gap-3 sm:grid-cols-3 max-w-4xl mx-auto">

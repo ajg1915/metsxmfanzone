@@ -4,9 +4,8 @@ import { CalendarClock, Radio, Tv } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// TV guide: every Mets game plus the Giants, Jets, Knicks, Rangers, Islanders and Nets.
-// The six ESPN teams come from `ny_sports_games` (refreshed about hourly); the Mets come
-// from MLB's free stats feed. Games we stream on MetsXMFanZone show in a row on top.
+// TV guide: every Mets game, straight from MLB's free stats feed.
+// Games we stream on MetsXMFanZone show in a row on top.
 
 const ET = "America/New_York";
 const MS_DAY = 86_400_000;
@@ -16,12 +15,6 @@ const PAGE_DAYS = 7;
 type Team = { key: string; label: string; league: string; color: string; logo: string };
 const TEAMS: Team[] = [
   { key: "mets", label: "Mets", league: "MLB", color: "#2c78c9", logo: "https://www.mlbstatic.com/team-logos/121.svg" },
-  { key: "giants", label: "Giants", league: "NFL", color: "#3d6fd1", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png" },
-  { key: "jets", label: "Jets", league: "NFL", color: "#1f9a6e", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png" },
-  { key: "knicks", label: "Knicks", league: "NBA", color: "#f58426", logo: "https://a.espncdn.com/i/teamlogos/nba/500/ny.png" },
-  { key: "rangers", label: "Rangers", league: "NHL", color: "#4a7be0", logo: "https://a.espncdn.com/i/teamlogos/nhl/500/nyr.png" },
-  { key: "islanders", label: "Islanders", league: "NHL", color: "#f0a25a", logo: "https://a.espncdn.com/i/teamlogos/nhl/500/nyi.png" },
-  { key: "nets", label: "Nets", league: "NBA", color: "#a1a1aa", logo: "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png" },
 ];
 const TEAM_BY_KEY = Object.fromEntries(TEAMS.map((t) => [t.key, t]));
 
@@ -50,35 +43,6 @@ const dayLabel = (key: string, iso: string) => {
   const base = fmt(iso, { weekday: "long", month: "short", day: "numeric" });
   return key === today ? `Today · ${base}` : key === tomorrow ? `Tomorrow · ${base}` : base;
 };
-
-async function loadEspn(): Promise<Game[]> {
-  const from = new Date(Date.now() - 5 * 3_600_000).toISOString();
-  const to = new Date(Date.now() + DAYS_AHEAD * MS_DAY).toISOString();
-  // ny_sports_games isn't in the generated Supabase types yet
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase as any)
-    .from("ny_sports_games")
-    .select("event_id, team_key, opponent_name, opponent_logo, is_home, start_time, venue, tv, state, status_detail, team_score, opponent_score, result")
-    .gte("start_time", from)
-    .lte("start_time", to)
-    .order("start_time", { ascending: true });
-  if (error) throw error;
-  return (data ?? []).map((r: any) => ({
-    id: `${r.team_key}-${r.event_id}`,
-    team: r.team_key,
-    isHome: !!r.is_home,
-    opponent: r.opponent_name ?? "TBD",
-    opponentLogo: r.opponent_logo ?? null,
-    start: r.start_time,
-    venue: r.venue ?? null,
-    tv: r.tv ?? null,
-    state: r.state === "in" || r.state === "post" ? r.state : "pre",
-    detail: r.status_detail ?? null,
-    teamScore: r.team_score,
-    oppScore: r.opponent_score,
-    result: r.result ?? null,
-  }));
-}
 
 async function loadMets(): Promise<Game[]> {
   const d = (ms: number) => dayKey(new Date(ms).toISOString());
@@ -170,22 +134,20 @@ const GameRow = ({ g }: { g: Game }) => {
   );
 };
 
-const TVGuide = ({ initialTeam = "all", className = "" }: { initialTeam?: string; className?: string }) => {
+const TVGuide = ({ className = "" }: { initialTeam?: string; className?: string }) => {
   const [games, setGames] = useState<Game[]>([]);
   const [streams, setStreams] = useState<OurStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
-  const [filter, setFilter] = useState(TEAM_BY_KEY[initialTeam] ? initialTeam : "all");
   const [daysShown, setDaysShown] = useState(PAGE_DAYS);
 
   useEffect(() => {
     let alive = true;
     (async () => {
-      const [espn, mets] = await Promise.allSettled([loadEspn(), loadMets()]);
+      const mets = await Promise.allSettled([loadMets()]).then((r) => r[0]);
       if (!alive) return;
-      const all = [...(espn.status === "fulfilled" ? espn.value : []), ...(mets.status === "fulfilled" ? mets.value : [])];
-      setFailed(espn.status === "rejected" && mets.status === "rejected");
-      setGames(all.sort((a, b) => +new Date(a.start) - +new Date(b.start)));
+      setFailed(mets.status === "rejected");
+      setGames((mets.status === "fulfilled" ? mets.value : []).sort((a, b) => +new Date(a.start) - +new Date(b.start)));
       setLoading(false);
     })();
     (async () => {
@@ -201,11 +163,8 @@ const TVGuide = ({ initialTeam = "all", className = "" }: { initialTeam?: string
     return () => { alive = false; };
   }, []);
 
-  useEffect(() => { if (TEAM_BY_KEY[initialTeam]) setFilter(initialTeam); }, [initialTeam]);
-
   const days = useMemo(() => {
     const list = games.filter((g) => {
-      if (filter !== "all" && g.team !== filter) return false;
       // finished games drop off the guide 12 hours after they started
       return g.state !== "post" || Date.now() - +new Date(g.start) < 12 * 3_600_000;
     });
@@ -215,16 +174,15 @@ const TVGuide = ({ initialTeam = "all", className = "" }: { initialTeam?: string
       (map.get(k) ?? map.set(k, []).get(k)!).push(g);
     }
     return [...map.entries()];
-  }, [games, filter]);
+  }, [games]);
 
   const visibleDays = days.slice(0, daysShown);
-  const selected = TEAM_BY_KEY[filter];
 
   return (
     <div role="region" aria-label="TV guide" className={className}>
       <div className="mb-3 flex items-end justify-between gap-3">
         <div>
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff5a1f]">Mets + all 6 NY teams</p>
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff5a1f]">Every Mets game</p>
           <h2 className="font-display text-[30px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-4xl">TV Guide</h2>
         </div>
         <span className="mb-1 text-xs font-semibold text-muted-foreground">Times in ET</span>
@@ -255,26 +213,6 @@ const TVGuide = ({ initialTeam = "all", className = "" }: { initialTeam?: string
         </div>
       )}
 
-      <div role="tablist" aria-label="Filter by team" className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide md:mx-0 md:px-0">
-        {[{ key: "all", label: "All teams", color: "#ff5a1f" }, ...TEAMS].map((t) => {
-          const active = filter === t.key;
-          return (
-            <button
-              key={t.key}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => { setFilter(t.key); setDaysShown(PAGE_DAYS); }}
-              className={`flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-bold transition-colors ${active ? "border-white/40 text-white" : "border-border/60 bg-card text-foreground hover:border-primary/50"}`}
-              style={active ? { background: t.color } : undefined}
-            >
-              {!active && <span className="h-2 w-2 rounded-full" style={{ background: t.color }} />}
-              {t.label}
-            </button>
-          );
-        })}
-      </div>
-
       {loading ? (
         <div className="space-y-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[72px] w-full rounded-xl" />)}</div>
       ) : failed ? (
@@ -282,9 +220,9 @@ const TVGuide = ({ initialTeam = "all", className = "" }: { initialTeam?: string
       ) : visibleDays.length === 0 ? (
         <div className="rounded-xl border border-border/50 bg-card px-4 py-10 text-center">
           <Tv className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-          <p className="font-display text-2xl uppercase tracking-wide text-foreground">{selected ? `No ${selected.label} games coming up` : "No games coming up"}</p>
+          <p className="font-display text-2xl uppercase tracking-wide text-foreground">No Mets games coming up</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {filter === "mets" ? "Baseball is in the offseason. Spring Training starts in February." : "Check back soon, the guide updates through the day."}
+            Baseball is in the offseason. Spring Training starts in February.
           </p>
         </div>
       ) : (
