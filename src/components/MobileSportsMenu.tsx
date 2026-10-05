@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
 import {
-  X, Play, CalendarDays, Trophy, Newspaper, Mic, Tv, Radio, Film, Users,
-  MessageSquare, BadgeDollarSign, ChevronRight, LayoutDashboard, PenLine,
-  Shield, Sparkles, LogOut, Landmark,
+  X, Play, CalendarDays, Trophy, Newspaper, Mic, ChevronRight, LayoutDashboard,
+  PenLine, Shield, Sparkles, LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -47,23 +46,6 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
     { label: "Scores", icon: Trophy, onClick: run(() => go("/mets-scores")) },
     { label: "Blog", icon: Newspaper, onClick: run(() => go("/blog")) },
     { label: "Podcast", icon: Mic, onClick: run(() => go("/podcast")) },
-  ];
-
-  const watch: { label: string; icon: LucideIcon; to: string }[] = [
-    { label: "Game Events", icon: Trophy, to: "/game-events" },
-    { label: "TV Guide", icon: CalendarDays, to: "/tv" },
-    { label: "MSG Network", icon: Tv, to: "/msg-network" },
-    { label: "ESPN Network", icon: Tv, to: "/espn-network" },
-    { label: "MLB Network", icon: Radio, to: "/mlb-network" },
-  ];
-
-  const more: { label: string; icon: LucideIcon; onClick: () => void; show?: boolean }[] = [
-    { label: "Highlights", icon: Film, onClick: run(() => goPro("/video-gallery")) },
-    { label: "Game Recaps", icon: Newspaper, onClick: run(() => go("/mets-game-recaps")) },
-    { label: "Roster", icon: Users, onClick: run(() => go("/mets-roster")), show: !!user },
-    { label: "Mets History", icon: Landmark, onClick: run(() => go("/mets-history")) },
-    { label: "Community", icon: MessageSquare, onClick: run(() => goProtected("/community")) },
-    { label: "Membership plans", icon: BadgeDollarSign, onClick: run(() => go("/pricing")), show: !user },
   ];
 
   const initial = profile.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "M";
@@ -137,36 +119,6 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
               </span>
               {t.label}
             </Link>
-          ))}
-        </div>
-
-        <Label>Watch</Label>
-        <div className="grid grid-cols-2 gap-2">
-          {watch.map(({ label, icon: Icon, to }) => (
-            <Link
-              key={label}
-              to={to}
-              onClick={close}
-              className="flex min-h-12 items-center gap-2.5 rounded-xl border border-[#24365a] bg-[#12203a] px-3 py-2.5 text-[14px] font-semibold active:bg-[#1a2c4d]"
-            >
-              <Icon className="h-[18px] w-[18px] shrink-0 text-primary" />
-              <span className="truncate">{label}</span>
-            </Link>
-          ))}
-        </div>
-
-        <Label>More</Label>
-        <div className="divide-y divide-[#1d2c48]">
-          {more.filter((m) => m.show !== false).map(({ label, icon: Icon, onClick }) => (
-            <button
-              key={label}
-              type="button"
-              onClick={onClick}
-              className="flex min-h-[52px] w-full items-center justify-between gap-3 px-1 text-left text-[16px] font-semibold active:bg-white/5"
-            >
-              <span className="flex items-center gap-3"><Icon className="h-[18px] w-[18px] text-primary" />{label}</span>
-              <ChevronRight className="h-5 w-5 text-[#5b6f90]" />
-            </button>
           ))}
         </div>
 
