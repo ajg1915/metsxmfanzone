@@ -1443,3 +1443,14 @@ google-cast-launcher,
    browser, so nothing changes there. */
 #root { padding-top: env(safe-area-inset-top, 0px); }
 nav.glass-nav { top: env(safe-area-inset-top, 0px) !important; }
+
+/* Home hero slider (15s auto-advance) */
+@keyframes mx-hero-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes mx-hero-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes mx-hero-zoom { from { transform: scale(1); } to { transform: scale(1.06); } }
+.mx-hero-progress { transform-origin: left center; animation-name: mx-hero-progress; animation-timing-function: linear; animation-fill-mode: forwards; }
+.mx-hero-in { animation: mx-hero-in 0.7s ease-out both; }
+.mx-hero-zoom { animation: mx-hero-zoom 16s ease-out forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .mx-hero-in, .mx-hero-zoom { animation: none; }
+}

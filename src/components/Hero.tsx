@@ -1,6 +1,5 @@
 import logo from "@/assets/metsxmfanzone-logo.png";
-import useEmblaCarousel from "embla-carousel-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,10 +23,11 @@ interface HeroSlide {
   show_reminder: boolean | null;
 }
 
+const HERO_SLIDE_MS = 15000;
+
 const Hero = () => {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, dragFree: false, watchDrag: false, duration: 0 });
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [mobileIndex, setMobileIndex] = useState(0);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const { user } = useAuth();
   const { isPremium } = useSubscription();
@@ -64,9 +64,6 @@ const Hero = () => {
     const ch = supabase.channel('hero-live').on('postgres_changes', { event: '*', schema: 'public', table: 'live_streams' }, () => check()).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, []);
-
-  const onSelect = useCallback(() => { if (emblaApi) setSelectedIndex(emblaApi.selectedScrollSnap()); }, [emblaApi]);
-  useEffect(() => { if (!emblaApi) return; onSelect(); emblaApi.on("select", onSelect); return () => { emblaApi.off("select", onSelect); }; }, [emblaApi, onSelect]);
 
   // Fetch slides
   useEffect(() => {
@@ -107,7 +104,17 @@ const Hero = () => {
     image: sl.image,
     key: i,
   }));
-  const mSlide = mobileSlides[Math.min(mobileIndex, mobileSlides.length - 1)];
+  const count = slidesToShow.length;
+  const current = Math.min(active, Math.max(count - 1, 0));
+  const mSlide = mobileSlides[current];
+
+  // Auto-advance every 15 seconds on every device. Any click/swipe restarts the 15s;
+  // hovering (desktop) or holding a finger on the hero (phone) pauses it.
+  useEffect(() => {
+    if (count < 2 || paused) return;
+    const t = window.setTimeout(() => setActive((i) => (i + 1) % count), HERO_SLIDE_MS);
+    return () => window.clearTimeout(t);
+  }, [current, count, paused]);
   const slidesReady = user ? membersLoaded : publicLoaded;
   const reminderOn = permission === "granted" && isSubscribed;
 
@@ -115,7 +122,7 @@ const Hero = () => {
     if (touchStartX === null || mobileSlides.length < 2) return;
     const dx = x - touchStartX;
     if (Math.abs(dx) > 50) {
-      setMobileIndex((i) => (dx < 0 ? (i + 1) % mobileSlides.length : (i - 1 + mobileSlides.length) % mobileSlides.length));
+      setActive((i) => (dx < 0 ? (i + 1) % mobileSlides.length : (i - 1 + mobileSlides.length) % mobileSlides.length));
     }
     setTouchStartX(null);
   };
@@ -148,16 +155,26 @@ const Hero = () => {
       {/* Phone hero: full-bleed photo under the floating header */}
       <div
         className="relative h-[calc(100svh-8.5rem)] min-h-[460px] max-h-[720px] overflow-hidden sm:hidden"
-        onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
-        onTouchEnd={(e) => onTouchEnd(e.changedTouches[0].clientX)}
+        onTouchStart={(e) => { setTouchStartX(e.touches[0].clientX); setPaused(true); }}
+        onTouchEnd={(e) => { onTouchEnd(e.changedTouches[0].clientX); setPaused(false); }}
+        onTouchCancel={() => setPaused(false)}
       >
-        {!mSlide.image ? (
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0b3e75] to-[#07111d]" />
-        ) : /\.(mp4|webm|mov|m4v)(\?|$)/i.test(mSlide.image) ? (
-          <video key={mSlide.image} src={mSlide.image} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />
-        ) : (
-          <img src={mSlide.image} alt="" className="absolute inset-0 h-full w-full object-cover object-[48%_40%]" />
-        )}
+        {mobileSlides.map((sl, i) => (
+          <div
+            key={i}
+            aria-hidden={i !== current}
+            className="absolute inset-0 transition-opacity duration-1000 ease-in-out motion-reduce:transition-none"
+            style={{ opacity: i === current ? 1 : 0 }}
+          >
+            {!sl.image ? (
+              <div className="absolute inset-0 bg-gradient-to-b from-[#0b3e75] to-[#07111d]" />
+            ) : /\.(mp4|webm|mov|m4v)(\?|$)/i.test(sl.image) ? (
+              <video src={sl.image} autoPlay muted loop playsInline preload={i === current ? "auto" : "metadata"} className="absolute inset-0 h-full w-full object-cover" />
+            ) : (
+              <img src={sl.image} alt="" loading={i === 0 ? "eager" : "lazy"} className={`absolute inset-0 h-full w-full object-cover object-[48%_40%] ${i === current ? "mx-hero-zoom" : ""}`} />
+            )}
+          </div>
+        ))}
         <div className="absolute inset-0" style={{ backgroundImage: "linear-gradient(to bottom, hsl(var(--background) / 0.25) 0%, hsl(var(--background) / 0) 20%, hsl(var(--background) / 0.35) 45%, hsl(var(--background) / 0.92) 75%, hsl(var(--background)) 100%)" }} />
 
         <div className="absolute inset-x-5 bottom-3 flex flex-col">
@@ -178,10 +195,10 @@ const Hero = () => {
             </div>
           )}
 
-          <h1 className="mx-wordmark mt-2.5 font-display uppercase italic leading-[0.98] text-foreground drop-shadow-lg" style={{ fontFamily: "'Oswald','Bebas Neue',sans-serif", fontWeight: 700, fontSize: user ? "clamp(28px, 9.5vw, 38px)" : "clamp(26px, 9vw, 35px)" }}>
+          <h1 key={user ? current : "static"} className="mx-hero-in mx-wordmark mt-2.5 font-display uppercase italic leading-[0.98] text-foreground drop-shadow-lg" style={{ fontFamily: "'Oswald','Bebas Neue',sans-serif", fontWeight: 700, fontSize: user ? "clamp(28px, 9.5vw, 38px)" : "clamp(26px, 9vw, 35px)" }}>
             {user ? mSlide.title : "The ultimate destination where the fans go"}
           </h1>
-          <p className="mt-2.5 text-[14.5px] leading-snug text-foreground/80">
+          <p key={user ? `d${current}` : "static"} className="mx-hero-in mt-2.5 text-[14.5px] leading-snug text-foreground/80">
             {user ? (mSlide.description || "Watch live on MetsXMFanZone TV") : "Live games, highlights and podcasts, built by fans."}
           </p>
 
@@ -211,10 +228,12 @@ const Hero = () => {
                       key={i}
                       type="button"
                       aria-label={`Show story ${i + 1}`}
-                      onClick={() => setMobileIndex(i)}
+                      onClick={() => setActive(i)}
                       className="flex h-6 items-center px-0.5"
                     >
-                      <span className={`block rounded-full ${mobileIndex === i ? "h-[5px] w-5 bg-primary" : "h-[5px] w-[5px] bg-muted-foreground/50"}`} />
+                      <span className={`relative block overflow-hidden rounded-full transition-all duration-300 ${current === i ? "h-[5px] w-8 bg-muted-foreground/40" : "h-[5px] w-[5px] bg-muted-foreground/50"}`}>
+                        {current === i && <span key={current} className="mx-hero-progress absolute inset-y-0 left-0 w-full bg-primary" style={{ animationDuration: `${HERO_SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" }} />}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -239,16 +258,23 @@ const Hero = () => {
         </div>
       </div>
 
-      <div ref={emblaRef} className="home-feed-shell hidden overflow-hidden sm:block">
-        <div className="flex">
+      <div
+        className="home-feed-shell hidden overflow-hidden sm:block"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+      >
+        <div className="grid">
           {slidesToShow.map((slide, index) => (
             <div
               key={index}
-              className="relative flex-[0_0_100%] min-w-0 h-[224px] sm:h-auto sm:aspect-[16/8] lg:aspect-[16/7] overflow-hidden rounded-xl sm:rounded-md border border-border/40 bg-card shadow-elevation-high"
+              aria-hidden={current !== index}
+              className="relative col-start-1 row-start-1 min-w-0 h-[224px] sm:h-auto sm:aspect-[16/8] lg:aspect-[16/7] overflow-hidden rounded-xl sm:rounded-md border border-border/40 bg-card shadow-elevation-high transition-opacity duration-1000 ease-in-out motion-reduce:transition-none"
               style={{
-                opacity: selectedIndex === index ? 1 : 0,
-                zIndex: selectedIndex === index ? 10 : 0,
-                pointerEvents: selectedIndex === index ? "auto" : "none",
+                opacity: current === index ? 1 : 0,
+                zIndex: current === index ? 10 : 0,
+                pointerEvents: current === index ? "auto" : "none",
               }}
             >
               {(() => {
@@ -270,7 +296,7 @@ const Hero = () => {
                 }
                 return url ? (
                   <div
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    className={`absolute inset-0 bg-cover bg-center bg-no-repeat ${current === index ? "mx-hero-zoom" : ""}`}
                     style={{ backgroundImage: `url(${url})` }}
                   />
                 ) : (
@@ -383,10 +409,14 @@ const Hero = () => {
             variant="ghost"
             size="icon"
             aria-label={`Show story ${i + 1}`}
-            onClick={() => emblaApi?.scrollTo(i)}
-            className={`h-5 min-w-0 rounded-sm p-0 hover:bg-transparent ${selectedIndex === i ? "w-7" : "w-3"}`}
+            onClick={() => setActive(i)}
+            className={`h-5 min-w-0 rounded-sm p-0 hover:bg-transparent ${current === i ? "w-12" : "w-3"}`}
           >
-            <span className={`h-[3px] w-full rounded-full ${selectedIndex === i ? "bg-foreground" : "bg-foreground/30"}`} />
+            <span className="relative h-[3px] w-full overflow-hidden rounded-full bg-foreground/30">
+              {current === i && (
+                <span key={current} className="mx-hero-progress absolute inset-y-0 left-0 w-full bg-foreground" style={{ animationDuration: `${HERO_SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" }} />
+              )}
+            </span>
           </Button>
         ))}
       </div>
