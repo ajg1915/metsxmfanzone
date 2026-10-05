@@ -41,7 +41,7 @@ const Equalizer = ({ active }: { active: boolean }) => (
   </span>
 );
 
-const PodcastRadioSection = () => {
+const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) => {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [live, setLive] = useState<LiveShow>(null);
   const [loaded, setLoaded] = useState(false);
@@ -131,9 +131,9 @@ const PodcastRadioSection = () => {
               The Podcast
             </h2>
           </div>
-          <Link to="/podcast" className="flex min-h-[44px] shrink-0 items-center gap-1 whitespace-nowrap text-sm font-semibold text-primary hover:text-primary/80">
+          {showAllLink && <Link to="/podcast" className="flex min-h-[44px] shrink-0 items-center gap-1 whitespace-nowrap text-sm font-semibold text-primary hover:text-primary/80">
             All episodes <ArrowRight className="h-4 w-4" />
-          </Link>
+          </Link>}
         </div>
 
         {live?.is_live && (

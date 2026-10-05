@@ -95,6 +95,7 @@ const FAQs = lazyWithRetry(() => import("./pages/FAQs"), "page-faqs");
 const Privacy = lazyWithRetry(() => import("./pages/Privacy"), "page-privacy");
 const Terms = lazyWithRetry(() => import("./pages/Terms"), "page-terms");
 const Podcast = lazyWithRetry(() => import("./pages/Podcast"), "page-podcast");
+const ShopOrderSuccess = lazyWithRetry(() => import("./pages/ShopOrderSuccess"), "page-shop-order-success");
 const CommunityPodcast = lazyWithRetry(() => import("./pages/CommunityPodcast"), "page-community-podcast");
 const BusinessPartner = lazyWithRetry(() => import("./pages/BusinessPartner"), "page-business-partner");
 const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"), "page-dashboard");
@@ -364,6 +365,7 @@ const AppContent = () => {
             <Route path="/whats-new" element={<WhatsNew />} />
             <Route path="/install" element={<Install />} />
             <Route path="/podcast" element={<Podcast />} />
+            <Route path="/shop/order-success" element={<ShopOrderSuccess />} />
             <Route path="/community-podcast" element={<CommunityPodcast />} />
             <Route path="/podcaster-application" element={<PodcasterApplication />} />
             <Route path="/business-partner" element={<BusinessPartner />} />
