@@ -232,12 +232,16 @@ const LiveStreamsSection = () => {
         changed = true;
       }
 
-      const { data: toEnd } = await supabase
+      const { data: toEndRaw } = await supabase
         .from("live_streams")
-        .select("id")
+        .select("id, actual_start, scheduled_end")
         .eq("status", "live")
         .lte("scheduled_end", now)
         .not("scheduled_end", "is", null);
+      // Skip streams started manually after their scheduled end (admin pressed Go Live late).
+      const toEnd = (toEndRaw || []).filter(
+        (s: any) => !s.actual_start || new Date(s.actual_start) <= new Date(s.scheduled_end)
+      );
 
       if (toEnd && toEnd.length > 0) {
         for (const stream of toEnd) {
@@ -338,7 +342,9 @@ const LiveStreamsSection = () => {
 
         // 2. Entries that only feed a network channel page stay in Sports
         //    Network Streams.
-        if (pages.length > 0 && pages.every(p => networkChannelPages.includes(p))) return false;
+        //    A MetsXMFanZone-titled broadcast is the exception: it is ours even if it
+        //    was also pointed at a network page.
+        if (pages.length > 0 && pages.every(p => networkChannelPages.includes(p)) && !s.title.toLowerCase().includes('metsxmfanzone')) return false;
 
         // 3. Games and dated events always belong here.
         if (isGameBroadcast(s.title)) return true;
@@ -354,7 +360,10 @@ const LiveStreamsSection = () => {
 
         // 6. Untagged entries only belong if they are MetsXMFanZone
         //    broadcasts — anything else unclassified stays out.
-        if (pages.length === 0) return titleLower.includes('metsxmfanzone');
+        //    An entry explicitly tagged for the Live section (the admin form always adds
+        //    "live") and not tied to any network page is a broadcast the admin added on
+        //    purpose (press conference, special event), so it belongs here too.
+        if (pages.length === 0) return titleLower.includes('metsxmfanzone') || (s.assigned_pages || []).some(p => p.toLowerCase() === 'live');
 
         return false;
       });

@@ -296,7 +296,14 @@ export default function LiveStreamManagement() {
     const goingLive = stream.status !== "live";
     const now = new Date().toISOString();
     const updates = goingLive
-      ? { status: "live" as const, published: true, actual_start: now, actual_end: null }
+      ? {
+          status: "live" as const,
+          published: true,
+          actual_start: now,
+          actual_end: null,
+          // A past scheduled end would make the auto-end check kill the stream seconds after going live.
+          ...(stream.scheduled_end && new Date(stream.scheduled_end) <= new Date() ? { scheduled_end: null as any } : {}),
+        }
       : { status: "ended" as const, actual_end: now };
 
 
@@ -481,12 +488,16 @@ export default function LiveStreamManagement() {
       }
 
       // End live streams whose end time has passed
-      const { data: toEnd } = await supabase
+      const { data: toEndRaw } = await supabase
         .from("live_streams")
-        .select("id")
+        .select("id, actual_start, scheduled_end")
         .eq("status", "live")
         .lte("scheduled_end", now)
         .not("scheduled_end", "is", null);
+      // Skip streams started manually after their scheduled end (admin pressed Go Live late).
+      const toEnd = (toEndRaw || []).filter(
+        (s: any) => !s.actual_start || new Date(s.actual_start) <= new Date(s.scheduled_end)
+      );
 
       if (toEnd && toEnd.length > 0) {
         for (const stream of toEnd) {
