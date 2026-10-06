@@ -122,12 +122,15 @@ const getStreamTeam = (stream: { assigned_pages?: string[] | null }): Exclude<Te
 // MetsXMFanZone TV = the main feed (mystream). Stream 2 = the second feed (stream2).
 const MAIN_FEED_URL = "https://mystream.metsxmfanzone.com/hls/mystream.m3u8";
 const STREAM2_FEED_URL = "https://stream2.metsxmfanzone.com/hls/mystream.m3u8";
+// Stream 3 = live audio show (also what the Watch Live page plays).
+const STREAM3_FEED_URL = "https://video1.getstreamhosting.com:1936/duuqkvxsmv/duuqkvxsmv/playlist.m3u8";
 
 // The watch dropdown picks which M3U8 feed an event plays. Every event keeps
 // its own /live/<id> page, so any number of events can share the same feed.
 const FEED_OPTIONS = [
   { value: 'tv', label: 'MetsXMFanZone TV feed (main)', url: MAIN_FEED_URL },
   { value: 'stream2', label: 'MetsXMFanZone Stream 2 feed', url: STREAM2_FEED_URL },
+  { value: 'stream3', label: 'MetsXMFanZone Stream 3 feed', url: STREAM3_FEED_URL },
   { value: 'custom', label: 'Custom M3U8 (typed in Stream URL)', url: '' },
 ];
 
@@ -138,6 +141,7 @@ const getFeed = (url: string | null | undefined) => {
   const clean = (url || '').trim();
   if (clean === MAIN_FEED_URL) return 'tv';
   if (clean === STREAM2_FEED_URL) return 'stream2';
+  if (clean === STREAM3_FEED_URL) return 'stream3';
   return 'custom';
 };
 
