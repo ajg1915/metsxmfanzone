@@ -68,101 +68,16 @@ export default defineConfig(({ mode }) => {
   },
   plugins: [
     react(),
+    // PWA rebuild: the old Workbox worker precached index.html + hashed chunks, so every
+    // deploy left installed copies pointing at files that no longer exist (page won't load).
+    // It also fought with the push worker (/service-worker.js) for the same "/" scope.
+    // selfDestroying emits a /sw.js that wipes all caches and unregisters itself on devices
+    // that still have the old worker. The ONLY worker the app uses now is /service-worker.js
+    // (push notifications, no page caching). The manifest is public/manifest.json.
     VitePWA({
-      registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "favicon.png", "logo-192.png", "logo-512.png"],
-      manifest: {
-        name: "MetsXMFanZone",
-        short_name: "MetsXM",
-        description: "The Ultimate Mets Fan Community - Watch live games, highlights, and exclusive coverage",
-        theme_color: "#1a1a1a",
-        background_color: "#1a1a1a",
-        display: "standalone",
-        orientation: "portrait",
-        scope: "/",
-        start_url: "/",
-        icons: [
-          {
-            src: "/favicon.png",
-            sizes: "512x512",
-            type: "image/png",
-          },
-          {
-            src: "/logo-192.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any maskable",
-          },
-          {
-            src: "/logo-512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable",
-          },
-        ],
-      },
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,woff,woff2}"],
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB
-        // Removed skipWaiting and clientsClaim to prevent constant auto-refreshes
-        // New service workers will activate on next visit instead of forcing immediate reload
-        cleanupOutdatedCaches: true,
-        navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "supabase-cache",
-              networkTimeoutSeconds: 10,
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24,
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            },
-          },
-          {
-            urlPattern: /^https:\/\/statsapi\.mlb\.com\/.*/i,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "mlb-api-cache",
-              networkTimeoutSeconds: 5,
-              expiration: {
-                maxEntries: 20,
-                maxAgeSeconds: 60 * 5,
-              },
-            },
-          },
-          // Cache images aggressively
-          {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "image-cache",
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-              },
-            },
-          },
-          // Cache fonts
-          {
-            urlPattern: /\.(?:woff|woff2|ttf|otf)$/i,
-            handler: "CacheFirst",
-            options: {
-              cacheName: "font-cache",
-              expiration: {
-                maxEntries: 20,
-                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-              },
-            },
-          },
-        ],
-      },
+      selfDestroying: true,
+      injectRegister: false,
+      manifest: false,
     }),
   ].filter(Boolean),
   resolve: {
