@@ -1381,10 +1381,10 @@ google-cast-launcher,
    Admin portal theme (scoped) — Outfit headings / Figtree body
    ============================================================ */
 .admin-shell {
-  --adm-bg: 218 63% 6%;
-  --adm-bg-2: 219 55% 9%;
-  --adm-panel: 218 46% 12%;
-  --adm-line: 213 30% 26%;
+  --adm-bg: 218 46% 14%;
+  --adm-bg-2: 219 44% 18%;
+  --adm-panel: 218 40% 22%;
+  --adm-line: 213 30% 34%;
   --adm-text: 212 34% 92%;
   --adm-muted: 214 18% 64%;
   --adm-orange: 18 100% 53%;

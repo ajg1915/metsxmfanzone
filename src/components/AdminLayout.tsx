@@ -18,7 +18,7 @@ import { withTimeout } from "@/utils/asyncTimeout";
 
 function AdminMobileNav() {
   return (
-    <nav className="md:hidden sticky bottom-0 z-30 border-t border-white/5 bg-[#060d1d]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
+    <nav className="md:hidden sticky bottom-0 z-30 border-t border-white/5 bg-[#14223f]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
       <div className="grid grid-cols-5 px-1 py-1">
         {ADMIN_QUICK_NAV.map((item) => (
           <NavLink
@@ -50,7 +50,7 @@ function AdminHeader({
   onOpenSearch: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-2 border-b border-white/5 bg-[#060d1d]/85 px-3 backdrop-blur-xl sm:gap-4 sm:px-6">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-2 border-b border-white/5 bg-[#14223f]/85 px-3 backdrop-blur-xl sm:gap-4 sm:px-6">
       <div className="flex min-w-0 items-center gap-2">
         <SidebarTrigger className="h-10 w-10 rounded-xl text-slate-300 hover:bg-white/5 hover:text-white" />
         <button
