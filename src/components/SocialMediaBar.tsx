@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 import { Button } from "@/components/ui/button";
-import { FanChatBarButton } from "@/components/FanChat";
 
 type NavItem = {
   label: string;
@@ -21,6 +20,7 @@ const navItems: NavItem[] = [
   { label: "Watch Live", path: "/metsxmfanzone", requiresPremium: true },
   { label: "Blog", path: "/blog", requiresPremium: false },
   { label: "Games", path: "/mets-schedule-2026", requiresPremium: false },
+  { label: "Community", path: "/community", requiresPremium: false },
 ];
 
 
@@ -118,7 +118,6 @@ const SocialMediaBar = () => {
             </Button>
           );
         })}
-        <FanChatBarButton />
       </div>
     </div>
   );
