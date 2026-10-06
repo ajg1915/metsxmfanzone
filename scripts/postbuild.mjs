@@ -3,7 +3,7 @@
 // download/launch can fail — in that case we still produce every page from the
 // prerender templates instead of failing the whole deployment.
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, readdirSync, rmSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
 function run(cmd, args) {
@@ -26,11 +26,17 @@ if (!run("node", ["prerender.js", "--postprocess"])) {
 }
 
 // Blog articles are rendered on request by api/blog.js so that newly published
-// and freshly edited posts are always correct. Remove the build-time copies so
-// they can't shadow that route with stale content.
-if (existsSync(resolve("dist/blog"))) {
-  rmSync(resolve("dist/blog"), { recursive: true, force: true });
-  console.log("removed dist/blog (served dynamically by /api/blog)");
+// and freshly edited posts are always correct. Remove the build-time article
+// copies (dist/blog/<slug>/) so they can't shadow that route with stale content.
+// Keep dist/blog/index.html: it is the public /blog listing page, and without it
+// /blog has nothing to serve and returns a hosting 404.
+const blogDir = resolve("dist/blog");
+if (existsSync(blogDir)) {
+  for (const name of readdirSync(blogDir)) {
+    const entry = resolve(blogDir, name);
+    if (statSync(entry).isDirectory()) rmSync(entry, { recursive: true, force: true });
+  }
+  console.log("removed dist/blog/<slug> article copies (served dynamically by /api/blog); kept dist/blog/index.html");
 }
 
 // Safety net: any URL that has no prerendered file (e.g. an article published
