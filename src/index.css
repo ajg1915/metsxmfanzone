@@ -1406,6 +1406,15 @@ google-cast-launcher,
   letter-spacing: -0.015em;
 }
 
+/* Admin side menu: same lighter navy as the rest of the portal (desktop + phone slide-out).
+   The sidebar component is only used by the admin layout. */
+.admin-shell,
+[data-sidebar="sidebar"][data-mobile="true"] {
+  --sidebar-background: 218 44% 20%;
+  --sidebar-accent: 218 44% 28%;
+  --sidebar-border: 213 30% 34%;
+}
+
 /* Tame the site-wide orange border override inside the admin area */
 .admin-shell :where(.border, [class*="border-"]):not(.border-transparent):not([class*="border-transparent"]) {
   border-color: hsl(var(--adm-line) / 0.55) !important;
