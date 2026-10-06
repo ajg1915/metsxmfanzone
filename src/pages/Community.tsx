@@ -18,7 +18,6 @@ import SocialShareButtons from "@/components/SocialShareButtons";
 import StoriesSection from "@/components/StoriesSection";
 import PostComments from "@/components/community/PostComments";
 import MemberSearch from "@/components/community/MemberSearch";
-import CommunityChat from "@/components/community/CommunityChat";
 import GifPicker from "@/components/community/GifPicker";
 import BusinessAdsSection from "@/components/BusinessAdsSection";
 import Events from "./Events";
@@ -494,7 +493,6 @@ const Community = () => {
 
           {user && <MemberSearch />}
 
-          <CommunityChat />
 
           <Card className="mb-6">
             <CardHeader>
