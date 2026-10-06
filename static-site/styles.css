@@ -219,7 +219,21 @@ p.lead { color: var(--muted); font-size: clamp(0.98rem, 2.4vw, 1.12rem); max-wid
 .footer-grid h4 { margin: 0 0 0.5rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
 .footer-grid a { display: block; text-decoration: none; color: var(--text); font-size: 0.86rem; padding: 0.18rem 0; opacity: 0.85; }
 .footer-grid a:hover { opacity: 1; color: var(--orange); }
-.footer-note { color: var(--muted); font-size: 0.76rem; margin-top: 1.4rem; }
+.footer-note { color: var(--muted); font-size: 0.76rem; margin-top: 0.6rem; text-align: center; line-height: 1.5; }
+.footer-top { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; padding-bottom: 1.2rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); }
+.footer-brand strong { color: var(--orange); font-size: 1.1rem; }
+.footer-brand p { margin: 0.2rem 0 0; color: var(--muted); font-size: 0.82rem; }
+.footer-social { display: flex; gap: 0.6rem; }
+.footer-social a { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+.footer-social a:hover { border-color: var(--orange); color: var(--orange); }
+.footer-social svg { width: 18px; height: 18px; }
+.footer-app { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; justify-content: space-between; margin-top: 1.4rem; padding: 0.8rem 1rem; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); font-size: 0.86rem; }
+.footer-app a { background: var(--orange); color: #10182a; font-weight: 700; text-decoration: none; padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.8rem; }
+.footer-legal { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; justify-content: center; margin-top: 1.2rem; font-size: 0.82rem; }
+.footer-legal a { color: var(--muted); text-decoration: none; }
+.footer-legal a:hover { color: var(--orange); }
+.footer-secure { text-align: center; color: var(--muted); opacity: 0.6; font-size: 0.7rem; margin: 0.4rem 0 0; }
+@media (max-width: 720px) { .footer-top { justify-content: center; text-align: center; } .footer-brand, .footer-social { width: 100%; justify-content: center; } .footer-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .to-top {
   position: fixed;

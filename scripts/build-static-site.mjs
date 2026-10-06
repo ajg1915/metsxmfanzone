@@ -45,24 +45,51 @@ const ICONS = {
 const groups = [
   { title: "Watch", paths: ["/metsxmfanzone", "/gameday-live", "/replay-games", "/broadcast-schedule", "/tv"] },
   { title: "Read", paths: ["/blog", "/mets-game-recaps", "/mets-scores", "/mets-schedule-2026", "/mets-roster"] },
-  { title: "Community", paths: ["/community", "/podcast", "/gallery", "/social", "/events"] },
-  { title: "Support", paths: ["/help-center", "/faqs", "/contact", "/privacy", "/terms"] },
+  { title: "Community", paths: ["/community", "/podcast", "/gallery", "/social", "/business-partner"] },
+  { title: "Support", paths: ["/help-center", "/faqs", "/contact", "/pricing", "/install"] },
 ];
+
+// Keep in sync with: src/components/Footer.tsx and src/vanilla/ui/shell.js
+const svg = (inner, fill = "none") =>
+  `<svg viewBox="0 0 24 24" fill="${fill}" stroke="${fill === "none" ? "currentColor" : "none"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+const SOCIALS = [
+  { name: "TikTok", url: "https://www.tiktok.com/@metsxmfanzone", icon: svg('<path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.71a8.21 8.21 0 0 0 4.76 1.51v-3.45a4.85 4.85 0 0 1-1-.08z"/>', "currentColor") },
+  { name: "Instagram", url: "https://www.instagram.com/metsxmfanzone", icon: svg('<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>') },
+  { name: "Facebook", url: "https://www.facebook.com/metsxmfanzoneofficial", icon: svg('<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>') },
+  { name: "X", url: "https://x.com/metsxmfanzone", icon: svg('<path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"/>', "currentColor") },
+  { name: "YouTube", url: "https://www.youtube.com/@metsxmfanzone", icon: svg('<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/>') },
+];
+
+// Footer link names (override the page-registry labels)
+const LABELS = {
+  "/metsxmfanzone": "Live Network", "/gameday-live": "Game Day Live", "/replay-games": "Game Replays", "/broadcast-schedule": "TV Schedule", "/tv": "TV Mode",
+  "/blog": "News", "/mets-game-recaps": "Game Recaps", "/mets-scores": "Scores", "/mets-schedule-2026": "2026 Schedule", "/mets-roster": "Roster",
+  "/community": "Community", "/podcast": "Podcast", "/gallery": "Highlights", "/social": "Follow Us", "/business-partner": "Business Partners",
+  "/help-center": "Help Center", "/faqs": "FAQ", "/contact": "Contact Us", "/pricing": "Plans & Pricing", "/install": "Install App",
+  "/privacy": "Privacy", "/terms": "Terms",
+};
 
 const footer = () => `
   <footer class="site-footer">
     <div class="content-width">
+      <div class="footer-top">
+        <div class="footer-brand"><strong>MetsXMFanZone.com</strong><p>Fan-run coverage of the New York Mets</p></div>
+        <div class="footer-social">${SOCIALS.map((s) => `<a href="${s.url}" target="_blank" rel="noopener noreferrer" aria-label="MetsXMFanZone on ${s.name}">${s.icon}</a>`).join("")}</div>
+      </div>
       <div class="footer-grid">
         ${groups
           .map(
             (g) => `<div><h4>${esc(g.title)}</h4>${g.paths
               .filter((p) => byPath.has(p))
-              .map((p) => link(p))
+              .map((p) => link(p, LABELS[p]))
               .join("")}</div>`
           )
           .join("")}
       </div>
+      <div class="footer-app"><span>Take the Mets with you: install the MetsXMFanZone app.</span><a href="${fileFor("/install")}">Install App</a></div>
+      <div class="footer-legal">${["/privacy", "/terms", "/contact"].filter((p) => byPath.has(p)).map((p) => link(p, p === "/contact" ? "Contact" : LABELS[p])).join("")}</div>
       <p class="footer-note">&copy; ${new Date().getFullYear()} MetsXMFanZone. Fan-run coverage of the New York Mets. Not affiliated with MLB or the New York Mets.</p>
+      <p class="footer-secure">VPN Secured &middot; AES-256 Encrypted</p>
     </div>
   </footer>`;
 

@@ -9,6 +9,23 @@ const navItems = [
   ["/mets-schedule-2026", "Games"],
 ];
 
+// Keep in sync with: src/components/Footer.tsx and scripts/build-static-site.mjs
+const footerColumns = [
+  ["Watch", [["/metsxmfanzone", "Live Network"], ["/gameday-live", "Game Day Live"], ["/replay-games", "Game Replays"], ["/broadcast-schedule", "TV Schedule"], ["/tv", "TV Mode"]]],
+  ["Read", [["/blog", "News"], ["/mets-game-recaps", "Game Recaps"], ["/mets-scores", "Scores"], ["/mets-schedule-2026", "2026 Schedule"], ["/mets-roster", "Roster"]]],
+  ["Community", [["/community", "Community"], ["/podcast", "Podcast"], ["/gallery", "Highlights"], ["/social", "Follow Us"], ["/business-partner", "Business Partners"]]],
+  ["Support", [["/help-center", "Help Center"], ["/faqs", "FAQ"], ["/contact", "Contact Us"], ["/pricing", "Plans & Pricing"], ["/install", "Install App"]]],
+];
+const svgIcon = (inner, filled = false) =>
+  `<svg viewBox="0 0 24 24" fill="${filled ? "currentColor" : "none"}" stroke="${filled ? "none" : "currentColor"}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+const footerSocials = [
+  ["TikTok", "https://www.tiktok.com/@metsxmfanzone", svgIcon('<path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.71a8.21 8.21 0 0 0 4.76 1.51v-3.45a4.85 4.85 0 0 1-1-.08z"/>', true)],
+  ["Instagram", "https://www.instagram.com/metsxmfanzone", svgIcon('<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>')],
+  ["Facebook", "https://www.facebook.com/metsxmfanzoneofficial", svgIcon('<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>')],
+  ["X", "https://x.com/metsxmfanzone", svgIcon('<path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.67l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z"/>', true)],
+  ["YouTube", "https://www.youtube.com/@metsxmfanzone", svgIcon('<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/>')],
+];
+
 export const renderShell = ({ content, currentPath = window.location.pathname }) => `
   <div class="site-shell">
     <header class="site-header">
@@ -26,13 +43,17 @@ export const renderShell = ({ content, currentPath = window.location.pathname })
     </header>
     <main id="page-content">${content}</main>
     <footer class="site-footer">
-      <strong>MetsXMFanZone.com</strong>
-      <nav aria-label="Footer navigation">
-        <a href="/install">Install App</a><a href="/help-center">Help Center</a>
-        <a href="/privacy">Privacy</a><a href="/terms">Terms</a>
+      <div class="footer-top">
+        <div class="footer-brand"><strong>MetsXMFanZone.com</strong><p>Fan-run coverage of the New York Mets</p></div>
+        <div class="footer-social">${footerSocials.map(([name, url, icon]) => `<a href="${url}" target="_blank" rel="noopener noreferrer" aria-label="MetsXMFanZone on ${name}">${icon}</a>`).join("")}</div>
+      </div>
+      <nav class="footer-grid" aria-label="Footer navigation">
+        ${footerColumns.map(([title, links]) => `<div><h4>${title}</h4>${links.map(([href, label]) => `<a href="${href}">${escapeHtml(label)}</a>`).join("")}</div>`).join("")}
       </nav>
+      <div class="footer-app"><span>Take the Mets with you: install the MetsXMFanZone app.</span><a href="/install">Install App</a></div>
+      <div class="footer-legal"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></div>
+      <small>© ${new Date().getFullYear()} MetsXMFanZone. Fan-run coverage of the New York Mets. Not affiliated with MLB or the New York Mets.</small>
       <p>VPN Secured · AES-256 Encrypted</p>
-      <small>© ${new Date().getFullYear()} MetsXMFanZone.com. All rights reserved.</small>
     </footer>
   </div>`;
 
