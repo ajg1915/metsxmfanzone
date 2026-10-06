@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import {
-  X, Play, CalendarDays, Trophy, Newspaper, Mic, ChevronRight, LayoutDashboard,
+  X, Play, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard,
   PenLine, Shield, Sparkles, LogOut,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -37,6 +37,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
     { label: "Scores", icon: Trophy, onClick: run(() => go("/mets-scores")) },
     { label: "Blog", icon: Newspaper, onClick: run(() => go("/blog")) },
     { label: "Podcast", icon: Mic, onClick: run(() => go("/podcast")) },
+    { label: "Community", icon: Users, onClick: run(() => goProtected("/community")) },
   ];
 
   const initial = profile.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "M";
