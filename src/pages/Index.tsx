@@ -241,6 +241,14 @@ const Index = () => {
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
+            <CommunityPreviewSection />
+          </Suspense>
+        </LazySection>
+
+        <div className="section-divider my-1" />
+
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
             <BlogSection />
           </Suspense>
         </LazySection>

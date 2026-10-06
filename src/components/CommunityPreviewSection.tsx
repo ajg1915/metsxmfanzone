@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ArrowRight, Users, Flame, Sparkles, Pin } from "lucide-react";
+import { MessageSquare, ArrowRight, Flame, Sparkles, Pin } from "lucide-react";
 import { motion } from "framer-motion";
 import logo from "@/assets/metsxmfanzone-logo.png";
 
@@ -181,7 +181,7 @@ const CommunityPreviewSection = () => {
               <span className="break-words text-xl">MetsXMFanZone Community</span>
             </h2>
             <p className="text-[10px] sm:text-base text-muted-foreground mt-1 sm:mt-2 max-w-md">
-              Join the conversation with 50k passionate Mets fans
+              Join the conversation with fellow Mets fans
             </p>
           </div>
           <Button
@@ -192,43 +192,6 @@ const CommunityPreviewSection = () => {
             Join Community
             <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1.5 sm:ml-2 group-hover:translate-x-1 transition-transform" />
           </Button>
-        </motion.div>
-
-        {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8 sm:mb-10">
-
-          <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-2xl p-4 sm:p-5 flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            </div>
-            <div>
-              <p className="text-lg sm:text-2xl font-bold text-foreground">{stats.postsCount.toLocaleString()}</p>
-              <p className="text-[11px] sm:text-xs text-muted-foreground">Posts</p>
-            </div>
-          </div>
-          <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-2xl p-4 sm:p-5 flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-secondary/10 flex items-center justify-center flex-shrink-0">
-              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-secondary" />
-            </div>
-            <div>
-              <p className="text-lg sm:text-2xl font-bold text-foreground">50k</p>
-              <p className="text-[11px] sm:text-xs text-muted-foreground">Members</p>
-            </div>
-          </div>
-          <div className="hidden sm:flex bg-card/60 backdrop-blur-md border border-border/40 rounded-2xl p-4 sm:p-5 items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-destructive/10 flex items-center justify-center flex-shrink-0">
-              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-destructive" />
-            </div>
-            <div>
-              <p className="text-lg sm:text-2xl font-bold text-foreground">Live</p>
-              <p className="text-[11px] sm:text-xs text-muted-foreground">Active Now</p>
-            </div>
-          </div>
         </motion.div>
 
         {/* Posts Feed */}
@@ -288,7 +251,7 @@ const CommunityPreviewSection = () => {
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-sm font-semibold text-foreground">
-                        {posts[0].isAdmin ? "MetsXMFanZone" : posts[0].profiles?.full_name || "MetsXMFanZone"}
+                        {posts[0].isAdmin ? "MetsXMFanZone" : posts[0].profiles?.full_name || "Member"}
                       </span>
                       <span className="text-[11px] text-muted-foreground">· {formatTimeAgo(posts[0].created_at)}</span>
                     </div>
@@ -339,7 +302,7 @@ const CommunityPreviewSection = () => {
                     <div className="p-3 sm:p-4">
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className="font-semibold text-foreground text-sm truncate">
-                          {post.isAdmin ? "MetsXMFanZone" : post.profiles?.full_name?.split(" ")[0] || "MetsXMFanZone"}
+                          {post.isAdmin ? "MetsXMFanZone" : post.profiles?.full_name?.split(" ")[0] || "Member"}
                         </span>
                         <span className="text-[10px] text-muted-foreground flex-shrink-0">
                           {formatTimeAgo(post.created_at)}
