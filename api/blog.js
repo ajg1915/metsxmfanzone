@@ -31,7 +31,19 @@ async function loadShell(req) {
   return await res.text();
 }
 
+// Social apps open links in their own embedded browsers (Facebook/Messenger, Instagram,
+// TikTok, X, Pinterest, Snapchat, LinkedIn, Line, etc.). Those webviews are the ones that
+// choke on the full app shell (service workers, push SDK, third-party scripts), so they get
+// the plain standalone article page, which needs no JavaScript at all.
+const IN_APP_BROWSER_RE =
+  /FBAN|FBAV|FBIOS|FB_IAB|FBSS|Instagram|musical_ly|BytedanceWebview|TikTok|Bytedance|Twitter|Pinterest|Snapchat|LinkedInApp|\bLine\/|MicroMessenger|KAKAOTALK|Telegram|WhatsApp/i;
+
 export default async function handler(req, res) {
+  const userAgent = String(req.headers?.["user-agent"] || "");
+  const inApp = IN_APP_BROWSER_RE.test(userAgent);
+  // The two variants share a URL, so tell caches to keep them apart.
+  res.setHeader("Vary", "User-Agent");
+
   const slugParam = req.query?.slug;
   const slug = decodeURIComponent(
     (Array.isArray(slugParam) ? slugParam.join("/") : slugParam || "").trim(),
@@ -44,7 +56,7 @@ export default async function handler(req, res) {
 
   try {
     const [shellResult, post] = await Promise.all([
-      loadShell(req).catch(() => null),
+      inApp ? Promise.resolve(null) : loadShell(req).catch(() => null),
       fetchPublishedPost(slug),
     ]);
 
