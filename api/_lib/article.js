@@ -112,10 +112,11 @@ export function renderArticleBody(post) {
   const date = (post.published_at || "").slice(0, 10);
   const title = cleanText(post.title);
   return `<article class="blog-article">
+  <p class="crumbs"><a href="${SITE_URL}/">Home</a> / <a href="${SITE_URL}/blog">Blog</a></p>
   <p class="blog-kicker">${escapeHtml(cleanCategory(post.category) || "Mets News")}</p>
   <h1>${escapeHtml(title)}</h1>
-  <time datetime="${escapeHtml(post.published_at || "")}">${escapeHtml(date)}</time>
-  <img class="blog-hero" src="${escapeHtml(image)}" alt="${escapeHtml(title)}" width="1200" height="630">
+  <div class="byline"><span>By MetsXMFanZone</span><i class="dot"></i><time datetime="${escapeHtml(post.published_at || "")}">${escapeHtml(formatDate(post.published_at) || date)}</time><i class="dot"></i><span>${readMinutes(post)} min read</span></div>
+  <img class="blog-hero" fetchpriority="high" src="${escapeHtml(image)}" alt="${escapeHtml(title)}" width="1200" height="630">
   ${post.excerpt ? `<p class="blog-excerpt">${escapeHtml(post.excerpt)}</p>` : ""}
   <div class="blog-body">${body}</div>
 </article>`;
@@ -200,54 +201,210 @@ export function buildMetaTags(post, slug, { canonical } = {}) {
 }
 
 export const ARTICLE_STYLES = `
-  :root { color-scheme: dark; }
+  :root { --bg:#0b1426; --bg2:#0f1b33; --panel:#12203a; --line:#24365a; --text:#e8eef9; --soft:#c3d0e6; --muted:#8fa3c2; --orange:#ff5910; --blue:#2f6df6; }
   * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: radial-gradient(900px 500px at 10% -10%, rgba(27,82,168,.35), transparent 60%), #07101f;
-    color: #eaf1ff;
-    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.65;
-  }
-  a { color: #f5761a; }
-  header.site, footer.site { border-color: rgba(255,255,255,.1); }
-  header.site { border-bottom: 1px solid rgba(255,255,255,.1); padding: .9rem 0; }
-  footer.site { border-top: 1px solid rgba(255,255,255,.1); padding: 1.4rem 0 2.4rem; margin-top: 2.5rem; color: #9fb0cc; font-size: .82rem; }
-  .wrap { width: min(760px, 92vw); margin-inline: auto; }
-  .brand { font-weight: 800; text-decoration: none; color: #eaf1ff; }
-  .blog-article { padding: 1.6rem 0 1rem; }
-  .blog-kicker { text-transform: uppercase; letter-spacing: .14em; font-size: .72rem; color: #f5761a; font-weight: 700; margin: 0 0 .5rem; }
-  .blog-article h1 { font-size: clamp(1.6rem, 5vw, 2.6rem); line-height: 1.15; margin: 0 0 .5rem; }
-  .blog-article time { color: #9fb0cc; font-size: .82rem; }
-  .blog-hero { width: 100%; height: auto; border-radius: 14px; margin: 1.1rem 0; border: 1px solid rgba(255,255,255,.1); }
-  .blog-excerpt { font-size: 1.05rem; color: #c8d6ee; }
-  .blog-body img { max-width: 100%; height: auto; border-radius: 12px; }
-  .blog-body h2, .blog-body h3 { margin-top: 1.8rem; }
-  .blog-body blockquote { margin: 1.2rem 0; padding: .6rem 1rem; border-left: 3px solid #f5761a; color: #c8d6ee; }
-  .blog-body pre { overflow-x: auto; background: rgba(255,255,255,.06); padding: .8rem; border-radius: 10px; }
-  .read-more { display: inline-block; margin-top: 1.4rem; background: #f5761a; color: #10182a; text-decoration: none; font-weight: 700; padding: .6rem 1.1rem; border-radius: 999px; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin:0; background: radial-gradient(1000px 520px at 8% -8%, rgba(47,109,246,.22), transparent 60%), radial-gradient(800px 420px at 100% 0%, rgba(255,89,16,.10), transparent 55%), var(--bg); color:var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height:1.7; }
+  a { color:#ff8a4d; }
+  img { max-width:100%; height:auto; }
+  .wrap { width:min(1080px, 92vw); margin-inline:auto; }
+  .narrow { width:min(740px, 92vw); margin-inline:auto; }
+
+  /* header */
+  .topbar { position:sticky; top:0; z-index:20; background:rgba(11,20,38,.92); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); border-bottom:2px solid var(--orange); }
+  .topbar .wrap { display:flex; align-items:center; gap:1rem; height:60px; }
+  .brand { display:flex; align-items:center; gap:.55rem; color:var(--text); text-decoration:none; font-weight:800; font-size:1.05rem; white-space:nowrap; }
+  .brand img { width:34px; height:34px; border-radius:8px; }
+  .brand b { color:var(--orange); font-weight:800; }
+  .nav { display:flex; gap:.25rem; margin-left:auto; overflow-x:auto; scrollbar-width:none; }
+  .nav::-webkit-scrollbar { display:none; }
+  .nav a { color:var(--soft); text-decoration:none; font-weight:600; font-size:.88rem; padding:.45rem .7rem; border-radius:999px; white-space:nowrap; }
+  .nav a:hover, .nav a.on { color:#fff; background:var(--panel); }
+  .nav a.join { background:var(--orange); color:#fff; }
+  @media (max-width:640px) { .brand span { display:none; } .topbar .wrap { gap:.5rem; } }
+
+  /* article */
+  .blog-article { padding:2rem 0 .5rem; }
+  .crumbs { font-size:.8rem; color:var(--muted); margin:0 0 1rem; }
+  .crumbs a { color:var(--muted); text-decoration:none; }
+  .crumbs a:hover { color:#fff; }
+  .blog-kicker { display:inline-block; text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; color:#fff; background:var(--orange); font-weight:800; margin:0 0 .8rem; padding:.28rem .6rem; border-radius:6px; }
+  .blog-article h1 { font-size:clamp(1.75rem,5.4vw,2.9rem); line-height:1.12; letter-spacing:-.02em; margin:0 0 .8rem; }
+  .byline { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .9rem; color:var(--muted); font-size:.86rem; margin-bottom:1.2rem; }
+  .byline .dot { width:4px; height:4px; border-radius:50%; background:var(--line); }
+  .blog-hero { display:block; width:100%; height:auto; aspect-ratio:1200/630; object-fit:cover; border-radius:16px; border:1px solid var(--line); margin:0 0 1.4rem; background:var(--panel); }
+  .blog-excerpt { font-size:1.18rem; line-height:1.55; color:var(--soft); border-left:4px solid var(--orange); padding-left:1rem; margin:0 0 1.6rem; }
+  .blog-body { font-size:1.07rem; color:#dbe5f6; }
+  .blog-body p { margin:0 0 1.2rem; }
+  .blog-body img { border-radius:12px; margin:.4rem 0; }
+  .blog-body h2, .blog-body h3 { line-height:1.25; margin:2rem 0 .7rem; color:#fff; }
+  .blog-body blockquote { margin:1.4rem 0; padding:.7rem 1.1rem; border-left:4px solid var(--blue); background:var(--panel); border-radius:0 12px 12px 0; color:var(--soft); }
+  .blog-body pre { overflow-x:auto; background:var(--panel); padding:.9rem; border-radius:10px; }
+  .blog-body ul, .blog-body ol { padding-left:1.3rem; margin:0 0 1.2rem; }
+  .blog-body li { margin:.3rem 0; }
+
+  /* share */
+  .share { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; margin:2rem 0 0; padding:1.1rem 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .share span { color:var(--muted); font-weight:700; font-size:.82rem; text-transform:uppercase; letter-spacing:.1em; margin-right:.3rem; }
+  .share a { color:var(--text); text-decoration:none; font-weight:600; font-size:.85rem; background:var(--panel); border:1px solid var(--line); padding:.45rem .85rem; border-radius:999px; }
+  .share a:hover { border-color:var(--orange); color:#fff; }
+
+  /* related */
+  .related { padding:2.6rem 0 .5rem; }
+  .related h2 { font-size:1.15rem; text-transform:uppercase; letter-spacing:.1em; margin:0 0 1rem; display:flex; align-items:center; gap:.6rem; }
+  .related h2::before { content:""; width:4px; height:1.1rem; background:var(--orange); }
+  .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+  .card { display:block; background:var(--panel); border:1px solid var(--line); border-radius:14px; overflow:hidden; text-decoration:none; color:var(--text); transition:border-color .15s, transform .15s; }
+  .card:hover { border-color:var(--orange); transform:translateY(-2px); }
+  .card img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; background:var(--bg2); }
+  .card div { padding:.8rem .9rem 1rem; }
+  .card small { color:var(--orange); font-weight:800; text-transform:uppercase; letter-spacing:.1em; font-size:.68rem; }
+  .card strong { display:block; margin-top:.3rem; font-size:.97rem; line-height:1.3; }
+  @media (max-width:760px) { .cards { grid-template-columns:1fr; } }
+
+  /* call to action */
+  .cta { margin:2.6rem 0 0; padding:1.6rem; border-radius:18px; background:linear-gradient(135deg, rgba(47,109,246,.35), rgba(255,89,16,.28)), var(--panel); border:1px solid var(--line); display:flex; flex-wrap:wrap; gap:1rem; align-items:center; justify-content:space-between; }
+  .cta h3 { margin:0 0 .2rem; font-size:1.25rem; }
+  .cta p { margin:0; color:var(--soft); font-size:.95rem; }
+  .btns { display:flex; gap:.6rem; flex-wrap:wrap; }
+  .btn { display:inline-block; text-decoration:none; font-weight:800; font-size:.9rem; padding:.7rem 1.2rem; border-radius:999px; background:var(--orange); color:#fff; }
+  .btn.alt { background:transparent; border:1px solid #fff; color:#fff; }
+
+  /* footer */
+  .foot { margin-top:3rem; background:rgba(7,12,24,.7); border-top:2px solid var(--orange); }
+  .foot .wrap { padding:2rem 0 2.4rem; }
+  .foot-top { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; justify-content:space-between; padding-bottom:1.3rem; border-bottom:1px solid var(--line); }
+  .foot-top strong { color:var(--orange); font-size:1.15rem; }
+  .foot-top p { margin:.15rem 0 0; font-size:.82rem; color:var(--muted); }
+  .soc { display:flex; gap:.6rem; }
+  .soc a { width:40px; height:40px; border-radius:50%; display:grid; place-items:center; background:var(--panel); border:1px solid var(--line); color:var(--text); }
+  .soc a:hover { border-color:var(--orange); color:var(--orange); }
+  .soc svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .fgrid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.6rem; padding:1.6rem 0; }
+  .fgrid h4 { margin:0 0 .6rem; font-size:.74rem; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); display:flex; gap:.5rem; align-items:center; }
+  .fgrid h4::before { content:""; width:3px; height:.9rem; background:var(--orange); }
+  .fgrid a { display:block; padding:.28rem 0; color:var(--soft); text-decoration:none; font-size:.92rem; }
+  .fgrid a:hover { color:var(--orange); }
+  .legal { display:flex; flex-wrap:wrap; gap:.3rem 1.1rem; justify-content:center; font-size:.85rem; }
+  .legal a { color:var(--muted); text-decoration:none; }
+  .legal a:hover { color:var(--orange); }
+  .fine { text-align:center; color:#6f84a6; font-size:.74rem; margin:.7rem 0 0; }
+  @media (max-width:720px) { .fgrid { grid-template-columns:repeat(2,1fr); } .foot-top { justify-content:center; text-align:center; } }
 `;
 
-/** Complete, dependency-free HTML document for one article. */
-export function renderStandalonePage(post, slug) {
+const FOOT_COLUMNS = [
+  ["Watch", [["/metsxmfanzone", "Live Network"], ["/gameday-live", "Game Day Live"], ["/replay-games", "Game Replays"], ["/broadcast-schedule", "TV Schedule"], ["/tv", "TV Mode"]]],
+  ["Read", [["/blog", "News"], ["/mets-game-recaps", "Game Recaps"], ["/mets-scores", "Scores"], ["/mets-schedule-2026", "2026 Schedule"], ["/mets-roster", "Roster"]]],
+  ["Community", [["/community", "Community"], ["/podcast", "Podcast"], ["/video-gallery", "Highlights"], ["/social", "Follow Us"], ["/business-partner", "Business Partners"]]],
+  ["Support", [["/help-center", "Help Center"], ["/faqs", "FAQ"], ["/contact", "Contact Us"], ["/pricing", "Plans & Pricing"], ["/install", "Install App"]]],
+];
+const svg = (inner) => `<svg viewBox="0 0 24 24" aria-hidden="true">${inner}</svg>`;
+const FOOT_SOCIALS = [
+  ["TikTok", "https://www.tiktok.com/@metsxmfanzone", svg('<path d="M9 12a4 4 0 1 0 4 4V3a5 5 0 0 0 5 5"/>')],
+  ["Instagram", "https://www.instagram.com/metsxmfanzone", svg('<rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>')],
+  ["Facebook", "https://www.facebook.com/metsxmfanzoneofficial", svg('<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>')],
+  ["X", "https://x.com/metsxmfanzone", svg('<path d="M4 4l16 16M20 4L4 20"/>')],
+  ["YouTube", "https://www.youtube.com/@metsxmfanzone", svg('<path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/>')],
+];
+
+function readMinutes(post) {
+  const words = stripHtml(post.content || "").split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+function formatDate(iso) {
+  const d = new Date(iso || "");
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "America/New_York" });
+}
+
+function siteHeader() {
+  return `<header class="topbar"><div class="wrap">
+  <a class="brand" href="${SITE_URL}/"><img src="${SITE_URL}/logo-192.png" alt="" width="34" height="34"><span>MetsXM<b>FanZone</b></span></a>
+  <nav class="nav" aria-label="Main">
+    <a href="${SITE_URL}/">Home</a>
+    <a href="${SITE_URL}/metsxmfanzone">Watch Live</a>
+    <a class="on" href="${SITE_URL}/blog">Blog</a>
+    <a href="${SITE_URL}/mets-schedule-2026">Games</a>
+    <a href="${SITE_URL}/podcast">Podcast</a>
+    <a href="${SITE_URL}/auth?mode=signup" class="join">Join</a>
+  </nav>
+</div></header>`;
+}
+
+function siteFooter() {
+  return `<footer class="foot"><div class="wrap">
+  <div class="foot-top">
+    <div><strong>MetsXMFanZone.com</strong><p>Fan-run coverage of the New York Mets</p></div>
+    <div class="soc">${FOOT_SOCIALS.map(([n, u, i]) => `<a href="${u}" target="_blank" rel="noopener noreferrer" aria-label="MetsXMFanZone on ${n}">${i}</a>`).join("")}</div>
+  </div>
+  <div class="fgrid">${FOOT_COLUMNS.map(([t, links]) => `<div><h4>${t}</h4>${links.map(([h, l]) => `<a href="${SITE_URL}${h}">${escapeHtml(l)}</a>`).join("")}</div>`).join("")}</div>
+  <div class="legal"><a href="${SITE_URL}/privacy">Privacy</a><a href="${SITE_URL}/terms">Terms</a><a href="${SITE_URL}/contact">Contact</a></div>
+  <p class="fine">&copy; ${new Date().getFullYear()} MetsXMFanZone. Fan-run coverage of the New York Mets. Not affiliated with MLB or the New York Mets.</p>
+</div></footer>`;
+}
+
+function shareRow(post, slug) {
+  const url = encodeURIComponent(`${SITE_URL}/blog/${encodeURIComponent(slug)}`);
+  const title = encodeURIComponent(cleanText(post.title));
+  return `<div class="share"><span>Share</span>
+  <a href="https://www.facebook.com/sharer/sharer.php?u=${url}" target="_blank" rel="noopener noreferrer">Facebook</a>
+  <a href="https://twitter.com/intent/tweet?url=${url}&amp;text=${title}" target="_blank" rel="noopener noreferrer">X</a>
+  <a href="https://api.whatsapp.com/send?text=${title}%20${url}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+  <a href="mailto:?subject=${title}&amp;body=${url}">Email</a>
+</div>`;
+}
+
+function relatedBlock(related) {
+  if (!related || !related.length) return "";
+  return `<section class="related"><h2>More Mets news</h2><div class="cards">${related
+    .map(
+      (r) => `<a class="card" href="${SITE_URL}/blog/${encodeURIComponent(r.slug)}"><img src="${escapeHtml(resolveImage(r.featured_image_url))}" alt="" loading="lazy" width="640" height="360"><div><small>${escapeHtml(cleanCategory(r.category) || "Mets News")}</small><strong>${escapeHtml(cleanText(r.title))}</strong></div></a>`
+    )
+    .join("")}</div></section>`;
+}
+
+/** Complete, dependency-free HTML document for one article (works in every browser, incl. in-app ones). */
+export function renderStandalonePage(post, slug, related = []) {
   const appUrl = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1426">
+<link rel="icon" href="${SITE_URL}/favicon.ico">
+<link rel="apple-touch-icon" href="${SITE_URL}/apple-touch-icon.png">
 ${buildMetaTags(post, slug, { canonical: appUrl })}
 <style>${ARTICLE_STYLES}</style>
 </head>
 <body>
-<header class="site"><div class="wrap"><a class="brand" href="${SITE_URL}/">MetsXMFanZone</a></div></header>
-<main class="wrap">
+${siteHeader()}
+<main class="narrow">
 ${renderArticleBody(post)}
-<a class="read-more" href="${escapeHtml(appUrl)}">Read more on MetsXMFanZone</a>
+${shareRow(post, slug)}
+<div class="cta"><div><h3>Never miss a Mets moment</h3><p>Live games, podcasts and breaking news, all in one place.</p></div><div class="btns"><a class="btn" href="${SITE_URL}/auth?mode=signup">Join MetsXMFanZone</a><a class="btn alt" href="${SITE_URL}/blog">More stories</a></div></div>
 </main>
-<footer class="site"><div class="wrap">&copy; ${new Date().getFullYear()} MetsXMFanZone — fan coverage of the New York Mets.</div></footer>
+<div class="wrap">${relatedBlock(related)}</div>
+${siteFooter()}
 </body>
 </html>`;
+}
+
+export async function fetchRelatedPosts(slug, limit = 3) {
+  try {
+    const query =
+      `${SUPABASE_URL}/rest/v1/blog_posts?published=eq.true&slug=neq.${encodeURIComponent(slug)}` +
+      `&select=title,slug,category,featured_image_url&order=published_at.desc.nullslast&limit=${limit}`;
+    const res = await fetch(query, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+    });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function fetchPublishedPost(slug) {

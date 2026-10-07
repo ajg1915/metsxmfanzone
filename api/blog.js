@@ -1,24 +1,9 @@
 // Serves /blog/:slug for BOTH humans and social crawlers.
-// It loads the normal app shell and injects the article's real title,
-// description, image and full HTML body, so link previews and in-app
-// browsers always see the article — even for posts published after
-// the last site build.
+// Every visitor gets one complete, script-free, branded article page rendered from
+// the live database, so it opens in every browser (incl. social in-app browsers)
+// and link previews are always correct — even for posts newer than the last build.
 
-import {
-  ARTICLE_STYLES,
-  buildMetaTags,
-  fetchPublishedPost,
-  renderArticleBody,
-  renderStandalonePage,
-} from "./_lib/article.js";
-
-// Remove the template's own social/canonical/title tags so ours are the only set.
-function stripExistingMeta(head) {
-  return head
-    .replace(/<title[^>]*>[\s\S]*?<\/title>/gi, "")
-    .replace(/<meta[^>]+(?:name|property)=["'](?:description|og:|twitter:|article:)[^>]*>/gi, "")
-    .replace(/<link[^>]+rel=["']canonical["'][^>]*>/gi, "");
-}
+import { fetchPublishedPost, fetchRelatedPosts, renderStandalonePage } from "./_lib/article.js";
 
 async function loadShell(req) {
   const host = req.headers["x-forwarded-host"] || req.headers.host || "metsxmfanzone.com";
@@ -31,18 +16,7 @@ async function loadShell(req) {
   return await res.text();
 }
 
-// Social apps open links in their own embedded browsers (Facebook/Messenger, Instagram,
-// TikTok, X, Pinterest, Snapchat, LinkedIn, Line, etc.). Those webviews are the ones that
-// choke on the full app shell (service workers, push SDK, third-party scripts), so they get
-// the plain standalone article page, which needs no JavaScript at all.
-const IN_APP_BROWSER_RE =
-  /FBAN|FBAV|FBIOS|FB_IAB|FBSS|Instagram|musical_ly|BytedanceWebview|TikTok|Bytedance|Twitter|Pinterest|Snapchat|LinkedInApp|\bLine\/|MicroMessenger|KAKAOTALK|Telegram|WhatsApp/i;
-
 export default async function handler(req, res) {
-  const userAgent = String(req.headers?.["user-agent"] || "");
-  const inApp = IN_APP_BROWSER_RE.test(userAgent);
-  // The two variants share a URL, so tell caches to keep them apart.
-  res.setHeader("Vary", "User-Agent");
 
   const slugParam = req.query?.slug;
   const slug = decodeURIComponent(
@@ -55,49 +29,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    const [shellResult, post] = await Promise.all([
-      inApp ? Promise.resolve(null) : loadShell(req).catch(() => null),
-      fetchPublishedPost(slug),
-    ]);
+    const post = await fetchPublishedPost(slug);
 
     if (!post) {
       // Unknown slug: hand the app the shell so it can show its own 404 page.
+      const shell = await loadShell(req).catch(() => null);
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
-      res.status(404).send(shellResult || "<!doctype html><title>Not found</title>");
+      res.status(404).send(shell || "<!doctype html><title>Not found</title>");
       return;
     }
 
-    // No shell available (build hiccup) — still serve a complete article page.
-    if (!shellResult) {
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.setHeader("Cache-Control", "public, max-age=0, s-maxage=300, stale-while-revalidate=600");
-      res.status(200).send(renderStandalonePage(post, slug));
-      return;
-    }
-
-    let html = shellResult;
-    const headEnd = html.indexOf("</head>");
-    if (headEnd !== -1) {
-      const head = stripExistingMeta(html.slice(0, headEnd));
-      html = head + buildMetaTags(post, slug) + `<style>${ARTICLE_STYLES}</style>` + html.slice(headEnd);
-    }
-
-    // Replace everything inside #root (the prerendered homepage markup) with
-    // this article, using the last </div> before the first <script> as the end.
-    const rootMatch = html.match(/<div id="root"[^>]*>/);
-    if (rootMatch) {
-      const start = rootMatch.index + rootMatch[0].length;
-      const scriptAt = html.indexOf("<script", start);
-      const endAt = html.lastIndexOf("</div>", scriptAt === -1 ? html.length : scriptAt);
-      if (endAt > start) {
-        html = html.slice(0, start) + `<div class="wrap">${renderArticleBody(post)}</div>` + html.slice(endAt);
-      }
-    }
-
+    // Every visitor gets the same complete, script-free article page. It needs no
+    // service worker, push SDK or app bundle, so it opens in every browser,
+    // including the Facebook / Instagram / TikTok / X in-app browsers.
+    const related = await fetchRelatedPosts(slug);
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "public, max-age=0, s-maxage=300, stale-while-revalidate=600");
-    res.status(200).send(html);
+    res.status(200).send(renderStandalonePage(post, slug, related));
   } catch {
     // Never fail the page: fall back to the plain app shell.
     try {

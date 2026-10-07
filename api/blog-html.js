@@ -2,7 +2,7 @@
 // No React, no app shell: the headline, photo and full story are in the HTML
 // itself, so it opens anywhere (social media in-app browsers, email, crawlers).
 
-import { fetchPublishedPost, renderStandalonePage, SITE_URL } from "./_lib/article.js";
+import { fetchPublishedPost, fetchRelatedPosts, renderStandalonePage, SITE_URL } from "./_lib/article.js";
 
 export default async function handler(req, res) {
   const slugParam = req.query?.slug;
@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     }
 
     res.setHeader("Cache-Control", "public, max-age=0, s-maxage=300, stale-while-revalidate=600");
-    res.status(200).send(renderStandalonePage(post, slug));
+    res.status(200).send(renderStandalonePage(post, slug, await fetchRelatedPosts(slug)));
   } catch {
     res.status(500).send("<!doctype html><title>Error</title><p>Could not load this article.</p>");
   }
