@@ -247,7 +247,10 @@ export const ARTICLE_STYLES = `
   .share { display:flex; flex-wrap:wrap; align-items:center; gap:.5rem; margin:2rem 0 0; padding:1.1rem 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   .share span { color:var(--muted); font-weight:700; font-size:.82rem; text-transform:uppercase; letter-spacing:.1em; margin-right:.3rem; }
   .share a { color:var(--text); text-decoration:none; font-weight:600; font-size:.85rem; background:var(--panel); border:1px solid var(--line); padding:.45rem .85rem; border-radius:999px; }
-  .share a:hover { border-color:var(--orange); color:#fff; }
+  .share a:hover, .sbtn:hover { border-color:var(--orange); color:#fff; }
+  .sbtn { font:inherit; cursor:pointer; color:#fff; font-weight:700; font-size:.85rem; background:var(--orange); border:1px solid var(--orange); padding:.45rem .95rem; border-radius:999px; }
+  .sbtn[hidden] { display:none; }
+  .sbtn:last-of-type { background:var(--panel); border-color:var(--line); }
 
   /* related */
   .related { padding:2.6rem 0 .5rem; }
@@ -347,12 +350,22 @@ function siteFooter() {
 function shareRow(post, slug) {
   const url = encodeURIComponent(`${SITE_URL}/blog/${encodeURIComponent(slug)}`);
   const title = encodeURIComponent(cleanText(post.title));
+  const rawUrl = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
+  const data = JSON.stringify({ u: rawUrl, t: cleanText(post.title) }).replace(/</g, "\\u003c");
   return `<div class="share"><span>Share</span>
+  <button type="button" class="sbtn" data-share hidden>Share&hellip;</button>
+  <button type="button" class="sbtn" data-copy hidden>Copy link</button>
   <a href="https://www.facebook.com/sharer/sharer.php?u=${url}" target="_blank" rel="noopener noreferrer">Facebook</a>
   <a href="https://twitter.com/intent/tweet?url=${url}&amp;text=${title}" target="_blank" rel="noopener noreferrer">X</a>
   <a href="https://api.whatsapp.com/send?text=${title}%20${url}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
   <a href="mailto:?subject=${title}&amp;body=${url}">Email</a>
-</div>`;
+</div>
+<script>(function(){try{var d=${data},sh=document.querySelector("[data-share]"),cp=document.querySelector("[data-copy]");
+if(sh&&navigator.share){sh.hidden=false;sh.addEventListener("click",function(){try{navigator.share({title:d.t,url:d.u}).catch(function(){});}catch(e){}});}
+if(cp){cp.hidden=false;cp.addEventListener("click",function(){var done=function(){cp.textContent="Link copied!";setTimeout(function(){cp.textContent="Copy link";},2000);};
+var fb=function(){try{var a=document.createElement("textarea");a.value=d.u;a.setAttribute("readonly","");a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.select();a.setSelectionRange(0,99999);document.execCommand("copy");document.body.removeChild(a);done();}catch(e){window.prompt("Copy this link:",d.u);}};
+try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(d.u).then(done,fb);}else{fb();}}catch(e){fb();}});}
+}catch(e){}})();</script>`;
 }
 
 function relatedBlock(related) {
