@@ -193,8 +193,8 @@ async function tick(env, when = new Date()) {
   };
   await step("due", () => runDueWork(api));
   await step("mets", () => runMetsAlerts(api, when.getTime()));
-  const minute = when.getUTCMinutes();
-  if (minute % 10 === 4 || minute % 10 === 5) await step("blogHero", () => runBlogHero(api, when));
+  // every run (cron is every 2 minutes), so a new post reaches the hero within about 2 minutes
+  await step("blogHero", () => runBlogHero(api, when));
   lastRun = result;
   return result;
 }
