@@ -3,7 +3,6 @@ import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import NYScoresStrip from "@/components/NYScoresStrip";
-import HomeSocialRow from "@/components/HomeSocialRow";
 
 
 import Footer from "@/components/Footer";
@@ -213,7 +212,6 @@ const Index = () => {
             <AppInstallSection />
           </Suspense>
         </LazySection>
-        <HomeSocialRow />
 
       </main>
       <Footer />
