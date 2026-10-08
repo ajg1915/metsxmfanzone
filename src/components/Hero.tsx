@@ -9,7 +9,6 @@ import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { Play, Info, ChevronLeft, ChevronRight, Bell, BellRing } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useToast } from "@/hooks/use-toast";
-import { AdminEditBadge } from "@/components/admin/AdminEditBadge";
 
 interface HeroSlide {
   id: string;
@@ -150,7 +149,6 @@ const Hero = () => {
 
   return (
     <section className="group/hero home-hero-shell relative max-sm:!p-0 sm:pt-2">
-      <AdminEditBadge to="/admin/hero" label="Edit Hero" />
 
       {/* Phone hero: full-bleed photo under the floating header */}
       <div
