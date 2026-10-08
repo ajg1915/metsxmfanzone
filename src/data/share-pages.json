@@ -182,6 +182,13 @@
     "image": "/share/mets-roster.jpg"
   },
   {
+    "path": "/game-center",
+    "label": "Game Center",
+    "title": "Mets Game Center — Lineups, Players to Watch, Stats & Replays | MetsXMFanZone",
+    "description": "Everything for game day in one place: Mets lineups, players to watch, stats, series, Spring Training games and full-game replays.",
+    "image": "/share/gameday-live.jpg"
+  },
+  {
     "path": "/mets-history",
     "label": "Mets History",
     "title": "New York Mets History | MetsXMFanZone",

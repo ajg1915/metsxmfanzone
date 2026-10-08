@@ -18,6 +18,7 @@ const MAIN_PAGES = [
   "/mets-scores",
   "/mets-gamecast",
   "/mets-roster",
+  "/game-center",
   "/mets-history",
   "/gameday-live",
   "/replay-games",
