@@ -1,42 +1,65 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Home, LogIn, RefreshCw, Search } from "lucide-react";
+import { AlertTriangle, Home, LayoutGrid, LogIn, RefreshCw, Search } from "lucide-react";
 
 import { generateDeviceFingerprint } from "@/utils/deviceFingerprint";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import { NotificationsBell } from "@/components/admin/NotificationsBell";
 import { AdminCommandPalette } from "@/components/admin/AdminCommandPalette";
-import { ADMIN_QUICK_NAV } from "@/components/admin/adminNav";
+import { ADMIN_HUBS, ADMIN_QUICK_HUBS, findActiveHub, hubLandingUrl } from "@/components/admin/adminNav";
+import { AdminHubTabs } from "@/components/admin/AdminHubTabs";
+import { AdminMobileMenu } from "@/components/admin/AdminMobileMenu";
 import { NavLink } from "react-router-dom";
 import { withTimeout } from "@/utils/asyncTimeout";
 
-function AdminMobileNav() {
+function AdminMobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {
+  const { pathname } = useLocation();
+  const activeKey = findActiveHub(pathname)?.key;
+  const quick = ADMIN_QUICK_HUBS.map((key) => ADMIN_HUBS.find((h) => h.key === key)!).filter(Boolean);
+  const menuActive = !!activeKey && !ADMIN_QUICK_HUBS.includes(activeKey);
+  const itemBase =
+    "flex h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[11.5px] font-semibold transition-all";
   return (
-    <nav className="md:hidden sticky bottom-0 z-30 border-t border-white/5 bg-[#14223f]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-5 px-1 py-1">
-        {ADMIN_QUICK_NAV.map((item) => (
-          <NavLink
-            key={item.url}
-            to={item.url}
-            end={item.url === "/admin"}
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center gap-1 rounded-xl py-2 text-[10px] font-semibold transition-all ${
-                isActive
-                  ? "bg-[#FF5910]/12 text-[#FF7A3D] shadow-[inset_0_0_0_1px_rgba(255,89,16,0.35)]"
-                  : "text-slate-400 active:bg-white/5"
-              }`
-            }
-          >
-            <item.icon className="h-5 w-5" />
-            {item.title}
-          </NavLink>
-        ))}
+    <nav
+      aria-label="Main sections"
+      className="md:hidden sticky bottom-0 z-30 border-t border-white/10 bg-[#14223f]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
+    >
+      <div className="grid grid-cols-5 px-1.5 py-1.5">
+        {quick.map((hub) => {
+          const active = hub.key === activeKey;
+          return (
+            <NavLink
+              key={hub.key}
+              to={hubLandingUrl(hub)}
+              className={`${itemBase} ${
+                active
+                  ? "bg-[#FF5910]/15 text-[#FFB08A] shadow-[inset_0_0_0_1px_rgba(255,89,16,0.4)]"
+                  : "text-slate-200 active:bg-white/5"
+              }`}
+            >
+              <hub.icon className="h-[22px] w-[22px]" />
+              {hub.title}
+            </NavLink>
+          );
+        })}
+        <button
+          type="button"
+          onClick={onOpenMenu}
+          className={`${itemBase} ${
+            menuActive
+              ? "bg-[#FF5910]/15 text-[#FFB08A] shadow-[inset_0_0_0_1px_rgba(255,89,16,0.4)]"
+              : "text-slate-200 active:bg-white/5"
+          }`}
+        >
+          <LayoutGrid className="h-[22px] w-[22px]" />
+          Menu
+        </button>
       </div>
     </nav>
   );
@@ -49,10 +72,12 @@ function AdminHeader({
   navigate: (path: string | number) => void;
   onOpenSearch: () => void;
 }) {
+  const { pathname } = useLocation();
+  const hubTitle = findActiveHub(pathname)?.title ?? "Admin";
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-2 border-b border-white/5 bg-[#14223f]/85 px-3 backdrop-blur-xl sm:gap-4 sm:px-6">
       <div className="flex min-w-0 items-center gap-2">
-        <SidebarTrigger className="h-10 w-10 rounded-xl text-slate-300 hover:bg-white/5 hover:text-white" />
+        <SidebarTrigger className="hidden h-10 w-10 rounded-xl text-slate-200 hover:bg-white/5 hover:text-white md:inline-flex" />
         <button
           type="button"
           onClick={() => navigate("/")}
@@ -61,7 +86,10 @@ function AdminHeader({
           <img src={logo} alt="MetsXMFanZone" className="h-8 w-auto flex-shrink-0" />
           <span className="hidden min-w-0 flex-col leading-tight sm:flex">
             <span className="adm-display truncate text-[13px] font-bold text-white">MetsXMFanZone</span>
-            <span className="adm-chip truncate text-[9px] text-[#FF7A3D]">Control Room</span>
+            <span className="adm-chip truncate text-[10px] text-[#FF9A6B]">Control Room</span>
+          </span>
+          <span className="truncate font-['Barlow_Condensed',sans-serif] text-[26px] font-bold leading-none text-white sm:hidden">
+            {hubTitle}
           </span>
         </button>
       </div>
@@ -70,7 +98,7 @@ function AdminHeader({
         <button
           type="button"
           onClick={onOpenSearch}
-          className="relative w-full rounded-xl border border-white/10 bg-white/[0.04] py-2.5 pl-10 pr-14 text-left text-xs text-slate-400 transition-all hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-[#FF5910]/40"
+          className="relative w-full rounded-xl border border-white/15 bg-white/[0.06] py-2.5 pl-10 pr-14 text-left text-sm text-slate-300 transition-all hover:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-[#FF5910]/40"
         >
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
           Search admin pages…
@@ -83,14 +111,14 @@ function AdminHeader({
       <div className="flex flex-shrink-0 items-center gap-1">
         <button
           onClick={onOpenSearch}
-          className="rounded-xl p-2.5 text-slate-300 transition-all hover:bg-white/5 hover:text-white sm:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-xl text-slate-200 transition-all hover:bg-white/5 hover:text-white sm:hidden"
           title="Search admin"
         >
           <Search className="h-4.5 w-4.5" />
         </button>
         <button
           onClick={() => window.location.reload()}
-          className="rounded-xl p-2.5 text-slate-400 transition-all hover:bg-white/5 hover:text-white"
+          className="hidden h-11 w-11 items-center justify-center rounded-xl text-slate-300 transition-all hover:bg-white/5 hover:text-white sm:flex"
           title="Refresh"
         >
           <RefreshCw className="h-4.5 w-4.5" />
@@ -122,6 +150,7 @@ export function AdminLayout() {
   const [pinOnlyAuth, setPinOnlyAuth] = useState(false);
   const [loadingTimedOut, setLoadingTimedOut] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const clearAdminSession = () => {
     sessionStorage.removeItem("admin_verified");
@@ -364,12 +393,13 @@ export function AdminLayout() {
   // PIN verification screen removed — admins go straight to the dashboard.
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={typeof window === "undefined" || window.innerWidth >= 1024}>
       <div className="admin-shell flex min-h-screen w-full overflow-x-hidden">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0 w-full max-w-full">
           <AdminHeader navigate={navigate} onOpenSearch={() => setSearchOpen(true)} />
           <AdminCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
+          <AdminMobileMenu open={menuOpen} onOpenChange={setMenuOpen} onSignOut={handleFreshAdminLogin} />
           <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-5 md:p-7 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-6 max-w-full
             [&_h1]:text-lg [&_h1]:sm:text-xl [&_h1]:md:text-2xl [&_h1]:font-bold [&_h1]:tracking-tight [&_h1]:text-white
             [&_h2]:text-sm [&_h2]:sm:text-base [&_h2]:font-semibold [&_h2]:text-white
@@ -379,12 +409,13 @@ export function AdminLayout() {
             [&_input]:bg-white/5 [&_input]:border-white/10
             [&_textarea]:bg-white/5 [&_textarea]:border-white/10
             [&_table]:text-xs
-            [&_th]:text-[10px] [&_th]:uppercase [&_th]:tracking-widest [&_th]:text-slate-500 [&_th]:font-bold [&_th]:border-white/5
+            [&_th]:text-[11px] [&_th]:uppercase [&_th]:tracking-widest [&_th]:text-slate-300 [&_th]:font-bold [&_th]:border-white/5
             [&_td]:border-white/5
           ">
+            <AdminHubTabs />
             <Outlet />
           </main>
-          <AdminMobileNav />
+          <AdminMobileNav onOpenMenu={() => setMenuOpen(true)} />
         </div>
       </div>
     </SidebarProvider>
