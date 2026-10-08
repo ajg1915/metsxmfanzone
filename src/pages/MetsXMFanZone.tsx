@@ -16,8 +16,9 @@ import { format, parseISO } from "date-fns";
 import SocialLinksSection, { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
 import { useMarkEngaged } from "@/hooks/useMarkEngaged";
 
-// MetsXMFanZone Live (the Watch Live page) always plays this feed — MetsXMFanZone
-// Stream 3 (live audio show), not the old mystream feed or Stream 2.
+// Default feed for the Watch Live page when no MetsXMFanZone stream is switched on:
+// MetsXMFanZone Stream 3 (live audio show). When an admin turns a MetsXMFanZone
+// stream live (TV, Stream 2, Stream 3...), the page follows it automatically.
 const STREAM3_FEED_URL = "https://video1.getstreamhosting.com:1936/duuqkvxsmv/duuqkvxsmv/playlist.m3u8";
 const METSXM_STREAM_URL = STREAM3_FEED_URL;
 // Looping standby shown whenever the live feed above isn't up.
@@ -29,7 +30,38 @@ const MetsXMFanZone = () => {
   useMarkEngaged();
   const navigate = useNavigate();
   const [moreStreams, setMoreStreams] = useState<MoreStream[]>([]);
-  const streamUrl = METSXM_STREAM_URL;
+  const [streamUrl, setStreamUrl] = useState(METSXM_STREAM_URL);
+
+  // Follow whichever MetsXMFanZone stream is live right now (newest start wins),
+  // on desktop and phone alike. Re-checks on any change and every 30 seconds.
+  useEffect(() => {
+    let cancelled = false;
+    const pick = async () => {
+      const { data } = await supabase
+        .from("live_streams")
+        .select("title, stream_url, actual_start")
+        .eq("published", true)
+        .eq("status", "live")
+        .ilike("title", "%metsxmfanzone%")
+        .order("actual_start", { ascending: false, nullsFirst: false })
+        .limit(5);
+      if (cancelled || !data) return;
+      const live = data.find((s: any) => s.stream_url && !/24\/7|24-7|24x7/i.test(s.title || ""));
+      const next = live?.stream_url?.trim() || METSXM_STREAM_URL;
+      setStreamUrl((cur) => (cur === next ? cur : next));
+    };
+    pick();
+    const timer = setInterval(pick, 30000);
+    const channel = supabase
+      .channel("watch-page-live-streams")
+      .on("postgres_changes", { event: "*", schema: "public", table: "live_streams" }, pick)
+      .subscribe();
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
 
 
@@ -91,6 +123,7 @@ const MetsXMFanZone = () => {
                 {/* 16:9 Player */}
                 <div className="stream-player-shell relative aspect-video w-full overflow-hidden bg-player max-sm:!mx-0 sm:rounded-lg">
                   <ClapprPlayer
+                    key={streamUrl}
                     source={streamUrl}
                     fallbackSource={METSXM_STANDBY_URL}
                     pageTitle="MetsXMFanZone Live Stream"
