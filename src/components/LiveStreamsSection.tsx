@@ -358,6 +358,11 @@ const LiveStreamsSection = () => {
         // 5. MetsXMFanZone live and event broadcasts belong here.
         if (pages.includes('metsxmfanzone') || pages.includes('metsxmfanzone-2')) return true;
 
+        // 5b. Anything titled MetsXMFanZone is our own broadcast (Stream 2, Stream 3,
+        //     special shows) no matter which page tag it carries, e.g. a feed that was
+        //     also tagged to a network page. 24/7 feeds were already excluded above.
+        if (titleLower.includes('metsxmfanzone')) return true;
+
         // 6. Untagged entries only belong if they are MetsXMFanZone
         //    broadcasts — anything else unclassified stays out.
         //    An entry explicitly tagged for the Live section (the admin form always adds
