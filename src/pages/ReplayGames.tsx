@@ -13,6 +13,7 @@ import { RotateCcw, Play, Lock, Clock, Film, ChevronRight, X } from "lucide-reac
 import { motion } from "framer-motion";
 import PremiumBadge from "@/components/PremiumBadge";
 import logo from "@/assets/metsxmfanzone-logo.png";
+import { useMarkEngaged } from "@/hooks/useMarkEngaged";
 
 interface ReplayGame {
   id: string;
@@ -25,6 +26,7 @@ interface ReplayGame {
 }
 
 const ReplayGames = () => {
+  useMarkEngaged();
   const { user, loading: authLoading } = useAuth();
   const { tier, isAdmin } = useSubscription();
   const navigate = useNavigate();

@@ -22,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useMarkEngaged } from "@/hooks/useMarkEngaged";
 
 interface BlogPost {
   id: string;
@@ -42,6 +43,7 @@ interface VoiceOption {
 }
 
 export default function BlogPost() {
+  useMarkEngaged();
   const { slug } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();

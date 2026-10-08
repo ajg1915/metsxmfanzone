@@ -4,6 +4,7 @@ import { Download, X, Smartphone, Monitor, Tv, ChevronRight, Share, ArrowUp } fr
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { claimPromptSlot, isSnoozed, msUntilFirstPrompt, snoozePrompt } from "@/lib/promptCoordinator";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -34,14 +35,19 @@ const InstallPrompt = () => {
       return;
     }
 
-    // Check for dismissed state in this session
-    const dismissed = sessionStorage.getItem("install_prompt_dismissed");
-    if (dismissed) return;
+    // Stay quiet for a week after it was closed
+    if (isSnoozed("install")) return;
+
+    // Show after the first 30 seconds of the visit, and only if no other prompt has the slot
+    const scheduleShow = () =>
+      window.setTimeout(() => {
+        if (claimPromptSlot("install")) setShowPrompt(true);
+      }, msUntilFirstPrompt() + 50);
 
     // iOS Safari path
     if (isIOSSafari()) {
       setIsIOS(true);
-      setTimeout(() => setShowPrompt(true), 3000);
+      scheduleShow();
       return;
     }
 
@@ -49,7 +55,7 @@ const InstallPrompt = () => {
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setTimeout(() => setShowPrompt(true), 3000);
+      scheduleShow();
     };
 
     window.addEventListener("beforeinstallprompt", handler);
@@ -74,7 +80,7 @@ const InstallPrompt = () => {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    sessionStorage.setItem("install_prompt_dismissed", "1");
+    snoozePrompt("install");
   };
 
   const handleLearnMore = () => {

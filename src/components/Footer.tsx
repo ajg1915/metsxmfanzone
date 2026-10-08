@@ -23,6 +23,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
       { label: "News", to: "/blog" },
       { label: "Game Recaps", to: "/mets-game-recaps" },
       { label: "Scores", to: "/mets-scores" },
+      { label: "Game Center", to: "/game-center" },
       { label: "2026 Schedule", to: "/mets-schedule-2026" },
       { label: "Roster", to: "/mets-roster" },
     ],

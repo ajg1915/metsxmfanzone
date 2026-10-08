@@ -3,9 +3,7 @@ import { Bell, X } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { motion, AnimatePresence } from "framer-motion";
 import logo from "@/assets/metsxmfanzone-logo.png";
-
-const DISMISS_KEY = "notif_prompt_dismissed_at";
-const DISMISS_COOLDOWN_MS = 24 * 60 * 60 * 1000; // Show again after 24 hours
+import { claimPromptSlot, isEngaged, isSnoozed, snoozePrompt } from "@/lib/promptCoordinator";
 
 const ForceNotificationPrompt = () => {
   const [show, setShow] = useState(false);
@@ -19,16 +17,18 @@ const ForceNotificationPrompt = () => {
     // Don't show if permanently denied (browser level)
     if (permission === "denied") return;
 
-    // Check cooldown
-    const dismissedAt = localStorage.getItem(DISMISS_KEY);
-    if (dismissedAt) {
-      const elapsed = Date.now() - parseInt(dismissedAt, 10);
-      if (elapsed < DISMISS_COOLDOWN_MS) return;
-    }
+    // Stay quiet for a week after it was closed
+    if (isSnoozed("notifications")) return;
 
-    // Show after a short delay so the page loads first
-    const timer = setTimeout(() => setShow(true), 3000);
-    return () => clearTimeout(timer);
+    // Ask only after the visitor has read or watched something (or stayed a couple of
+    // minutes), after the first 30 seconds, and only if no other prompt has the slot.
+    const timer = window.setInterval(() => {
+      if (isEngaged() && claimPromptSlot("notifications")) {
+        setShow(true);
+        window.clearInterval(timer);
+      }
+    }, 5000);
+    return () => window.clearInterval(timer);
   }, [permission]);
 
   const handleEnable = useCallback(async () => {
@@ -37,7 +37,7 @@ const ForceNotificationPrompt = () => {
   }, [requestPermission]);
 
   const handleDismiss = useCallback(() => {
-    localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    snoozePrompt("notifications");
     setShow(false);
   }, []);
 

@@ -14,6 +14,7 @@ import fanzoneLogo from "@/assets/metsxmfanzone-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import SocialLinksSection, { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
+import { useMarkEngaged } from "@/hooks/useMarkEngaged";
 
 // MetsXMFanZone Live (the Watch Live page) always plays this feed — MetsXMFanZone
 // Stream 3 (live audio show), not the old mystream feed or Stream 2.
@@ -25,6 +26,7 @@ const METSXM_STANDBY_URL = "https://metsxmfanzone.metsxmfanzone.com/hls-standby/
 type MoreStream = { id: string; title: string; thumbnail_url: string | null; status: string; scheduled_start: string | null };
 
 const MetsXMFanZone = () => {
+  useMarkEngaged();
   const navigate = useNavigate();
   const [moreStreams, setMoreStreams] = useState<MoreStream[]>([]);
   const streamUrl = METSXM_STREAM_URL;

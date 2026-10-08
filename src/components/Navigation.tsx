@@ -266,6 +266,7 @@ const Navigation = () => {
                 <span className={isHomePage ? "text-secondary max-md:text-foreground" : "text-secondary"}>Mets</span>
                 <span className="text-primary">XM</span>
                 <span className="text-foreground">FanZone</span>
+                <span className="text-foreground">.com</span>
               </div>
             </div>
           </div>

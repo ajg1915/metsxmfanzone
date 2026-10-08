@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
@@ -11,30 +11,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import LazySection from "@/components/LazySection";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
-import { useAuth } from "@/hooks/useAuth";
 import { SHOW_METS_GAME_CENTER } from "@/config/season";
 
 // Lazy load heavy components that are below the fold
 const ImmersiveBackground = lazyWithRetry(() => import("@/components/ImmersiveBackground"), "home-immersive-background");
 const FreeTrialExpiryBanner = lazyWithRetry(() => import("@/components/FreeTrialExpiryBanner"), "home-free-trial-expiry-banner");
-const LiveNetworks = lazyWithRetry(() => import("@/components/LiveNetworks"), "home-live-networks");
 const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section-v2");
 const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedStreamsSection"), "home-related-streams-section");
 
-const SpringTrainingGamesSection = lazyWithRetry(() => import("@/components/SpringTrainingGamesSection"), "home-spring-training-games-section");
-const ReplayGamesSection = lazyWithRetry(() => import("@/components/ReplayGamesSection"), "home-replay-games-section");
 const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerOfTheMonthSection"), "home-player-of-the-month-section");
-const PlayersToWatch = lazyWithRetry(() => import("@/components/PlayersToWatch"), "home-players-to-watch");
-const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/RegularSeasonSeriesSection"), "home-regular-season-series-section");
 
 const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
-const HomeLineupCard = lazyWithRetry(() => import("@/components/HomeLineupCard"), "home-lineup-card");
 const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadioSection"), "home-podcast-radio-section");
 
 
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
-const FAQSection = lazyWithRetry(() => import("@/components/FAQSection"), "home-faq-section");
-const MetsStatsSection = lazyWithRetry(() => import("@/components/MetsStatsSection"), "home-mets-stats-section");
 const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSection"), "home-app-install-section");
 const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
 const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"), "home-install-prompt");
@@ -137,11 +128,6 @@ const websiteSchema = {
 const combinedSchemas = [homepageSchema, organizationSchema, websiteSchema];
 
 const Index = () => {
-  const { user } = useAuth();
-  const [onboardingShown, setOnboardingShown] = useState(false);
-  const [lineupLoaded, setLineupLoaded] = useState(false);
-  const [lineupGameDate, setLineupGameDate] = useState<string | null>(null);
-
   // Auto lineup fetch removed from homepage to reduce load — triggered by admin instead
 
   return (
@@ -180,27 +166,20 @@ const Index = () => {
       <main className="relative z-10 homepage-broadcast-feed">
         <div className="hidden sm:block sm:h-[72px]" aria-hidden="true" />
         <Hero />
-        <HomeSocialRow />
 
+        {/* Scores right under the hero */}
+        <NYScoresStrip />
 
-        {/* Above-the-fold: mount immediately */}
+        {/* Live & upcoming */}
         {SHOW_METS_GAME_CENTER && (
           <Suspense fallback={<SectionSkeleton height="h-16" />}>
             <GamecastBanner />
           </Suspense>
         )}
 
-
-        <Suspense fallback={<SectionSkeleton />}>
-          <LiveNetworks />
-        </Suspense>
-
         <Suspense fallback={<SectionSkeleton />}>
           <LiveStreamsSection />
         </Suspense>
-
-        {/* New York team scores, in the middle of the page */}
-        <NYScoresStrip />
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
@@ -208,29 +187,18 @@ const Index = () => {
           </Suspense>
         </LazySection>
 
+        <div className="section-divider my-1" />
+
+        {/* Latest articles */}
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
-            <RegularSeasonSeriesSection />
+            <BlogSection />
           </Suspense>
         </LazySection>
 
-        {/* Below-the-fold: only mount when scrolled into view */}
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <SpringTrainingGamesSection />
-          </Suspense>
-        </LazySection>
+        <div className="section-divider my-1" />
 
-
-
-
-
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <ReplayGamesSection />
-          </Suspense>
-        </LazySection>
-
+        {/* Podcasts */}
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
             <PodcastRadioSection />
@@ -239,63 +207,13 @@ const Index = () => {
 
         <div className="section-divider my-1" />
 
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <BlogSection />
-          </Suspense>
-        </LazySection>
-
-        {SHOW_METS_GAME_CENTER && (
-          <LazySection fallback={<SectionSkeleton height="h-48" />}>
-            <Suspense fallback={<SectionSkeleton height="h-48" />}>
-              <HomeLineupCard onLineupLoaded={(gameDate) => {
-                setLineupLoaded(true);
-                setLineupGameDate(gameDate ?? null);
-              }} />
-            </Suspense>
-          </LazySection>
-        )}
-
-        {/* With the Game Center hidden, predictions still show (NY team picks in the off-season). */}
-        {(lineupLoaded || !SHOW_METS_GAME_CENTER) && (
-          <>
-            <div className="section-divider my-1" />
-            <LazySection fallback={<SectionSkeleton />}>
-              <Suspense fallback={<SectionSkeleton />}>
-                <PlayersToWatch lineupGameDate={lineupGameDate} />
-              </Suspense>
-            </LazySection>
-          </>
-        )}
-
-        {user && (
-          <>
-            <div className="section-divider my-1" />
-            <LazySection fallback={<SectionSkeleton />}>
-              <Suspense fallback={<SectionSkeleton />}>
-                <MetsStatsSection />
-              </Suspense>
-            </LazySection>
-          </>
-        )}
-
-        <div className="section-divider my-1" />
-
-        {!user && (
-          <LazySection fallback={<SectionSkeleton />}>
-            <Suspense fallback={<SectionSkeleton />}>
-              <FAQSection />
-            </Suspense>
-          </LazySection>
-        )}
-
-        <div className="section-divider my-1" />
-
+        {/* Join or install, with the follow links */}
         <LazySection fallback={<SectionSkeleton height="h-48" />}>
           <Suspense fallback={<SectionSkeleton height="h-48" />}>
             <AppInstallSection />
           </Suspense>
         </LazySection>
+        <HomeSocialRow />
 
       </main>
       <Footer />

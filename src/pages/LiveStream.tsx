@@ -16,6 +16,7 @@ import SocialLinksSection from "@/components/SocialLinksSection";
 import { ChannelSwitcher, METS_BRAND, StreamBrandHeader } from "@/components/streaming/StreamChrome";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import TVGuide from "@/components/TVGuide";
+import { useMarkEngaged } from "@/hooks/useMarkEngaged";
 
 interface StreamInfo {
   id: string;
@@ -29,6 +30,7 @@ interface StreamInfo {
 type MoreStream = { id: string; title: string; thumbnail_url: string | null; status: string; scheduled_start: string | null };
 
 const LiveStream = () => {
+  useMarkEngaged();
   const { streamId } = useParams<{ streamId: string }>();
   const [more, setMore] = useState<MoreStream[]>([]);
   const [stream, setStream] = useState<StreamInfo | null>(null);

@@ -35,6 +35,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
   const tiles: { label: string; icon: LucideIcon; onClick: () => void }[] = [
     { label: "Schedule", icon: CalendarDays, onClick: run(() => goProtected("/mets-schedule-2026")) },
     { label: "Scores", icon: Trophy, onClick: run(() => go("/mets-scores")) },
+    { label: "Game Center", icon: LayoutDashboard, onClick: run(() => go("/game-center")) },
     { label: "Blog", icon: Newspaper, onClick: run(() => go("/blog")) },
     { label: "Podcast", icon: Mic, onClick: run(() => go("/podcast")) },
     { label: "Community", icon: Users, onClick: run(() => goProtected("/community")) },

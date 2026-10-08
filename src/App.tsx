@@ -112,6 +112,7 @@ const TVDashboard = lazyWithRetry(() => import("./pages/TVDashboard"), "page-tv-
 const MetsLineupCard = lazyWithRetry(() => import("./pages/MetsLineupCard"), "page-mets-lineup-card");
 const MetsScores = lazyWithRetry(() => import("./pages/MetsScores"), "page-mets-scores");
 const MetsGamecast = lazyWithRetry(() => import("./pages/MetsGamecast"), "page-mets-gamecast");
+const GameCenter = lazyWithRetry(() => import("./pages/GameCenter"), "page-game-center");
 const VideoGallery = lazyWithRetry(() => import("./pages/VideoGallery"), "page-video-gallery");
 const SocialMediaHub = lazyWithRetry(() => import("./pages/SocialMediaHub"), "page-social-media-hub");
 const NLScores = lazyWithRetry(() => import("./pages/NLScores"), "page-nl-scores");
@@ -443,6 +444,7 @@ const AppContent = () => {
             {/* Lineup Card page removed - kept on main page */}
             <Route path="/mets-scores" element={<MetsScores />} />
             <Route path="/mets-gamecast" element={<MetsGamecast />} />
+            <Route path="/game-center" element={<GameCenter />} />
             <Route path="/video-gallery" element={<VideoGallery />} />
             <Route path="/social" element={<SocialMediaHub />} />
             <Route path="/nl-scores" element={<NLScores />} />
