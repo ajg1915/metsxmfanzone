@@ -33,7 +33,7 @@ type Game = {
   oppScore: string | null;
   result: string | null;
 };
-type OurStream = { id: string; title: string; status: string; scheduled_start: string | null };
+type OurStream = { id: string; title: string; status: string; scheduled_start: string | null; thumbnail_url: string | null };
 
 const fmt = (iso: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-US", { timeZone: ET, ...o }).format(new Date(iso));
 const dayKey = (iso: string) => new Intl.DateTimeFormat("en-CA", { timeZone: ET, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
@@ -153,7 +153,7 @@ const TVGuide = ({ className = "" }: { initialTeam?: string; className?: string 
     (async () => {
       const { data } = await supabase
         .from("live_streams")
-        .select("id, title, status, scheduled_start")
+        .select("id, title, status, scheduled_start, thumbnail_url")
         .eq("published", true)
         .in("status", ["live", "scheduled"])
         .order("scheduled_start", { ascending: true })
@@ -198,9 +198,18 @@ const TVGuide = ({ className = "" }: { initialTeam?: string; className?: string 
                 to={`/live/${s.id}`}
                 className="flex min-h-[56px] w-[72vw] max-w-[300px] shrink-0 snap-start items-center gap-3 rounded-xl border border-border/50 bg-card px-3 py-2 hover:border-primary/50 md:w-[280px]"
               >
-                <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${s.status === "live" ? "bg-red-700 text-white" : "bg-white/10 text-foreground"}`}>
-                  {s.status === "live" ? <Radio className="h-4 w-4" /> : <CalendarClock className="h-4 w-4" />}
-                </span>
+                {s.thumbnail_url ? (
+                  <span className="relative block h-[52px] w-[92px] shrink-0 overflow-hidden rounded-lg bg-muted">
+                    <img src={s.thumbnail_url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    {s.status === "live" && (
+                      <span className="absolute left-1 top-1 rounded-[3px] bg-red-700 px-1.5 py-px text-[9px] font-extrabold tracking-[0.08em] text-white">LIVE</span>
+                    )}
+                  </span>
+                ) : (
+                  <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${s.status === "live" ? "bg-red-700 text-white" : "bg-white/10 text-foreground"}`}>
+                    {s.status === "live" ? <Radio className="h-4 w-4" /> : <CalendarClock className="h-4 w-4" />}
+                  </span>
+                )}
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-bold text-foreground">{s.title}</span>
                   <span className="block text-xs text-muted-foreground">
