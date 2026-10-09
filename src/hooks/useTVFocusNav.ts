@@ -80,7 +80,11 @@ function move(dir: "up" | "down" | "left" | "right") {
   if (dir === "up") window.scrollBy({ top: -window.innerHeight * 0.7, behavior: "smooth" });
 }
 
-export function useTVFocusNav(enabled: boolean) {
+/**
+ * onBack: called for the remote's Back button. Return true when it handled it. When no handler is
+ * given, Back falls back to the browser's previous page.
+ */
+export function useTVFocusNav(enabled: boolean, onBack?: () => boolean) {
   useEffect(() => {
     if (!enabled) return;
 
@@ -106,12 +110,17 @@ export function useTVFocusNav(enabled: boolean) {
         case "BrowserBack":
         case "XF86Back":
           e.preventDefault();
-          window.history.back();
+          if (onBack) onBack();
+          else window.history.back();
           return;
         case "Backspace":
         case "Escape":
           // Back button on TV remotes; leave it alone inside text fields and dialogs
           if (typing || dialogOpen()) return;
+          if (onBack) {
+            if (onBack()) e.preventDefault();
+            return;
+          }
           if (window.history.length > 1) {
             e.preventDefault();
             window.history.back();
@@ -124,5 +133,5 @@ export function useTVFocusNav(enabled: boolean) {
 
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [enabled]);
+  }, [enabled, onBack]);
 }

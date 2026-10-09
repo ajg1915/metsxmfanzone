@@ -10,6 +10,7 @@ import { TVTopBar } from "@/components/tv/TVTopBar";
 import { TVSignIn } from "@/components/tv/TVSignIn";
 import { TVContentRail } from "@/components/tv/TVContentRail";
 import { setTVModePreference } from "@/hooks/use-device";
+import { streamPath, NETWORK_STREAM } from "@/lib/tvNavigation";
 import GamecastBanner from "@/components/GamecastBanner";
 import { SHOW_METS_GAME_CENTER } from "@/config/season";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,7 +49,8 @@ const TVDashboard = () => {
     }
   }, []);
 
-  const goToMetsTV = useCallback(() => navigate("/metsxmfanzone"), [navigate]);
+  // Each live stream opens its own page (ESPN, MSG, MLB Network...), not the Mets TV page.
+  const openLive = useCallback((item: { id: string; title: string }) => navigate(streamPath(item.title, item.id)), [navigate]);
   const goToSpring = useCallback(() => navigate("/spring-training-live"), [navigate]);
 
   const { data: liveStreams = [], isLoading: streamsLoading } = useQuery({
@@ -253,7 +255,7 @@ const TVDashboard = () => {
         description: heroStream.description || "Live coverage, Game Day Live and the podcast, on your TV.",
         image: heroStream.thumbnail_url,
         primaryLabel: "Watch live",
-        to: "/metsxmfanzone",
+        to: streamPath(heroStream.title, heroStream.id),
       });
     }
     articles.slice(0, 3).forEach((a: any) => {
@@ -372,7 +374,12 @@ const TVDashboard = () => {
 
               {/* Live section */}
               <div ref={liveRef}>
-                {liveItems.length > 0 && <TVContentRail title="Live Now" items={liveItems} accent onItemClick={goToMetsTV} />}
+                {liveItems.filter((i) => !NETWORK_STREAM.test(i.title)).length > 0 && (
+                  <TVContentRail title="Live Now" items={liveItems.filter((i) => !NETWORK_STREAM.test(i.title))} accent onItemClick={openLive} />
+                )}
+                {liveItems.filter((i) => NETWORK_STREAM.test(i.title)).length > 0 && (
+                  <TVContentRail title="Sports Networks" items={liveItems.filter((i) => NETWORK_STREAM.test(i.title))} onItemClick={openLive} />
+                )}
               </div>
 
               {/* News */}

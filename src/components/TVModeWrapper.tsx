@@ -2,9 +2,10 @@ import { useDevice, setTVModePreference } from "@/hooks/use-device";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { useTVFocusNav } from "@/hooks/useTVFocusNav";
+import { handleTVBack } from "@/lib/tvNavigation";
 import { Button } from "@/components/ui/button";
-import { Tv, X, Monitor } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Tv, X, Monitor, Home } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface TVModeWrapperProps {
@@ -27,7 +28,31 @@ export function TVModeWrapper({ children }: TVModeWrapperProps) {
   const isLoading = authLoading || subLoading;
 
   // Remote-control navigation across the whole site (not just /tv)
-  useTVFocusNav(isTVDevice || (isTVEligible && !isLoading));
+  const tvActive = isTVDevice || (isTVEligible && !isLoading);
+  const onBack = useCallback(() => handleTVBack(location.pathname, navigate), [location.pathname, navigate]);
+  useTVFocusNav(tvActive, onBack);
+
+  // Android TV app: the remote's Back button goes to the TV home, and closes the app from there.
+  useEffect(() => {
+    if (!navigator.userAgent.includes("MetsXMFanZoneTV")) return;
+    let remove: (() => void) | undefined;
+    let cancelled = false;
+    import("@capacitor/app")
+      .then(({ App }) =>
+        App.addListener("backButton", () => {
+          if (!handleTVBack(location.pathname, navigate)) void App.exitApp();
+        }),
+      )
+      .then((h) => {
+        if (cancelled) void h.remove();
+        else remove = () => void h.remove();
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      remove?.();
+    };
+  }, [location.pathname, navigate]);
 
   // A TV that opens the site lands on the TV home screen, not the phone/desktop home page.
   useEffect(() => {
@@ -67,6 +92,10 @@ export function TVModeWrapper({ children }: TVModeWrapperProps) {
             <span className="text-xs text-foreground font-medium">TV Mode Active</span>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5" onClick={() => navigate("/tv")}>
+              <Home className="w-3.5 h-3.5" />
+              TV Home
+            </Button>
             <Button
               variant="ghost"
               size="sm"

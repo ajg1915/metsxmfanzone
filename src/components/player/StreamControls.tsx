@@ -214,6 +214,13 @@ export function StreamControls({
     const video = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
     const doc = document as Document & { webkitExitFullscreen?: () => void };
     const element = el as HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void };
+    // TV mode: the Android TV WebView often has no Fullscreen API, so use the CSS full screen directly.
+    const tvMode = document.documentElement.classList.contains("tv-mode");
+    if (tvMode && !document.fullscreenElement && !el.classList.contains("ios-pseudo-fullscreen")) {
+      el.classList.add("ios-pseudo-fullscreen");
+      setFullscreen(true);
+      return;
+    }
     if (document.fullscreenElement || el.classList.contains("ios-pseudo-fullscreen")) {
       el.classList.remove("ios-pseudo-fullscreen");
       if (document.fullscreenElement) await document.exitFullscreen?.().catch(() => {});
@@ -248,7 +255,12 @@ export function StreamControls({
     const el = containerRef.current;
     if (!el) return;
     let hovering = false;
-    const enter = () => { hovering = true; };
+    const isTV = () => document.documentElement.classList.contains("tv-mode");
+    const goFull = () => {
+      if (isTV() && !el.classList.contains("ios-pseudo-fullscreen") && !document.fullscreenElement) void toggleFullscreen();
+    };
+    const enter = () => { hovering = true; goFull(); };
+    const onFocusIn = () => goFull();
     const leave = () => { hovering = false; };
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -256,16 +268,19 @@ export function StreamControls({
       if (!hovering && !el.contains(document.activeElement)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const key = e.key.toLowerCase();
-      if (key === " " || key === "k") { e.preventDefault(); togglePlay(); poke(); }
+      if (key === "enter" && isTV() && target?.tagName !== "BUTTON") { e.preventDefault(); void toggleFullscreen(); }
+      else if (key === " " || key === "k") { e.preventDefault(); togglePlay(); poke(); }
       else if (key === "m") { toggleMute(); poke(); }
       else if (key === "f") { void toggleFullscreen(); }
     };
     el.addEventListener("mouseenter", enter);
     el.addEventListener("mouseleave", leave);
+    el.addEventListener("focusin", onFocusIn);
     window.addEventListener("keydown", onKey);
     return () => {
       el.removeEventListener("mouseenter", enter);
       el.removeEventListener("mouseleave", leave);
+      el.removeEventListener("focusin", onFocusIn);
       window.removeEventListener("keydown", onKey);
     };
   }, [containerRef, togglePlay, toggleMute, toggleFullscreen, poke]);
