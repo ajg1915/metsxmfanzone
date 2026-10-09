@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
+import { TVStreamOverlay } from "./tv/TVStreamOverlay";
 import { playWithSound, unmuteFromTap } from "@/lib/playerSound";
 
 interface ClapprPlayerProps {
@@ -46,6 +47,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const [needsSound, setNeedsSound] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const notifiedRef = useRef(false);
+  const [tvFull, setTvFull] = useState(false);
 
   const effectiveSource = source?.trim() || "";
   const standbySource = fallbackSource?.trim() || "";
@@ -343,7 +345,18 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     const observer = new MutationObserver(enter);
     observer.observe(html, { attributes: true, attributeFilter: ["class"] });
     enter();
-    return () => observer.disconnect();
+    // Show the TV overlay while this player is in TV full screen.
+    const sync = () => {
+      const el = containerRef.current;
+      setTvFull(!!el && el.classList.contains("ios-pseudo-fullscreen") && html.classList.contains("tv-mode"));
+    };
+    const fsObserver = new MutationObserver(sync);
+    if (containerRef.current) fsObserver.observe(containerRef.current, { attributes: true, attributeFilter: ["class"] });
+    sync();
+    return () => {
+      observer.disconnect();
+      fsObserver.disconnect();
+    };
   }, []);
 
   return (
@@ -370,6 +383,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         <StreamIssueDialog streamId={streamId} streamTitle={pageTitle} video={videoRef.current} compact />
       </div>
 
+
+      {tvFull && <TVStreamOverlay title={pageTitle} streamId={streamId} />}
 
       {status === "ready" && (
         <StreamControls
