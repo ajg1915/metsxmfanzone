@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.metsxmfanzone.app",
+    "sha256_cert_fingerprints": ["9F:97:F9:0F:F1:76:02:E7:F1:01:42:C4:F7:34:02:82:F3:97:58:FB:C2:2E:0F:22:67:C1:AF:7B:FD:21:76:C4"]
+  }
+}]
