@@ -328,17 +328,22 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   // has started yet (slow or standby streams never show the controls that used to trigger this).
   // Once per page visit; Back leaves full screen and it stays out.
   useEffect(() => {
-    let tries = 0;
-    const id = window.setInterval(() => {
+    const html = document.documentElement;
+    let done = false;
+    const enter = () => {
       const el = containerRef.current;
-      tries += 1;
-      if (!el || tries > 10) return void window.clearInterval(id);
-      if (window.location.pathname === "/tv") return void window.clearInterval(id);
-      if (!document.documentElement.classList.contains("tv-mode")) return; // class applies a moment after load
-      window.clearInterval(id);
+      if (done || !el || window.location.pathname === "/tv") return;
+      if (!html.classList.contains("tv-mode")) return;
+      done = true;
+      observer.disconnect();
       el.classList.add("ios-pseudo-fullscreen");
-    }, 500);
-    return () => window.clearInterval(id);
+    };
+    // TV mode can switch on after the page opens (once sign-in and membership have loaded),
+    // so watch for it as long as this player is on screen instead of checking once.
+    const observer = new MutationObserver(enter);
+    observer.observe(html, { attributes: true, attributeFilter: ["class"] });
+    enter();
+    return () => observer.disconnect();
   }, []);
 
   return (
