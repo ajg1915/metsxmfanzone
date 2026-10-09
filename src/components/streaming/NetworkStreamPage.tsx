@@ -61,6 +61,8 @@ const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
           </div>
 
           <div className="container mx-auto max-w-6xl px-4 pt-4">
+            <ChannelSwitcher activeKey={cfg.pageKey} brand={brand} className="mb-5" />
+
             <p className="text-[15px] leading-relaxed text-muted-foreground sm:text-base">{cfg.tagline}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {cfg.facts.map((f) => (
@@ -73,8 +75,6 @@ const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
             {cfg.extra}
 
             <TVGuide className="mt-6" />
-
-            <ChannelSwitcher activeKey={cfg.pageKey} brand={brand} />
 
             {/* What's on this channel */}
             {cfg.features.length > 0 && (

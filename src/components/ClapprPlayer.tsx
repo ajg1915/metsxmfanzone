@@ -359,6 +359,27 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     };
   }, []);
 
+  // Phones and small tablets turned sideways: the player takes over the whole screen, and goes
+  // back into the page when turned upright. (TV mode handles full screen on its own.)
+  useEffect(() => {
+    const mq = window.matchMedia("(orientation: landscape) and (max-height: 500px)");
+    let applied = false;
+    const apply = () => {
+      const el = containerRef.current;
+      if (!el || document.documentElement.classList.contains("tv-mode")) return;
+      if (mq.matches) {
+        el.classList.add("ios-pseudo-fullscreen");
+        applied = true;
+      } else if (applied) {
+        el.classList.remove("ios-pseudo-fullscreen");
+        applied = false;
+      }
+    };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
   return (
     <div ref={containerRef} className="stream-player relative h-full w-full aspect-video overflow-hidden bg-player group">
       <video

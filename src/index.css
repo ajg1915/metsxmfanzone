@@ -644,8 +644,9 @@ All colors MUST be HSL.
     aspect-ratio: auto !important;
     transform: none !important;
     width: 100vw !important;
-    height: 100vh !important;
-    height: 100dvh !important;
+    /* Stretch between the four edges rather than trusting vh units, which some mobile and TV
+       browsers measure with their toolbars taken off. */
+    height: auto !important;
     z-index: 2147483646 !important;
     background: #000 !important;
     margin: 0 !important;
@@ -720,7 +721,9 @@ All colors MUST be HSL.
       height: auto !important;
     }
 
-    .stream-player-shell .stream-player {
+    /* Never while full screen: a Fire TV reports a 960x540 screen, which also matches here and
+       used to shrink the full-screen player back into a box. */
+    .stream-player-shell .stream-player:not(.ios-pseudo-fullscreen) {
       height: min(calc(100dvh - 4.5rem), calc(100vw * 9 / 16)) !important;
       width: auto !important;
       max-width: 100% !important;

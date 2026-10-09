@@ -133,6 +133,8 @@ const MetsXMFanZone = () => {
                   <NewPostAlert />
                 </div>
 
+                <ChannelSwitcher activeKey="metsxmfanzone" className="max-md:px-4" />
+
                 <TVGuide className="max-md:mx-4" />
 
                 {/* Phone: stream title, follow chips, more streams */}
@@ -177,8 +179,6 @@ const MetsXMFanZone = () => {
                     </div>
                   )}
                 </div>
-
-                <ChannelSwitcher activeKey="metsxmfanzone" className="max-md:px-4" />
 
                 {/* Channel info pills */}
                 <div className="hidden grid-cols-3 gap-2 sm:gap-3 md:grid">
