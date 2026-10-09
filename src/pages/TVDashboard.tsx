@@ -5,9 +5,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
-import { TVHeroBanner } from "@/components/tv/TVHeroBanner";
-import { TVNavBar } from "@/components/tv/TVNavBar";
+import { TVHeroCarousel, type TVHeroSlide } from "@/components/tv/TVHeroCarousel";
+import { TVTopBar } from "@/components/tv/TVTopBar";
+import { TVSignIn } from "@/components/tv/TVSignIn";
 import { TVContentRail } from "@/components/tv/TVContentRail";
+import { setTVModePreference } from "@/hooks/use-device";
 import GamecastBanner from "@/components/GamecastBanner";
 import { SHOW_METS_GAME_CENTER } from "@/config/season";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,7 +23,7 @@ export type TVCategory = "home" | "live" | "highlights" | "replays";
 
 const TVDashboard = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { isPremium, loading: subLoading } = useSubscription();
 
   // Section refs for scrolling
@@ -120,7 +122,21 @@ const TVDashboard = () => {
     },
   });
 
-  const isLoading = streamsLoading || highlightsLoading || replaysLoading || springLoading || storiesLoading;
+  const { data: articles = [], isLoading: articlesLoading } = useQuery({
+    queryKey: ["tv-articles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("id, title, slug, excerpt, featured_image_url, published_at")
+        .eq("published", true)
+        .order("published_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const isLoading = streamsLoading || highlightsLoading || replaysLoading || springLoading || storiesLoading || articlesLoading;
 
   const liveItems = useMemo(() =>
     liveStreams.map((s) => ({
@@ -213,7 +229,47 @@ const TVDashboard = () => {
     if (replay) setSelectedReplay(replay);
   }, [replays]);
 
-  const heroStream = liveStreams.find((s) => s.status === "live") || liveStreams[0];
+  const heroStream = liveStreams.find((s) => s.status === "live");
+
+  const articleItems = useMemo(() =>
+    articles.map((a: any) => ({
+      id: a.id,
+      title: a.title,
+      thumbnail: a.featured_image_url || "/placeholder.svg",
+      subtitle: a.excerpt?.slice(0, 80) || "",
+      slug: a.slug,
+    })),
+    [articles]
+  );
+
+  const heroSlides = useMemo<TVHeroSlide[]>(() => {
+    const slides: TVHeroSlide[] = [];
+    if (heroStream) {
+      slides.push({
+        id: `live-${heroStream.id}`,
+        kind: "live",
+        badge: "Live now",
+        title: heroStream.title,
+        description: heroStream.description || "Live coverage, Game Day Live and the podcast, on your TV.",
+        image: heroStream.thumbnail_url,
+        primaryLabel: "Watch live",
+        to: "/metsxmfanzone",
+      });
+    }
+    articles.slice(0, 3).forEach((a: any) => {
+      slides.push({
+        id: `article-${a.id}`,
+        kind: "article",
+        badge: "Article",
+        title: a.title,
+        description: a.excerpt || "",
+        image: a.featured_image_url,
+        primaryLabel: "Read article",
+        to: `/blog/${a.slug}`,
+      });
+    });
+    return slides;
+  }, [heroStream, articles]);
 
   // Loading state
   if (authLoading || subLoading) {
@@ -227,30 +283,47 @@ const TVDashboard = () => {
     );
   }
 
-  // Premium gate - only paid members get TV mode
-  if (!user || !isPremium) {
+  // Not signed in: show the TV sign-in so a member can log in with the remote
+  if (!user) {
+    return <TVSignIn />;
+  }
+
+  // Signed in but not a paid member: TV Mode is for paid plans only
+  if (!isPremium) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[hsl(var(--background))]">
-        <div className="text-center max-w-md px-6">
-          <img src={metsLogo} alt="MetsXMFanZone" className="w-20 h-20 mx-auto mb-6" />
-          <h1 className="text-2xl font-bold text-foreground mb-3">TV Mode is for Premium Members</h1>
-          <p className="text-muted-foreground mb-6">
-            Upgrade to Premium or Annual to unlock the full TV experience with live streams, highlights, replays, and more.
+      <div className="h-screen w-screen overflow-y-auto bg-[#07101f] text-[#f2f5fa]">
+        <div className="mx-auto flex min-h-full max-w-[44rem] flex-col justify-center px-8 py-6 text-center">
+          <img src={metsLogo} alt="MetsXMFanZone" className="h-16 w-auto mx-auto mb-4" />
+          <h1 className="text-[2.4rem] font-bold mb-4">TV Mode is for paid members</h1>
+          <p className="text-[1.35rem] text-[#9fb0c9] mb-8">
+            Join a plan on your phone or computer at metsxmfanzone.com/pricing, then come back and
+            this screen will open.
           </p>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4 items-center">
             <Button
               onClick={() => navigate("/pricing")}
-              className="w-full gap-2 bg-primary hover:bg-primary/90"
+              className="gap-3 rounded-full bg-white text-[#07101f] hover:bg-white/90 text-[1.3rem] font-bold px-10 py-7"
             >
-              <Crown className="w-4 h-4" />
-              View Plans
+              <Crown className="w-6 h-6" />
+              View plans
             </Button>
             <Button
-              variant="outline"
-              onClick={() => navigate("/")}
-              className="w-full border-mets-blue text-mets-blue hover:bg-mets-blue/10"
+              variant="ghost"
+              onClick={() => void signOut()}
+              className="rounded-full bg-[#17263f] text-[#f2f5fa] text-[1.15rem] px-8 py-6"
             >
-              Return Home
+              Sign out
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setTVModePreference(false);
+                navigate("/");
+                window.location.reload();
+              }}
+              className="rounded-full bg-[#17263f] text-[#f2f5fa] text-[1.15rem] px-8 py-6"
+            >
+              Leave TV Mode
             </Button>
           </div>
         </div>
@@ -259,14 +332,14 @@ const TVDashboard = () => {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[hsl(var(--background))] flex flex-col">
+    <div className="h-screen w-screen overflow-hidden bg-[#07101f] text-[#f2f5fa] flex flex-col">
       <SEOHead
         title="TV Dashboard | MetsXMFanZone"
         description="Amazon TV-style dashboard for MetsXMFanZone streaming content."
         keywords="Mets TV, streaming, live games"
       />
 
-      <TVNavBar activeCategory="home" onCategoryChange={handleCategoryChange} />
+      <TVTopBar onHome={() => handleCategoryChange("home")} />
 
       <main id="tv-main" className="flex-1 overflow-y-auto overflow-x-hidden">
         {isLoading ? (
@@ -285,16 +358,10 @@ const TVDashboard = () => {
           </div>
         ) : (
           <>
-            {heroStream && (
-              <TVHeroBanner
-                title={heroStream.title}
-                description={heroStream.description || ""}
-                thumbnail={heroStream.thumbnail_url || "/placeholder.svg"}
-                streamUrl={heroStream.stream_url}
-                isLive={heroStream.status === "live"}
-              />
-            )}
-            <div className="space-y-1 px-6 pb-6 -mt-8 relative z-10">
+            <div className="px-[2.4vw] pt-[3vh]">
+              <TVHeroCarousel slides={heroSlides} />
+            </div>
+            <div className="px-[2.4vw] pb-[6vh]">
               {/* Gamecast Banner */}
               {SHOW_METS_GAME_CENTER && <GamecastBanner />}
 
@@ -307,6 +374,15 @@ const TVDashboard = () => {
               <div ref={liveRef}>
                 {liveItems.length > 0 && <TVContentRail title="Live Now" items={liveItems} accent onItemClick={goToMetsTV} />}
               </div>
+
+              {/* News */}
+              {articleItems.length > 0 && (
+                <TVContentRail
+                  title="From the news"
+                  items={articleItems}
+                  onItemClick={(item: any) => navigate(`/blog/${item.slug}`)}
+                />
+              )}
 
               {/* Spring Training */}
               {springItems.length > 0 && <TVContentRail title="Spring Training" items={springItems} onItemClick={goToSpring} />}

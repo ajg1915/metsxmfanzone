@@ -5,26 +5,37 @@ import { useTVFocusNav } from "@/hooks/useTVFocusNav";
 import { Button } from "@/components/ui/button";
 import { Tv, X, Monitor } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface TVModeWrapperProps {
   children: React.ReactNode;
 }
 
 export function TVModeWrapper({ children }: TVModeWrapperProps) {
-  const { isTV } = useDevice();
+  const { isTV, isTVDevice } = useDevice();
   const { user, loading: authLoading } = useAuth();
   const { isPremium, loading: subLoading } = useSubscription();
   const location = useLocation();
+  const navigate = useNavigate();
   const [showTVBar, setShowTVBar] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
-  // TV mode is for paid members only. Everyone else keeps the normal site.
+  // TV mode is for paid members only. A TV device always gets the big-screen
+  // layout and remote navigation (so the sign-in screen works), but the TV
+  // home screen itself only opens for signed-in paid members.
   const isTVEligible = isTV && !!user && isPremium;
   const isLoading = authLoading || subLoading;
 
   // Remote-control navigation across the whole site (not just /tv)
-  useTVFocusNav(isTVEligible && !isLoading);
+  useTVFocusNav(isTVDevice || (isTVEligible && !isLoading));
+
+  // A TV that opens the site lands on the TV home screen, not the phone/desktop home page.
+  useEffect(() => {
+    // Only for a real TV device — never for a normal desktop monitor.
+    if (isTVDevice && location.pathname === "/") {
+      navigate("/tv", { replace: true });
+    }
+  }, [isTVDevice, location.pathname, navigate]);
 
   // Show the top bar only for eligible users
   useEffect(() => {
@@ -38,13 +49,13 @@ export function TVModeWrapper({ children }: TVModeWrapperProps) {
   // Apply TV scaling class only for eligible users
   useEffect(() => {
     const html = document.documentElement;
-    if (isTVEligible) {
+    if (isTVDevice || isTVEligible) {
       html.classList.add("tv-mode");
     } else {
       html.classList.remove("tv-mode");
     }
     return () => html.classList.remove("tv-mode");
-  }, [isTVEligible]);
+  }, [isTVDevice, isTVEligible]);
 
   return (
     <>

@@ -14,7 +14,13 @@ const TV_USER_AGENTS = [
   'Tizen',
   'BRAVIA',
   'CrKey', // Chromecast
-  'AFT', // Amazon Fire TV
+  'AFT', // Amazon Fire TV (Fire Stick, Fire TV, Fire TV Cube report AFTxx models)
+  'Android TV',
+  'AndroidTV',
+  'Chromecast',
+  'MiBOX',
+  'SHIELD',
+  'MetsXMFanZoneTV', // our own TV app
   'Roku',
   'Xbox',
   'PlayStation',
@@ -68,6 +74,8 @@ export function setTVModePreference(enabled: boolean) {
 export function useDevice() {
   const [deviceType, setDeviceType] = React.useState<DeviceType>('desktop');
   const [isTVDetected, setIsTVDetected] = React.useState(false);
+  // True only for a real TV (TV browser/app, ?tv=true, remembered choice) — not the large-screen guess
+  const [isTVDevice, setIsTVDevice] = React.useState(false);
 
   React.useEffect(() => {
     const checkDevice = () => {
@@ -77,17 +85,27 @@ export function useDevice() {
       const isTVParam = getURLTVParam();
       const storedPreference = getStoredTVPreference();
       
-      // TV detection priority: URL param > stored preference > user agent > screen size
-      // Use both innerWidth and screen.width since TV browsers may scale the viewport
+      // Strong signals: a TV browser or TV app, ?tv=true, or a remembered TV choice.
+      // TVs often report a small CSS viewport (960px is common for 1080p screens),
+      // so strong signals must not be blocked by the viewport size.
+      const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+      const isPhoneUA = /Mobile|iPhone|iPod/i.test(ua) && !isTVUserAgent;
       const isLargeScreen = width >= TV_BREAKPOINT || screenWidth >= TV_BREAKPOINT;
       const isSmallViewport = width < TABLET_BREAKPOINT;
-      const isTV = !isSmallViewport && (
-                   isTVParam || 
-                   storedPreference === true || 
-                   isTVUserAgent || 
-                   (isLargeScreen && storedPreference !== false));
-      
+
+      // A TV device or ?tv=true remembers itself, so later visits open in TV mode.
+      if ((isTVUserAgent || isTVParam) && storedPreference === null) {
+        setTVModePreference(true);
+      }
+
+      // "Exit TV Mode" stores false and wins over everything except ?tv=true.
+      const optedOut = storedPreference === false && !isTVParam;
+      const strong = isTVParam || isTVUserAgent || (storedPreference === true && !isPhoneUA);
+      const weak = isLargeScreen && !isSmallViewport;
+      const isTV = !optedOut && (strong || weak);
+
       setIsTVDetected(isTV);
+      setIsTVDevice(!optedOut && strong);
       
       if (isTV) {
         setDeviceType('tv');
@@ -126,6 +144,7 @@ export function useDevice() {
     isDesktop: deviceType === 'desktop',
     isTV: deviceType === 'tv',
     isTVDetected,
+    isTVDevice,
   };
 }
 
