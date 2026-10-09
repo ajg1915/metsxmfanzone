@@ -1,0 +1,11 @@
+{
+  "name": "metsxmfanzone-tv-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Android TV / Fire TV app for MetsXMFanZone. Opens metsxmfanzone.com/tv in a WebView.",
+  "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4"
+  }
+}

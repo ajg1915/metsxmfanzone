@@ -1,0 +1,14 @@
+{
+  "appId": "com.metsxmfanzone.tv",
+  "appName": "MetsXMFanZone TV",
+  "webDir": "www",
+  "server": {
+    "url": "https://metsxmfanzone.com/tv?tv=true",
+    "cleartext": false,
+    "allowNavigation": ["metsxmfanzone.com", "*.metsxmfanzone.com"]
+  },
+  "android": {
+    "appendUserAgent": "MetsXMFanZoneTV",
+    "allowMixedContent": false
+  }
+}

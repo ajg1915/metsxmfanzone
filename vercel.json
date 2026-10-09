@@ -12,6 +12,11 @@
       ],
       "destination": "https://metsxmfanzone.com/:path*",
       "permanent": true
+    },
+    {
+      "source": "/tv-app",
+      "destination": "https://github.com/ajg1915/metsxmfanzone/releases/download/tv-app/MetsXMFanZone-TV.apk",
+      "permanent": false
     }
   ],
   "rewrites": [

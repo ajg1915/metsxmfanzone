@@ -1,0 +1,74 @@
+name: Build TV app
+
+# Builds the Android TV / Fire TV app (tv-app/) and publishes it to the public "tv-app" release.
+# Run it by hand from the Actions tab, or it runs when files in tv-app/ change.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "tv-app/**"
+      - ".github/workflows/build-tv-app.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tv-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tv-app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Make it a TV app (launcher entry, banner, icons)
+        run: |
+          node scripts/patch-android.mjs
+          pip install --quiet pillow
+          python3 scripts/make_icons.py ../src/assets/metsxmfanzone-logo.png
+          npx cap sync android
+
+      - name: Build APK
+        working-directory: tv-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk MetsXMFanZone-TV.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MetsXMFanZone-TV
+          path: tv-app/MetsXMFanZone-TV.apk
+
+      - name: Publish to the tv-app release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete tv-app --cleanup-tag --yes || true
+          gh release create tv-app MetsXMFanZone-TV.apk \
+            --target "$GITHUB_SHA" \
+            --title "MetsXMFanZone TV app" \
+            --notes "Android TV and Fire TV app. Install with the Downloader app by entering metsxmfanzone.com/tv-app. Built from $GITHUB_SHA."
