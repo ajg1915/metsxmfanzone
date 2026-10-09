@@ -62,7 +62,7 @@ export function TVStreamOverlay({ title, streamId }: TVStreamOverlayProps) {
       <div className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-black/80 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-[42%] bg-gradient-to-t from-black/85 to-transparent" />
 
-      <div className="absolute left-[3vw] top-[4vh] flex items-center gap-[1.6vw]">
+      <div className="absolute left-[3vw] top-[11vh] flex items-center gap-[1.6vw]">
         <img src={metsLogo} alt="" className="h-[9vh] w-auto" />
         <div>
           <span className="inline-flex items-center gap-2 rounded-full bg-[#e11d48] px-4 py-1 text-[1rem] font-bold uppercase tracking-wider text-white">

@@ -667,6 +667,9 @@ All colors MUST be HSL.
     will-change: auto !important;
     opacity: 1 !important;
     animation: none !important;
+    /* Lift every ancestor above the site header and other fixed bars, which sit outside the player's
+       stacking context and would otherwise draw on top of the full-screen video. */
+    z-index: 2147483645 !important;
   }
   html:has(.ios-pseudo-fullscreen),
   html:has(.ios-pseudo-fullscreen) body {
