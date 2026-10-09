@@ -62,6 +62,8 @@ export default function ArticleEditor() {
   const [uploading, setUploading] = useState<"featured" | "inline" | "audio" | null>(null);
   const [existingSlugs, setExistingSlugs] = useState<string[]>([]);
   const [savedPost, setSavedPost] = useState<{ id: string; title: string; slug: string; excerpt?: string | null; featured_image_url?: string | null } | null>(null);
+  const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
+  const [wasLive, setWasLive] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [picker, setPicker] = useState<{ open: boolean; target: "featured" | "inline" | "audio" }>({ open: false, target: "featured" });
 
@@ -86,6 +88,8 @@ export default function ArticleEditor() {
       if (id) {
         const { data } = await supabase.from("blog_posts").select("*").eq("id", id).maybeSingle();
         if (data) {
+          setApprovalStatus((data as any).approval_status ?? null);
+          setWasLive(!!data.published);
           base = {
             title: data.title || "",
             slug: data.slug || "",
@@ -222,7 +226,11 @@ export default function ArticleEditor() {
       category: form.category,
       tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
       user_id: user.id,
-      approval_status: "approved",
+      // Pending articles (e.g. the daily drafts) stay pending until approved;
+      // publishing or scheduling from the editor counts as approval.
+      ...(id && approvalStatus === "pending" && !published && !future
+        ? {}
+        : { approval_status: "approved" }),
       scheduled_publish_at: scheduled,
       published: future ? false : published,
       published_at: future ? null : (published ? new Date().toISOString() : null),
@@ -242,13 +250,37 @@ export default function ArticleEditor() {
         saved = data;
       }
       clearLocal();
-      setForm((f) => ({ ...f, published: payload.published }));
-      if (saved) setSavedPost({ id: saved.id, title: saved.title, slug: saved.slug, excerpt: saved.excerpt, featured_image_url: saved.featured_image_url });
+
+      // Same subscriber push the approve button sends, once, when an article first goes live
+      if (payload.published && !wasLive) {
+        try {
+          await supabase.functions.invoke("send-push-notification", {
+            body: { title: "📰 New Article on MetsXMFanZone!", body: payload.title, url: `/blog/${payload.slug}`, icon: "/logo-192.png", tag: `blog-${saved?.id ?? payload.slug}` },
+          });
+        } catch (e) { console.error("Push failed:", e); }
+      }
+
       toast({
         title: published ? "Article published" : future ? "Article scheduled" : "Draft saved",
         description: published ? "It's live on your blog now." : undefined,
       });
-      if (!id && saved?.id) navigate(`/admin/blog/edit/${saved.id}`, { replace: true });
+
+      if (published || future) {
+        // Finished article: clear the form for the next one
+        setForm(emptyForm);
+        setSavedPost(null);
+        setApprovalStatus(null);
+        setWasLive(false);
+        setAutoSlug(true);
+        navigate("/admin/blog/new");
+      } else {
+        setForm((f) => ({ ...f, published: payload.published }));
+        if (saved) {
+          setSavedPost({ id: saved.id, title: saved.title, slug: saved.slug, excerpt: saved.excerpt, featured_image_url: saved.featured_image_url });
+          setApprovalStatus(saved.approval_status ?? null);
+        }
+        if (!id && saved?.id) navigate(`/admin/blog/edit/${saved.id}`, { replace: true });
+      }
     } catch (e: any) {
       const msg = e?.message?.includes("duplicate") ? "That web address is already used." : (e?.message || "Could not save");
       toast({ title: "Error", description: msg, variant: "destructive" });
