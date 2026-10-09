@@ -1099,6 +1099,10 @@ All colors MUST be HSL.
   transform: scale(1.03);
 }
 
+/* Sports networks row: only in TV mode */
+.sports-networks { display: none; }
+.tv-mode .sports-networks { display: block; }
+
 /* Hide scrollbars in TV mode for cleaner look */
 .tv-mode ::-webkit-scrollbar {
   display: none;
