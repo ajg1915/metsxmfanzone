@@ -10,6 +10,14 @@ const navItems = [
 ];
 
 // Keep in sync with: src/components/Footer.tsx and scripts/build-static-site.mjs
+const footerQuick = [
+  ["/metsxmfanzone", "Live"],
+  ["/blog", "News"],
+  ["/broadcast-schedule", "Schedule"],
+  ["/podcast", "Podcast"],
+  ["/pricing", "Plans"],
+  ["/help-center", "Help"],
+];
 const footerColumns = [
   ["Watch", [["/metsxmfanzone", "Live Network"], ["/gameday-live", "Game Day Live"], ["/replay-games", "Game Replays"], ["/broadcast-schedule", "TV Schedule"], ["/tv", "TV Mode"]]],
   ["Read", [["/blog", "News"], ["/mets-game-recaps", "Game Recaps"], ["/mets-scores", "Scores"], ["/mets-schedule-2026", "2026 Schedule"], ["/mets-roster", "Roster"]]],
@@ -44,16 +52,15 @@ export const renderShell = ({ content, currentPath = window.location.pathname })
     <main id="page-content">${content}</main>
     <footer class="site-footer">
       <div class="footer-top">
-        <div class="footer-brand"><strong>MetsXMFanZone.com</strong><p>Fan-run coverage of the New York Mets</p></div>
+        <div class="footer-brand"><strong>MetsXMFanZone</strong><p>Fan-run coverage of the New York Mets</p></div>
         <div class="footer-social">${footerSocials.map(([name, url, icon]) => `<a href="${url}" target="_blank" rel="noopener noreferrer" aria-label="MetsXMFanZone on ${name}">${icon}</a>`).join("")}</div>
+        <a class="footer-app-btn" href="/install">Get the App</a>
       </div>
-      <nav class="footer-grid" aria-label="Footer navigation">
-        ${footerColumns.map(([title, links]) => `<div><h4>${title}</h4>${links.map(([href, label]) => `<a href="${href}">${escapeHtml(label)}</a>`).join("")}</div>`).join("")}
+      <nav class="footer-quick" aria-label="Footer">
+        ${footerQuick.map(([href, label]) => `<a href="${href}">${escapeHtml(label)}</a>`).join("")}
       </nav>
-      <div class="footer-app"><span>Take the Mets with you: install the MetsXMFanZone app.</span><a href="/install">Install App</a></div>
       <div class="footer-legal"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a></div>
-      <small>© ${new Date().getFullYear()} MetsXMFanZone. Fan-run coverage of the New York Mets. Not affiliated with MLB or the New York Mets.</small>
-      <p>VPN Secured · AES-256 Encrypted</p>
+      <small>© ${new Date().getFullYear()} MetsXMFanZone. Not affiliated with MLB or the New York Mets.</small>
     </footer>
   </div>`;
 

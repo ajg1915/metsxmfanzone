@@ -73,23 +73,18 @@ const footer = () => `
   <footer class="site-footer">
     <div class="content-width">
       <div class="footer-top">
-        <div class="footer-brand"><strong>MetsXMFanZone.com</strong><p>Fan-run coverage of the New York Mets</p></div>
+        <div class="footer-brand"><strong>MetsXMFanZone</strong><p>Fan-run coverage of the New York Mets</p></div>
         <div class="footer-social">${SOCIALS.map((s) => `<a href="${s.url}" target="_blank" rel="noopener noreferrer" aria-label="MetsXMFanZone on ${s.name}">${s.icon}</a>`).join("")}</div>
+        ${byPath.has("/install") ? `<a class="footer-app-btn" href="${fileFor("/install")}">Get the App</a>` : ""}
       </div>
-      <div class="footer-grid">
-        ${groups
-          .map(
-            (g) => `<div><h4>${esc(g.title)}</h4>${g.paths
-              .filter((p) => byPath.has(p))
-              .map((p) => link(p, LABELS[p]))
-              .join("")}</div>`
-          )
+      <nav class="footer-quick" aria-label="Footer">
+        ${["/metsxmfanzone", "/blog", "/broadcast-schedule", "/podcast", "/pricing", "/help-center"]
+          .filter((p) => byPath.has(p))
+          .map((p) => link(p, { "/metsxmfanzone": "Live", "/blog": "News", "/broadcast-schedule": "Schedule", "/podcast": "Podcast", "/pricing": "Plans", "/help-center": "Help" }[p]))
           .join("")}
-      </div>
-      <div class="footer-app"><span>Take the Mets with you: install the MetsXMFanZone app.</span><a href="${fileFor("/install")}">Install App</a></div>
+      </nav>
       <div class="footer-legal">${["/privacy", "/terms", "/contact"].filter((p) => byPath.has(p)).map((p) => link(p, p === "/contact" ? "Contact" : LABELS[p])).join("")}</div>
-      <p class="footer-note">&copy; ${new Date().getFullYear()} MetsXMFanZone. Fan-run coverage of the New York Mets. Not affiliated with MLB or the New York Mets.</p>
-      <p class="footer-secure">VPN Secured &middot; AES-256 Encrypted</p>
+      <p class="footer-note">&copy; ${new Date().getFullYear()} MetsXMFanZone. Not affiliated with MLB or the New York Mets.</p>
     </div>
   </footer>`;
 
