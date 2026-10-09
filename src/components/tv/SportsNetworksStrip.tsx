@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Radio } from "lucide-react";
 
 // Sports networks row for TV mode, shown under the scores strip on the home page.
-// Lists the New York team streams from the live stream list. Hidden everywhere
+// Lists the sports network streams (SNY, MSG, ESPN, MLB Network) from the live stream list. Hidden everywhere
 // except TV mode (see .sports-networks in index.css).
 
 type NetworkStream = {
@@ -15,7 +15,8 @@ type NetworkStream = {
   thumbnail_url: string | null;
 };
 
-const NY_TEAM = /knicks|rangers|islanders|nets|giants|jets/i;
+// Sports networks: SNY, MSG, ESPN, MLB Network and other 24/7 channels
+const NETWORK = /\bsny\b|\bmsg\b|espn|mlb network|24\/7|network/i;
 const ET = "America/New_York";
 
 const when = (iso: string) =>
@@ -40,9 +41,9 @@ const SportsNetworksStrip = () => {
         .eq("published", true)
         .in("status", ["live", "scheduled"])
         .order("scheduled_start", { ascending: true })
-        .limit(40);
+        .limit(200);
       if (!alive || !data) return;
-      setStreams((data as NetworkStream[]).filter((s) => NY_TEAM.test(s.title)).slice(0, 10));
+      setStreams((data as NetworkStream[]).filter((s) => NETWORK.test(s.title)).slice(0, 10));
     })();
     return () => {
       alive = false;
@@ -55,7 +56,7 @@ const SportsNetworksStrip = () => {
     <section className="sports-networks container mx-auto max-w-[1600px] px-4 py-6" aria-label="Sports networks">
       <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff5a1f]">Sports networks</p>
       <h2 className="mb-4 font-display text-[30px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-4xl">
-        New York teams
+        Networks
       </h2>
       <div className="flex snap-x gap-4 overflow-x-auto pb-3 scrollbar-hide">
         {streams.map((s) => (
