@@ -250,19 +250,10 @@ export function StreamControls({
     }
   }, [containerRef, videoRef]);
 
-  // TV mode: land on a stream page and go straight to full screen, no click needed.
-  // Runs once per player; Back leaves full screen and it stays out.
+  // Controls can mount after the player already went full screen (TV mode), so pick that up.
   useEffect(() => {
-    const t = window.setTimeout(() => {
-      const el = containerRef.current;
-      if (!el || window.location.pathname === "/tv") return;
-      if (!document.documentElement.classList.contains("tv-mode")) return;
-      if (el.classList.contains("ios-pseudo-fullscreen") || document.fullscreenElement) return;
-      void toggleFullscreen();
-    }, 800);
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (containerRef.current?.classList.contains("ios-pseudo-fullscreen")) setFullscreen(true);
+  }, [containerRef]);
 
   // YouTube keyboard shortcuts while the pointer is over (or focus is inside) this player.
   useEffect(() => {

@@ -324,6 +324,23 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     };
   }, [activeSource, onStandby, standbySource, retryKey, notifyAdmins]);
 
+  // TV mode: go straight to full screen when the stream page opens, whether or not the stream
+  // has started yet (slow or standby streams never show the controls that used to trigger this).
+  // Once per page visit; Back leaves full screen and it stays out.
+  useEffect(() => {
+    let tries = 0;
+    const id = window.setInterval(() => {
+      const el = containerRef.current;
+      tries += 1;
+      if (!el || tries > 10) return void window.clearInterval(id);
+      if (window.location.pathname === "/tv") return void window.clearInterval(id);
+      if (!document.documentElement.classList.contains("tv-mode")) return; // class applies a moment after load
+      window.clearInterval(id);
+      el.classList.add("ios-pseudo-fullscreen");
+    }, 500);
+    return () => window.clearInterval(id);
+  }, []);
+
   return (
     <div ref={containerRef} className="stream-player relative h-full w-full aspect-video overflow-hidden bg-player group">
       <video
