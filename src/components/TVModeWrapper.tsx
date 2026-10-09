@@ -1,10 +1,11 @@
 import { useDevice, setTVModePreference } from "@/hooks/use-device";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
+import { useTVFocusNav } from "@/hooks/useTVFocusNav";
 import { Button } from "@/components/ui/button";
 import { Tv, X, Monitor } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 interface TVModeWrapperProps {
   children: React.ReactNode;
@@ -14,31 +15,18 @@ export function TVModeWrapper({ children }: TVModeWrapperProps) {
   const { isTV } = useDevice();
   const { user, loading: authLoading } = useAuth();
   const { isPremium, loading: subLoading } = useSubscription();
-  const navigate = useNavigate();
   const location = useLocation();
   const [showTVBar, setShowTVBar] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
-  // Only enable TV mode for paid members
+  // TV mode is for paid members only. Everyone else keeps the normal site.
   const isTVEligible = isTV && !!user && isPremium;
   const isLoading = authLoading || subLoading;
 
-  // Auto-redirect paid TV users to /tv dashboard (except admin/auth routes)
-  useEffect(() => {
-    if (isLoading) return;
-    
-    const isAdminRoute = location.pathname.startsWith("/admin");
-    const isAuthRoute = location.pathname === "/auth" || location.pathname === "/logout";
-    const isTVRoute = location.pathname === "/tv";
-    const isPricingRoute = location.pathname === "/pricing";
-    
-    if (isTVEligible && !isAdminRoute && !isAuthRoute && !isTVRoute && !isPricingRoute) {
-      // Paid member on TV device — redirect to TV dashboard
-      navigate("/tv", { replace: true });
-    }
-  }, [isTVEligible, isLoading, location.pathname, navigate]);
+  // Remote-control navigation across the whole site (not just /tv)
+  useTVFocusNav(isTVEligible && !isLoading);
 
-  // Show TV bar only for eligible users
+  // Show the top bar only for eligible users
   useEffect(() => {
     if (isTVEligible && !dismissed) {
       setShowTVBar(true);
@@ -60,7 +48,7 @@ export function TVModeWrapper({ children }: TVModeWrapperProps) {
 
   return (
     <>
-      {/* TV Mode top bar — only for paid TV users not on /tv route */}
+      {/* TV Mode bar: only for paid TV users, hidden on the TV dashboard where it isn't needed */}
       {showTVBar && location.pathname !== "/tv" && (
         <div className="fixed top-0 left-0 right-0 z-[9999] bg-card/95 backdrop-blur border-b border-primary/30 px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">

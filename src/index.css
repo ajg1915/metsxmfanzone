@@ -1079,8 +1079,19 @@ All colors MUST be HSL.
   /* Prevent hover states - TV uses focus */
 }
 
-.tv-mode *:focus {
+/* Remote navigation needs a clearly visible focus ring on every page */
+.tv-mode :focus {
   outline: none;
+}
+.tv-mode :focus-visible {
+  outline: 4px solid #ffffff;
+  outline-offset: 4px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.18);
+  transform: scale(1.04);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+  position: relative;
+  z-index: 1;
 }
 
 .tv-mode .focus\:scale-105:focus,
