@@ -71,6 +71,18 @@ export function setTVModePreference(enabled: boolean) {
   }
 }
 
+/** True on phones. TV mode is offered on PCs, tablets and TVs, not phones. */
+export function isPhoneUserAgent(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /Mobile|iPhone|iPod/i.test(navigator.userAgent) && !detectTVUserAgent();
+}
+
+/** Switch the page the member is on into TV mode (the same mode ?tv=true turns on). */
+export function enterTVMode() {
+  setTVModePreference(true);
+  window.location.reload();
+}
+
 export function useDevice() {
   const [deviceType, setDeviceType] = React.useState<DeviceType>('desktop');
   const [isTVDetected, setIsTVDetected] = React.useState(false);

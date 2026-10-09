@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import {
   X, Play, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard,
-  PenLine, Shield, Sparkles, LogOut,
+  PenLine, Shield, Sparkles, LogOut, Tv,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -20,6 +20,8 @@ type Props = {
   goProtected: (path: string) => void;
   goPro: (path: string) => void;
   onSignOut: () => void;
+  /** Provided only for signed-in paid members who aren't already in TV mode. */
+  onTVMode?: () => void;
 };
 
 const Label = ({ children }: { children: React.ReactNode }) => (
@@ -29,7 +31,7 @@ const Label = ({ children }: { children: React.ReactNode }) => (
   </h3>
 );
 
-export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, close, go, goProtected, goPro, onSignOut }: Props) {
+export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, close, go, goProtected, goPro, onSignOut, onTVMode }: Props) {
   const run = (fn: () => void) => () => { close(); fn(); };
 
   const tiles: { label: string; icon: LucideIcon; onClick: () => void }[] = [
@@ -102,6 +104,11 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
           <>
             <Label>Your account</Label>
             <div className="divide-y divide-[#1d2c48]">
+              {onTVMode && (
+                <button type="button" onClick={run(onTVMode)} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+                  <span className="flex items-center gap-3"><Tv className="h-[18px] w-[18px] text-primary" />TV Mode</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+                </button>
+              )}
               <button type="button" onClick={run(() => go("/dashboard"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                 <span className="flex items-center gap-3"><LayoutDashboard className="h-[18px] w-[18px] text-primary" />Dashboard</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>

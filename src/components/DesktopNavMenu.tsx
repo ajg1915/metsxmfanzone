@@ -118,10 +118,13 @@ export default function DesktopNavMenu({
   isLoggedIn,
   goProtected,
   goPro,
+  onTVMode,
 }: {
   isLoggedIn: boolean;
   goProtected: Go;
   goPro: Go;
+  /** Provided only for signed-in paid members who aren't already in TV mode. */
+  onTVMode?: () => void;
 }) {
   const { pathname } = useLocation();
   const on = (paths: string[]) => paths.some((p) => pathname.startsWith(p));
@@ -167,6 +170,16 @@ export default function DesktopNavMenu({
         <TopLink to="/podcast">Podcast</TopLink>
         <TopLink to="/blog">Blog</TopLink>
         {!isLoggedIn && <TopLink to="/pricing">Pricing</TopLink>}
+        {onTVMode && (
+          <NavMenu.Item>
+            <NavMenu.Link asChild>
+              <button type="button" onClick={onTVMode} className={pill}>
+                <Tv className="h-4 w-4" aria-hidden />
+                TV Mode
+              </button>
+            </NavMenu.Link>
+          </NavMenu.Item>
+        )}
       </NavMenu.List>
     </NavMenu.Root>
   );

@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useDevice, isPhoneUserAgent, enterTVMode } from "@/hooks/use-device";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import {
   DropdownMenu,
@@ -41,7 +42,8 @@ import { formatDistanceToNow } from "date-fns";
 
 const Navigation = () => {
   const { user, signOut } = useAuth();
-  const { tier } = useSubscription();
+  const { tier, isPremium: isPaidMember } = useSubscription();
+  const { isTVDevice } = useDevice();
   const navigate = useNavigate();
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -208,6 +210,9 @@ const Navigation = () => {
 
   const isPremium = isAdmin || tier === "weekly" || tier === "premium" || tier === "annual";
 
+  // "TV Mode" in the menu: signed-in paid members on a PC or tablet who aren't already in TV mode
+  const showTVMode = !!user && isPaidMember && !isTVDevice && !isPhoneUserAgent();
+
   const handleProtectedNavigation = (path: string) => {
     if (!user) {
       navigate("/auth");
@@ -275,6 +280,7 @@ const Navigation = () => {
             isLoggedIn={!!user}
             goProtected={handleProtectedNavigation}
             goPro={handleProNavigation}
+            onTVMode={showTVMode ? enterTVMode : undefined}
           />
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -506,6 +512,7 @@ const Navigation = () => {
                   goProtected={handleProtectedNavigation}
                   goPro={handleProNavigation}
                   onSignOut={async () => { await handleAuthClick(); }}
+                  onTVMode={showTVMode ? enterTVMode : undefined}
                 />
               </SheetContent>
             </Sheet>
