@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
@@ -132,7 +132,15 @@ const combinedSchemas = [homepageSchema, organizationSchema, websiteSchema];
 const Index = () => {
   // Auto lineup fetch removed from homepage to reduce load — triggered by admin instead
   const { user, loading: authLoading } = useAuth();
-  const signedOut = !authLoading && !user;
+  // The new signed-out front page is for computers and tablets; phones keep the original home page.
+  const [wide, setWide] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const on = () => setWide(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+  const signedOut = !authLoading && !user && wide;
 
   return (
     <div className="min-h-screen bg-background relative">
