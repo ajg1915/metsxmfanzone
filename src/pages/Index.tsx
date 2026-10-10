@@ -29,6 +29,7 @@ const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadi
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
 const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSection"), "home-app-install-section");
 const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
+const PhoneJoinSection = lazyWithRetry(() => import("@/components/landing/PhoneJoinSection"), "home-phone-join-section");
 const PlansSection = lazyWithRetry(() => import("@/components/landing/PlansSection"), "home-plans-section");
 const SignedOutLanding = lazyWithRetry(() => import("@/components/landing/SignedOutLanding"), "home-signed-out-landing");
 const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"), "home-install-prompt");
@@ -239,7 +240,12 @@ const Index = () => {
         <div className="section-divider my-1" />
 
         {/* Join or install, with the follow links */}
-        {/* Phone visitors already see the full plans section above, so skip this membership banner */}
+        {/* Phone visitors already see the plans above; they get the fan / podcast / join card instead */}
+        {phoneVisitor && (
+          <Suspense fallback={null}>
+            <PhoneJoinSection />
+          </Suspense>
+        )}
         {!phoneVisitor && (
           <LazySection fallback={<SectionSkeleton height="h-48" />}>
             <Suspense fallback={<SectionSkeleton height="h-48" />}>
