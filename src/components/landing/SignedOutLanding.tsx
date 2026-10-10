@@ -38,9 +38,7 @@ const PLANS = [
 const FEATURES = [
   { title: "Live games and channels", text: "MetsXMFanZone TV around the clock, plus game-day streams and sports channels.", d: "M2 5h20v13H2zM10 9l5 2.5-5 2.5z" },
   { title: "Full game replays", text: "Missed the game? Watch it from the first pitch whenever you want.", d: "M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" },
-  { title: "Highlights and stories", text: "The big hits, catches and moments, posted fast after they happen.", d: "M13 2L3 14h9l-1 8 10-12h-9z" },
   { title: "The podcast and Game Day Live", text: "Watch live every Monday and Friday, or listen to new episodes every day.", d: "M9 2h6v12H9zM5 10a7 7 0 0 0 14 0M12 17v5" },
-  { title: "Daily Mets news", text: "Trades, lineups, injuries and analysis, written by fans for fans.", d: "M4 4h16v16H4zM8 8h8M8 12h8M8 16h5" },
   { title: "The fan community", text: "Talk the game with other Mets fans who care as much as you do.", d: "M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M15 14.5c2.8 0 6 1.6 6 5M17 11.5a2.5 2.5 0 1 0 0-5" },
 ];
 
