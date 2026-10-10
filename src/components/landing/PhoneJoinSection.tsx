@@ -57,11 +57,19 @@ export default function PhoneJoinSection() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Link to="/auth?mode=signup" className="flex min-h-[52px] items-center justify-center rounded-full bg-[#ff5910] text-[17px] font-bold text-white shadow-lg shadow-[#ff5910]/30 active:opacity-90">
-              Join MetsXMFanZone
-            </Link>
+            <a
+              href="https://www.tiktok.com/@metsxmfanzone"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-h-[52px] items-center justify-center gap-2 rounded-full bg-[#ff5910] text-[17px] font-bold text-white shadow-lg shadow-[#ff5910]/30 active:opacity-90"
+            >
+              <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+                <path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6 0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64 0 3.33 2.76 5.7 5.69 5.7 3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48z" />
+              </svg>
+              Join the podcast live
+            </a>
             <p className="text-center text-sm text-[#c4cfdf]">
-              From $3.99 a week · Cancel anytime ·{" "}
+              Watch us live on TikTok @metsxmfanzone · Already a member?{" "}
               <Link to="/auth?mode=login" className="font-bold text-[#ff7a3d]">Sign in</Link>
             </p>
           </div>
