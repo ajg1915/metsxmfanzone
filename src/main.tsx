@@ -29,6 +29,10 @@ const handleStaleChunk = (error: unknown) => {
 window.addEventListener("error", (e) => handleStaleChunk(e?.error ?? e?.message));
 window.addEventListener("unhandledrejection", (e) => handleStaleChunk(e?.reason));
 
+if (/Android/i.test(navigator.userAgent)) {
+  window.addEventListener("beforeinstallprompt", (event) => event.preventDefault());
+}
+
 if ("serviceWorker" in navigator && import.meta.env.PROD) {
   window.addEventListener("load", async () => {
     try {

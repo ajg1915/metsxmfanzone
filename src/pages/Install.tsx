@@ -6,7 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download, Smartphone, Monitor, Tv, Apple, Check } from "lucide-react";
 import { motion } from "framer-motion";
-import apkAsset from "@/assets/metsxmfanzone-apk.asset.json";
+import { Link } from "react-router-dom";
+import { AndroidIcon } from "@/components/icons/AndroidIcon";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -16,6 +19,11 @@ interface BeforeInstallPromptEvent extends Event {
 const Install = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const { user } = useAuth();
+  const { isPremium } = useSubscription();
+  const isMember = !!user && isPremium;
+  // Apple devices see the iPhone steps first; everyone else sees the Android app first.
+  const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) && "ontouchend" in document;
 
   useEffect(() => {
     if (window.matchMedia("(display-mode: standalone)").matches) setIsInstalled(true);
@@ -68,28 +76,36 @@ const Install = () => {
 
           <div className="grid gap-5">
             {/* Android: the APK we built */}
-            <Card className="flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center">
+            <Card className={`flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center ${isApple ? "order-2" : ""}`}>
               <div className="flex items-center gap-4 flex-1">
-                <div className="rounded-xl bg-primary/15 p-3">
-                  <Smartphone className="h-7 w-7 text-primary" />
+                <div className="rounded-xl bg-[#3ddc84]/15 p-3">
+                  <AndroidIcon className="h-7 w-7 text-[#3ddc84]" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold">Android</h2>
+                  <h2 className="text-lg font-bold">Android phones and tablets</h2>
                   <p className="text-sm text-muted-foreground">
-                    Download the app file, open it, and allow installs from your browser when asked.
+                    {isMember
+                      ? "Download our Android app, open it, and allow installs from your browser when asked."
+                      : "Our Android app is included with Weekly, Monthly and Yearly plans."}
                   </p>
                 </div>
               </div>
-              <Button asChild size="lg" className="gap-2">
-                <a href={apkAsset.url} download="MetsXMFanZone.apk">
-                  <Download className="h-5 w-5" />
-                  Download APK
-                </a>
-              </Button>
+              {isMember ? (
+                <Button asChild size="lg" className="gap-2">
+                  <a href="/android-app">
+                    <AndroidIcon className="h-5 w-5" />
+                    Download Android app
+                  </a>
+                </Button>
+              ) : (
+                <Button asChild size="lg" variant="outline" className="gap-2">
+                  <Link to={user ? "/pricing" : "/auth?mode=login"}>{user ? "See plans" : "Sign in to download"}</Link>
+                </Button>
+              )}
             </Card>
 
             {/* iPhone / iPad and computer: install from the browser */}
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className={`grid gap-5 sm:grid-cols-2 ${isApple ? "order-1" : ""}`}>
               <Card className="p-6">
                 <div className="mb-3 flex items-center gap-3">
                   <Apple className="h-6 w-6 text-primary" />
@@ -122,7 +138,7 @@ const Install = () => {
             </div>
 
             {/* Smart TV: paid members only */}
-            <Card className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
+            <Card className="order-3 flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
               <div className="flex items-center gap-4 flex-1">
                 <div className="rounded-xl bg-primary/15 p-3">
                   <Tv className="h-7 w-7 text-primary" />
@@ -130,7 +146,7 @@ const Install = () => {
                 <div>
                   <h2 className="text-lg font-bold">Smart TV</h2>
                   <p className="text-sm text-muted-foreground">
-                    Paid members: open metsxmfanzone.com on your TV's browser and TV mode turns on automatically.
+                    Paid members: on Fire TV, Android TV or Google TV, open the Downloader app and enter code <b className="text-foreground">6750144</b>.
                   </p>
                 </div>
               </div>

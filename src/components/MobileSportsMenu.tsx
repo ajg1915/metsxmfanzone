@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import {
-  X, Play, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard,
+  X, Play, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard,
   PenLine, Shield, Sparkles, LogOut, Tv,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -111,6 +111,9 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
               )}
               <button type="button" onClick={run(() => go("/dashboard"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                 <span className="flex items-center gap-3"><LayoutDashboard className="h-[18px] w-[18px] text-primary" />Dashboard</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+              </button>
+              <button type="button" onClick={run(() => go("/install"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+                <span className="flex items-center gap-3"><Download className="h-[18px] w-[18px] text-primary" />Get the app</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
               {isWriter && (
                 <button type="button" onClick={run(() => go("/writer"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">

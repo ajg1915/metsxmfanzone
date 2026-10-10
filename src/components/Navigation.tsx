@@ -3,7 +3,7 @@ import { NavLink } from "@/components/NavLink";
 import DesktopNavMenu from "@/components/DesktopNavMenu";
 import MobileSportsMenu from "@/components/MobileSportsMenu";
 import { Button } from "@/components/ui/button";
-import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, ChevronRight, PenLine, ShoppingBag, Bell, Newspaper, Trophy, Loader2, X } from "lucide-react";
+import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, ChevronRight, PenLine, ShoppingBag, Bell, Newspaper, Trophy, Loader2, X, Download } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import liveStreamIcon from "@/assets/live-streaming-icon.png";
 import podcastIcon from "@/assets/podcast-icon.png";
@@ -362,6 +362,14 @@ const Navigation = () => {
                       >
                         <LayoutDashboard className="w-4 h-4 mr-2.5 text-primary" />
                         <span className="text-sm">Dashboard</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => navigate("/install")}
+                        className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
+                      >
+                        <Download className="w-4 h-4 mr-2.5 text-primary" />
+                        <span className="text-sm">Get the app</span>
                       </DropdownMenuItem>
 
                       <Collapsible

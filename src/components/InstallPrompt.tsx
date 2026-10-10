@@ -22,11 +22,14 @@ const isStandalone = () =>
   window.matchMedia("(display-mode: standalone)").matches ||
   (navigator as any).standalone === true;
 
+import { AndroidIcon, isAndroidDevice } from "@/components/icons/AndroidIcon";
+
 const InstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,7 +54,14 @@ const InstallPrompt = () => {
       return;
     }
 
-    // Android / Chrome path
+    // Android: point to our real Android app instead of Chrome's "install this site".
+    if (isAndroidDevice()) {
+      setIsAndroid(true);
+      scheduleShow();
+      return;
+    }
+
+    // Computer (Chrome / Edge) path
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -88,7 +98,7 @@ const InstallPrompt = () => {
     navigate("/install");
   };
 
-  if (isInstalled || (!showPrompt && !deferredPrompt && !isIOS)) return null;
+  if (isInstalled || (!showPrompt && !deferredPrompt && !isIOS && !isAndroid)) return null;
 
   return (
     <AnimatePresence>
@@ -115,14 +125,16 @@ const InstallPrompt = () => {
 
               <div className="flex items-start gap-4 mb-4">
                 <div className="p-3 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20">
-                  <Download className="h-6 w-6 text-primary" />
+                  {isAndroid ? <AndroidIcon className="h-6 w-6 text-[#3ddc84]" /> : <Download className="h-6 w-6 text-primary" />}
                 </div>
                 <div className="flex-1 pr-6">
-                  <h3 className="font-bold text-base mb-1">Install MetsXMFanZone</h3>
+                  <h3 className="font-bold text-base mb-1">{isAndroid ? "Get the Android app" : "Install MetsXMFanZone"}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">
                     {isIOS
                       ? "Add this app to your Home Screen for the best experience"
-                      : "Get the full app experience with offline access and push notifications"}
+                      : isAndroid
+                        ? "Our real Android app for members: live games, replays and alerts."
+                        : "Get the full app experience with offline access and push notifications"}
                   </p>
                 </div>
               </div>
@@ -177,6 +189,14 @@ const InstallPrompt = () => {
                     className="flex-1 gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
                   >
                     Got It
+                  </Button>
+                ) : isAndroid ? (
+                  <Button
+                    onClick={handleLearnMore}
+                    className="flex-1 gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+                  >
+                    <AndroidIcon className="h-4 w-4" />
+                    Get the app
                   </Button>
                 ) : deferredPrompt ? (
                   <Button
