@@ -1125,8 +1125,17 @@ All colors MUST be HSL.
   box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.18);
   transform: scale(1.04);
   transition: transform 150ms ease, box-shadow 150ms ease;
+}
+/* Lift the focused item above its neighbours, but never re-position buttons that are pinned in
+   place (close buttons, player controls): that pulled them out of their corner into the layout. */
+.tv-mode :focus-visible:not([class*="absolute"]):not([class*="fixed"]) {
   position: relative;
   z-index: 1;
+}
+.tv-mode [role="dialog"]:focus-visible {
+  transform: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .tv-mode .focus\:scale-105:focus,
@@ -1513,3 +1522,7 @@ nav.glass-nav { top: env(safe-area-inset-top, 0px) !important; }
 @media (prefers-reduced-motion: reduce) {
   .mx-hero-in, .mx-hero-zoom { animation: none; }
 }
+
+/* TV rails: arrows at the row edges nudge sideways to show the row scrolls */
+@keyframes tv-nudge-left { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-6px); } }
+@keyframes tv-nudge-right { 0%,100% { transform: translateX(0); } 50% { transform: translateX(6px); } }

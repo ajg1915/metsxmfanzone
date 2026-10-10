@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { X } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -221,6 +221,16 @@ const TVDashboard = () => {
     if (story) setSelectedStory(story);
   }, [resolvedStories]);
 
+  // Story viewer: left/right on the remote (or the on-screen arrows) moves between stories.
+  const storyIdx = selectedStory ? resolvedStories.findIndex((s) => s.id === selectedStory.id) : -1;
+  const stepStory = useCallback(
+    (step: number) => {
+      const next = resolvedStories[storyIdx + step];
+      if (next) setSelectedStory(next);
+    },
+    [resolvedStories, storyIdx],
+  );
+
   const handleHighlightClick = useCallback((item: any) => {
     const video = highlights.find((v: any) => v.id === item.id);
     if (video) setSelectedHighlight(video);
@@ -231,7 +241,9 @@ const TVDashboard = () => {
     if (replay) setSelectedReplay(replay);
   }, [replays]);
 
-  const heroStream = liveStreams.find((s) => s.status === "live");
+  // The hero always features MetsXMFanZone TV (our own channel, live around the clock), never a
+  // network like SNY. Use its live stream's details when one is published.
+  const heroStream = liveStreams.find((s) => s.status === "live" && streamPath(s.title, s.id) === "/metsxmfanzone");
 
   const articleItems = useMemo(() =>
     articles.map((a: any) => ({
@@ -246,18 +258,16 @@ const TVDashboard = () => {
 
   const heroSlides = useMemo<TVHeroSlide[]>(() => {
     const slides: TVHeroSlide[] = [];
-    if (heroStream) {
-      slides.push({
-        id: `live-${heroStream.id}`,
-        kind: "live",
-        badge: "Live now",
-        title: heroStream.title,
-        description: heroStream.description || "Live coverage, Game Day Live and the podcast, on your TV.",
-        image: heroStream.thumbnail_url,
-        primaryLabel: "Watch live",
-        to: streamPath(heroStream.title, heroStream.id),
-      });
-    }
+    slides.push({
+      id: "live-metsxmfanzone-tv",
+      kind: "live",
+      badge: "Live now",
+      title: "MetsXMFanZone TV",
+      description: heroStream?.description || "Live coverage, Game Day Live and the podcast, on your TV.",
+      image: heroStream?.thumbnail_url,
+      primaryLabel: "Watch live",
+      to: "/metsxmfanzone",
+    });
     articles.slice(0, 3).forEach((a: any) => {
       slides.push({
         id: `article-${a.id}`,
@@ -410,34 +420,50 @@ const TVDashboard = () => {
 
       {/* Story Viewer Dialog */}
       <Dialog open={!!selectedStory} onOpenChange={(open) => !open && setSelectedStory(null)}>
-        <DialogContent className="max-w-lg p-0 bg-card border-border overflow-hidden">
-          <button
-            onClick={() => setSelectedStory(null)}
-            className="absolute top-3 right-3 z-50 text-muted-foreground hover:text-foreground"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        <DialogContent
+          className="w-[min(92vw,1100px)] max-w-none p-0 bg-card border-border overflow-hidden"
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") { e.preventDefault(); stepStory(1); }
+            if (e.key === "ArrowLeft") { e.preventDefault(); stepStory(-1); }
+          }}
+        >
           {selectedStory && (
             <div className="flex flex-col">
-              {selectedStory.media_type === "video" ? (
-                <video
-                  src={selectedStory.media_url}
-                  controls
-                  autoPlay
-                  className="w-full aspect-video object-contain bg-black"
-                />
-              ) : (
-                <img
-                  src={selectedStory.media_url}
-                  alt={selectedStory.title}
-                  className="w-full aspect-video object-contain bg-black"
-                />
-              )}
-              <div className="p-4">
-                <h3 className="text-foreground font-semibold text-sm">{selectedStory.title}</h3>
-                <p className="text-muted-foreground text-xs mt-1">
-                  {selectedStory.media_type === "video" ? "Video Story" : "Photo Story"}
-                </p>
+              <div className="relative">
+                {selectedStory.media_type === "video" ? (
+                  <video
+                    key={selectedStory.id}
+                    src={selectedStory.media_url}
+                    controls
+                    autoPlay
+                    className="w-full aspect-video max-h-[70dvh] object-contain bg-black"
+                  />
+                ) : (
+                  <img
+                    src={selectedStory.media_url}
+                    alt={selectedStory.title}
+                    className="w-full aspect-video max-h-[70dvh] object-contain bg-black"
+                  />
+                )}
+                {storyIdx > 0 && (
+                  <button type="button" onClick={() => stepStory(-1)} aria-label="Previous story" className="absolute left-4 top-1/2 flex h-16 w-16 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white transition hover:scale-110 focus:scale-110">
+                    <ChevronLeft className="h-9 w-9" />
+                  </button>
+                )}
+                {storyIdx < resolvedStories.length - 1 && (
+                  <button type="button" onClick={() => stepStory(1)} aria-label="Next story" className="absolute right-4 top-1/2 flex h-16 w-16 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white transition hover:scale-110 focus:scale-110">
+                    <ChevronRight className="h-9 w-9" />
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center justify-between gap-4 p-5">
+                <div className="min-w-0">
+                  <h3 className="text-foreground font-semibold text-[1.4rem] truncate">{selectedStory.title}</h3>
+                  <p className="text-muted-foreground text-[1rem] mt-1">
+                    Story {storyIdx + 1} of {resolvedStories.length} · {selectedStory.media_type === "video" ? "Video" : "Photo"}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-[1rem] text-[#cfd8e6]">◀ ▶ Left / right for more · Back to close</span>
               </div>
             </div>
           )}
@@ -447,12 +473,6 @@ const TVDashboard = () => {
       {/* Highlight Video Player Dialog */}
       <Dialog open={!!selectedHighlight} onOpenChange={(open) => !open && setSelectedHighlight(null)}>
         <DialogContent className="max-w-2xl p-0 bg-card border-border overflow-hidden">
-          <button
-            onClick={() => setSelectedHighlight(null)}
-            className="absolute top-3 right-3 z-50 text-muted-foreground hover:text-foreground"
-          >
-            <X className="w-5 h-5" />
-          </button>
           {selectedHighlight && (
             <div className="flex flex-col">
               <video
@@ -475,12 +495,6 @@ const TVDashboard = () => {
       {/* Replay Player Dialog */}
       <Dialog open={!!selectedReplay} onOpenChange={(open) => !open && setSelectedReplay(null)}>
         <DialogContent className="max-w-2xl p-0 bg-card border-border overflow-hidden">
-          <button
-            onClick={() => setSelectedReplay(null)}
-            className="absolute top-3 right-3 z-50 text-muted-foreground hover:text-foreground"
-          >
-            <X className="w-5 h-5" />
-          </button>
           {selectedReplay && (
             <div className="flex flex-col">
               <iframe

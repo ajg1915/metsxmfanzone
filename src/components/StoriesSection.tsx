@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Play, BarChart3, Heart, MessageCircle, Share2, Send, X, Trash2, RefreshCw } from "lucide-react";
+import { Play, BarChart3, Heart, MessageCircle, Share2, Send, X, Trash2, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -61,6 +61,16 @@ const StoriesSection = () => {
   const [newComment, setNewComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const touchX = useRef<number | null>(null);
+
+  // Move to the previous/next story inside the viewer (arrows, swipe, or keyboard/remote).
+  const storyIndex = selectedStory ? stories.findIndex((s) => s.id === selectedStory.id) : -1;
+  const goStory = (step: number) => {
+    const next = stories[storyIndex + step];
+    if (!next) return;
+    setShowComments(false);
+    setSelectedStory(next);
+  };
   const { user } = useAuth();
 
   useEffect(() => {
@@ -540,15 +550,45 @@ const StoriesSection = () => {
       </div>
 
       <Dialog open={!!selectedStory} onOpenChange={() => { setSelectedStory(null); setShowComments(false); }}>
-        <DialogContent className="w-[92vw] max-w-lg max-h-[85vh] p-0 overflow-hidden glass-card border-border/30">
+        <DialogContent
+          className="flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col overflow-hidden rounded-none border-0 p-0 glass-card sm:h-auto sm:max-h-[calc(100dvh-2rem)] sm:w-[92vw] sm:max-w-lg sm:rounded-xl sm:border sm:border-border/30"
+          onKeyDown={(e) => {
+            if (e.target instanceof HTMLInputElement) return;
+            if (e.key === "ArrowRight") { e.preventDefault(); goStory(1); }
+            if (e.key === "ArrowLeft") { e.preventDefault(); goStory(-1); }
+          }}
+          onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }}
+          onTouchEnd={(e) => {
+            if (touchX.current == null) return;
+            const dx = e.changedTouches[0].clientX - touchX.current;
+            touchX.current = null;
+            if (Math.abs(dx) > 50) goStory(dx < 0 ? 1 : -1);
+          }}
+        >
           {selectedStory && (
-            <div className="relative bg-background/80 w-full animate-scale-in flex flex-col max-h-[85vh]">
+            <div className="relative bg-background/80 w-full animate-scale-in flex min-h-0 flex-1 flex-col">
+              {/* Story position */}
+              <div className="flex gap-1 px-3 pb-1 pt-3 pr-14">
+                {stories.map((s, i) => (
+                  <span key={s.id} className={`h-1 flex-1 rounded-full ${i <= storyIndex ? "bg-primary" : "bg-white/20"}`} />
+                ))}
+              </div>
               {/* Media section */}
-              <div className="relative flex-shrink-0">
+              <div className="relative flex min-h-0 flex-1 items-center justify-center bg-black/40 sm:flex-none">
+                {storyIndex > 0 && (
+                  <button type="button" onClick={() => goStory(-1)} aria-label="Previous story" className="absolute left-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white transition hover:scale-110 hover:bg-black/75">
+                    <ChevronLeft className="h-6 w-6" />
+                  </button>
+                )}
+                {storyIndex < stories.length - 1 && (
+                  <button type="button" onClick={() => goStory(1)} aria-label="Next story" className="absolute right-2 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white transition hover:scale-110 hover:bg-black/75">
+                    <ChevronRight className="h-6 w-6" />
+                  </button>
+                )}
                 {selectedStory.media_type === 'text' || !selectedStory.media_url ? (() => {
                   const bg = getStoryBgStyle(selectedStory.text_bg_style);
                   return (
-                    <div className={`w-full px-5 py-12 min-h-[260px] flex items-center justify-center ${bg.className}`}>
+                    <div className={`flex h-full min-h-[260px] w-full items-center justify-center px-5 py-12 ${bg.className}`}>
                       <p className={`text-xl sm:text-2xl font-bold text-center whitespace-pre-wrap leading-snug ${bg.textClassName || "text-foreground"}`}>
                         {selectedStory.text_content || selectedStory.title}
                       </p>
@@ -561,13 +601,13 @@ const StoriesSection = () => {
                     autoPlay
                     playsInline
                     muted={false}
-                    className="w-full h-auto max-h-[40vh] object-contain"
+                    className="h-full max-h-full w-full object-contain sm:h-auto sm:max-h-[55dvh]"
                   />
                 ) : (
                   <img
                     src={selectedStory.media_url}
                     alt={selectedStory.title}
-                    className="w-full h-auto max-h-[40vh] object-contain"
+                    className="h-full max-h-full w-full object-contain sm:h-auto sm:max-h-[55dvh]"
                   />
                 )}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background to-transparent p-2 sm:p-3">
@@ -619,7 +659,7 @@ const StoriesSection = () => {
                     exit={{ height: 0, opacity: 0 }}
                     className="flex flex-col flex-1 overflow-hidden"
                   >
-                    <ScrollArea className="flex-1 max-h-[25vh] px-4 py-2">
+                    <ScrollArea className="flex-1 max-h-[30dvh] px-4 py-2">
                       {comments.length === 0 ? (
                         <p className="text-muted-foreground text-sm text-center py-4">
                           No comments yet. Be the first to comment!

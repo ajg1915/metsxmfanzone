@@ -22,11 +22,23 @@ export function TVContentRail({ title, items, accent, onItemClick }: TVContentRa
   if (items.length === 0) return null;
 
   return (
-    <section className="mt-[4vh]" aria-label={title}>
+    <section className="group/rail relative mt-[4vh]" aria-label={title}>
       <div className="flex items-center gap-3 mb-[1.4vh] pl-[0.2vw]">
         {accent && <span className="h-3 w-3 rounded-full bg-[#ff5910] animate-pulse" />}
         <h2 className={cn("text-[1.7rem] font-medium", accent ? "text-[#ff5910]" : "text-[#f2f5fa]")}>{title}</h2>
+        {items.length > 1 && (
+          <span className="ml-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[0.95rem] text-[#cfd8e6] opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100">
+            <span aria-hidden="true">◀</span> Use left and right to browse <span aria-hidden="true">▶</span>
+          </span>
+        )}
       </div>
+
+      {items.length > 1 && (
+        <>
+          <span aria-hidden="true" className="pointer-events-none absolute left-0 top-[calc(1.7rem+3vh)] z-10 flex h-[calc(22vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-start bg-gradient-to-r from-[#07101f] to-transparent pl-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-left_1.2s_ease-in-out_infinite]">‹</span>
+          <span aria-hidden="true" className="pointer-events-none absolute right-0 top-[calc(1.7rem+3vh)] z-10 flex h-[calc(22vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-end bg-gradient-to-l from-[#07101f] to-transparent pr-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-right_1.2s_ease-in-out_infinite]">›</span>
+        </>
+      )}
 
       <div className="flex gap-[1.2vw] overflow-x-auto px-[0.6vw] py-[1.8vh] scrollbar-none">
         {items.map((item) => (
