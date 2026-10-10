@@ -180,7 +180,7 @@ export default function SignedOutLanding() {
             <div className="rounded-2xl bg-white/[0.08] p-4">
               <p className="text-[13px] font-bold uppercase tracking-wider text-[#ffb48f]">Watch the podcast live</p>
               <p className="mt-1 font-display text-3xl uppercase">Mondays &amp; Fridays</p>
-              <p className="text-sm text-[#c4cfdf]">Live on MetsXMFanZone TV</p>
+              <p className="text-sm text-[#c4cfdf]">6:00 AM, 8:30 AM &amp; 5:00 PM ET on MetsXMFanZone TV</p>
             </div>
             <div className="rounded-2xl bg-white/[0.08] p-4">
               <p className="text-[13px] font-bold uppercase tracking-wider text-[#ffb48f]">Listen anytime</p>
