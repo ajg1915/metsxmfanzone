@@ -82,7 +82,7 @@ const Install = () => {
                   <AndroidIcon className="h-7 w-7 text-[#3ddc84]" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold">Android phones and tablets</h2>
+                  <h2 className="text-lg font-bold">MetsXMFanZone app for Android</h2>
                   <p className="text-sm text-muted-foreground">
                     {isMember
                       ? "Download our Android app, open it, and allow installs from your browser when asked."
@@ -137,19 +137,32 @@ const Install = () => {
               </Card>
             </div>
 
-            {/* Smart TV: paid members only */}
-            <Card className="order-3 flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-4 flex-1">
+            {/* MetsXMFanZone TV: its own app, separate from the phone app */}
+            <Card className="order-3 flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center">
+              <div className="flex flex-1 items-center gap-4">
                 <div className="rounded-xl bg-primary/15 p-3">
                   <Tv className="h-7 w-7 text-primary" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold">Smart TV</h2>
+                  <h2 className="text-lg font-bold">MetsXMFanZone TV app</h2>
                   <p className="text-sm text-muted-foreground">
-                    Paid members: on Fire TV, Android TV or Google TV, open the Downloader app and enter code <b className="text-foreground">6750144</b>.
+                    A separate app for Fire TV, Android TV and Google TV. On your TV, open the Downloader app and enter code{" "}
+                    <b className="text-foreground">6750144</b>.
                   </p>
                 </div>
               </div>
+              {isMember ? (
+                <Button asChild size="lg" className="gap-2">
+                  <a href="/tv-app">
+                    <Tv className="h-5 w-5" />
+                    Download TV app
+                  </a>
+                </Button>
+              ) : (
+                <Button asChild size="lg" variant="outline" className="gap-2">
+                  <Link to={user ? "/pricing" : "/auth?mode=login"}>{user ? "See plans" : "Sign in to download"}</Link>
+                </Button>
+              )}
             </Card>
           </div>
         </div>
