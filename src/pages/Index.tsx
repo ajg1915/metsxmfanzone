@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
+import { useAuth } from "@/hooks/useAuth";
 import NYScoresStrip from "@/components/NYScoresStrip";
 import SportsNetworksStrip from "@/components/tv/SportsNetworksStrip";
 
@@ -28,6 +29,7 @@ const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadi
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
 const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSection"), "home-app-install-section");
 const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
+const SignedOutLanding = lazyWithRetry(() => import("@/components/landing/SignedOutLanding"), "home-signed-out-landing");
 const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"), "home-install-prompt");
 const OnboardingWalkthrough = lazyWithRetry(() => import("@/components/OnboardingWalkthrough"), "home-onboarding-walkthrough");
 const NotificationPrompt = lazyWithRetry(() => import("@/components/NotificationPrompt"), "home-notification-prompt");
@@ -129,6 +131,8 @@ const combinedSchemas = [homepageSchema, organizationSchema, websiteSchema];
 
 const Index = () => {
   // Auto lineup fetch removed from homepage to reduce load — triggered by admin instead
+  const { user, loading: authLoading } = useAuth();
+  const signedOut = !authLoading && !user;
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -163,6 +167,13 @@ const Index = () => {
       <Suspense fallback={null}>
           <FreeTrialExpiryBanner />
         </Suspense>
+      {signedOut ? (
+        <main className="relative z-10">
+          <Suspense fallback={<SectionSkeleton height="h-screen" />}>
+            <SignedOutLanding />
+          </Suspense>
+        </main>
+      ) : (
       <main className="relative z-10 homepage-broadcast-feed">
         <div className="hidden sm:block sm:h-[72px]" aria-hidden="true" />
         <Hero />
@@ -218,6 +229,7 @@ const Index = () => {
         </LazySection>
 
       </main>
+      )}
       <Footer />
       
       

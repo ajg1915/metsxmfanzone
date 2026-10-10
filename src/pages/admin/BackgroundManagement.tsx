@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Check, Image, Palette, Sparkles, Upload, Loader2 } from "lucide-react";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 import { uploadToR2 } from "@/lib/r2Upload";
+import { FRONT_PAGE_SECTIONS } from "@/lib/frontPageSections";
 
 interface BackgroundSetting {
   id: string;
@@ -221,6 +222,9 @@ const BackgroundManagement = () => {
                      <SelectItem value="auth_signup">Signup Blue Area</SelectItem>
                      <SelectItem value="auth">Both Login & Signup</SelectItem>
                     <SelectItem value="welcome">Welcome Screen</SelectItem>
+                    {FRONT_PAGE_SECTIONS.map((sec) => (
+                      <SelectItem key={sec.key} value={sec.key}>{sec.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -291,6 +295,23 @@ const BackgroundManagement = () => {
                 />
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Front page (signed out)</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Pick a "Front page" section above, choose Image, upload, then press Add. The active image shows behind that section with a dark shade so the text stays readable.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {FRONT_PAGE_SECTIONS.map((sec) => (
+              <div key={sec.key}>
+                <h3 className="mb-2 text-sm font-semibold text-foreground">{sec.label.replace("Front page: ", "")}</h3>
+                {renderBackgroundGrid((backgrounds || []).filter((b) => b.page_type === sec.key), "No background yet (uses the default colors)")}
+              </div>
+            ))}
           </CardContent>
         </Card>
 
