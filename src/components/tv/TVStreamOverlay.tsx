@@ -57,7 +57,6 @@ export function TVStreamOverlay({ title, streamId }: TVStreamOverlayProps) {
       className={`pointer-events-none absolute inset-0 z-30 transition-opacity duration-500 ${
         visible ? "opacity-100" : "opacity-0"
       }`}
-      aria-hidden={!visible}
     >
       <div className="absolute inset-x-0 top-0 h-[28%] bg-gradient-to-b from-black/80 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-[42%] bg-gradient-to-t from-black/85 to-transparent" />
@@ -76,12 +75,12 @@ export function TVStreamOverlay({ title, streamId }: TVStreamOverlayProps) {
       {others.length > 0 && (
         <div className="absolute bottom-[14vh] left-[3vw] right-[3vw]">
           <p className="mb-2 text-[1.2rem] font-medium text-white/80">More channels</p>
-          <div className={`flex gap-[1vw] overflow-x-auto py-2 scrollbar-none ${visible ? "pointer-events-auto" : ""}`}>
+          <div className={`flex gap-[1vw] overflow-x-auto px-[0.6vw] py-3 scrollbar-none ${visible ? "pointer-events-auto" : ""}`}>
             {others.map((c) => (
               <button
                 key={c.id}
                 type="button"
-                tabIndex={visible ? 0 : -1}
+                data-tv-channel=""
                 onClick={() => navigate(streamPath(c.title, c.id))}
                 onFocus={(e) => e.currentTarget.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" })}
                 className="group w-[16vw] min-w-[170px] shrink-0 rounded-xl text-left focus:outline-none"

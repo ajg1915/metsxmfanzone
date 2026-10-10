@@ -15,8 +15,15 @@ function isVisible(el: HTMLElement): boolean {
   return style.visibility !== "hidden" && style.display !== "none";
 }
 
+// While a player is full screen, the remote only moves between that player's own buttons
+// (controls and the "More channels" row), never the page hidden behind it.
+function fullscreenScope(): HTMLElement | null {
+  return document.querySelector<HTMLElement>(".ios-pseudo-fullscreen");
+}
+
 function focusables(): HTMLElement[] {
-  return Array.from(document.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+  const scope = fullscreenScope() ?? document;
+  return Array.from(scope.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
     (el) => isVisible(el) && !el.closest("[aria-hidden='true']"),
   );
 }
@@ -31,6 +38,13 @@ function move(dir: "up" | "down" | "left" | "right") {
   if (items.length === 0) return;
 
   const current = document.activeElement as HTMLElement | null;
+  const scope = fullscreenScope();
+  if (scope && (!current || !items.includes(current))) {
+    // First press in full screen: jump to the channel row (or the first player button).
+    const first = scope.querySelector<HTMLElement>("[data-tv-channel]") ?? items[0];
+    first.focus({ preventScroll: true });
+    return;
+  }
   if (!current || !items.includes(current)) {
     items[0].focus();
     items[0].scrollIntoView({ block: "center", inline: "center" });
@@ -71,9 +85,12 @@ function move(dir: "up" | "down" | "left" | "right") {
 
   if (best) {
     best.focus({ preventScroll: true });
-    best.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+    // In full screen only the channel row scrolls (sideways); the page behind stays put.
+    if (scope) best.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+    else best.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
     return;
   }
+  if (scope) return;
 
   // Nothing ahead on screen: scroll the page in that direction instead
   if (dir === "down") window.scrollBy({ top: window.innerHeight * 0.7, behavior: "smooth" });

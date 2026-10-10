@@ -24,15 +24,15 @@ const Footer = () => {
       transition={{ duration: 0.6 }}
       className="relative border-t border-border/60 bg-card/80 backdrop-blur-md"
     >
-      <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 pb-24 md:pb-10">
+      <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-6 pb-24 md:py-10">
         {/* Brand, socials, app */}
-        <div className="flex flex-col items-center gap-6 text-center md:flex-row md:justify-between md:text-left">
+        <div className="flex flex-col items-center gap-3 text-center md:gap-6 md:flex-row md:justify-between md:text-left">
           <div>
             <h3 className="text-lg font-bold text-primary">MetsXMFanZone</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Fan-run coverage of the New York Mets</p>
+            <p className="mt-0.5 text-sm text-muted-foreground">Fan-run coverage of the New York Mets</p>
           </div>
 
-          <div className="flex items-center gap-2" aria-label="Follow MetsXMFanZone">
+          <div className="flex items-center gap-1" aria-label="Follow MetsXMFanZone">
             {METSXMFANZONE_SOCIALS.map(({ name, url, Icon }) => (
               <a
                 key={name}
@@ -49,7 +49,7 @@ const Footer = () => {
 
           <Link
             to="/install"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm md:px-5 md:py-2.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             <Download className="h-4 w-4" />
             Get the App
@@ -57,7 +57,7 @@ const Footer = () => {
         </div>
 
         {/* Quick links */}
-        <nav aria-label="Footer" className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 border-y border-border/50 py-5">
+        <nav aria-label="Footer" className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-y border-border/50 py-3 md:mt-8 md:gap-x-6 md:py-5">
           {QUICK_LINKS.map((l) => (
             <Link key={l.to} to={l.to} className="text-sm text-foreground/80 transition-colors hover:text-primary">
               {l.label}
@@ -66,7 +66,7 @@ const Footer = () => {
         </nav>
 
         {/* Legal */}
-        <div className="mt-5 flex flex-col items-center gap-2 text-xs text-muted-foreground">
+        <div className="mt-3 flex flex-col items-center gap-1.5 text-xs md:mt-5 md:gap-2 text-muted-foreground">
           <div className="flex items-center gap-4">
             <Link to="/privacy" className="transition-colors hover:text-primary">Privacy</Link>
             <Link to="/terms" className="transition-colors hover:text-primary">Terms</Link>
