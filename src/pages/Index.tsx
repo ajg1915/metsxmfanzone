@@ -239,11 +239,14 @@ const Index = () => {
         <div className="section-divider my-1" />
 
         {/* Join or install, with the follow links */}
-        <LazySection fallback={<SectionSkeleton height="h-48" />}>
-          <Suspense fallback={<SectionSkeleton height="h-48" />}>
-            <AppInstallSection />
-          </Suspense>
-        </LazySection>
+        {/* Phone visitors already see the full plans section above, so skip this membership banner */}
+        {!phoneVisitor && (
+          <LazySection fallback={<SectionSkeleton height="h-48" />}>
+            <Suspense fallback={<SectionSkeleton height="h-48" />}>
+              <AppInstallSection />
+            </Suspense>
+          </LazySection>
+        )}
 
       </main>
       )}
