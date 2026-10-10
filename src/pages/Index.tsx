@@ -29,6 +29,7 @@ const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadi
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
 const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSection"), "home-app-install-section");
 const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
+const PlansSection = lazyWithRetry(() => import("@/components/landing/PlansSection"), "home-plans-section");
 const SignedOutLanding = lazyWithRetry(() => import("@/components/landing/SignedOutLanding"), "home-signed-out-landing");
 const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"), "home-install-prompt");
 const OnboardingWalkthrough = lazyWithRetry(() => import("@/components/OnboardingWalkthrough"), "home-onboarding-walkthrough");
@@ -141,6 +142,7 @@ const Index = () => {
     return () => mq.removeEventListener("change", on);
   }, []);
   const signedOut = !authLoading && !user && wide;
+  const phoneVisitor = !authLoading && !user && !wide;
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -202,6 +204,13 @@ const Index = () => {
         <Suspense fallback={<SectionSkeleton />}>
           <LiveStreamsSection />
         </Suspense>
+
+        {/* Phone visitors who aren't signed in see the plans right on the home page */}
+        {phoneVisitor && (
+          <Suspense fallback={<SectionSkeleton />}>
+            <PlansSection />
+          </Suspense>
+        )}
 
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>

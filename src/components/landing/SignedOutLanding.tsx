@@ -4,36 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { sectionStyle, useFrontPageStyles, type SectionStyle } from "@/lib/frontPageSections";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
+import PlansSection from "@/components/landing/PlansSection";
 
 // Front page for visitors who are not signed in: what members get, the plans, and why to trust us.
 
-const PLANS = [
-  {
-    id: "weekly",
-    name: "Weekly",
-    price: "$3.99",
-    period: "/ week",
-    blurb: "Try it for a series.",
-    features: ["All live streams", "Full game replays", "All highlights", "HD streaming", "Community access"],
-  },
-  {
-    id: "premium",
-    name: "Monthly",
-    price: "$9.99",
-    period: "/ month",
-    blurb: "The full season experience.",
-    features: ["Everything in Weekly", "Ad-free experience", "Exclusive content", "Watch on all your devices", "Android and TV apps"],
-    popular: true,
-  },
-  {
-    id: "annual",
-    name: "Yearly",
-    price: "$129.99",
-    period: "/ year",
-    blurb: "One payment, the whole year.",
-    features: ["Everything in Monthly", "Priority support", "Early access to content", "Merch discounts", "VIP community badge"],
-  },
-];
 
 const FEATURES = [
   { title: "Live games and channels", text: "MetsXMFanZone TV around the clock, plus game-day streams and sports channels.", d: "M2 5h20v13H2zM10 9l5 2.5-5 2.5z" },
@@ -81,13 +55,6 @@ function useLandingMedia() {
   });
 }
 
-const pickPlan = (id: string) => {
-  try {
-    localStorage.setItem("pending_signup_plan", id);
-  } catch {
-    /* private mode */
-  }
-};
 
 function Section({
   id,
@@ -317,49 +284,7 @@ export default function SignedOutLanding() {
       </Section>
 
       {/* Plans */}
-      <Section id="plans" bg={bgs.plans} className="px-4 py-16 sm:px-6">
-        <div className="mx-auto max-w-[1240px]">
-          <div className="text-center">
-            <Eyebrow>Plans</Eyebrow>
-            <H2 className="mb-2 mt-1.5">Pick your plan</H2>
-            <p className="mb-8 text-[17px] text-[#b6c3d6]">Every plan includes live streams, replays, highlights and the apps. Cancel anytime.</p>
-          </div>
-          <div className="grid items-stretch gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
-            {PLANS.map((p) => (
-              <div
-                key={p.id}
-                className={`relative flex flex-col gap-3.5 rounded-[20px] p-7 ${
-                  p.popular ? "border-2 border-[#ff5910] bg-gradient-to-b from-[#1a2c4d] to-[#0d1a2e]" : "border border-white/10 bg-[#0d1a2e]"
-                }`}
-              >
-                {p.popular && (
-                  <span className="absolute -top-3.5 left-7 rounded-full bg-[#ff5910] px-3.5 py-1 text-[13px] font-extrabold uppercase tracking-wide">Most popular</span>
-                )}
-                <p className="text-xl font-bold">{p.name}</p>
-                <p>
-                  <span className="font-display text-[52px] leading-none">{p.price}</span>
-                  <span className="text-[#a9b7cb]"> {p.period}</span>
-                </p>
-                <p className="text-[#b6c3d6]">{p.blurb}</p>
-                <ul className="list-disc space-y-1.5 pl-5 text-[#d4dceb]">
-                  {p.features.map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
-                </ul>
-                <Link
-                  to="/auth?mode=signup"
-                  onClick={() => pickPlan(p.id)}
-                  className={`mt-auto flex min-h-[50px] items-center justify-center rounded-full font-bold ${
-                    p.popular ? "bg-[#ff5910] text-white hover:opacity-90" : "border border-white/30 text-white hover:bg-white/5"
-                  }`}
-                >
-                  Choose {p.name}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Section>
+      <PlansSection bg={bgs.plans} />
 
       {/* Trust */}
       <Section bg={bgs.trust} className="px-4 py-14 sm:px-6" base={{ backgroundColor: "#0b1729" }}>
