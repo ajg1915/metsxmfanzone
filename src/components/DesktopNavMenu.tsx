@@ -33,15 +33,6 @@ type Entry = {
   membersOnly?: boolean;
 };
 
-const WATCH: Entry[] = [
-  { label: "MetsXMFanZone TV", hint: "Live shows, games and the 24/7 channel", icon: MonitorPlay, to: "/metsxmfanzone", gate: "pro" },
-  { label: "Game Events", hint: "Live game events", icon: Trophy, to: "/game-events" },
-  { label: "TV Guide", hint: "What's on and when", icon: CalendarDays, to: "/tv" },
-  { label: "MSG Network", hint: "24/7 network stream", icon: Tv, to: "/msg-network" },
-  { label: "ESPN Network", hint: "24/7 network stream", icon: Tv, to: "/espn-network" },
-  { label: "MLB Network", hint: "24/7 network stream", icon: Radio, to: "/mlb-network" },
-];
-
 const METS: Entry[] = [
   { label: "Schedule", hint: "Every game, date and time", icon: CalendarDays, to: "/mets-schedule-2026", gate: "protected" },
   { label: "Scores", hint: "Live and final scores", icon: Trophy, to: "/mets-scores" },
@@ -52,7 +43,6 @@ const METS: Entry[] = [
   { label: "Mets History", hint: "Moments and legends", icon: Landmark, to: "/mets-history" },
 ];
 
-const WATCH_PATHS = ["/metsxmfanzone", "/game-events", "/pix11-network", "/tv", "/msg-network", "/msg-plus", "/espn-network", "/mlb-network", "/live/"];
 const METS_PATHS = ["/mets-schedule-2026", "/mets-scores", "/game-center", "/mets-roster", "/video-gallery", "/mets-game-recaps", "/mets-history", "/player/"];
 
 const pill =
@@ -134,25 +124,12 @@ export default function DesktopNavMenu({
   const mets = METS.filter((e) => !e.membersOnly || isLoggedIn);
 
   return (
-    <NavMenu.Root delayDuration={60} skipDelayDuration={250} className="relative hidden lg:block" aria-label="Main">
+    <NavMenu.Root delayDuration={60} skipDelayDuration={250} className="relative hidden md:block" aria-label="Main">
       <NavMenu.List className="flex items-center gap-0.5 xl:gap-1">
         <TopLink to="/">Home</TopLink>
 
-        <NavMenu.Item className="relative">
-          <NavMenu.Trigger className={cn(pill, on(WATCH_PATHS) && activePill)}>
-            <span className="relative mr-0.5 flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-60 motion-reduce:hidden" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
-            </span>
-            Watch Live
-            <ChevronDown className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 [[data-state=open]>&]:rotate-180" aria-hidden />
-          </NavMenu.Trigger>
-          <NavMenu.Content className={panel}>
-            <div className={cn(card, "w-[320px]")}>
-              {WATCH.map((e) => <Row key={e.label} e={e} onGo={go} />)}
-            </div>
-          </NavMenu.Content>
-        </NavMenu.Item>
+        <TopLink to="/podcast">Podcast</TopLink>
+        <TopLink to="/blog">Blog</TopLink>
 
         <NavMenu.Item className="relative">
           <NavMenu.Trigger className={cn(pill, metsActive && activePill)}>
@@ -167,8 +144,6 @@ export default function DesktopNavMenu({
         </NavMenu.Item>
 
         <TopLink to="/community" onClick={() => goProtected("/community")}>Community</TopLink>
-        <TopLink to="/podcast">Podcast</TopLink>
-        <TopLink to="/blog">Blog</TopLink>
         {!isLoggedIn && <TopLink to="/pricing">Pricing</TopLink>}
         {onTVMode && (
           <NavMenu.Item>

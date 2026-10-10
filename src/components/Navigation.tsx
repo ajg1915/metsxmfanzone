@@ -267,7 +267,7 @@ const Navigation = () => {
                 alt="MetsXMFanZone Logo" 
                 className="h-9 w-auto max-md:h-8 shrink-0"
               />
-              <div className="min-w-0 font-display text-xl uppercase leading-none lg:max-[1439px]:hidden max-md:text-[clamp(12px,4.5vw,20px)] whitespace-nowrap sm:text-2xl">
+              <div className="min-w-0 font-display text-xl uppercase leading-none md:max-[1439px]:hidden max-md:text-[clamp(12px,4.5vw,20px)] whitespace-nowrap sm:text-2xl">
                 <span className={isHomePage ? "text-secondary max-md:text-foreground" : "text-secondary"}>Mets</span>
                 <span className="text-primary">XM</span>
                 <span className="text-foreground">FanZone</span>
@@ -284,14 +284,6 @@ const Navigation = () => {
           />
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => handleProNavigation("/metsxmfanzone")}
-              className="hidden h-9 gap-2 rounded-full px-4 text-sm font-bold md:inline-flex lg:hidden"
-            >
-              <span className="h-2 w-2 rounded-full bg-white" /> Watch Live
-            </Button>
             {isHomePage && !user && (
               <Button
                 variant="ghost"
@@ -320,14 +312,14 @@ const Navigation = () => {
               <>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="hidden lg:flex h-10 gap-2 rounded-full px-2.5 text-sm font-semibold hover:bg-white/[0.07]">
+                    <Button variant="ghost" size="sm" className="hidden md:flex h-10 gap-2 rounded-full px-2.5 text-sm font-semibold hover:bg-white/[0.07]">
                       <Avatar className="h-7 w-7 ring-1 ring-white/15">
                         <AvatarImage src={userProfile.avatar_url || undefined} alt="Profile" />
                         <AvatarFallback className="text-[10px]">
                           {userProfile.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="max-w-[140px] truncate">{userProfile.full_name || user.email}</span>
+                      <span className="hidden max-w-[140px] truncate lg:inline">{userProfile.full_name || user.email}</span>
                       <ChevronDown className="h-3.5 w-3.5 opacity-70" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -483,14 +475,14 @@ const Navigation = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="hidden lg:flex h-10 rounded-full px-4 text-sm font-semibold hover:bg-white/[0.07]"
+                  className="hidden md:flex h-10 rounded-full px-4 text-sm font-semibold hover:bg-white/[0.07]"
                   onClick={() => navigate("/auth?mode=login")}
                 >
                   Login
                 </Button>
                 <Button 
                   size="sm" 
-                  className="hidden lg:flex h-10 rounded-full px-5 text-sm font-bold shadow-lg shadow-primary/25"
+                  className="hidden md:flex h-10 rounded-full px-5 text-sm font-bold shadow-lg shadow-primary/25"
                   onClick={() => navigate("/auth?mode=signup")}
                 >
                   Sign Up
@@ -502,7 +494,7 @@ const Navigation = () => {
             {/* Mobile menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open menu" className={`h-9 w-9 rounded-sm border border-border/40 bg-card/70 transition-colors hover:bg-muted lg:hidden ${isHomePage ? "max-md:h-11 max-md:w-11 max-md:rounded-full max-md:border-0 max-md:bg-transparent" : ""}`}>
+                <Button variant="ghost" size="icon" aria-label="Open menu" className={`h-9 w-9 rounded-sm border border-border/40 bg-card/70 transition-colors hover:bg-muted md:hidden ${isHomePage ? "max-md:h-11 max-md:w-11 max-md:rounded-full max-md:border-0 max-md:bg-transparent" : ""}`}>
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
