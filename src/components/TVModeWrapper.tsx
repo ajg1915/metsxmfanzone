@@ -3,6 +3,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { useTVFocusNav } from "@/hooks/useTVFocusNav";
 import { handleTVBack } from "@/lib/tvNavigation";
+import { watchForceRefresh } from "@/lib/forceRefresh";
 import { Button } from "@/components/ui/button";
 import { Tv, X, Monitor, Home } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
@@ -53,6 +54,9 @@ export function TVModeWrapper({ children }: TVModeWrapperProps) {
       remove?.();
     };
   }, [location.pathname, navigate]);
+
+  // Reload when an admin presses "Refresh everyone" (site, phone app and TV app alike).
+  useEffect(() => watchForceRefresh(), []);
 
   // A TV that opens the site lands on the TV home screen, not the phone/desktop home page.
   useEffect(() => {

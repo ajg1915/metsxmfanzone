@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchFeedHealth } from "@/lib/feedHealth";
 import ChatDashboardCard from "@/components/admin/ChatDashboardCard";
 import ContentIdeasCard from "@/components/admin/ContentIdeasCard";
+import RefreshEveryoneCard from "@/components/admin/RefreshEveryoneCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -364,6 +365,8 @@ export default function AdminDashboard() {
           </div>
         </div>
       </section>
+
+      <RefreshEveryoneCard />
 
       {/* KPI row */}
       <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
