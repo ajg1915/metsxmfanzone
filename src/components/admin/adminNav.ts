@@ -210,10 +210,11 @@ export const ADMIN_HUBS: AdminHub[] = [
     key: "settings",
     title: "Settings",
     icon: Settings,
-    hint: "Welcome screen, backgrounds",
+    hint: "Welcome screen, front page, backgrounds",
     groups: [
       { title: "Admin Settings", items: [{ title: "Admin Settings", url: "/admin/settings", icon: Settings }] },
       { title: "Welcome Screen", items: [{ title: "Welcome Screen", url: "/admin/welcome-screen", icon: Monitor }] },
+      { title: "Front Page", items: [{ title: "Front Page sections", url: "/admin/front-page", icon: Wallpaper }] },
       { title: "Backgrounds", items: [{ title: "Backgrounds", url: "/admin/backgrounds", icon: Wallpaper }] },
     ],
   },

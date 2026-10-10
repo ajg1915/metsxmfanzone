@@ -121,6 +121,7 @@ const MetsRoster = lazyWithRetry(() => import("./pages/MetsRoster"), "page-mets-
 const PlayerStats = lazyWithRetry(() => import("./pages/PlayerStats"), "page-player-stats");
 const MetsHistory = lazyWithRetry(() => import("./pages/MetsHistory"), "page-mets-history");
 const UserManagement = lazyWithRetry(() => import("./pages/admin/UserManagement"), "page-admin-user-management");
+const FrontPageSections = lazyWithRetry(() => import("./pages/admin/FrontPageSections"), "page-admin-front-page-sections");
 const BackgroundManagement = lazyWithRetry(() => import("./pages/admin/BackgroundManagement"), "page-admin-background-management");
 const ActivityDashboard = lazyWithRetry(() => import("./pages/admin/ActivityDashboard"), "page-admin-activity-dashboard");
 const WriterApplications = lazyWithRetry(() => import("./pages/admin/WriterApplications"), "page-admin-writer-applications");
@@ -402,6 +403,7 @@ const AppContent = () => {
               <Route path="subscriptions" element={<SubscriptionManagement />} />
               <Route path="trials" element={<TrialManagement />} />
               <Route path="backgrounds" element={<BackgroundManagement />} />
+              <Route path="front-page" element={<FrontPageSections />} />
               <Route path="activity" element={<ActivityDashboard />} />
               <Route path="writer-applications" element={<WriterApplications />} />
               <Route path="realtime-analytics" element={<RealtimeAnalytics />} />

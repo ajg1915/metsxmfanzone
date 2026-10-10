@@ -1,8 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import type { CSSProperties, ReactNode } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { FRONT_PAGE_SECTIONS, type FrontPageSection } from "@/lib/frontPageSections";
+import { sectionStyle, useFrontPageStyles, type SectionStyle } from "@/lib/frontPageSections";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
 // Front page for visitors who are not signed in: what members get, the plans, and why to trust us.
@@ -66,28 +64,6 @@ const pickPlan = (id: string) => {
   }
 };
 
-// Admin-set section backgrounds (Admin › Backgrounds › Front page).
-function useSectionBackgrounds() {
-  return useQuery({
-    queryKey: ["front-page-backgrounds"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("background_settings")
-        .select("page_type, background_type, background_value, updated_at")
-        .in("page_type", FRONT_PAGE_SECTIONS.map((s) => s.key))
-        .eq("is_active", true)
-        .order("updated_at", { ascending: false });
-      const map: Partial<Record<FrontPageSection, { type: string; value: string }>> = {};
-      for (const row of data || []) {
-        const key = row.page_type as FrontPageSection;
-        if (!map[key]) map[key] = { type: row.background_type, value: row.background_value };
-      }
-      return map;
-    },
-    staleTime: 5 * 60_000,
-  });
-}
-
 function Section({
   id,
   bg,
@@ -96,17 +72,12 @@ function Section({
   children,
 }: {
   id?: string;
-  bg?: { type: string; value: string };
+  bg?: SectionStyle;
   className?: string;
   base?: CSSProperties;
   children: ReactNode;
 }) {
-  let style: CSSProperties = { ...base };
-  if (bg?.type === "image") {
-    const url = bg.value.trim().startsWith("url(") ? bg.value.trim() : `url("${bg.value.trim()}")`;
-    style = { backgroundImage: `linear-gradient(rgba(7,16,31,0.72), rgba(7,16,31,0.82)), ${url}`, backgroundSize: "cover", backgroundPosition: "center" };
-  } else if (bg?.type === "gradient") style = { background: bg.value };
-  else if (bg?.type === "color") style = { backgroundColor: bg.value };
+  const style = sectionStyle(bg, base);
   return (
     <section id={id} className={`relative overflow-hidden ${className}`} style={style}>
       {children}
@@ -122,13 +93,13 @@ const H2 = ({ children, className = "" }: { children: ReactNode; className?: str
 );
 
 export default function SignedOutLanding() {
-  const { data: bgs = {} } = useSectionBackgrounds();
+  const { data: bgs = {} } = useFrontPageStyles();
 
   return (
     <div className="bg-[#07101f] text-[#f2f5fa]">
       {/* Hero */}
       <Section
-        bg={bgs.home_hero}
+        bg={bgs.hero}
         className="px-4 pb-16 pt-24 sm:px-6 sm:pt-32"
         base={{
           background:
@@ -192,7 +163,7 @@ export default function SignedOutLanding() {
 
       {/* Fans + podcast */}
       <Section
-        bg={bgs.home_fans}
+        bg={bgs.fans}
         className="border-y-4 border-[#ff5910] px-4 py-11 sm:px-6"
         base={{ background: "linear-gradient(90deg, #002d72 0%, #0b1f4a 55%, #07101f 100%)" }}
       >
@@ -220,7 +191,7 @@ export default function SignedOutLanding() {
       </Section>
 
       {/* What you get */}
-      <Section id="what" bg={bgs.home_features} className="px-4 py-16 sm:px-6">
+      <Section id="what" bg={bgs.features} className="px-4 py-16 sm:px-6">
         <div className="mx-auto max-w-[1240px]">
           <Eyebrow>What you get</Eyebrow>
           <H2 className="mb-7 mt-1.5">Everything a Mets fan needs, in one place</H2>
@@ -239,7 +210,7 @@ export default function SignedOutLanding() {
       </Section>
 
       {/* A look inside */}
-      <Section bg={bgs.home_inside} className="px-4 pb-16 sm:px-6">
+      <Section bg={bgs.inside} className="px-4 pb-16 sm:px-6">
         <div className="mx-auto max-w-[1240px]">
           <Eyebrow>A look inside</Eyebrow>
           <H2 className="mb-2 mt-1.5">Your members home</H2>
@@ -278,7 +249,7 @@ export default function SignedOutLanding() {
       </Section>
 
       {/* Watch anywhere */}
-      <Section bg={bgs.home_devices} className="px-4 py-14 sm:px-6" base={{ backgroundColor: "#0b1729" }}>
+      <Section bg={bgs.devices} className="px-4 py-14 sm:px-6" base={{ backgroundColor: "#0b1729" }}>
         <div className="mx-auto flex max-w-[1240px] flex-wrap items-center gap-8">
           <div className="min-w-0 flex-[1_1_380px]">
             <Eyebrow>Watch anywhere</Eyebrow>
@@ -303,7 +274,7 @@ export default function SignedOutLanding() {
       </Section>
 
       {/* Plans */}
-      <Section id="plans" bg={bgs.home_plans} className="px-4 py-16 sm:px-6">
+      <Section id="plans" bg={bgs.plans} className="px-4 py-16 sm:px-6">
         <div className="mx-auto max-w-[1240px]">
           <div className="text-center">
             <Eyebrow>Plans</Eyebrow>
@@ -348,7 +319,7 @@ export default function SignedOutLanding() {
       </Section>
 
       {/* Trust */}
-      <Section bg={bgs.home_trust} className="px-4 py-14 sm:px-6" base={{ backgroundColor: "#0b1729" }}>
+      <Section bg={bgs.trust} className="px-4 py-14 sm:px-6" base={{ backgroundColor: "#0b1729" }}>
         <div className="mx-auto max-w-[1240px]">
           <H2 className="mb-6 text-center">Why fans trust us</H2>
           <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
@@ -378,7 +349,7 @@ export default function SignedOutLanding() {
       {/* Final call */}
       <div className="px-4 pb-16 sm:px-6">
         <Section
-          bg={bgs.home_join}
+          bg={bgs.join}
           className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-5 rounded-3xl px-7 py-11"
           base={{ background: "linear-gradient(120deg, #0f2a52, #1a2c4d 60%, #3a1d10)" }}
         >
