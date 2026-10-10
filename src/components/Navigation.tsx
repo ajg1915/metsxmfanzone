@@ -325,14 +325,13 @@ const Navigation = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-64 z-50 bg-card/90 backdrop-blur-xl border border-primary/20 rounded-xl shadow-elevation-high p-0 overflow-hidden"
+                    className="w-[340px] z-50 bg-[#0b1526]/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-0 overflow-hidden"
                     sideOffset={6}
                   >
                     {/* User profile header */}
-                    <div className="relative px-4 pt-4 pb-3 bg-gradient-to-br from-primary/20 to-secondary/10">
-                      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.15),transparent_60%)]" />
+                    <div className="relative px-4 pt-4 pb-4 bg-[radial-gradient(90%_120%_at_100%_0%,rgba(255,89,16,0.28),transparent_60%),linear-gradient(135deg,#0f2a52,#0b1526)]">
                       <div className="relative flex items-center gap-3">
-                        <Avatar className="h-10 w-10 ring-2 ring-primary/40 shadow-md">
+                        <Avatar className="h-12 w-12 ring-2 ring-primary/50 shadow-md">
                           <AvatarImage src={userProfile.avatar_url || undefined} alt="Profile" />
                           <AvatarFallback className="text-xs font-bold bg-primary text-primary-foreground">
                             {userProfile.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
@@ -342,27 +341,59 @@ const Navigation = () => {
                           <p className="text-sm font-bold text-foreground truncate">
                             {userProfile.full_name || 'Member'}
                           </p>
-                          <p className="text-[10px] text-muted-foreground truncate">{user.email}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          <span
+                            className={`mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                              isPaidMember ? "bg-primary text-primary-foreground" : "bg-white/10 text-muted-foreground"
+                            }`}
+                          >
+                            {{ weekly: "Weekly member", premium: "Monthly member", annual: "Yearly member", trial: "Trial member" }[tier as string] ?? (isPaidMember ? "Member" : "No plan yet")}
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="p-1.5 space-y-0.5">
-                      <DropdownMenuItem
-                        onClick={() => navigate("/dashboard")}
-                        className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
-                      >
-                        <LayoutDashboard className="w-4 h-4 mr-2.5 text-primary" />
-                        <span className="text-sm">Dashboard</span>
-                      </DropdownMenuItem>
+                    {/* Quick tiles */}
+                    <div className="grid grid-cols-2 gap-2 p-3">
+                      {[
+                        { label: "Member Center", icon: LayoutDashboard, go: () => navigate("/dashboard") },
+                        { label: "Watch Live", icon: Tv, go: () => handleProNavigation("/metsxmfanzone"), live: true },
+                        { label: "TV Guide", icon: CalendarDays, go: () => navigate("/tv") },
+                        { label: "Get the app", icon: Download, go: () => navigate("/install") },
+                      ].map((t) => (
+                        <DropdownMenuItem
+                          key={t.label}
+                          onClick={t.go}
+                          className="flex h-[72px] cursor-pointer flex-col items-start justify-between rounded-xl border border-white/10 bg-white/[0.04] p-3 transition-colors hover:border-primary/50 hover:bg-primary/10 focus:border-primary/50 focus:bg-primary/10"
+                        >
+                          <span className="flex w-full items-center justify-between">
+                            <t.icon className="h-5 w-5 text-primary" />
+                            {t.live && <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />}
+                          </span>
+                          <span className="text-[13px] font-semibold text-foreground">{t.label}</span>
+                        </DropdownMenuItem>
+                      ))}
+                    </div>
 
-                      <DropdownMenuItem
-                        onClick={() => navigate("/install")}
-                        className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
-                      >
-                        <Download className="w-4 h-4 mr-2.5 text-primary" />
-                        <span className="text-sm">Get the app</span>
-                      </DropdownMenuItem>
+                    <div className="px-1.5 pb-1.5 space-y-0.5">
+                      {!isPaidMember && (
+                        <DropdownMenuItem
+                          onClick={() => navigate("/pricing")}
+                          className="rounded-lg cursor-pointer bg-primary/15 hover:bg-primary/25 focus:bg-primary/25 transition-colors"
+                        >
+                          <Sparkles className="w-4 h-4 mr-2.5 text-primary" />
+                          <span className="text-sm font-semibold">Choose a plan</span>
+                        </DropdownMenuItem>
+                      )}
+                      {showTVMode && (
+                        <DropdownMenuItem
+                          onClick={enterTVMode}
+                          className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
+                        >
+                          <Tv className="w-4 h-4 mr-2.5 text-primary" />
+                          <span className="text-sm">Switch to TV Mode</span>
+                        </DropdownMenuItem>
+                      )}
 
                       <Collapsible
                         open={notifOpen}
@@ -459,6 +490,13 @@ const Navigation = () => {
                     <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-1" />
 
                     <div className="p-1.5 pb-2">
+                      <DropdownMenuItem
+                        onClick={() => navigate("/help-center")}
+                        className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
+                      >
+                        <Users className="w-4 h-4 mr-2.5 text-muted-foreground" />
+                        <span className="text-sm">Help Center</span>
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={handleAuthClick}
                         className="rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive transition-colors"
