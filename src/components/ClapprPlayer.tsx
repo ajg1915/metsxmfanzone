@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toSecureStreamUrl, toCorsProxyUrl, isInsecureUrl } from "@/lib/streamProxy";
 import { TVStreamOverlay } from "./tv/TVStreamOverlay";
+import { STREAMS_REFRESH_EVENT } from "@/lib/forceRefresh";
 import { playWithSound, unmuteFromTap } from "@/lib/playerSound";
 
 interface ClapprPlayerProps {
@@ -358,6 +359,13 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       fsObserver.disconnect();
     };
   }, []);
+
+  // Admin › Clear cache › Refresh live streams: restart this player with the latest stream.
+  useEffect(() => {
+    const onRefresh = () => handleRetry();
+    window.addEventListener(STREAMS_REFRESH_EVENT, onRefresh);
+    return () => window.removeEventListener(STREAMS_REFRESH_EVENT, onRefresh);
+  }, [handleRetry]);
 
   // Phones and small tablets turned sideways: the player takes over the whole screen, and goes
   // back into the page when turned upright. (TV mode handles full screen on its own.)

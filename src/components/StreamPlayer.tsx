@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { NewPostAlert } from "./NewPostAlert";
 import ClapprPlayer from "./ClapprPlayer";
 import { getNYTeamStreamUrl } from "@/lib/nyTeamStreamCheck";
+import { STREAMS_REFRESH_EVENT } from "@/lib/forceRefresh";
 
 interface LiveStream {
   id: string;
@@ -23,6 +24,13 @@ interface StreamPlayerProps {
 export function StreamPlayer({ pageName, pageTitle, pageDescription }: StreamPlayerProps) {
   const [stream, setStream] = useState<LiveStream | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const onRefresh = () => fetchStream();
+    window.addEventListener(STREAMS_REFRESH_EVENT, onRefresh);
+    return () => window.removeEventListener(STREAMS_REFRESH_EVENT, onRefresh);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageName]);
 
   useEffect(() => {
     fetchStream();
