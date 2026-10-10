@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Download } from "lucide-react";
 import { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
 
 // The handful of links most fans want. Everything else lives in the site menu.
@@ -46,14 +45,6 @@ const Footer = () => {
               </a>
             ))}
           </div>
-
-          <Link
-            to="/install"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm md:px-5 md:py-2.5 font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            <Download className="h-4 w-4" />
-            Get the App
-          </Link>
         </div>
 
         {/* Quick links */}
