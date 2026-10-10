@@ -15,6 +15,9 @@ export const FRONT_PAGE_SECTIONS = [
   { key: "plans", label: "Plans", defaultColor: "#07101f" },
   { key: "trust", label: "Why fans trust us", defaultColor: "#0b1729" },
   { key: "join", label: "Join MetsXMFanZone (bottom)", defaultColor: "#0f2a52" },
+  // Picture on the little TV screen (top section) and the "Live now" banner in the members preview.
+  // Empty = the MetsXMFanZone TV channel's own picture.
+  { key: "tv", label: "MetsXMFanZone TV picture", defaultColor: "#0a1d3d", imageOnly: true },
 ] as const;
 
 export type FrontPageSection = (typeof FRONT_PAGE_SECTIONS)[number]["key"];

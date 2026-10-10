@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import type { CSSProperties, ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { sectionStyle, useFrontPageStyles, type SectionStyle } from "@/lib/frontPageSections";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
@@ -56,6 +58,31 @@ const FAQ = [
   { q: "Can I watch on my TV?", a: "Yes. Members get our TV app for Fire TV, Android TV and Google TV." },
 ];
 
+// Real pictures for the previews: the MetsXMFanZone TV channel picture and the latest stories.
+function useLandingMedia() {
+  return useQuery({
+    queryKey: ["landing-media"],
+    queryFn: async () => {
+      const [{ data: streams }, { data: stories }] = await Promise.all([
+        supabase.from("live_streams_public").select("title, thumbnail_url").ilike("title", "%metsxmfanzone%").not("thumbnail_url", "is", null).limit(1),
+        supabase.from("stories").select("id, title, media_type, media_url, thumbnail_url").eq("published", true).neq("media_type", "text").order("created_at", { ascending: false }).limit(4),
+      ]);
+      const toUrl = (v: string | null | undefined) => {
+        if (!v) return null;
+        if (v.startsWith("http")) return v;
+        return supabase.storage.from("stories").getPublicUrl(v.split("/stories/")[1] || v).data.publicUrl;
+      };
+      return {
+        tv: (streams?.[0]?.thumbnail_url as string | undefined) ?? null,
+        stories: (stories || [])
+          .map((s) => ({ id: s.id as string, title: s.title as string, img: toUrl(s.media_type === "video" ? s.thumbnail_url : s.thumbnail_url || s.media_url) }))
+          .filter((s) => !!s.img),
+      };
+    },
+    staleTime: 10 * 60_000,
+  });
+}
+
 const pickPlan = (id: string) => {
   try {
     localStorage.setItem("pending_signup_plan", id);
@@ -94,6 +121,11 @@ const H2 = ({ children, className = "" }: { children: ReactNode; className?: str
 
 export default function SignedOutLanding() {
   const { data: bgs = {} } = useFrontPageStyles();
+  const { data: media } = useLandingMedia();
+  const tvPicture = bgs.tv?.image || media?.tv || null;
+  const tvPictureStyle: CSSProperties | undefined = tvPicture
+    ? { backgroundImage: `url("${tvPicture.replace(/"/g, "%22")}")`, backgroundSize: "cover", backgroundPosition: "center" }
+    : undefined;
 
   return (
     <div className="bg-[#07101f] text-[#f2f5fa]">
@@ -143,7 +175,11 @@ export default function SignedOutLanding() {
             </div>
           </div>
           <div className="min-w-0 flex-[1_1_400px]">
-            <div className="relative aspect-video overflow-hidden rounded-[18px] border-[10px] border-[#151a22] bg-[radial-gradient(80%_90%_at_70%_30%,#1b3d6b_0%,#0a1d3d_60%,#050b16_100%)] shadow-2xl">
+            <div
+              className="relative aspect-video overflow-hidden rounded-[18px] border-[10px] border-[#151a22] bg-[radial-gradient(80%_90%_at_70%_30%,#1b3d6b_0%,#0a1d3d_60%,#050b16_100%)] shadow-2xl"
+              style={tvPictureStyle}
+            >
+              {tvPicture && <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/70" />}
               <div className="absolute left-5 top-4 flex items-center gap-2.5">
                 <img src={metsLogo} alt="" className="h-11 w-auto" />
                 <div>
@@ -153,7 +189,7 @@ export default function SignedOutLanding() {
               </div>
               <div className="absolute inset-x-5 bottom-4 grid grid-cols-4 gap-2 text-center text-xs font-semibold">
                 {["MetsXMFanZone", "SNY", "MSG", "MLB Network"].map((c, i) => (
-                  <div key={c} className={`rounded-lg bg-white/12 px-1 py-3 ${i === 0 ? "outline outline-2 outline-white" : ""}`}>{c}</div>
+                  <div key={c} className={`rounded-lg bg-black/55 px-1 py-3 backdrop-blur-sm ${i === 0 ? "outline outline-2 outline-white" : ""}`}>{c}</div>
                 ))}
               </div>
             </div>
@@ -228,15 +264,24 @@ export default function SignedOutLanding() {
                 <span className="hidden rounded-full bg-[#13233d] px-3 py-1.5 sm:inline">Podcast</span>
               </div>
             </div>
-            <div className="flex min-h-[170px] flex-col justify-end gap-2 rounded-2xl bg-[radial-gradient(80%_120%_at_85%_10%,rgba(255,89,16,0.35),transparent_60%),linear-gradient(120deg,#0d2a5c,#0a1d3d_60%,#07101f)] p-6">
-              <span className="self-start rounded-full bg-[#e11d48] px-3 py-0.5 text-xs font-extrabold">LIVE NOW</span>
-              <p className="font-display text-[34px] uppercase leading-none">MetsXMFanZone TV</p>
-              <span className="self-start rounded-full bg-white px-4 py-2 text-sm font-bold text-[#07101f]">Watch live</span>
+            <div
+              className="relative flex min-h-[200px] flex-col justify-end gap-2 overflow-hidden rounded-2xl bg-[radial-gradient(80%_120%_at_85%_10%,rgba(255,89,16,0.35),transparent_60%),linear-gradient(120deg,#0d2a5c,#0a1d3d_60%,#07101f)] p-6 sm:min-h-[240px]"
+              style={tvPictureStyle}
+            >
+              {tvPicture && <div className="absolute inset-0 bg-gradient-to-r from-[#07101f]/85 via-[#07101f]/40 to-transparent" />}
+              <span className="relative self-start rounded-full bg-[#e11d48] px-3 py-0.5 text-xs font-extrabold">LIVE NOW</span>
+              <p className="relative font-display text-[34px] uppercase leading-none">MetsXMFanZone TV</p>
+              <span className="relative self-start rounded-full bg-white px-4 py-2 text-sm font-bold text-[#07101f]">Watch live</span>
             </div>
             <p className="mb-2 mt-4 font-semibold">Stories</p>
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-              {[0, 1, 2, 3].map((i) => (
-                <div key={i} className={`aspect-video rounded-xl ${i % 2 ? "bg-gradient-to-br from-[#3a1d10] to-[#13233d]" : "bg-gradient-to-br from-[#1b3d6b] to-[#13233d]"}`} />
+              {(media?.stories?.length ? media.stories : [0, 1, 2, 3].map((i) => ({ id: String(i), title: "", img: null as string | null }))).map((s, i) => (
+                <div key={s.id} className={`relative aspect-video overflow-hidden rounded-xl ${i % 2 ? "bg-gradient-to-br from-[#3a1d10] to-[#13233d]" : "bg-gradient-to-br from-[#1b3d6b] to-[#13233d]"}`}>
+                  {s.img && <img src={s.img} alt="" loading="lazy" className="h-full w-full object-cover" />}
+                  {s.title && (
+                    <span className="absolute inset-x-0 bottom-0 line-clamp-1 bg-gradient-to-t from-black/80 to-transparent px-2 pb-1.5 pt-4 text-[12px] font-semibold">{s.title}</span>
+                  )}
+                </div>
               ))}
             </div>
             <div className="absolute inset-x-0 bottom-0 flex h-32 items-end justify-center bg-gradient-to-t from-[#07101f] from-15% to-transparent pb-5">

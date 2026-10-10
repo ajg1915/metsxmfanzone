@@ -119,6 +119,9 @@ export default function FrontPageSections() {
                   <span className="text-sm font-bold text-white drop-shadow">{sec.label}</span>
                 </div>
 
+                {"imageOnly" in sec ? (
+                  <p className="text-xs text-muted-foreground">Shown on the little TV screen and the members preview. Leave empty to use the channel's own picture.</p>
+                ) : (
                 <div className="flex items-center justify-between gap-3">
                   <Label htmlFor={`color-${sec.key}`} className="text-sm">Colour</Label>
                   <div className="flex items-center gap-2">
@@ -136,6 +139,7 @@ export default function FrontPageSections() {
                     )}
                   </div>
                 </div>
+                )}
 
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1 gap-2" disabled={uploading === sec.key} onClick={() => pickImage(sec.key)}>
@@ -149,7 +153,7 @@ export default function FrontPageSections() {
                   )}
                 </div>
 
-                {st.image && (
+                {st.image && !("imageOnly" in sec) && (
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Darkness over the image</span>
