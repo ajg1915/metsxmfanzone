@@ -127,6 +127,7 @@ export default function DesktopNavMenu({
     <NavMenu.Root delayDuration={60} skipDelayDuration={250} className="relative hidden md:block" aria-label="Main">
       <NavMenu.List className="flex items-center gap-0.5 xl:gap-1">
         <TopLink to="/">Home</TopLink>
+        <TopLink to="/community" onClick={() => goProtected("/community")}>Community</TopLink>
 
         <TopLink to="/podcast">Podcast</TopLink>
         <TopLink to="/blog">Blog</TopLink>
@@ -143,7 +144,6 @@ export default function DesktopNavMenu({
           </NavMenu.Content>
         </NavMenu.Item>
 
-        <TopLink to="/community" onClick={() => goProtected("/community")}>Community</TopLink>
         {!isLoggedIn && <TopLink to="/pricing">Pricing</TopLink>}
         {onTVMode && (
           <NavMenu.Item>
