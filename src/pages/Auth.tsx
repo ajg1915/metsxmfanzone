@@ -355,11 +355,11 @@ const Auth = () => {
   const subtitle = isRecovery
     ? "Choose a secure password for your account."
     : forgotPassword ? "We’ll send a secure reset link to your email."
-      : isSignup ? "Create your account first. You’ll choose Free, Weekly, Monthly, or Yearly after confirmation."
+      : isSignup ? "Create your account first. You’ll choose Weekly, Monthly or Yearly after confirming your email."
         : "Sign in to reach your Member Center.";
 
   return (
-    <div className="relative min-h-screen overflow-y-auto bg-background px-3 py-4 sm:px-6 sm:py-8 lg:flex lg:items-center">
+    <div className="relative min-h-[100dvh] overflow-y-auto bg-background px-3 py-4 sm:flex sm:items-center sm:px-6 sm:py-8">
       <Helmet>
         <title>{isSignup ? "Create Account" : "Member Sign In"} — MetsXMFanZone</title>
         <meta name="description" content="Create or access your MetsXMFanZone member account." />
@@ -377,7 +377,7 @@ const Auth = () => {
             <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">One account keeps your news, community, membership, and streaming access together.</p>
           </div>
           <div className="space-y-3 text-sm">
-            {["Free membership available", "Secure PayPal billing for paid plans", "Cancel from your Member Center"].map((item) => (
+            {["Weekly, Monthly or Yearly plans", "Watch on phone, computer and TV", "Secure PayPal billing, cancel anytime"].map((item) => (
               <div key={item} className="flex items-center gap-3 border-t border-border/30 pt-3">
                 <CheckCircle2 className="h-4 w-4 text-primary" /><span>{item}</span>
               </div>
@@ -432,7 +432,7 @@ const Auth = () => {
                   <div className="space-y-1.5"><Label htmlFor="phoneNumber">Phone number</Label><Input id="phoneNumber" type="tel" value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} placeholder="555-123-4567" className="h-11" autoComplete="tel" /></div>
                   <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border/40 bg-muted/20 p-3"><Checkbox checked={smsOptIn} onCheckedChange={(value) => setSmsOptIn(value === true)} /><span><span className="block text-sm font-semibold">Text alerts</span><span className="block text-xs text-muted-foreground">Optional news and live-stream notifications. Message rates may apply.</span></span></label>
                   <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border/40 bg-muted/20 p-3"><Checkbox checked={agreeToTerms} onCheckedChange={(value) => setAgreeToTerms(value === true)} /><span className="text-xs leading-5 text-muted-foreground">I agree to the <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>.</span></label>
-                  <div className="flex items-start gap-2 rounded-md bg-secondary/20 p-3 text-xs text-muted-foreground"><ShieldCheck className="h-4 w-4 shrink-0 text-primary" /><span>No payment is required now. Choose Free, Weekly, Monthly, or Yearly after confirming your email.</span></div>
+                  <div className="flex items-start gap-2 rounded-md bg-secondary/20 p-3 text-xs text-muted-foreground"><ShieldCheck className="h-4 w-4 shrink-0 text-primary" /><span>Nothing is charged now. You’ll choose Weekly, Monthly or Yearly after confirming your email.</span></div>
                 </>
               )}
 
@@ -463,6 +463,12 @@ const Auth = () => {
                 <Button type="submit" className="h-11 w-full" disabled={loading || verifyingReset}>{loading ? <Loader2 className="animate-spin" /> : isRecovery ? "Update password" : forgotPassword ? "Send reset link" : "Sign in"}</Button>
               )}
             </form>
+
+            <ul className="mt-5 space-y-1.5 text-sm text-muted-foreground lg:hidden">
+              {["Weekly, Monthly or Yearly plans", "Secure PayPal billing, cancel anytime"].map((item) => (
+                <li key={item} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />{item}</li>
+              ))}
+            </ul>
 
             <div className="mt-5 border-t border-border/30 pt-4 text-center text-sm">
               {forgotPassword ? <Button variant="link" onClick={() => setForgotPassword(false)}>Back to sign in</Button> : !isRecovery && <Button variant="link" asChild><Link to={isSignup ? "/auth?mode=login" : "/auth?mode=signup"}>{isSignup ? "Already have an account? Sign in" : "New member? Create an account"}</Link></Button>}

@@ -9,6 +9,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import OnboardingWalkthrough from "@/components/OnboardingWalkthrough";
 import NotificationPreferencesCard from "@/components/NotificationPreferencesCard";
+import MemberApps from "@/components/MemberApps";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -278,6 +279,8 @@ const Dashboard = () => {
               ))}
             </div>
           </section>
+
+          <MemberApps />
 
           <section className="p-0">
             <div className="overflow-hidden rounded-lg border border-border/50 bg-card/70 [&>*]:border-0 [&>*]:bg-transparent"><NotificationPreferencesCard /></div>
