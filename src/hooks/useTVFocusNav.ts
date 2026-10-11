@@ -83,6 +83,28 @@ function move(dir: "up" | "down" | "left" | "right") {
     }
   }
 
+  // Reading long pages (articles): when the next thing to focus is further down than the screen
+  // shows, scroll the page a step instead of jumping straight to it, so the text can be read.
+  if (!scope && (dir === "down" || dir === "up")) {
+    const vh = window.innerHeight;
+    const r = best?.getBoundingClientRect();
+    const onScreen = r && r.top >= 0 && r.bottom <= vh;
+    const tooFar = !r || (dir === "down" ? r.top > vh * 0.95 : r.bottom < vh * 0.05);
+    if (!onScreen && tooFar) {
+      const step = vh * 0.6 * (dir === "down" ? 1 : -1);
+      const before = window.scrollY;
+      window.scrollBy({ top: step, behavior: "smooth" });
+      // Already at the very top/bottom: nothing to scroll, so go to the item after all.
+      window.setTimeout(() => {
+        if (best && Math.abs(window.scrollY - before) < 2) {
+          best.focus({ preventScroll: true });
+          best.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      }, 350);
+      return;
+    }
+  }
+
   if (best) {
     best.focus({ preventScroll: true });
     // In full screen only the channel row scrolls (sideways); the page behind stays put.
