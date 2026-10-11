@@ -42,6 +42,8 @@ interface VoiceOption {
   label: string;
 }
 
+const hasSpeech = () => typeof window !== "undefined" && "speechSynthesis" in window && !!window.speechSynthesis;
+
 export default function BlogPost() {
   useMarkEngaged();
   const { slug } = useParams();
@@ -60,8 +62,10 @@ export default function BlogPost() {
   const [speechRate, setSpeechRate] = useState(1);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // Load available browser voices
+  // Load available browser voices. TV apps and some Android web views have no speech engine
+  // (window.speechSynthesis is missing); touching it there crashed the whole article page.
   useEffect(() => {
+    if (!hasSpeech()) return;
     const loadVoices = () => {
       const voices = speechSynthesis.getVoices();
       // Filter for English voices and prioritize high-quality ones
@@ -111,7 +115,7 @@ export default function BlogPost() {
   // Cleanup speech on unmount
   useEffect(() => {
     return () => {
-      speechSynthesis.cancel();
+      if (hasSpeech()) speechSynthesis.cancel();
     };
   }, []);
 
@@ -157,7 +161,7 @@ export default function BlogPost() {
     if (!post) return;
 
     // Check if speech synthesis is supported
-    if (!('speechSynthesis' in window)) {
+    if (!hasSpeech()) {
       toast({
         title: "Not Supported",
         description: "Text-to-speech is not supported in your browser.",
@@ -255,7 +259,7 @@ export default function BlogPost() {
   };
 
   const stopBrowserTTS = () => {
-    speechSynthesis.cancel();
+    if (hasSpeech()) speechSynthesis.cancel();
     setIsSpeaking(false);
   };
 

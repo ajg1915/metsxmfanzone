@@ -114,6 +114,9 @@ export function useTVFocusNav(enabled: boolean, onBack?: () => boolean) {
         case "ArrowDown":
           if (dialogOpen() && !typing) return;
           e.preventDefault();
+          // Menu buttons (account, Mets menu) open their menu on Up/Down, which trapped the remote
+          // in the header. On a TV, Up/Down always moves; OK opens the menu.
+          if (target?.closest("[aria-haspopup]")) e.stopPropagation();
           move(e.key === "ArrowUp" ? "up" : "down");
           return;
         case "ArrowLeft":
@@ -148,7 +151,8 @@ export function useTVFocusNav(enabled: boolean, onBack?: () => boolean) {
       }
     };
 
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // Capture phase, so we see the remote's arrows before menu buttons act on them.
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   }, [enabled, onBack]);
 }
