@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import DOMPurify from "dompurify";
 import { cn } from "@/lib/utils";
+import { SHORTCODE, renderWithStats } from "./GameStatsEmbed";
 
 const isHtml = (s: string) => /<\/?[a-z][\s\S]*>/i.test(s);
 
@@ -42,6 +43,8 @@ export const cleanArticleHtml = (html: string) => {
 
 export default function ArticleBody({ content, className }: { content: string; className?: string }) {
   const html = useMemo(() => (isHtml(content) ? cleanArticleHtml(content) : null), [content]);
+  // Live MLB stats shortcodes such as [mlb-game 776543]; see GameStatsEmbed.
+  const hasStats = useMemo(() => new RegExp(SHORTCODE.source).test(content), [content]);
   return (
     <div
       className={cn(
@@ -53,7 +56,13 @@ export default function ArticleBody({ content, className }: { content: string; c
       )}
     >
       {html !== null ? (
-        <div dangerouslySetInnerHTML={{ __html: html }} />
+        hasStats ? (
+          renderWithStats(html, (h, key) => <div key={key} dangerouslySetInnerHTML={{ __html: h }} />)
+        ) : (
+          <div dangerouslySetInnerHTML={{ __html: html }} />
+        )
+      ) : hasStats ? (
+        renderWithStats(content, (t, key) => <div key={key} className="whitespace-pre-wrap">{t}</div>)
       ) : (
         <div className="whitespace-pre-wrap">{content}</div>
       )}

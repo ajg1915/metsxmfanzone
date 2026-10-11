@@ -1,0 +1,16 @@
+name = "metsxm-nightly-watchdog"
+main = "nightly-watchdog.js"
+compatibility_date = "2026-09-01"
+
+# 04:00 UTC = midnight EDT, 05:00 UTC = midnight EST. The Worker skips the
+# slot that isn't midnight in New York.
+[triggers]
+crons = ["0 4 * * *", "0 5 * * *"]
+
+[vars]
+SUPABASE_URL = "https://rdmrxeplasttewtlfetc.supabase.co"
+SITE_URL = "https://www.metsxmfanzone.com"
+
+# Secrets, set once:
+#   wrangler secret put CRON_SECRET
+#   wrangler secret put ADMIN_DISCORD_WEBHOOK_URL
