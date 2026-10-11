@@ -236,6 +236,9 @@ export default function Blog() {
                   <Card 
                     className="hover:shadow-xl transition-shadow cursor-pointer overflow-hidden"
                     onClick={() => navigate(`/blog/${filteredPosts[0].slug}`)}
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === "Enter") navigate(`/blog/${filteredPosts[0].slug}`); }}
                   >
                     <div className="grid md:grid-cols-2 gap-0">
                       {filteredPosts[0].featured_image_url && (
@@ -284,6 +287,9 @@ export default function Blog() {
                         key={post.id} 
                         className="hover:shadow-lg transition-shadow cursor-pointer"
                         onClick={() => navigate(`/blog/${post.slug}`)}
+                    role="link"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === "Enter") navigate(`/blog/${post.slug}`); }}
                       >
                         {post.featured_image_url && (
                           <div className="aspect-video overflow-hidden rounded-t-lg">

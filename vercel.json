@@ -47,6 +47,21 @@
     },
     {
       "source": "/blog/:slug*",
+      "has": [{ "type": "header", "key": "user-agent", "value": ".*(MetsXMFanZoneTV|AFT[A-Z]|Android TV|AndroidTV|GoogleTV|BRAVIA|SMART-TV|SmartTV).*" }],
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog/:slug*",
+      "has": [{ "type": "query", "key": "__chunk_retry" }],
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog/:slug*",
+      "has": [{ "type": "query", "key": "tv" }],
+      "destination": "/index.html"
+    },
+    {
+      "source": "/blog/:slug*",
       "destination": "/api/blog?slug=:slug*"
     },
     {
