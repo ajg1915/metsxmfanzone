@@ -85,7 +85,7 @@ export function TVStreamOverlay({ title, streamId }: TVStreamOverlayProps) {
                 onFocus={(e) => e.currentTarget.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" })}
                 className="group w-[16vw] min-w-[170px] shrink-0 rounded-xl text-left focus:outline-none"
               >
-                <div className="aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-[#17263f]">
+                <div className="aspect-video w-full overflow-hidden rounded-xl border border-white/10 bg-[color:var(--tv-surface)]">
                   <img src={c.thumbnail_url || "/placeholder.svg"} alt="" className="h-full w-full object-cover" loading="lazy" />
                 </div>
                 <p className="mt-1 line-clamp-1 text-[1.05rem] font-medium text-white">{c.title}</p>

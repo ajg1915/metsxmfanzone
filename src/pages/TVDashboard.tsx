@@ -303,18 +303,18 @@ const TVDashboard = () => {
   // Signed in but not a paid member: TV Mode is for paid plans only
   if (!isPremium) {
     return (
-      <div className="h-screen w-screen overflow-y-auto bg-[#07101f] text-[#f2f5fa]">
+      <div className="h-screen w-screen overflow-y-auto bg-[color:var(--tv-bg)] text-[color:var(--tv-text)]">
         <div className="mx-auto flex min-h-full max-w-[44rem] flex-col justify-center px-8 py-6 text-center">
           <img src={metsLogo} alt="MetsXMFanZone" className="h-16 w-auto mx-auto mb-4" />
           <h1 className="text-[2.4rem] font-bold mb-4">TV Mode is for paid members</h1>
-          <p className="text-[1.35rem] text-[#9fb0c9] mb-8">
+          <p className="text-[1.35rem] text-[color:var(--tv-subtext)] mb-8">
             Join a plan on your phone or computer at metsxmfanzone.com/pricing, then come back and
             this screen will open.
           </p>
           <div className="flex flex-col gap-4 items-center">
             <Button
               onClick={() => navigate("/pricing")}
-              className="gap-3 rounded-full bg-white text-[#07101f] hover:bg-white/90 text-[1.3rem] font-bold px-10 py-7"
+              className="gap-3 rounded-full bg-white text-[color:var(--tv-bg)] hover:bg-white/90 text-[1.3rem] font-bold px-10 py-7"
             >
               <Crown className="w-6 h-6" />
               View plans
@@ -322,7 +322,7 @@ const TVDashboard = () => {
             <Button
               variant="ghost"
               onClick={() => void signOut()}
-              className="rounded-full bg-[#17263f] text-[#f2f5fa] text-[1.15rem] px-8 py-6"
+              className="rounded-full bg-[color:var(--tv-surface)] text-[color:var(--tv-text)] text-[1.15rem] px-8 py-6"
             >
               Sign out
             </Button>
@@ -333,7 +333,7 @@ const TVDashboard = () => {
                 navigate("/");
                 window.location.reload();
               }}
-              className="rounded-full bg-[#17263f] text-[#f2f5fa] text-[1.15rem] px-8 py-6"
+              className="rounded-full bg-[color:var(--tv-surface)] text-[color:var(--tv-text)] text-[1.15rem] px-8 py-6"
             >
               Leave TV Mode
             </Button>
@@ -344,7 +344,7 @@ const TVDashboard = () => {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#07101f] text-[#f2f5fa] flex flex-col">
+    <div className="h-screen w-screen overflow-hidden bg-[color:var(--tv-bg)] text-[color:var(--tv-text)] flex flex-col">
       <SEOHead
         title="TV Dashboard | MetsXMFanZone"
         description="Amazon TV-style dashboard for MetsXMFanZone streaming content."
@@ -463,7 +463,7 @@ const TVDashboard = () => {
                     Story {storyIdx + 1} of {resolvedStories.length} · {selectedStory.media_type === "video" ? "Video" : "Photo"}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-[1rem] text-[#cfd8e6]">◀ ▶ Left / right for more · Back to close</span>
+                <span className="shrink-0 rounded-full bg-white/10 px-4 py-2 text-[1rem] text-[color:var(--tv-subtext)]">◀ ▶ Left / right for more · Back to close</span>
               </div>
             </div>
           )}

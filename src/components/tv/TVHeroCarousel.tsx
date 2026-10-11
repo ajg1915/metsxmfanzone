@@ -45,7 +45,7 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
       onBlur={(e) => {
         if (!ref.current?.contains(e.relatedTarget as Node | null)) setPaused(false);
       }}
-      className="relative w-full overflow-hidden rounded-[1.4rem] min-h-[34vh] max-h-[46vh] aspect-[21/8] bg-[#0a1d3d]"
+      className="relative w-full overflow-hidden rounded-[1.4rem] min-h-[34vh] max-h-[46vh] aspect-[21/8] bg-[color:var(--tv-hero)]"
       aria-roledescription="carousel"
     >
       {slide.image && (
@@ -59,8 +59,8 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
       <div
         className={
           slide.kind === "live"
-            ? "absolute inset-0 bg-[radial-gradient(90%_120%_at_85%_10%,rgba(255,89,16,0.35),transparent_60%),linear-gradient(120deg,rgba(13,42,92,0.85)_0%,rgba(10,29,61,0.8)_60%,#07101f_100%)]"
-            : "absolute inset-0 bg-[radial-gradient(90%_120%_at_15%_10%,rgba(255,89,16,0.3),transparent_60%),linear-gradient(120deg,rgba(42,22,8,0.8)_0%,rgba(10,29,61,0.85)_70%,#07101f_100%)]"
+            ? "absolute inset-0 bg-[radial-gradient(90%_120%_at_85%_10%,rgba(255,89,16,0.35),transparent_60%),linear-gradient(120deg,rgba(13,42,92,0.85)_0%,rgba(10,29,61,0.8)_60%,var(--tv-bg)_100%)]"
+            : "absolute inset-0 bg-[radial-gradient(90%_120%_at_15%_10%,rgba(255,89,16,0.3),transparent_60%),linear-gradient(120deg,rgba(42,22,8,0.8)_0%,rgba(10,29,61,0.85)_70%,var(--tv-bg)_100%)]"
         }
       />
 
@@ -69,7 +69,7 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
           className={
             slide.kind === "live"
               ? "inline-flex items-center gap-2 rounded-full bg-[#e11d48] px-4 py-1 text-[1rem] font-bold uppercase tracking-wider text-white"
-              : "inline-flex items-center rounded-full bg-[#17263f] px-4 py-1 text-[1rem] font-bold uppercase tracking-wider text-[#9fb0c9]"
+              : "inline-flex items-center rounded-full bg-[color:var(--tv-surface)] px-4 py-1 text-[1rem] font-bold uppercase tracking-wider text-[color:var(--tv-subtext)]"
           }
         >
           {slide.kind === "live" && <span className="h-2 w-2 rounded-full bg-white animate-pulse" />}
@@ -77,13 +77,13 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
         </span>
         <h1 className="max-w-[60rem] text-[2.8rem] font-bold leading-[1.05] text-white">{slide.title}</h1>
         {slide.description && (
-          <p className="max-w-[44rem] text-[1.3rem] text-[#9fb0c9] line-clamp-2">{slide.description}</p>
+          <p className="max-w-[44rem] text-[1.3rem] text-[color:var(--tv-subtext)] line-clamp-2">{slide.description}</p>
         )}
         <div className="mt-[0.8vh] flex gap-[1vw]">
           <button
             type="button"
             onClick={() => navigate(slide.to)}
-            className="rounded-full bg-white px-[2vw] py-[1.4vh] text-[1.35rem] font-bold text-[#07101f]"
+            className="rounded-full bg-white px-[2vw] py-[1.4vh] text-[1.35rem] font-bold text-[color:var(--tv-bg)]"
           >
             {slide.primaryLabel}
           </button>

@@ -65,22 +65,22 @@ export function TVSignIn() {
   };
 
   const field =
-    "w-full rounded-2xl bg-[#17263f] border-2 border-transparent px-5 py-3 text-[1.4rem] text-white placeholder:text-[#9fb0c9] focus:border-white focus:outline-none";
+    "w-full rounded-2xl bg-[color:var(--tv-surface)] border-2 border-transparent px-5 py-3 text-[1.4rem] text-white placeholder:text-[color:var(--tv-subtext)] focus:border-white focus:outline-none";
 
   return (
-    <div className="h-screen w-screen overflow-y-auto bg-[#07101f] text-[#f2f5fa]">
+    <div className="h-screen w-screen overflow-y-auto bg-[color:var(--tv-bg)] text-[color:var(--tv-text)]">
       <div className="mx-auto flex min-h-full w-full max-w-[44rem] flex-col justify-center px-8 py-6">
         <div className="flex items-center gap-5 mb-5">
           <img src={metsLogo} alt="MetsXMFanZone" className="h-14 w-auto" />
           <div>
-            <p className="text-[1.1rem] font-bold tracking-widest uppercase text-[#ff5910]">TV Mode</p>
+            <p className="text-[1.1rem] font-bold tracking-widest uppercase text-[color:var(--tv-accent)]">TV Mode</p>
             <h1 className="text-[2rem] font-bold leading-tight">Sign in to watch</h1>
           </div>
         </div>
 
         <form onSubmit={signIn} className="space-y-3">
           <label className="block">
-            <span className="block mb-1 text-[1.05rem] text-[#9fb0c9]">Email</span>
+            <span className="block mb-1 text-[1.05rem] text-[color:var(--tv-subtext)]">Email</span>
             <input
               ref={emailRef}
               type="email"
@@ -93,7 +93,7 @@ export function TVSignIn() {
             />
           </label>
           <label className="block">
-            <span className="block mb-1 text-[1.05rem] text-[#9fb0c9]">Password</span>
+            <span className="block mb-1 text-[1.05rem] text-[color:var(--tv-subtext)]">Password</span>
             <input
               type="password"
               autoComplete="current-password"
@@ -113,13 +113,13 @@ export function TVSignIn() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-full bg-white text-[#07101f] font-bold text-[1.3rem] py-3 disabled:opacity-60"
+            className="w-full rounded-full bg-white text-[color:var(--tv-bg)] font-bold text-[1.3rem] py-3 disabled:opacity-60"
           >
             {busy ? "Signing in..." : "Sign in"}
           </button>
         </form>
 
-        <p className="mt-4 text-[1rem] text-[#9fb0c9]">
+        <p className="mt-4 text-[1rem] text-[color:var(--tv-subtext)]">
           TV Mode is for paid members. Use the same email and password as metsxmfanzone.com.
           No account yet? Join on your phone or computer at metsxmfanzone.com/pricing.
         </p>
@@ -127,7 +127,7 @@ export function TVSignIn() {
         <button
           type="button"
           onClick={exitTV}
-          className="mt-4 self-start rounded-full bg-[#17263f] text-[#f2f5fa] font-medium text-[1.05rem] px-6 py-2"
+          className="mt-4 self-start rounded-full bg-[color:var(--tv-surface)] text-[color:var(--tv-text)] font-medium text-[1.05rem] px-6 py-2"
         >
           Leave TV Mode
         </button>

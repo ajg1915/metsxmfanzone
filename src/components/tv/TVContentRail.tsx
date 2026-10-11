@@ -24,10 +24,10 @@ export function TVContentRail({ title, items, accent, onItemClick }: TVContentRa
   return (
     <section className="group/rail relative mt-[4vh]" aria-label={title}>
       <div className="flex items-center gap-3 mb-[1.4vh] pl-[0.2vw]">
-        {accent && <span className="h-3 w-3 rounded-full bg-[#ff5910] animate-pulse" />}
-        <h2 className={cn("text-[1.7rem] font-medium", accent ? "text-[#ff5910]" : "text-[#f2f5fa]")}>{title}</h2>
+        {accent && <span className="h-3 w-3 rounded-full bg-[color:var(--tv-accent)] animate-pulse" />}
+        <h2 className={cn("text-[1.7rem] font-medium", accent ? "text-[color:var(--tv-accent)]" : "text-[color:var(--tv-text)]")}>{title}</h2>
         {items.length > 1 && (
-          <span className="ml-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[0.95rem] text-[#cfd8e6] opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100">
+          <span className="ml-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[0.95rem] text-[color:var(--tv-subtext)] opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100">
             <span aria-hidden="true">◀</span> Use left and right to browse <span aria-hidden="true">▶</span>
           </span>
         )}
@@ -35,8 +35,8 @@ export function TVContentRail({ title, items, accent, onItemClick }: TVContentRa
 
       {items.length > 1 && (
         <>
-          <span aria-hidden="true" className="pointer-events-none absolute left-0 top-[calc(1.7rem+3vh)] z-10 flex h-[calc(22vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-start bg-gradient-to-r from-[#07101f] to-transparent pl-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-left_1.2s_ease-in-out_infinite]">‹</span>
-          <span aria-hidden="true" className="pointer-events-none absolute right-0 top-[calc(1.7rem+3vh)] z-10 flex h-[calc(22vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-end bg-gradient-to-l from-[#07101f] to-transparent pr-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-right_1.2s_ease-in-out_infinite]">›</span>
+          <span aria-hidden="true" className="pointer-events-none absolute left-0 top-[calc(1.7rem+3vh)] z-10 flex h-[calc(22vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-start bg-gradient-to-r from-[color:var(--tv-bg)] to-transparent pl-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-left_1.2s_ease-in-out_infinite]">‹</span>
+          <span aria-hidden="true" className="pointer-events-none absolute right-0 top-[calc(1.7rem+3vh)] z-10 flex h-[calc(22vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-end bg-gradient-to-l from-[color:var(--tv-bg)] to-transparent pr-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-right_1.2s_ease-in-out_infinite]">›</span>
         </>
       )}
 
@@ -51,7 +51,7 @@ export function TVContentRail({ title, items, accent, onItemClick }: TVContentRa
             }
             className="group shrink-0 w-[22vw] min-w-[240px] rounded-[0.9rem] text-left focus:outline-none"
           >
-            <div className="relative aspect-video w-full overflow-hidden rounded-[0.9rem] bg-[#17263f] border border-white/5">
+            <div className="relative aspect-video w-full overflow-hidden rounded-[0.9rem] bg-[color:var(--tv-surface)] border border-white/5">
               <img
                 src={item.thumbnail}
                 alt=""
@@ -69,11 +69,11 @@ export function TVContentRail({ title, items, accent, onItemClick }: TVContentRa
                 </span>
               )}
             </div>
-            <p className="mt-[1vh] pl-[0.2vw] text-[1.25rem] font-medium leading-tight text-[#f2f5fa] line-clamp-2">
+            <p className="mt-[1vh] pl-[0.2vw] text-[1.25rem] font-medium leading-tight text-[color:var(--tv-text)] line-clamp-2">
               {item.title}
             </p>
             {item.subtitle && (
-              <p className="mt-[0.3vh] pl-[0.2vw] text-[1rem] leading-tight text-[#9fb0c9] line-clamp-1">
+              <p className="mt-[0.3vh] pl-[0.2vw] text-[1rem] leading-tight text-[color:var(--tv-subtext)] line-clamp-1">
                 {item.subtitle}
               </p>
             )}

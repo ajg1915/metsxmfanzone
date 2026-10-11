@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTVFocusNav } from "@/hooks/useTVFocusNav";
 import { handleTVBack } from "@/lib/tvNavigation";
 import { STREAMS_REFRESH_EVENT, watchForceRefresh } from "@/lib/forceRefresh";
+import { applyTVPalette, clearTVPalette, currentTVLook, useTVThemeSettings } from "@/lib/tvTheme";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Tv, X, Monitor, Home } from "lucide-react";
@@ -75,6 +76,23 @@ export function TVModeWrapper({ children }: TVModeWrapperProps) {
       navigate("/tv", { replace: true });
     }
   }, [isTVDevice, location.pathname, navigate]);
+
+  // TV app colours (Admin › TV App Colours): Day / Night / Automatic by the TV's clock.
+  const tvOn = isTVDevice || isTVEligible;
+  const { data: tvTheme } = useTVThemeSettings(tvOn);
+  useEffect(() => {
+    if (!tvOn || !tvTheme) return;
+    const paint = () => {
+      const look = currentTVLook(tvTheme);
+      applyTVPalette(tvTheme[look], look);
+    };
+    paint();
+    const timer = window.setInterval(paint, 60_000);
+    return () => {
+      window.clearInterval(timer);
+      clearTVPalette();
+    };
+  }, [tvOn, tvTheme]);
 
   // Show the top bar only for eligible users
   useEffect(() => {

@@ -4,7 +4,7 @@ import {
   Megaphone, BookOpen, Trophy, Send, Wallpaper,
   Activity, AlertTriangle, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
   ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift, Bot, Search,
-  Calendar, ShieldCheck, CreditCard,
+  Calendar, ShieldCheck, CreditCard, Tv,
 } from "lucide-react";
 
 type Icon = React.ComponentType<{ className?: string }>;
@@ -215,6 +215,7 @@ export const ADMIN_HUBS: AdminHub[] = [
       { title: "Admin Settings", items: [{ title: "Admin Settings", url: "/admin/settings", icon: Settings }] },
       { title: "Welcome Screen", items: [{ title: "Welcome Screen", url: "/admin/welcome-screen", icon: Monitor }] },
       { title: "Front Page", items: [{ title: "Front Page sections", url: "/admin/front-page", icon: Wallpaper }] },
+      { title: "TV App Colours", items: [{ title: "TV App Colours", url: "/admin/tv-colors", icon: Tv }] },
       { title: "Backgrounds", items: [{ title: "Backgrounds", url: "/admin/backgrounds", icon: Wallpaper }] },
     ],
   },

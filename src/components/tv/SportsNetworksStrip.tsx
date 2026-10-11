@@ -54,7 +54,7 @@ const SportsNetworksStrip = () => {
 
   return (
     <section className="sports-networks container mx-auto max-w-[1600px] px-4 py-6" aria-label="Sports networks">
-      <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff5a1f]">Sports networks</p>
+      <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[color:var(--tv-accent)]">Sports networks</p>
       <h2 className="mb-4 font-display text-[30px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-4xl">
         Networks
       </h2>

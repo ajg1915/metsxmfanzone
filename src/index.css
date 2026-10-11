@@ -8,6 +8,16 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* TV app colours (day look); Admin › TV App Colours changes these on TVs */
+    --tv-bg: #07101f;
+    --tv-card: #0f1b30;
+    --tv-surface: #17263f;
+    --tv-text: #f2f5fa;
+    --tv-subtext: #9fb0c9;
+    --tv-accent: #ff5910;
+    --tv-highlight: #0b3b75;
+    --tv-hero: #0a1d3d;
+
     /* Stadium Night */
     --background: 211 63% 7%;
     --foreground: 210 20% 97%;

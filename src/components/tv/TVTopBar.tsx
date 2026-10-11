@@ -34,10 +34,10 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
     "rounded-full px-[1.4vw] py-[1.2vh] text-[1.35rem] font-medium whitespace-nowrap transition-colors";
 
   return (
-    <header className="shrink-0 flex items-center gap-[1.2vw] bg-[#0f1b30] px-[2.4vw] py-[2vh] border-b border-white/5">
+    <header className="shrink-0 flex items-center gap-[1.2vw] bg-[color:var(--tv-card)] px-[2.4vw] py-[2vh] border-b border-white/5">
       <div className="flex items-center gap-[0.9vw] mr-[1.2vw] shrink-0">
         <img src={metsLogo} alt="MetsXMFanZone" className="h-[6.5vh] w-auto" />
-        <span className="text-[1.3rem] font-bold tracking-wider uppercase text-[#ff5910]">TV Mode</span>
+        <span className="text-[1.3rem] font-bold tracking-wider uppercase text-[color:var(--tv-accent)]">TV Mode</span>
       </div>
 
       <nav aria-label="Sections" className="flex items-center gap-[0.6vw] min-w-0">
@@ -48,7 +48,7 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
             onClick={s.go}
             className={cn(
               pill,
-              s.active ? "bg-[#17263f] text-[#f2f5fa]" : "text-[#9fb0c9] hover:text-[#f2f5fa]",
+              s.active ? "bg-[color:var(--tv-surface)] text-[color:var(--tv-text)]" : "text-[color:var(--tv-subtext)] hover:text-[color:var(--tv-text)]",
             )}
           >
             {s.label}
@@ -57,13 +57,13 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
       </nav>
 
       <div className="ml-auto flex items-center gap-[0.8vw] shrink-0">
-        <span className="text-[1.2rem] text-[#9fb0c9] tabular-nums mr-[0.6vw]">
+        <span className="text-[1.2rem] text-[color:var(--tv-subtext)] tabular-nums mr-[0.6vw]">
           {now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
         </span>
         <button
           type="button"
           onClick={() => void signOut()}
-          className={cn(pill, "text-[1.1rem] text-[#9fb0c9] hover:text-[#f2f5fa]")}
+          className={cn(pill, "text-[1.1rem] text-[color:var(--tv-subtext)] hover:text-[color:var(--tv-text)]")}
         >
           Sign out
         </button>
@@ -74,7 +74,7 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
             navigate("/");
             window.location.reload();
           }}
-          className={cn(pill, "text-[1.1rem] text-[#9fb0c9] hover:text-[#f2f5fa]")}
+          className={cn(pill, "text-[1.1rem] text-[color:var(--tv-subtext)] hover:text-[color:var(--tv-text)]")}
         >
           Leave TV
         </button>
