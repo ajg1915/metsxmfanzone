@@ -9,8 +9,11 @@ import { renderEmail } from "./_lib/email-shell.js";
 const SEGMENT_ID = "53422271-e367-4699-a322-b3e7d586f8a4";
 const FROM = "MetsXMFanZone <noreply@metsxmfanzone.com>";
 const REPLY_TO = "support@metsxmfanzone.com";
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || "https://rdmrxeplasttewtlfetc.supabase.co";
-const ANON = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
+// Public project address and public (anon) key, the same ones the website itself uses.
+// Hardcoded on purpose: the Vercel VITE_ variables point at an old project.
+const SUPABASE_URL = "https://rdmrxeplasttewtlfetc.supabase.co";
+const ANON =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA";
 const ALLOWED_ORIGINS = ["https://metsxmfanzone.com", "https://www.metsxmfanzone.com"];
 
 const resend = (path, init = {}) =>
