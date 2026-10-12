@@ -53,32 +53,50 @@ const NewsletterSection = () => {
     }
   };
 
-  return <section className="py-6 sm:py-8 md:py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-        <div className="max-w-xl sm:max-w-2xl mx-auto text-center glass-card glow-blue rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 bg-gradient-to-br from-primary/10 via-background to-primary/5">
-          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full bg-primary/10 mb-3 sm:mb-4 md:mb-5">
-            <img src={logo} alt="MetsXMFanZone" className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14" />
-          </div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2 sm:mb-3 leading-tight">
-            Get MetsXMFanZone News
-          </h2>
-          <p className="text-muted-foreground mb-4 sm:mb-5 md:mb-6 text-xs sm:text-sm max-w-md mx-auto">
-            Mets news, game highlights and updates from MetsXMFanZone, straight to your email.
-          </p>
-          <form onSubmit={handleSubmit} className="relative flex flex-col gap-2 sm:gap-3 max-w-sm sm:max-w-md mx-auto">
-            <input {...honeypotProps} />
-            <Input type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} maxLength={80} autoComplete="name" className="flex-1 h-9 sm:h-10 text-sm" />
-            <Input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required className="flex-1 h-9 sm:h-10 text-sm" />
+  const field =
+    "box-border h-12 w-full rounded-[10px] border border-white/20 bg-[#06101c] px-3.5 text-base text-[#f3f6f9] placeholder:text-[#7f93aa] focus-visible:ring-[#ff4500]";
+  const label = "mb-1 block text-xs font-semibold text-[#9fb0c2]";
 
-            <Button type="submit" size="default" disabled={isLoading} className="h-9 sm:h-10 text-xs sm:text-sm px-4 sm:px-6">
-              {isLoading ? "Subscribing..." : "Subscribe"}
-            </Button>
-          </form>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-3 sm:mt-4">
-            We respect your privacy. Unsubscribe at any time.
-          </p>
+  return (
+    <section aria-labelledby="newsletter-title" className="border-y border-white/10 border-t-[3px] border-t-[#ff4500] bg-gradient-to-r from-[#0b3e75] via-[#0c1c2c] to-[#0c1c2c]">
+      <div className="mx-auto flex max-w-[1240px] flex-col gap-6 px-5 py-7 md:flex-row md:items-center md:justify-between md:gap-12 md:px-8 md:py-9">
+        {/* Left: the logo and the message */}
+        <div className="flex min-w-0 items-center gap-4 md:flex-1 md:gap-6">
+          <img src={logo} alt="MetsXMFanZone" className="h-14 w-auto shrink-0 drop-shadow-[0_0_20px_rgba(255,69,0,0.45)] md:h-[84px]" />
+          <div className="min-w-0">
+            <p className="text-xs font-bold tracking-[0.14em] text-[#ff8a57] md:text-[13px]">THE NEWSLETTER</p>
+            <h2 id="newsletter-title" className="font-display text-4xl uppercase leading-none text-white md:text-[54px]">
+              Get MetsXMFanZone News
+            </h2>
+            <p className="mt-2 hidden max-w-[460px] text-base leading-snug text-[#c3cfdb] md:block">
+              Mets news, game highlights and updates from the fan zone, straight to your email.
+            </p>
+          </div>
         </div>
+        <p className="-mt-3 text-[15px] leading-snug text-[#c3cfdb] md:hidden">
+          Mets news, game highlights and updates, straight to your email.
+        </p>
+
+        {/* Right: the signup */}
+        <form onSubmit={handleSubmit} className="relative flex w-full flex-col gap-2.5 md:w-[540px] md:shrink-0">
+          <input {...honeypotProps} />
+          <div className="flex flex-col gap-2.5 md:flex-row">
+            <div className="md:flex-1">
+              <label htmlFor="newsletter-name" className={label}>Your name</label>
+              <Input id="newsletter-name" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" className={field} />
+            </div>
+            <div className="md:flex-[1.3]">
+              <label htmlFor="newsletter-email" className={label}>Email</label>
+              <Input id="newsletter-email" type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={field} />
+            </div>
+          </div>
+          <Button type="submit" disabled={isLoading} className="mt-1 h-[50px] rounded-full bg-[#ff4500] text-base font-bold text-[#06101c] hover:bg-[#ff5910]">
+            {isLoading ? "Subscribing..." : "Subscribe"}
+          </Button>
+          <p className="text-center text-xs text-[#9fb0c2]">We respect your privacy. Unsubscribe at any time.</p>
+        </form>
       </div>
-    </section>;
+    </section>
+  );
 };
 export default NewsletterSection;
