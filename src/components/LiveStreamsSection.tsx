@@ -32,6 +32,8 @@ import {
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import NewBadge from "@/components/NewBadge";
+import { startsSoon } from "@/lib/newItem";
 
 interface LiveStream {
   id: string;
@@ -125,6 +127,10 @@ const SortableStreamCard = ({
           >
             <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
           </button>
+        )}
+
+        {stream.status === 'scheduled' && startsSoon(stream.scheduled_start) && (
+          <NewBadge kind="gametime" className="absolute top-2 left-2" />
         )}
 
         <div className="absolute top-2 right-2 flex items-center gap-1.5">

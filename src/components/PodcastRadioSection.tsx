@@ -4,6 +4,8 @@ import { ArrowRight, Download, Pause, Play, Radio, RotateCcw, RotateCw } from "l
 import { downloadAudio } from "@/utils/downloadAudio";
 import { supabase } from "@/integrations/supabase/client";
 import podcastLogo from "@/assets/podcast-logo.png";
+import NewBadge from "@/components/NewBadge";
+import { isFresh } from "@/lib/newItem";
 
 type Episode = {
   id: string;
@@ -260,6 +262,7 @@ const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) 
                       <span className="min-w-0 flex-1">
                         <span className="block line-clamp-2 text-[15px] font-semibold leading-tight text-foreground">{ep.title}</span>
                         <span className="mt-0.5 block text-[12.5px] text-muted-foreground">
+                          {isFresh(ep.published_at) && <NewBadge kind="episode" small className="mr-1.5 align-middle" />}
                           {fmtDate(ep.published_at)}
                           {ep.duration ? ` · ${fmtTime(ep.duration)}` : ""}
                         </span>

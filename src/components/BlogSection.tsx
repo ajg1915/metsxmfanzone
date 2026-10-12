@@ -6,6 +6,8 @@ import { Clock, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import logo from "@/assets/metsxmfanzone-logo.png";
+import NewBadge from "@/components/NewBadge";
+import { isFresh } from "@/lib/newItem";
 
 interface BlogPost {
   id: string;
@@ -166,6 +168,9 @@ const BlogSection = () => {
                     Featured
                   </Badge>
                 </div>
+                {isFresh(highlightPost.published_at || highlightPost.created_at) && (
+                  <NewBadge kind="article" className="absolute top-3 right-3" />
+                )}
                 <div className="absolute bottom-0 left-0 right-0 p-3 sm:hidden">
                   {highlightPost.category && (
                     <Badge className="text-[10px] px-1.5 py-0 mb-1.5 bg-white/20 text-white border-0 backdrop-blur-sm">
@@ -244,6 +249,9 @@ const BlogSection = () => {
                     <div className="w-full h-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
                       <img src={logo} alt="" className="w-8 h-8 opacity-30" />
                     </div>
+                  )}
+                  {isFresh(post.published_at || post.created_at) && (
+                    <NewBadge kind="article" small className="absolute left-1 top-1" />
                   )}
                 </div>
 
