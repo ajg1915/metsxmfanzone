@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import PremiumBadge from "@/components/PremiumBadge";
+import NewBadge from "@/components/NewBadge";
+import { isFresh } from "@/lib/newItem";
 
 interface LiveStream {
   id: string;
@@ -189,6 +191,10 @@ const ReplayGamesSection = () => {
                       <Play className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground ml-0.5" fill="currentColor" />
                     </div>
                   </div>
+
+                  {isFresh(stream.scheduled_start) && (
+                    <NewBadge kind="upload" className="absolute top-2 left-2" />
+                  )}
 
                   <div className="absolute top-2 right-2 flex items-center gap-1.5">
                     {!isSpringTrainingStream(stream) && !isAdmin && tier !== "weekly" && tier !== "premium" && tier !== "annual" && (
