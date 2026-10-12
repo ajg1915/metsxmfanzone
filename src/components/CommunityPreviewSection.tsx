@@ -31,6 +31,8 @@ interface WallArticle {
   created_at: string;
 }
 
+const isVideoUrl = (u: string) => /\.(mp4|webm|mov)(\?|$)/i.test(u);
+
 const NEW_FOR_MS = 48 * 60 * 60 * 1000;
 
 const timeAgo = (date: string) => {
@@ -125,7 +127,7 @@ const CommunityPreviewSection = () => {
     };
   }, []);
 
-  const openWall = () => navigate("/community");
+  const openPost = (id: string) => navigate(`/community#post-${id}`);
   const [scrollPosition, setScrollPosition] = useState(0);
 
   const scrollBy = (direction: "left" | "right") => {
@@ -236,7 +238,7 @@ const CommunityPreviewSection = () => {
             <motion.button
               type="button"
               key={post.id}
-              onClick={openWall}
+              onClick={() => openPost(post.id)}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -247,7 +249,11 @@ const CommunityPreviewSection = () => {
               <div className={frameClass}>
                 <div className="aspect-video relative bg-gradient-to-br from-secondary via-muted to-background">
                   {post.image_url ? (
-                    <img src={post.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    isVideoUrl(post.image_url) ? (
+                      <video src={`${post.image_url}#t=0.1`} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={post.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    )
                   ) : (
                     post.content && (
                       <p className="absolute inset-0 flex items-center px-4 pb-12 pt-9 text-lg sm:text-xl font-bold leading-snug text-foreground line-clamp-4">

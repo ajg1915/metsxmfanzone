@@ -115,6 +115,15 @@ const Community = () => {
     }
   }, [user, loading, navigate]);
 
+  // Coming from the home wall: scroll to the post that was tapped (/community#post-<id>)
+  useEffect(() => {
+    if (feedItems.length === 0) return;
+    const hash = window.location.hash;
+    if (!hash.startsWith("#post-")) return;
+    const el = document.getElementById(hash.slice(1));
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [feedItems]);
+
   const fetchFeed = async () => {
     // Fetch admin user IDs first
     const { data: adminRoles } = await supabase
@@ -652,7 +661,8 @@ const Community = () => {
                 return (
                   <article
                     key={`${item.type}-${item.id}`}
-                    className={`rounded-2xl overflow-hidden border bg-card/80 ${
+                    id={`post-${item.id}`}
+                    className={`scroll-mt-24 rounded-2xl overflow-hidden border bg-card/80 ${
                       item.type === 'post' && item.is_pinned ? 'border-primary border-2' : 'border-border/30'
                     }`}
                   >
