@@ -4,7 +4,7 @@ import {
   Megaphone, BookOpen, Trophy, Send, Wallpaper,
   Activity, AlertTriangle, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
   ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift, Bot, Search,
-  Calendar, ShieldCheck, CreditCard, Tv,
+  Calendar, ShieldCheck, CreditCard, Tv, ClipboardCheck,
 } from "lucide-react";
 
 type Icon = React.ComponentType<{ className?: string }>;
@@ -76,8 +76,9 @@ export const ADMIN_HUBS: AdminHub[] = [
     key: "content",
     title: "Content",
     icon: FileText,
-    hint: "Articles, media, podcasts",
+    hint: "Drafts, articles, media, podcasts",
     groups: [
+      { title: "Drafts", items: [{ title: "Drafts", url: "/admin/drafts", icon: ClipboardCheck }] },
       {
         title: "Articles",
         items: [

@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { ADMIN_HUBS, findActiveGroup, findActiveHub, isUrlActive } from "@/components/admin/adminNav";
+import { useDraftsWaiting } from "@/hooks/useDraftsWaiting";
 
 /**
  * Tab strip for the current hub. One tab per group; a group with several pages
@@ -9,6 +10,7 @@ export function AdminHubTabs() {
   const { pathname } = useLocation();
   const hub = findActiveHub(pathname) ?? ADMIN_HUBS[0];
   const activeGroup = findActiveGroup(hub, pathname);
+  const waiting = useDraftsWaiting(pathname);
 
   if (hub.groups.length <= 1) return null;
 
@@ -34,6 +36,12 @@ export function AdminHubTabs() {
               }`}
             >
               {group.title}
+              {group.title === "Drafts" && waiting ? (
+                <span className="ml-2 rounded-full bg-[#FF5910] px-2 py-px text-[12px] font-extrabold text-[#0B1730]">
+                  {waiting}
+                  <span className="sr-only"> waiting for approval</span>
+                </span>
+              ) : null}
             </NavLink>
           );
         })}

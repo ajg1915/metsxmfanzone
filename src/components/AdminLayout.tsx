@@ -15,6 +15,7 @@ import { AdminCommandPalette } from "@/components/admin/AdminCommandPalette";
 import { ADMIN_HUBS, ADMIN_QUICK_HUBS, findActiveHub, hubLandingUrl } from "@/components/admin/adminNav";
 import { AdminHubTabs } from "@/components/admin/AdminHubTabs";
 import { AdminMobileMenu } from "@/components/admin/AdminMobileMenu";
+import { useDraftsWaiting } from "@/hooks/useDraftsWaiting";
 import { NavLink } from "react-router-dom";
 import { withTimeout } from "@/utils/asyncTimeout";
 
@@ -22,6 +23,7 @@ function AdminMobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { pathname } = useLocation();
   const activeKey = findActiveHub(pathname)?.key;
   const quick = ADMIN_QUICK_HUBS.map((key) => ADMIN_HUBS.find((h) => h.key === key)!).filter(Boolean);
+  const draftsWaiting = useDraftsWaiting(pathname);
   const menuActive = !!activeKey && !ADMIN_QUICK_HUBS.includes(activeKey);
   const itemBase =
     "flex h-14 flex-col items-center justify-center gap-1 rounded-2xl text-[11.5px] font-semibold transition-all";
@@ -43,7 +45,15 @@ function AdminMobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {
                   : "text-slate-200 active:bg-white/5"
               }`}
             >
-              <hub.icon className="h-[22px] w-[22px]" />
+              <span className="relative">
+                <hub.icon className="h-[22px] w-[22px]" />
+                {hub.key === "content" && draftsWaiting ? (
+                  <span className="absolute -right-2.5 -top-1.5 min-w-[18px] rounded-full bg-[#FF5910] px-1 text-center text-[11px] font-extrabold leading-[18px] text-[#0B1730]">
+                    {draftsWaiting}
+                    <span className="sr-only"> drafts waiting</span>
+                  </span>
+                ) : null}
+              </span>
               {hub.title}
             </NavLink>
           );
