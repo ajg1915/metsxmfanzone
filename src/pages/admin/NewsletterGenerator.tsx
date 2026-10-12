@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { invokeEmailFunction } from "@/lib/emailFallback";
+import { renderEmail } from "../../../api/_lib/email-shell.js";
 import { Mail, Loader2, Send, Newspaper, Eye, Sparkles, Copy, RefreshCw, Users, TestTube } from "lucide-react";
 import {
   AlertDialog,
@@ -29,102 +29,35 @@ import {
 } from "@/components/ui/select";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 
-// HTML escaping utility to prevent XSS
-const escapeHtml = (str: string): string => {
-  if (!str) return '';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-};
-
-// Newsletter HTML template generator
-const generateNewsletterHtml = (title: string, content: string) => {
-  const safeTitle = escapeHtml(title);
-  // Content is already HTML, sanitize it
-  const sanitizedContent = DOMPurify.sanitize(content, {
+// Only these tags survive in the newsletter body.
+const cleanBody = (content: string): string =>
+  DOMPurify.sanitize(content, {
     ALLOWED_TAGS: ['p', 'b', 'i', 'em', 'strong', 'a', 'h2', 'h3', 'ul', 'ol', 'li', 'br'],
     ALLOWED_ATTR: ['href', 'style'],
   });
 
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 16px; background-color: #0a0a0a;">
-  <div style="max-width: 600px; margin: 0 auto; background-color: #1a1a2e; border-radius: 8px; padding: 24px; border: 1px solid #2a2a3e;">
-    <div style="text-align: center; margin-bottom: 20px;">
-      <img src="https://metsxmfanzone.com/logo-192.png" alt="MetsXMFanZone" style="width: 60px; height: 60px;" />
-    </div>
-    
-    <div style="background: linear-gradient(135deg, #002D72, #003d99); padding: 16px 20px; border-radius: 8px; margin-bottom: 20px;">
-      <h1 style="color: #ffffff; font-size: 22px; margin: 0; text-align: center;">${safeTitle}</h1>
-    </div>
-    
-    <div style="color: #d0d0d0; font-size: 14px; line-height: 1.6;">
-      ${sanitizedContent}
-    </div>
-    
-    <div style="margin-top: 24px; text-align: center;">
-      <a href="https://metsxmfanzone.com" style="display: inline-block; background: #FF5910; color: #ffffff; padding: 12px 28px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px;">
-        Visit MetsXMFanZone
-      </a>
-    </div>
-    
-    <div style="border-top: 1px solid #2a2a3e; margin-top: 24px; padding-top: 16px;">
-      <p style="color: #888; font-size: 11px; text-align: center; margin: 0 0 12px;">
-        You're receiving this because you subscribed to our newsletter.
-      </p>
-      <div style="text-align: center; margin-bottom: 10px;">
-        <a href="https://www.facebook.com/MetsXMFanZone" style="display: inline-block; margin: 0 8px; text-decoration: none;">
-          <img src="https://cdn-icons-png.flaticon.com/24/733/733547.png" alt="Facebook" style="width: 20px; height: 20px; opacity: 0.7;" />
-        </a>
-        <a href="https://twitter.com/MetsXMFanZone" style="display: inline-block; margin: 0 8px; text-decoration: none;">
-          <img src="https://cdn-icons-png.flaticon.com/24/733/733579.png" alt="Twitter" style="width: 20px; height: 20px; opacity: 0.7;" />
-        </a>
-        <a href="https://www.instagram.com/MetsXMFanZone" style="display: inline-block; margin: 0 8px; text-decoration: none;">
-          <img src="https://cdn-icons-png.flaticon.com/24/733/733558.png" alt="Instagram" style="width: 20px; height: 20px; opacity: 0.7;" />
-        </a>
-        <a href="https://www.youtube.com/@MetsXMFanZone" style="display: inline-block; margin: 0 8px; text-decoration: none;">
-          <img src="https://cdn-icons-png.flaticon.com/24/733/733646.png" alt="YouTube" style="width: 20px; height: 20px; opacity: 0.7;" />
-        </a>
-      </div>
-      <p style="color: #666; font-size: 10px; text-align: center; margin: 0;">
-        <a href="https://metsxmfanzone.com" style="color: #FF5910; text-decoration: none;">metsxmfanzone.com</a> | Let's Go Mets!
-      </p>
-    </div>
-  </div>
-</body>
-</html>`;
-};
+// Same look as every other MetsXMFanZone email (small logo, navy card).
+const generateNewsletterHtml = (title: string, content: string) =>
+  renderEmail({
+    preheader: title,
+    heading: title,
+    content: cleanBody(content),
+    cta: { label: "Visit MetsXMFanZone", url: "https://metsxmfanzone.com" },
+    note: "You are getting this because you signed up for MetsXMFanZone news.",
+    unsubscribe: false,
+  });
 
-const getFunctionInvokeErrorMessage = async (err: any): Promise<string> => {
-  if (!err) return "Unknown error";
-
-  // Supabase FunctionsHttpError stores the Response in `context`
-  const ctx = err?.context;
-  if (err?.name === "FunctionsHttpError" && ctx && typeof ctx?.headers?.get === "function") {
-    try {
-      const contentType = String(ctx.headers.get("Content-Type") || "");
-      if (contentType.includes("application/json") && typeof ctx.json === "function") {
-        const body = await ctx.json();
-        return body?.error || body?.message || err.message || "Request failed";
-      }
-      if (typeof ctx.text === "function") {
-        const text = await ctx.text();
-        return text || err.message || "Request failed";
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  return err?.message || String(err);
+// Talks to our own /api/mail-admin (Resend list). Only works for signed-in admins.
+const callMail = async (body: Record<string, unknown>) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const res = await fetch("/api/mail-admin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token ?? ""}` },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
+  return data;
 };
 
 export default function NewsletterGenerator() {
@@ -139,16 +72,16 @@ export default function NewsletterGenerator() {
   const [subscriberCount, setSubscriberCount] = useState(0);
   const [testEmail, setTestEmail] = useState("");
   const [isSendingTest, setIsSendingTest] = useState(false);
-  const [additionalEmails, setAdditionalEmails] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
     const fetchSubscriberCount = async () => {
-      const { count } = await supabase
-        .from("newsletter_subscribers")
-        .select("id", { count: "exact", head: true })
-        .eq("is_active", true);
-      setSubscriberCount(count || 0);
+      try {
+        const data = await callMail({ action: "count" });
+        setSubscriberCount(data.count || 0);
+      } catch {
+        setSubscriberCount(0);
+      }
     };
     fetchSubscriberCount();
   }, []);
@@ -254,20 +187,7 @@ export default function NewsletterGenerator() {
     setIsSendingTest(true);
 
     try {
-      const fullHtml = generateNewsletterHtml(subject, generatedContent);
-
-      // If the edge function fails, fall back to the Vercel /api/send-email route.
-      await invokeEmailFunction(
-        "send-user-email",
-        {
-          subject: `[TEST] ${subject}`,
-          content: fullHtml,
-          recipientType: "specific",
-          specificEmails: [testEmail],
-          useTestSender: true,
-        },
-        { to: testEmail, subject: `[TEST] ${subject}`, html: fullHtml },
-      );
+      await callMail({ action: "test", to: testEmail.trim(), subject, content: cleanBody(generatedContent) });
 
       toast({
         title: "Test Email Sent!",
@@ -275,7 +195,7 @@ export default function NewsletterGenerator() {
       });
     } catch (error: any) {
       console.error("Error sending test email:", error);
-      const message = await getFunctionInvokeErrorMessage(error);
+      const message = error?.message || "Request failed";
       toast({
         title: "Send Failed",
         description: message,
@@ -291,23 +211,11 @@ export default function NewsletterGenerator() {
     setIsSending(true);
 
     try {
-      const fullHtml = generateNewsletterHtml(subject, generatedContent);
-      
-      // Parse additional emails
-      const extraEmails = additionalEmails
-        .split(/[,\n]/)
-        .map(e => e.trim())
-        .filter(e => e && e.includes("@"));
-
-      const { data, error } = await supabase.functions.invoke("send-newsletter", {
-        body: { subject, content: fullHtml, additionalEmails: extraEmails },
-      });
-
-      if (error) throw error;
+      await callMail({ action: "send", subject, content: cleanBody(generatedContent) });
 
       toast({
         title: "Newsletter Sent!",
-        description: `Successfully sent to ${data.sent} subscribers`,
+        description: "Sent to everyone on your MetsXMFanZone Newsletter list.",
       });
       
       // Clear form
@@ -316,7 +224,7 @@ export default function NewsletterGenerator() {
       setGeneratedContent("");
     } catch (error: any) {
       console.error("Error sending newsletter:", error);
-      const message = await getFunctionInvokeErrorMessage(error);
+      const message = error?.message || "Request failed";
       toast({
         title: "Send Failed",
         description: message,
@@ -472,22 +380,7 @@ export default function NewsletterGenerator() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Send a test email to preview before sending to all recipients
-              </p>
-            </div>
-
-            {/* Additional Emails Section */}
-            <div className="border-t pt-4 space-y-3">
-              <Label className="text-sm font-medium">Additional Recipients (Optional)</Label>
-              <Textarea
-                placeholder="Enter additional email addresses (comma or newline separated)&#10;e.g., contact@example.com, promo@partner.com"
-                value={additionalEmails}
-                onChange={(e) => setAdditionalEmails(e.target.value)}
-                rows={3}
-                className="text-sm"
-              />
-              <p className="text-xs text-muted-foreground">
-                These emails will receive the newsletter in addition to subscribers and registered users
+                Send a test email to yourself to check the look before sending to all subscribers
               </p>
             </div>
 
@@ -548,14 +441,7 @@ export default function NewsletterGenerator() {
           </CardHeader>
           <CardContent>
             <div className="bg-[#0a0a0a] rounded-lg p-2 overflow-auto max-h-[600px]">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(previewHtml, {
-                    ALLOWED_TAGS: ['html', 'head', 'meta', 'body', 'div', 'p', 'b', 'i', 'em', 'strong', 'a', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'br', 'img', 'span', 'style'],
-                    ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'charset', 'name', 'content'],
-                  }),
-                }}
-              />
+              <iframe title="Newsletter preview" sandbox="" srcDoc={previewHtml} className="h-[560px] w-full rounded-lg border-0 bg-[#06101c]" />
             </div>
           </CardContent>
         </Card>
@@ -596,14 +482,7 @@ export default function NewsletterGenerator() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="bg-[#0a0a0a] rounded-lg p-2 overflow-auto max-h-[60vh]">
-            <div
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(previewHtml, {
-                  ALLOWED_TAGS: ['html', 'head', 'meta', 'body', 'div', 'p', 'b', 'i', 'em', 'strong', 'a', 'h1', 'h2', 'h3', 'ul', 'ol', 'li', 'br', 'img', 'span', 'style'],
-                  ALLOWED_ATTR: ['href', 'src', 'alt', 'style', 'charset', 'name', 'content'],
-                }),
-              }}
-            />
+            <iframe title="Newsletter preview" sandbox="" srcDoc={previewHtml} className="h-[560px] w-full rounded-lg border-0 bg-[#06101c]" />
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Close</AlertDialogCancel>
