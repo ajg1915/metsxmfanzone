@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { getStoryBgStyle } from "@/lib/storyBackgrounds";
 import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,9 +57,18 @@ interface BlogPost {
   isAdmin?: boolean;
 }
 
+type ColorCard = {
+  id: string;
+  title: string | null;
+  text_content: string | null;
+  text_bg_style: string | null;
+  created_at: string;
+};
+
 type FeedItem = 
   | (Post & { type: 'post' })
-  | (BlogPost & { type: 'blog' });
+  | (BlogPost & { type: 'blog' })
+  | (ColorCard & { type: 'card' });
 
 const postSchema = z.object({
   content: z.string().min(1, "Post content is required").max(5000, "Post must be less than 5000 characters").trim(),
@@ -205,10 +215,21 @@ const Community = () => {
       isAdmin: adminUserIds.has(blog.user_id)
     }));
 
+    // Color text cards made in Admin > Stories
+    const { data: cardData } = await supabase
+      .from("stories")
+      .select("id, title, text_content, text_bg_style, created_at")
+      .eq("published", true)
+      .eq("media_type", "text")
+      .order("created_at", { ascending: false })
+      .limit(30);
+    const cardsWithType = (cardData || []).map((c) => ({ ...c, type: 'card' as const }));
+
     // Combine and sort: pinned posts first, then by date
     const combinedFeed: FeedItem[] = [
       ...postsWithSignedUrls,
-      ...blogPostsWithType
+      ...blogPostsWithType,
+      ...cardsWithType
     ].sort((a, b) => {
       // Pinned posts first
       const aPinned = a.type === 'post' && a.is_pinned ? 1 : 0;
@@ -655,6 +676,25 @@ const Community = () => {
 
               {/* Feed */}
               {feedItems.map((item) => {
+                if (item.type === 'card') {
+                  const bg = getStoryBgStyle(item.text_bg_style);
+                  return (
+                    <article
+                      key={`card-${item.id}`}
+                      id={`post-${item.id}`}
+                      className="scroll-mt-24 rounded-2xl overflow-hidden border border-border/30 bg-card/80"
+                    >
+                      <div className={`flex min-h-[220px] items-center justify-center px-6 py-10 ${bg.className}`}>
+                        <p className={`text-center text-2xl font-bold leading-snug whitespace-pre-wrap ${bg.textClassName || "text-foreground"}`}>
+                          {item.text_content || item.title}
+                        </p>
+                      </div>
+                      <p className="px-4 py-2 text-xs text-muted-foreground">
+                        MetsXMFanZone · {new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </article>
+                  );
+                }
                 const isBlog = item.type === 'blog';
                 const when = isBlog ? (item.published_at || item.created_at) : item.created_at;
                 const isNewItem = Date.now() - new Date(when).getTime() < 48 * 60 * 60 * 1000;

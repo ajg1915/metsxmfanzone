@@ -260,7 +260,7 @@ const CommunityPreviewSection = () => {
               <motion.button
                 type="button"
                 key={`card-${card.id}`}
-                onClick={() => navigate("/community")}
+                onClick={() => navigate(`/community#post-${card.id}`)}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
