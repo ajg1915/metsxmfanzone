@@ -72,7 +72,7 @@ const CommunityPreviewSection = () => {
             .from("posts")
             .select("id, user_id, content, image_url, created_at, is_pinned, pinned_at, profiles (full_name, email)")
             .order("created_at", { ascending: false })
-            .limit(10),
+            .limit(20),
           supabase
             .from("blog_posts")
             .select("id, title, slug, featured_image_url, category, published_at, created_at")
@@ -145,7 +145,10 @@ const CommunityPreviewSection = () => {
   const articleIsNew =
     !!article && Date.now() - new Date(article.published_at || article.created_at).getTime() < NEW_FOR_MS;
   // Up to 4 small tiles: the next posts, with the latest article taking the last spot.
-  const tilePosts = posts.slice(1, article ? 4 : 5);
+  const tileCount = article ? 4 : 5;
+  const tilePosts = posts.slice(1, tileCount);
+  // Everything after the wall tiles scrolls sideways underneath.
+  const morePosts = posts.slice(tileCount);
 
   return (
     <section className="px-3 sm:px-6 py-8 sm:py-12 relative" aria-labelledby="home-wall-title">
@@ -305,6 +308,54 @@ const CommunityPreviewSection = () => {
                 </div>
               </motion.a>
             )}
+          </div>
+        )}
+
+        {/* Keep scrolling: more posts, swipe or scroll sideways */}
+        {morePosts.length > 0 && (
+          <div className="mt-5 sm:mt-6">
+            <div className="flex items-center justify-between mb-2.5 px-0.5">
+              <h3 className="text-base sm:text-lg font-bold text-foreground">More from the wall</h3>
+              <span className="text-xs text-muted-foreground">Swipe to keep scrolling</span>
+            </div>
+            <div
+              role="region"
+              aria-label="More posts from the wall"
+              tabIndex={0}
+              className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 -mx-3 px-3 sm:mx-0 sm:px-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary rounded-xl"
+            >
+              {morePosts.map((post) => (
+                <button
+                  type="button"
+                  key={post.id}
+                  onClick={openWall}
+                  className="snap-start shrink-0 w-[250px] sm:w-[280px] text-left rounded-2xl overflow-hidden border border-border/30 bg-card/80 hover:border-primary/50 transition-colors flex flex-col"
+                >
+                  {post.image_url && (
+                    <div className="h-[120px] overflow-hidden bg-muted">
+                      <img src={post.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="p-3 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <Avatar letter={authorInitial(post)} size={22} admin={post.isAdmin} />
+                      <span className="text-sm font-bold text-foreground truncate">{authorName(post)}</span>
+                      <span className="text-xs text-muted-foreground shrink-0">{timeAgo(post.created_at)}</span>
+                    </div>
+                    {post.content && (
+                      <p className="mt-1.5 text-sm text-muted-foreground leading-snug line-clamp-4">{post.content}</p>
+                    )}
+                  </div>
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={openWall}
+                className="snap-start shrink-0 w-[160px] rounded-2xl border border-primary/40 bg-primary/10 text-primary font-bold text-sm flex flex-col items-center justify-center gap-2 p-4"
+              >
+                See all posts <ArrowRight className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         )}
 
