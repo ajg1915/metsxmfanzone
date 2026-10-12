@@ -96,10 +96,10 @@ const Plans = () => {
       name: "Free",
       price: "$0",
       priceValue: 0,
-      period: "forever",
+      period: "Spring Training",
       billingNote: "No payment needed",
-      description: "Start with the fan essentials",
-      features: ["No payment method needed", "Public Mets news", "Community access", "Member profile", "Membership notifications"],
+      description: "Free Spring Training streams",
+      features: ["Spring Training streams only", "No payment method needed"],
       cta: "Choose Free",
       popular: false,
     },
@@ -171,7 +171,7 @@ const Plans = () => {
     {
       question: "What is included with each membership?",
       answer:
-        "Free includes public news and community access. Weekly, Monthly, and Yearly include live streams, replays, highlights, and premium content.",
+        "Free is for Spring Training streams only. Weekly, Monthly, and Yearly include live streams, replays, highlights, and premium content.",
     },
     {
       question: "Does the Free membership need PayPal?",
