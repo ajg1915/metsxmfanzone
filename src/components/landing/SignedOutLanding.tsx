@@ -12,7 +12,7 @@ import PlansSection from "@/components/landing/PlansSection";
 const FEATURES = [
   { title: "Live games and channels", text: "MetsXMFanZone TV around the clock, plus game-day streams and sports channels.", d: "M2 5h20v13H2zM10 9l5 2.5-5 2.5z" },
   { title: "Full game replays", text: "Missed the game? Watch it from the first pitch whenever you want.", d: "M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" },
-  { title: "The podcast and Game Day Live", text: "Watch live every Monday and Friday, or listen to new episodes every day.", d: "M9 2h6v12H9zM5 10a7 7 0 0 0 14 0M12 17v5" },
+  { title: "The podcast and Game Day Live", text: "Watch the show live when we go on air, or listen to the latest episodes anytime.", d: "M9 2h6v12H9zM5 10a7 7 0 0 0 14 0M12 17v5" },
   { title: "The fan community", text: "Talk the game with other Mets fans who care as much as you do.", d: "M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M15 14.5c2.8 0 6 1.6 6 5M17 11.5a2.5 2.5 0 1 0 0-5" },
 ];
 
@@ -179,13 +179,13 @@ export default function SignedOutLanding() {
           <div className="grid min-w-0 flex-[1_1_420px] grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="rounded-2xl bg-white/[0.08] p-4">
               <p className="text-[13px] font-bold uppercase tracking-wider text-[#ffb48f]">Watch the podcast live</p>
-              <p className="mt-1 font-display text-3xl uppercase">Mondays &amp; Fridays</p>
-              <p className="text-sm text-[#c4cfdf]">6:00 AM, 8:30 AM &amp; 5:00 PM ET on MetsXMFanZone TV</p>
+              <p className="mt-1 font-display text-3xl uppercase">When we go live</p>
+              <p className="text-sm text-[#c4cfdf]">Live shows are announced on the site and our socials</p>
             </div>
             <div className="rounded-2xl bg-white/[0.08] p-4">
               <p className="text-[13px] font-bold uppercase tracking-wider text-[#ffb48f]">Listen anytime</p>
-              <p className="mt-1 font-display text-3xl uppercase">New every day</p>
-              <p className="text-sm text-[#c4cfdf]">Daily episodes on the site and apps</p>
+              <p className="mt-1 font-display text-3xl uppercase">Latest episodes</p>
+              <p className="text-sm text-[#c4cfdf]">New episodes on the site and apps</p>
             </div>
           </div>
         </div>

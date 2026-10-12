@@ -28,7 +28,6 @@ const Plans = () => {
   const { tier, loading: subscriptionLoading } = useSubscription();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [activatingFree, setActivatingFree] = useState(false);
 
   
   // Check if user must select a plan (coming from signup)
@@ -54,6 +53,9 @@ const Plans = () => {
     }
   }, [mustSelectPlan, hasPlanSelected]);
 
+  // New members default to the Free tier, so while they are still choosing a plan Free must stay clickable
+  const isCurrent = (id: string) => tier === id && !(id === "free" && mustSelectPlan && !hasPlanSelected);
+
   const handleSelectPlan = async (planId: string) => {
     if (!user) {
       localStorage.setItem("pending_membership_selection", "true");
@@ -62,40 +64,12 @@ const Plans = () => {
     }
 
     if (planId === "free") {
-      setActivatingFree(true);
-      const { data, error } = await supabase.functions.invoke("create-paypal-free-link", {
-        body: { returnOrigin: window.location.origin },
-      });
-      setActivatingFree(false);
-
-      if (error || data?.error) {
-        toast({
-          title: "PayPal link could not be started",
-          description: "Please try again in a moment.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (data?.alreadyPaid) {
-        localStorage.removeItem("pending_membership_selection");
-        localStorage.removeItem("pending_signup_plan");
-        setHasPlanSelected(true);
-        navigate("/dashboard", { replace: true });
-        return;
-      }
-
-      if (!data?.approvalUrl) {
-        toast({
-          title: "PayPal link could not be started",
-          description: "Please try again in a moment.",
-          variant: "destructive",
-        });
-        return;
-      }
-
+      // Free needs no PayPal: members without a paid plan already have Free access.
+      localStorage.removeItem("pending_membership_selection");
+      localStorage.removeItem("pending_signup_plan");
       setHasPlanSelected(true);
-      window.location.href = data.approvalUrl;
+      toast({ title: "Welcome to MetsXMFanZone", description: "You're on the Free membership. Upgrade any time." });
+      navigate("/dashboard", { replace: true });
       return;
     }
 
@@ -123,9 +97,9 @@ const Plans = () => {
       price: "$0",
       priceValue: 0,
       period: "forever",
-      billingNote: "PayPal link required - $0.00 charged",
+      billingNote: "No payment needed",
       description: "Start with the fan essentials",
-      features: ["PayPal account linked, never charged", "Public Mets news", "Community access", "Member profile", "Membership notifications"],
+      features: ["No payment method needed", "Public Mets news", "Community access", "Member profile", "Membership notifications"],
       cta: "Choose Free",
       popular: false,
     },
@@ -200,9 +174,9 @@ const Plans = () => {
         "Free includes public news and community access. Weekly, Monthly, and Yearly include live streams, replays, highlights, and premium content.",
     },
     {
-      question: "Why does the Free membership need PayPal?",
+      question: "Does the Free membership need PayPal?",
       answer:
-        "Every membership, including Free, must be linked to a PayPal account before access is turned on. PayPal asks you to approve a $0.00 agreement - nothing is charged while you stay on Free, and upgrading later takes one confirmation.",
+        "No. Free only needs an email and password. PayPal is used only for the paid plans (Weekly, Monthly and Yearly), and you can upgrade any time from your Member Center.",
     },
     {
       question: "Can I switch between paid memberships?",
@@ -302,9 +276,9 @@ const Plans = () => {
                       className="w-full mb-6"
                       variant={plan.popular ? "default" : "outline"}
                       onClick={() => void handleSelectPlan(plan.id)}
-                      disabled={tier === plan.id || (plan.id === "free" && activatingFree)}
+                      disabled={isCurrent(plan.id)}
                     >
-                      {plan.id === "free" && activatingFree ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}{tier === plan.id ? "Current plan" : plan.cta}
+                      <CreditCard className="mr-2 h-4 w-4" />{isCurrent(plan.id) ? "Current plan" : plan.cta}
                     </Button>
 
                     <div className="space-y-3">

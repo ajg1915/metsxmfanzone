@@ -31,6 +31,7 @@ const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSec
 const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
 const PhoneJoinSection = lazyWithRetry(() => import("@/components/landing/PhoneJoinSection"), "home-phone-join-section");
 const PlansSection = lazyWithRetry(() => import("@/components/landing/PlansSection"), "home-plans-section");
+const NewsletterSection = lazyWithRetry(() => import("@/components/NewsletterSection"), "home-newsletter-section");
 const SignedOutLanding = lazyWithRetry(() => import("@/components/landing/SignedOutLanding"), "home-signed-out-landing");
 const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"), "home-install-prompt");
 const OnboardingWalkthrough = lazyWithRetry(() => import("@/components/OnboardingWalkthrough"), "home-onboarding-walkthrough");
@@ -265,6 +266,14 @@ const Index = () => {
 
       </main>
       )}
+      {/* Newsletter signup, above the footer for everyone */}
+      <div className="relative z-10">
+        <LazySection fallback={<SectionSkeleton height="h-48" />}>
+          <Suspense fallback={<SectionSkeleton height="h-48" />}>
+            <NewsletterSection />
+          </Suspense>
+        </LazySection>
+      </div>
       <Footer />
       
       
