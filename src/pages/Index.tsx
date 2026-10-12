@@ -3,6 +3,7 @@ import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import NYScoresStrip from "@/components/NYScoresStrip";
 import SportsNetworksStrip from "@/components/tv/SportsNetworksStrip";
 
@@ -135,6 +136,9 @@ const combinedSchemas = [homepageSchema, organizationSchema, websiteSchema];
 const Index = () => {
   // Auto lineup fetch removed from homepage to reduce load — triggered by admin instead
   const { user, loading: authLoading } = useAuth();
+  const { tier, isAdmin, loading: subLoading } = useSubscription();
+  // The wall (like the community) is for paid and trial members; Free is Spring Training streams only
+  const canSeeWall = !!user && !subLoading && (isAdmin || tier !== "free");
   // The new signed-out front page is for computers and tablets; phones keep the original home page.
   const [wide, setWide] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches);
   useEffect(() => {
@@ -197,7 +201,7 @@ const Index = () => {
         <SportsNetworksStrip />
 
         {/* The wall: MetsXMFanZone Feed, only for signed-in members */}
-        {user && (
+        {canSeeWall && (
           <LazySection fallback={<SectionSkeleton height="h-48" />}>
             <Suspense fallback={<SectionSkeleton height="h-48" />}>
               <CommunityPreviewSection />

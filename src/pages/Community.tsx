@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { getStoryBgStyle } from "@/lib/storyBackgrounds";
 import SEOHead from "@/components/SEOHead";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToR2 } from "@/lib/r2Upload";
 import Navigation from "@/components/Navigation";
@@ -88,6 +89,7 @@ const validateImage = (file: File) => {
 
 const Community = () => {
   const { user, loading } = useAuth();
+  const { tier, isAdmin: isSiteAdmin, loading: subLoading } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [feedItems, setFeedItems] = useState<FeedItem[]>([]);
@@ -492,10 +494,34 @@ const Community = () => {
     }
   };
 
-  if (loading) {
+  if (loading || (user && subLoading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  // The Free membership is Spring Training streams only, so the community is for paid and trial members
+  if (user && !isSiteAdmin && tier === "free") {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <SEOHead title="Mets Fan Community" description="The MetsXMFanZone community is for members." canonical="https://www.metsxmfanzone.com/community" />
+        <Navigation />
+        <main className="flex flex-1 items-center justify-center px-4 pt-24 pb-12">
+          <div className="w-full max-w-md rounded-2xl border border-primary/30 bg-card/90 p-8 text-center">
+            <Lock className="mx-auto mb-3 h-8 w-8 text-primary" />
+            <h1 className="mb-2 text-2xl font-bold">Community is for members</h1>
+            <p className="mb-6 text-sm text-muted-foreground">
+              The Free membership is for Spring Training streams only. Upgrade to a Weekly, Monthly or Yearly plan to join the community and see the MetsXMFanZone Feed.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+              <Button variant="outline" onClick={() => navigate("/")}>Back to home</Button>
+              <Button onClick={() => navigate("/pricing")}>See plans</Button>
+            </div>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
