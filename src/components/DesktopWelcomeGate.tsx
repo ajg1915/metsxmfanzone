@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { Monitor, Smartphone, Tablet, Copy, Check } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Monitor, Smartphone, Tablet, Copy, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -25,10 +25,10 @@ export const GATE_DEFAULTS: GateConfig = {
   subtitle:
     "MetsXMFanZone is now optimized exclusively for mobile and tablet devices. For the best experience, please open this site on your phone or tablet.",
   note: "Desktop is no longer officially supported, but you can continue anyway.",
-  primaryLabel: "Copy Site Link",
-  primaryUrl: "",
-  secondaryLabel: "Continue on Desktop",
-  secondaryUrl: "",
+  primaryLabel: "Continue to Home",
+  primaryUrl: "/",
+  secondaryLabel: "Login",
+  secondaryUrl: "/auth",
 };
 
 /**
@@ -37,6 +37,7 @@ export const GATE_DEFAULTS: GateConfig = {
  */
 export const DesktopWelcomeGate = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [show, setShow] = useState(false);
   const [cfg, setCfg] = useState<GateConfig>(GATE_DEFAULTS);
   const [copied, setCopied] = useState(false);
@@ -93,10 +94,35 @@ export const DesktopWelcomeGate = () => {
     setShow(true);
   }, [location.pathname, cfg.enabled]);
 
-  const continueOnDesktop = () => {
-    localStorage.setItem(OPT_IN_KEY, "1");
+  // Close the gate and remember the choice so it does not come back
+  const dismiss = () => {
+    try {
+      localStorage.setItem(OPT_IN_KEY, "1");
+    } catch {
+      /* private mode: just close it for this visit */
+    }
     setShow(false);
   };
+
+  // Both buttons close the gate; if a page is set for the button, go there too
+  const choose = (url: string) => {
+    dismiss();
+    const target = (url || "").trim();
+    if (target && target !== location.pathname) {
+      if (/^https?:\/\//i.test(target)) window.location.href = target;
+      else navigate(target);
+    }
+  };
+
+  // Escape closes it
+  useEffect(() => {
+    if (!show) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") dismiss();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [show]);
 
   const copyLink = async () => {
     try {
@@ -111,8 +137,25 @@ export const DesktopWelcomeGate = () => {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className="relative w-full max-w-lg rounded-2xl border border-primary/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/20 p-8">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/90 backdrop-blur-md p-4 animate-in fade-in duration-300"
+      onClick={dismiss}
+      role="dialog"
+      aria-modal="true"
+      aria-label={cfg.title}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg rounded-2xl border border-primary/30 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/20 p-8"
+      >
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Close"
+          className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+        >
+          <X className="h-5 w-5" />
+        </button>
         <div className="flex justify-center mb-4">
           <img
             src={logo}
@@ -147,27 +190,21 @@ export const DesktopWelcomeGate = () => {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Button onClick={copyLink} variant="outline" className="w-full">
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 mr-2" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4 mr-2" />
-                {cfg.primaryLabel}
-              </>
-            )}
+          <Button onClick={() => choose(cfg.primaryUrl)} className="w-full bg-primary hover:bg-primary/90">
+            {cfg.primaryLabel}
           </Button>
-          <Button
-            onClick={continueOnDesktop}
-            className="w-full bg-primary hover:bg-primary/90"
-          >
-            <Monitor className="w-4 h-4 mr-2" />
+          <Button onClick={() => choose(cfg.secondaryUrl)} variant="outline" className="w-full">
             {cfg.secondaryLabel}
           </Button>
         </div>
+        <button
+          type="button"
+          onClick={copyLink}
+          className="mx-auto mt-4 flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
+          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? "Copied!" : "Copy site link to open on your phone"}
+        </button>
       </div>
     </div>
   );

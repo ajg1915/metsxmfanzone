@@ -7,6 +7,7 @@ import { useBotGuard } from "@/utils/botGuard";
 import logo from "@/assets/metsxmfanzone-logo.png";
 
 const NewsletterSection = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -24,14 +25,13 @@ const NewsletterSection = () => {
     setIsLoading(true);
 
     try {
+      // Plain insert: visitors are allowed to add themselves, but not to read or change the list.
       const { error } = await supabase
         .from("newsletter_subscribers")
-        .upsert(
-          { email: email.trim().toLowerCase(), is_active: true },
-          { onConflict: "email" }
-        );
+        .insert({ email: email.trim().toLowerCase(), full_name: name.trim() || null, is_active: true });
 
-      if (error) throw error;
+      // 23505 = this email is already on the list, which is fine for the visitor
+      if (error && (error as { code?: string }).code !== "23505") throw error;
 
       markSubmitted();
       toast({
@@ -39,6 +39,7 @@ const NewsletterSection = () => {
         description: "You'll receive the latest Mets news and updates.",
       });
       setEmail("");
+      setName("");
       reset();
     } catch (error) {
       console.error("Newsletter signup error:", error);
@@ -59,13 +60,14 @@ const NewsletterSection = () => {
             <img src={logo} alt="MetsXMFanZone" className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14" />
           </div>
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2 sm:mb-3 leading-tight">
-            Stay in the Loop
+            Get MetsXMFanZone News
           </h2>
           <p className="text-muted-foreground mb-4 sm:mb-5 md:mb-6 text-xs sm:text-sm max-w-md mx-auto">
-            Get exclusive Mets content, game highlights, and breaking news delivered straight to your inbox.
+            Mets news, game highlights and updates from MetsXMFanZone, straight to your email.
           </p>
-          <form onSubmit={handleSubmit} className="relative flex flex-col sm:flex-row gap-2 sm:gap-3 max-w-sm sm:max-w-md mx-auto">
+          <form onSubmit={handleSubmit} className="relative flex flex-col gap-2 sm:gap-3 max-w-sm sm:max-w-md mx-auto">
             <input {...honeypotProps} />
+            <Input type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} maxLength={80} autoComplete="name" className="flex-1 h-9 sm:h-10 text-sm" />
             <Input type="email" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} required className="flex-1 h-9 sm:h-10 text-sm" />
 
             <Button type="submit" size="default" disabled={isLoading} className="h-9 sm:h-10 text-xs sm:text-sm px-4 sm:px-6">

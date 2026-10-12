@@ -3,6 +3,7 @@ import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 import NYScoresStrip from "@/components/NYScoresStrip";
 import SportsNetworksStrip from "@/components/tv/SportsNetworksStrip";
 
@@ -31,6 +32,7 @@ const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSec
 const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
 const PhoneJoinSection = lazyWithRetry(() => import("@/components/landing/PhoneJoinSection"), "home-phone-join-section");
 const PlansSection = lazyWithRetry(() => import("@/components/landing/PlansSection"), "home-plans-section");
+const NewsletterSection = lazyWithRetry(() => import("@/components/NewsletterSection"), "home-newsletter-section");
 const SignedOutLanding = lazyWithRetry(() => import("@/components/landing/SignedOutLanding"), "home-signed-out-landing");
 const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"), "home-install-prompt");
 const OnboardingWalkthrough = lazyWithRetry(() => import("@/components/OnboardingWalkthrough"), "home-onboarding-walkthrough");
@@ -134,6 +136,9 @@ const combinedSchemas = [homepageSchema, organizationSchema, websiteSchema];
 const Index = () => {
   // Auto lineup fetch removed from homepage to reduce load — triggered by admin instead
   const { user, loading: authLoading } = useAuth();
+  const { tier, isAdmin, loading: subLoading } = useSubscription();
+  // The wall (like the community) is for paid and trial members; Free is Spring Training streams only
+  const canSeeWall = !!user && !subLoading && (isAdmin || tier !== "free");
   // The new signed-out front page is for computers and tablets; phones keep the original home page.
   const [wide, setWide] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches);
   useEffect(() => {
@@ -196,7 +201,7 @@ const Index = () => {
         <SportsNetworksStrip />
 
         {/* The wall: MetsXMFanZone Feed, only for signed-in members */}
-        {user && (
+        {canSeeWall && (
           <LazySection fallback={<SectionSkeleton height="h-48" />}>
             <Suspense fallback={<SectionSkeleton height="h-48" />}>
               <CommunityPreviewSection />
@@ -265,6 +270,14 @@ const Index = () => {
 
       </main>
       )}
+      {/* Newsletter signup, above the footer for everyone */}
+      <div className="relative z-10">
+        <LazySection fallback={<SectionSkeleton height="h-48" />}>
+          <Suspense fallback={<SectionSkeleton height="h-48" />}>
+            <NewsletterSection />
+          </Suspense>
+        </LazySection>
+      </div>
       <Footer />
       
       

@@ -34,13 +34,8 @@ export default function PhoneJoinSection() {
             <div className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-[#ffb48f]">
               <Mic className="h-4 w-4" /> The podcast, live
             </div>
-            <p className="mt-1 font-display text-2xl uppercase text-white">Mondays &amp; Fridays</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {["6:00 AM", "8:30 AM", "5:00 PM"].map((t) => (
-                <span key={t} className="rounded-full bg-[#ff5910]/20 px-3 py-1 text-sm font-semibold text-white">{t} ET</span>
-              ))}
-            </div>
-            <p className="mt-2 text-sm text-[#c4cfdf]">New episodes to listen to every day.</p>
+            <p className="mt-1 font-display text-2xl uppercase text-white">When we go live</p>
+            <p className="mt-2 text-sm text-[#c4cfdf]">Live shows are announced on the site and our socials. Listen to the latest episodes anytime.</p>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">
