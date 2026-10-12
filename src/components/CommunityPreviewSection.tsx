@@ -5,6 +5,7 @@ import { MessageSquare, ChevronLeft, ChevronRight, Pin } from "lucide-react";
 import { motion } from "framer-motion";
 import NewBadge from "@/components/NewBadge";
 import { isFresh } from "@/lib/newItem";
+import { getStoryBgStyle } from "@/lib/storyBackgrounds";
 
 // The MetsXMFanZone Feed wall for signed-in members: cards scroll left to right,
 // laid out like the video sections (Replay Games, Live Streams).
@@ -28,6 +29,16 @@ interface WallArticle {
   featured_image_url: string | null;
   category: string | null;
   published_at: string | null;
+  created_at: string;
+}
+
+const isVideoUrl = (u: string) => /\.(mp4|webm|mov)(\?|$)/i.test(u);
+
+interface WallCard {
+  id: string;
+  title: string | null;
+  text_content: string | null;
+  text_bg_style: string | null;
   created_at: string;
 }
 
@@ -61,13 +72,14 @@ const CommunityPreviewSection = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<WallPost[]>([]);
   const [article, setArticle] = useState<WallArticle | null>(null);
+  const [cards, setCards] = useState<WallCard[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [{ data: adminRoles }, { data: postsData }, { data: articleData }] = await Promise.all([
+        const [{ data: adminRoles }, { data: postsData }, { data: articleData }, { data: cardData }] = await Promise.all([
           supabase.from("user_roles").select("user_id").eq("role", "admin"),
           supabase
             .from("posts")
@@ -80,6 +92,14 @@ const CommunityPreviewSection = () => {
             .eq("published", true)
             .order("published_at", { ascending: false })
             .limit(1),
+          // Color text cards made in Admin > Stories
+          supabase
+            .from("stories")
+            .select("id, title, text_content, text_bg_style, created_at")
+            .eq("published", true)
+            .eq("media_type", "text")
+            .order("created_at", { ascending: false })
+            .limit(10),
         ]);
         if (cancelled) return;
 
@@ -114,6 +134,7 @@ const CommunityPreviewSection = () => {
 
         setPosts(list);
         setArticle((articleData && articleData[0]) || null);
+        setCards((cardData as WallCard[]) || []);
       } catch (error) {
         console.error("Error loading the wall:", error);
       } finally {
@@ -125,7 +146,7 @@ const CommunityPreviewSection = () => {
     };
   }, []);
 
-  const openWall = () => navigate("/community");
+  const openPost = (id: string) => navigate(`/community#post-${id}`);
   const [scrollPosition, setScrollPosition] = useState(0);
 
   const scrollBy = (direction: "left" | "right") => {
@@ -147,7 +168,7 @@ const CommunityPreviewSection = () => {
     );
   }
 
-  if (posts.length === 0 && !article) return null;
+  if (posts.length === 0 && !article && cards.length === 0) return null;
 
   const articleIsNew = !!article && isFresh(article.published_at || article.created_at);
   const cardClass =
@@ -232,11 +253,42 @@ const CommunityPreviewSection = () => {
             </motion.a>
           )}
 
+          {/* Color text cards from Admin > Stories */}
+          {cards.map((card, index) => {
+            const bg = getStoryBgStyle(card.text_bg_style);
+            return (
+              <motion.button
+                type="button"
+                key={`card-${card.id}`}
+                onClick={() => navigate(`/community#post-${card.id}`)}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, delay: Math.min(index, 8) * 0.05 }}
+                className={cardClass}
+                aria-label="Color card"
+              >
+                <div className={frameClass}>
+                  <div className={`aspect-video relative flex items-center justify-center px-5 ${bg.className}`}>
+                    <p className={`text-center text-lg sm:text-xl font-bold leading-snug line-clamp-4 ${bg.textClassName || "text-foreground"}`}>
+                      {card.text_content || card.title}
+                    </p>
+                    {isFresh(card.created_at) && (
+                      <span className="absolute top-2 left-2 rounded-full bg-[#0b3e75] px-2 py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white ring-1 ring-white/30">
+                        New
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </motion.button>
+            );
+          })}
+
           {posts.map((post, index) => (
             <motion.button
               type="button"
               key={post.id}
-              onClick={openWall}
+              onClick={() => openPost(post.id)}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -247,7 +299,11 @@ const CommunityPreviewSection = () => {
               <div className={frameClass}>
                 <div className="aspect-video relative bg-gradient-to-br from-secondary via-muted to-background">
                   {post.image_url ? (
-                    <img src={post.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    isVideoUrl(post.image_url) ? (
+                      <video src={`${post.image_url}#t=0.1`} muted playsInline preload="metadata" className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={post.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                    )
                   ) : (
                     post.content && (
                       <p className="absolute inset-0 flex items-center px-4 pb-12 pt-9 text-lg sm:text-xl font-bold leading-snug text-foreground line-clamp-4">
