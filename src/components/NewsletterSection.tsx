@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { useBotGuard } from "@/utils/botGuard";
 import logo from "@/assets/metsxmfanzone-logo.png";
 
@@ -25,13 +24,13 @@ const NewsletterSection = () => {
     setIsLoading(true);
 
     try {
-      // Plain insert: visitors are allowed to add themselves, but not to read or change the list.
-      const { error } = await supabase
-        .from("newsletter_subscribers")
-        .insert({ email: email.trim().toLowerCase(), full_name: name.trim() || null, is_active: true });
-
-      // 23505 = this email is already on the list, which is fine for the visitor
-      if (error && (error as { code?: string }).code !== "23505") throw error;
+      // Goes to our own server, which adds the visitor to the Resend newsletter list.
+      const res = await fetch("/api/join-fan-list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), name: name.trim() }),
+      });
+      if (!res.ok) throw new Error(`Signup failed (${res.status})`);
 
       markSubmitted();
       toast({
