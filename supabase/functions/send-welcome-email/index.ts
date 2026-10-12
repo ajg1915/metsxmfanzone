@@ -51,6 +51,15 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Server-to-server only: the caller must present the service role key.
+  const serviceKeyForAuth = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!serviceKeyForAuth || req.headers.get("Authorization") !== `Bearer ${serviceKeyForAuth}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const body: WelcomeRequest = await req.json();
 
