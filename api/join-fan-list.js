@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(403).json({ success: false, error: "Origin not allowed" });
   }
 
-  const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API_KEY_1;
+  const apiKey = process.env.RESEND_CONTACTS_KEY;
   if (!apiKey) return res.status(500).json({ success: false, error: "Email service is not configured" });
 
   try {
