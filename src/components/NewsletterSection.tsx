@@ -45,7 +45,8 @@ const NewsletterSection = () => {
       console.error("Newsletter signup error:", error);
       toast({
         title: "Subscription failed",
-        description: "Please try again later.",
+        // Show what actually went wrong (a code and message) so a failure can be diagnosed from a screenshot
+        description: `Please try again later. (${[(error as { code?: string })?.code, (error as { message?: string })?.message].filter(Boolean).join(": ") || "no details"})`,
         variant: "destructive",
       });
     } finally {
