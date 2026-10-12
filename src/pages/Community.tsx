@@ -122,6 +122,9 @@ const Community = () => {
 
     if (user) {
       fetchFeed();
+      // Pick up other people's new posts without a reload
+      const timer = window.setInterval(fetchFeed, 20000);
+      return () => window.clearInterval(timer);
     }
   }, [user, loading, navigate]);
 
@@ -225,17 +228,13 @@ const Community = () => {
       .limit(30);
     const cardsWithType = (cardData || []).map((c) => ({ ...c, type: 'card' as const }));
 
-    // Combine and sort: pinned posts first, then by date
+    // Combine and sort: newest first
     const combinedFeed: FeedItem[] = [
       ...postsWithSignedUrls,
       ...blogPostsWithType,
       ...cardsWithType
     ].sort((a, b) => {
-      // Pinned posts first
-      const aPinned = a.type === 'post' && a.is_pinned ? 1 : 0;
-      const bPinned = b.type === 'post' && b.is_pinned ? 1 : 0;
-      if (aPinned !== bPinned) return bPinned - aPinned;
-      
+      // Newest first, so a fresh post is always on top
       const dateA = a.type === 'blog' ? (a.published_at || a.created_at) : a.created_at;
       const dateB = b.type === 'blog' ? (b.published_at || b.created_at) : b.created_at;
       return new Date(dateB).getTime() - new Date(dateA).getTime();
