@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { MessageSquare, ArrowRight, Pin } from "lucide-react";
+import { MessageSquare, ChevronLeft, ChevronRight, Pin } from "lucide-react";
 import { motion } from "framer-motion";
-import logo from "@/assets/metsxmfanzone-logo.png";
+import NewBadge from "@/components/NewBadge";
+import { isFresh } from "@/lib/newItem";
 
-// The home page "wall": the Feed at the top of the home page.
-// Featured/pinned post big, a grid of the newest posts, and the latest blog article.
+// The MetsXMFanZone Feed wall for signed-in members: cards scroll left to right,
+// laid out like the video sections (Replay Games, Live Streams).
 
 interface WallPost {
   id: string;
@@ -125,256 +126,175 @@ const CommunityPreviewSection = () => {
   }, []);
 
   const openWall = () => navigate("/community");
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  const scrollBy = (direction: "left" | "right") => {
+    const container = document.getElementById("wall-scroll");
+    if (!container) return;
+    const amount = container.clientWidth * 0.8;
+    const next = direction === "left" ? Math.max(0, scrollPosition - amount) : scrollPosition + amount;
+    container.scrollTo({ left: next, behavior: "smooth" });
+    setScrollPosition(next);
+  };
 
   if (loading) {
     return (
-      <section className="px-3 sm:px-6 py-8 sm:py-12" aria-busy="true">
-        <div className="container mx-auto max-w-7xl animate-pulse space-y-4">
-          <div className="h-10 bg-muted rounded w-72" />
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div className="col-span-2 lg:row-span-2 h-56 lg:h-[516px] bg-muted rounded-2xl" />
-            <div className="h-44 bg-muted rounded-2xl" />
-            <div className="h-44 bg-muted rounded-2xl" />
-          </div>
+      <section className="py-6 sm:py-8" aria-busy="true">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+          <div className="text-center text-muted-foreground">Loading the wall...</div>
         </div>
       </section>
     );
   }
 
-  const featured = posts[0];
-  const articleIsNew =
-    !!article && Date.now() - new Date(article.published_at || article.created_at).getTime() < NEW_FOR_MS;
-  // Up to 4 small tiles: the next posts, with the latest article taking the last spot.
-  const tileCount = article ? 4 : 5;
-  const tilePosts = posts.slice(1, tileCount);
-  // Everything after the wall tiles scrolls sideways underneath.
-  const morePosts = posts.slice(tileCount);
+  if (posts.length === 0 && !article) return null;
+
+  const articleIsNew = !!article && isFresh(article.published_at || article.created_at);
+  const cardClass =
+    "flex-shrink-0 snap-start w-[calc(100vw-4.5rem)] max-w-[340px] md:w-[320px] md:max-w-none lg:w-[380px] cursor-pointer group text-left";
+  const frameClass =
+    "relative overflow-hidden rounded-xl border border-border/50 transition-all duration-300 md:group-hover:scale-105 group-hover:z-10 group-hover:shadow-2xl group-hover:shadow-primary/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary";
 
   return (
-    <section className="px-3 sm:px-6 py-8 sm:py-12 relative" aria-labelledby="home-wall-title">
-      <div className="container mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
-          <div className="min-w-0">
-            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-primary">Fan Wall</p>
+    <section className="py-6 sm:py-8 relative" aria-labelledby="home-wall-title">
+      <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center justify-between mb-4"
+        >
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <MessageSquare className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             <h2
               id="home-wall-title"
-              className="font-display text-3xl sm:text-5xl leading-none tracking-wide text-foreground mt-0.5 flex items-center gap-2"
+              className="text-[21px] leading-none tracking-wide sm:text-2xl md:text-3xl font-bold uppercase text-foreground"
             >
-              <img src={logo} alt="" className="w-7 h-7 sm:w-10 sm:h-10 shrink-0" />
-              <span>
-                MetsXMFanZone <span className="text-primary">Feed</span>
-              </span>
+              MetsXMFanZone Feed
             </h2>
-            <p className="hidden sm:block text-sm sm:text-base text-muted-foreground mt-1">
-              Fresh posts from Mets fans, featured and newest first.
-            </p>
           </div>
+          <a
+            href="/community"
+            className="flex min-h-[44px] items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
+          >
+            Open Wall
+            <ChevronRight className="w-4 h-4" />
+          </a>
+        </motion.div>
+      </div>
+
+      <div className="relative group/carousel">
+        {scrollPosition > 0 && (
           <button
             type="button"
-            onClick={openWall}
-            className="shrink-0 h-11 px-4 sm:px-7 rounded-full bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity inline-flex items-center gap-1.5"
+            aria-label="Scroll the wall left"
+            onClick={() => scrollBy("left")}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
           >
-            Open the wall <ArrowRight className="w-4 h-4" />
+            <ChevronLeft className="w-8 h-8 text-foreground" />
           </button>
-        </div>
+        )}
 
-        {posts.length === 0 && !article ? (
-          <div className="bg-card/60 border border-border/40 rounded-2xl p-8 text-center">
-            <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">Be the first to post on the wall!</p>
-            <button
-              type="button"
-              onClick={openWall}
-              className="mt-4 h-11 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold"
+        <div
+          id="wall-scroll"
+          onScroll={(e) => setScrollPosition(e.currentTarget.scrollLeft)}
+          className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 px-4 sm:px-6 lg:px-8"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          <div className="hidden flex-shrink-0 lg:block lg:w-[calc((100vw-1280px)/2)]" />
+
+          {/* Latest blog article first */}
+          {article && (
+            <motion.a
+              href={`/blog/${article.slug}`}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3 }}
+              className={cardClass}
             >
-              Start a post
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 lg:grid-rows-[250px_250px] gap-3 sm:gap-4">
-            {/* Featured */}
-            {featured && (
-              <motion.button
-                type="button"
-                onClick={openWall}
-                initial={{ opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4 }}
-                className="group relative col-span-2 lg:row-span-2 h-[230px] sm:h-[300px] lg:h-auto rounded-2xl overflow-hidden border border-border/30 bg-gradient-to-br from-secondary via-muted to-background text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-              >
-                {featured.image_url && (
-                  <img
-                    src={featured.image_url}
-                    alt=""
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/95" />
-                <span className="absolute top-3 left-3 sm:top-4 sm:left-4 inline-flex items-center gap-1 rounded-full bg-[#c93b00] text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider px-2.5 py-1">
-                  {featured.is_pinned && <Pin className="w-3 h-3" />} Featured
-                </span>
-                <div className="absolute left-3.5 right-3.5 bottom-3.5 sm:left-5 sm:right-5 sm:bottom-5">
-                  <div className="flex items-center gap-2">
-                    <Avatar letter={authorInitial(featured)} size={30} admin={featured.isAdmin} />
-                    <span className="text-sm font-bold text-foreground">{authorName(featured)}</span>
-                    <span className="text-xs text-muted-foreground">{timeAgo(featured.created_at)} ago</span>
+              <div className={frameClass}>
+                <div className="aspect-video relative bg-gradient-to-br from-muted to-secondary">
+                  {article.featured_image_url && (
+                    <img src={article.featured_image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-70" />
+                  {articleIsNew && <NewBadge kind="article" className="absolute top-2 left-2" />}
+                  <span className="absolute top-2 right-2 rounded-full bg-muted/80 px-2 py-0.5 text-[10px] sm:text-xs font-semibold text-muted-foreground backdrop-blur-sm">
+                    BLOG
+                  </span>
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <p className="text-foreground text-[15px] sm:text-sm font-semibold line-clamp-2">{article.title}</p>
                   </div>
-                  {featured.content && (
-                    <p className="mt-2 text-base sm:text-xl lg:text-2xl font-bold leading-snug text-foreground line-clamp-3">
-                      {featured.content}
-                    </p>
-                  )}
                 </div>
-              </motion.button>
-            )}
+              </div>
+            </motion.a>
+          )}
 
-            {/* Small tiles */}
-            {tilePosts.map((post, i) => {
-              const hasImage = !!post.image_url;
-              return (
-                <motion.button
-                  type="button"
-                  key={post.id}
-                  onClick={openWall}
-                  initial={{ opacity: 0, y: 14 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.05 }}
-                  className={`group text-left rounded-2xl overflow-hidden border border-border/30 bg-card/80 hover:border-primary/50 transition-colors flex flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
-                    hasImage ? "" : "border-t-[3px] border-t-primary"
-                  }`}
-                >
-                  {hasImage && (
-                    <div className="h-[100px] lg:h-[125px] overflow-hidden bg-muted shrink-0">
-                      <img
-                        src={post.image_url!}
-                        alt=""
-                        loading="lazy"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                  )}
-                  <div className="p-2.5 sm:p-3">
-                    <div className="flex items-center gap-1.5">
-                      <Avatar letter={authorInitial(post)} size={22} admin={post.isAdmin} />
-                      <span className="text-[13px] sm:text-sm font-bold text-foreground truncate">{authorName(post)}</span>
-                      <span className="text-[11px] sm:text-xs text-muted-foreground shrink-0">{timeAgo(post.created_at)}</span>
-                    </div>
-                    {post.content && (
-                      <p
-                        className={`mt-1.5 leading-snug ${
-                          hasImage
-                            ? "text-[13px] sm:text-sm text-muted-foreground line-clamp-2"
-                            : "text-[15px] sm:text-lg font-semibold text-foreground line-clamp-5"
-                        }`}
-                      >
+          {posts.map((post, index) => (
+            <motion.button
+              type="button"
+              key={post.id}
+              onClick={openWall}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: Math.min(index, 8) * 0.05 }}
+              className={cardClass}
+              aria-label={`Post by ${authorName(post)}`}
+            >
+              <div className={frameClass}>
+                <div className="aspect-video relative bg-gradient-to-br from-secondary via-muted to-background">
+                  {post.image_url ? (
+                    <img src={post.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
+                  ) : (
+                    post.content && (
+                      <p className="absolute inset-0 flex items-center px-4 pb-12 pt-9 text-lg sm:text-xl font-bold leading-snug text-foreground line-clamp-4">
                         {post.content}
                       </p>
-                    )}
-                  </div>
-                </motion.button>
-              );
-            })}
-
-            {/* Latest blog article */}
-            {article && (
-              <motion.a
-                href={`/blog/${article.slug}`}
-                initial={{ opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="group rounded-2xl overflow-hidden border border-border/30 bg-card/80 hover:border-primary/50 transition-colors flex flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-              >
-                <div className="relative h-[100px] lg:h-[125px] overflow-hidden bg-gradient-to-br from-muted to-secondary shrink-0">
-                  {article.featured_image_url && (
-                    <img
-                      src={article.featured_image_url}
-                      alt=""
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    )
                   )}
-                  {articleIsNew && (
-                    <span className="absolute top-2 left-2 rounded-full bg-[#c93b00] text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5">
-                      New article
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent opacity-60" />
+
+                  {post.is_pinned ? (
+                    <span className="absolute top-2 left-2 inline-flex items-center gap-1 rounded-full bg-[#c93b00] px-2 py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white">
+                      <Pin className="w-3 h-3" /> Featured
                     </span>
+                  ) : (
+                    isFresh(post.created_at) && (
+                      <span className="absolute top-2 left-2 rounded-full bg-[#0b3e75] px-2 py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white ring-1 ring-white/30">
+                        New post
+                      </span>
+                    )
                   )}
-                </div>
-                <div className="p-2.5 sm:p-3">
-                  <p className="text-[13px] sm:text-sm font-bold text-foreground leading-snug line-clamp-3">{article.title}</p>
-                </div>
-              </motion.a>
-            )}
-          </div>
-        )}
 
-        {/* Keep scrolling: more posts, swipe or scroll sideways */}
-        {morePosts.length > 0 && (
-          <div className="mt-5 sm:mt-6">
-            <div className="flex items-center justify-between mb-2.5 px-0.5">
-              <h3 className="text-base sm:text-lg font-bold text-foreground">More from the wall</h3>
-              <span className="text-xs text-muted-foreground">Swipe to keep scrolling</span>
-            </div>
-            <div
-              role="region"
-              aria-label="More posts from the wall"
-              tabIndex={0}
-              className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-3 -mx-3 px-3 sm:mx-0 sm:px-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary rounded-xl"
-            >
-              {morePosts.map((post) => (
-                <button
-                  type="button"
-                  key={post.id}
-                  onClick={openWall}
-                  className="snap-start shrink-0 w-[250px] sm:w-[280px] text-left rounded-2xl overflow-hidden border border-border/30 bg-card/80 hover:border-primary/50 transition-colors flex flex-col"
-                >
-                  {post.image_url && (
-                    <div className="h-[120px] overflow-hidden bg-muted">
-                      <img src={post.image_url} alt="" loading="lazy" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div className="p-3 flex-1">
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
                     <div className="flex items-center gap-1.5">
                       <Avatar letter={authorInitial(post)} size={22} admin={post.isAdmin} />
-                      <span className="text-sm font-bold text-foreground truncate">{authorName(post)}</span>
+                      <span className="text-[15px] sm:text-sm font-semibold text-foreground truncate">{authorName(post)}</span>
                       <span className="text-xs text-muted-foreground shrink-0">{timeAgo(post.created_at)}</span>
                     </div>
-                    {post.content && (
-                      <p className="mt-1.5 text-sm text-muted-foreground leading-snug line-clamp-4">{post.content}</p>
+                    {post.image_url && post.content && (
+                      <p className="mt-1 text-xs sm:text-[13px] text-foreground/80 line-clamp-1">{post.content}</p>
                     )}
                   </div>
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={openWall}
-                className="snap-start shrink-0 w-[160px] rounded-2xl border border-primary/40 bg-primary/10 text-primary font-bold text-sm flex flex-col items-center justify-center gap-2 p-4"
-              >
-                See all posts <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        )}
+                </div>
+              </div>
+            </motion.button>
+          ))}
 
-        {/* Join strip */}
-        <div className="mt-4 sm:mt-5 rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 via-card/80 to-secondary/30 px-4 py-3.5 sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <p className="font-bold text-foreground text-[15px] sm:text-base">Ready to join the conversation?</p>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Share your takes, reactions and highlights with fellow Mets fans.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={openWall}
-            className="h-11 px-7 rounded-full bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
-          >
-            Get started
-          </button>
+          <div className="hidden flex-shrink-0 lg:block lg:w-[calc((100vw-1280px)/2)]" />
         </div>
+
+        <button
+          type="button"
+          aria-label="Scroll the wall right"
+          onClick={() => scrollBy("right")}
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-1 opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300"
+        >
+          <ChevronRight className="w-8 h-8 text-foreground" />
+        </button>
       </div>
     </section>
   );
