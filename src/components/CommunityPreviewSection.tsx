@@ -77,7 +77,7 @@ const CommunityPreviewSection = () => {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const load = async () => {
       try {
         const [{ data: adminRoles }, { data: postsData }, { data: articleData }, { data: cardData }] = await Promise.all([
           supabase.from("user_roles").select("user_id").eq("role", "admin"),
@@ -125,12 +125,8 @@ const CommunityPreviewSection = () => {
           is_pinned: p.is_pinned ?? false,
           pinned_at: p.pinned_at ?? null,
         }));
-        list.sort((a, b) => {
-          const ap = a.is_pinned ? 1 : 0;
-          const bp = b.is_pinned ? 1 : 0;
-          if (ap !== bp) return bp - ap;
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
+        // Newest first, so a fresh post is always the first card
+        list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
         setPosts(list);
         setArticle((articleData && articleData[0]) || null);
@@ -140,11 +136,30 @@ const CommunityPreviewSection = () => {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    };
+    load();
+    // Pick up new posts without a page reload: every 20 seconds, and when the tab comes back
+    const timer = window.setInterval(load, 20000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
+
+  // One list, newest first: blog article, color cards and posts are ranked together
+  const rank = new Map<string, number>();
+  [
+    ...(article ? [{ key: `a-${article.id}`, at: article.published_at || article.created_at }] : []),
+    ...cards.map((c) => ({ key: `c-${c.id}`, at: c.created_at })),
+    ...posts.map((p) => ({ key: `p-${p.id}`, at: p.created_at })),
+  ]
+    .sort((x, y) => new Date(y.at).getTime() - new Date(x.at).getTime())
+    .forEach((item, i) => rank.set(item.key, i));
 
   const openPost = (id: string) => navigate(`/community#post-${id}`);
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -223,12 +238,13 @@ const CommunityPreviewSection = () => {
           className="flex gap-3 overflow-x-auto scrollbar-hide scroll-smooth max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4 px-4 sm:px-6 lg:px-8"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
-          <div className="hidden flex-shrink-0 lg:block lg:w-[calc((100vw-1280px)/2)]" />
+          <div className="hidden flex-shrink-0 lg:block lg:w-[calc((100vw-1280px)/2)]" style={{ order: -1 }} />
 
           {/* Latest blog article first */}
           {article && (
             <motion.a
               href={`/blog/${article.slug}`}
+              style={{ order: rank.get(`a-${article.id}`) ?? 0 }}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
@@ -260,6 +276,7 @@ const CommunityPreviewSection = () => {
               <motion.button
                 type="button"
                 key={`card-${card.id}`}
+                style={{ order: rank.get(`c-${card.id}`) ?? 0 }}
                 onClick={() => navigate(`/community#post-${card.id}`)}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
@@ -288,6 +305,7 @@ const CommunityPreviewSection = () => {
             <motion.button
               type="button"
               key={post.id}
+              style={{ order: rank.get(`p-${post.id}`) ?? 0 }}
               onClick={() => openPost(post.id)}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -340,7 +358,7 @@ const CommunityPreviewSection = () => {
             </motion.button>
           ))}
 
-          <div className="hidden flex-shrink-0 lg:block lg:w-[calc((100vw-1280px)/2)]" />
+          <div className="hidden flex-shrink-0 lg:block lg:w-[calc((100vw-1280px)/2)]" style={{ order: 9999 }} />
         </div>
 
         <button
