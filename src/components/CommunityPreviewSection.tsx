@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { MessageSquare, ArrowRight, Flame, Sparkles, Pin } from "lucide-react";
+import { MessageSquare, ArrowRight, Pin } from "lucide-react";
 import { motion } from "framer-motion";
 import logo from "@/assets/metsxmfanzone-logo.png";
 
-interface Post {
+// The home page "wall": the Feed at the top of the home page.
+// Featured/pinned post big, a grid of the newest posts, and the latest blog article.
+
+interface WallPost {
   id: string;
   user_id: string;
   content: string;
@@ -17,347 +16,317 @@ interface Post {
   created_at: string;
   is_pinned: boolean | null;
   pinned_at: string | null;
-  profiles: {
-    full_name: string | null;
-    email: string | null;
-  } | null;
+  profiles: { full_name: string | null; email: string | null } | null;
   isAdmin?: boolean;
 }
 
+interface WallArticle {
+  id: string;
+  title: string;
+  slug: string;
+  featured_image_url: string | null;
+  category: string | null;
+  published_at: string | null;
+  created_at: string;
+}
+
+const NEW_FOR_MS = 48 * 60 * 60 * 1000;
+
+const timeAgo = (date: string) => {
+  const diffMs = Date.now() - new Date(date).getTime();
+  const mins = Math.max(0, Math.floor(diffMs / 60000));
+  if (mins < 60) return `${mins}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.floor(hours / 24)}d`;
+};
+
+const authorName = (p: WallPost) => (p.isAdmin ? "MetsXMFanZone" : p.profiles?.full_name?.split(" ")[0] || "Member");
+const authorInitial = (p: WallPost) => (p.isAdmin ? "M" : p.profiles?.full_name?.[0]?.toUpperCase() || "M");
+
+const Avatar = ({ letter, size = 24, admin = false }: { letter: string; size?: number; admin?: boolean }) => (
+  <span
+    className={`inline-flex items-center justify-center rounded-full font-bold shrink-0 ${
+      admin ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
+    }`}
+    style={{ width: size, height: size, fontSize: Math.round(size * 0.46) }}
+    aria-hidden="true"
+  >
+    {letter}
+  </span>
+);
+
 const CommunityPreviewSection = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<WallPost[]>([]);
+  const [article, setArticle] = useState<WallArticle | null>(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ postsCount: 0, membersCount: 0 });
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (!user) {setIsAdmin(false);return;}
-    supabase.
-    from("user_roles").
-    select("role").
-    eq("user_id", user.id).
-    then(({ data }) => {
-      setIsAdmin(data?.some((r) => r.role === "admin") ?? false);
-    });
-  }, [user]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const [{ data: adminRoles }, { data: postsData }, { data: articleData }] = await Promise.all([
+          supabase.from("user_roles").select("user_id").eq("role", "admin"),
+          supabase
+            .from("posts")
+            .select("id, user_id, content, image_url, created_at, is_pinned, pinned_at, profiles (full_name, email)")
+            .order("created_at", { ascending: false })
+            .limit(10),
+          supabase
+            .from("blog_posts")
+            .select("id, title, slug, featured_image_url, category, published_at, created_at")
+            .eq("published", true)
+            .order("published_at", { ascending: false })
+            .limit(1),
+        ]);
+        if (cancelled) return;
 
-  const handlePostClick = () => {
-    navigate(isAdmin ? "/admin/stories" : "/community");
-  };
+        const adminIds = new Set((adminRoles || []).map((r) => r.user_id));
 
-  useEffect(() => {
-    fetchCommunityData();
+        // Only old Supabase-storage images need signing; R2 and other links are used as they are.
+        const needSigning = (postsData || []).filter(
+          (p) => p.image_url && (!p.image_url.startsWith("http") || p.image_url.includes("/storage/v1/object/")),
+        );
+        const signed: Record<string, string> = {};
+        await Promise.all(
+          needSigning.map(async (p) => {
+            const fileName = p.image_url!.split("/community_images/")[1] || p.image_url!;
+            const { data } = await supabase.storage.from("community_images").createSignedUrl(fileName, 3600);
+            if (data?.signedUrl) signed[p.id] = data.signedUrl;
+          }),
+        );
+
+        const list: WallPost[] = (postsData || []).map((p) => ({
+          ...(p as WallPost),
+          image_url: signed[p.id] || p.image_url,
+          isAdmin: adminIds.has(p.user_id),
+          is_pinned: p.is_pinned ?? false,
+          pinned_at: p.pinned_at ?? null,
+        }));
+        list.sort((a, b) => {
+          const ap = a.is_pinned ? 1 : 0;
+          const bp = b.is_pinned ? 1 : 0;
+          if (ap !== bp) return bp - ap;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+
+        setPosts(list);
+        setArticle((articleData && articleData[0]) || null);
+      } catch (error) {
+        console.error("Error loading the wall:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const fetchCommunityData = async () => {
-    try {
-      const { data: adminRoles } = await supabase.
-      from("user_roles").
-      select("user_id").
-      eq("role", "admin");
-
-      const adminUserIds = new Set((adminRoles || []).map((r) => r.user_id));
-
-      const { data: postsData } = await supabase.
-      from("posts").
-      select(`id, user_id, content, image_url, created_at, is_pinned, pinned_at, profiles (full_name, email)`).
-      order("created_at", { ascending: false }).
-      limit(10);
-
-      const { count: postsCount } = await supabase.
-      from("posts").
-      select("*", { count: "exact", head: true });
-
-      const { count: membersCount } = await supabase.
-      from("profiles").
-      select("*", { count: "exact", head: true });
-
-      // Only legacy Supabase storage references need signing; R2/external URLs are used as-is.
-      const postsNeedingUrls = (postsData || []).filter(
-        (p) => p.image_url && (!p.image_url.startsWith('http') || p.image_url.includes('/storage/v1/object/'))
-      );
-      const signedUrlMap: Record<string, string> = {};
-
-      if (postsNeedingUrls.length > 0) {
-        const signPromises = postsNeedingUrls.map(async (post) => {
-          const fileName = post.image_url!.split('/community_images/')[1] || post.image_url!;
-          if (fileName) {
-            const { data: signedUrlData } = await supabase.storage.
-            from('community_images').
-            createSignedUrl(fileName, 3600);
-            if (signedUrlData?.signedUrl) {
-              signedUrlMap[post.id] = signedUrlData.signedUrl;
-            }
-          }
-        });
-        await Promise.all(signPromises);
-      }
-
-      const postsWithSignedUrls = (postsData || []).map((post) => ({
-        ...post,
-        image_url: signedUrlMap[post.id] || post.image_url,
-        isAdmin: adminUserIds.has(post.user_id),
-        is_pinned: post.is_pinned ?? false,
-        pinned_at: post.pinned_at ?? null,
-      }));
-
-      // Sort: pinned posts first, then by date
-      postsWithSignedUrls.sort((a, b) => {
-        const aPinned = a.is_pinned ? 1 : 0;
-        const bPinned = b.is_pinned ? 1 : 0;
-        if (aPinned !== bPinned) return bPinned - aPinned;
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
-
-      // Take top 5
-      setPosts(postsWithSignedUrls.slice(0, 5));
-      setStats({
-        postsCount: postsCount || 0,
-        membersCount: membersCount || 0
-      });
-    } catch (error) {
-      console.error("Error fetching community data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatTimeAgo = (date: string) => {
-    const now = new Date();
-    const postDate = new Date(date);
-    const diffMs = now.getTime() - postDate.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  };
+  const openWall = () => navigate("/community");
 
   if (loading) {
     return (
-      <section className="py-12 sm:py-16 md:py-20 px-3 sm:px-6">
-        <div className="container mx-auto max-w-7xl">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-64" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="h-48 bg-muted rounded-xl" />
-              <div className="h-48 bg-muted rounded-xl" />
-              <div className="h-48 bg-muted rounded-xl" />
-            </div>
+      <section className="px-3 sm:px-6 py-8 sm:py-12" aria-busy="true">
+        <div className="container mx-auto max-w-7xl animate-pulse space-y-4">
+          <div className="h-10 bg-muted rounded w-72" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="col-span-2 lg:row-span-2 h-56 lg:h-[516px] bg-muted rounded-2xl" />
+            <div className="h-44 bg-muted rounded-2xl" />
+            <div className="h-44 bg-muted rounded-2xl" />
           </div>
         </div>
-      </section>);
-
+      </section>
+    );
   }
 
+  const featured = posts[0];
+  const articleIsNew =
+    !!article && Date.now() - new Date(article.published_at || article.created_at).getTime() < NEW_FOR_MS;
+  // Up to 4 small tiles: the next posts, with the latest article taking the last spot.
+  const tilePosts = posts.slice(1, article ? 4 : 5);
+
   return (
-    <section className="py-8 sm:py-16 md:py-20 px-3 sm:px-6 relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-secondary/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="container mx-auto max-w-7xl relative z-10">
+    <section className="px-3 sm:px-6 py-8 sm:py-12 relative" aria-labelledby="home-wall-title">
+      <div className="container mx-auto max-w-7xl">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 sm:gap-4 mb-6 sm:mb-10">
-
-          <div>
-            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
-              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-primary">Fan Hub</span>
-            </div>
-            <h2 className="text-sm sm:text-2xl md:text-3xl font-bold text-foreground flex items-center gap-2 sm:gap-3 leading-tight text-left">
-              <img src={logo} alt="MetsXMFanZone" className="w-6 h-6 sm:w-10 sm:h-10 shrink-0" />
-              <span className="break-words text-xl">MetsXMFanZone Community</span>
+        <div className="flex items-end justify-between gap-3 mb-4 sm:mb-6">
+          <div className="min-w-0">
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-primary">Fan Wall</p>
+            <h2
+              id="home-wall-title"
+              className="font-display text-3xl sm:text-5xl leading-none tracking-wide text-foreground mt-0.5 flex items-center gap-2"
+            >
+              <img src={logo} alt="" className="w-7 h-7 sm:w-10 sm:h-10 shrink-0" />
+              <span>
+                MetsXMFanZone <span className="text-primary">Feed</span>
+              </span>
             </h2>
-            <p className="text-[10px] sm:text-base text-muted-foreground mt-1 sm:mt-2 max-w-md">
-              Join the conversation with fellow Mets fans
+            <p className="hidden sm:block text-sm sm:text-base text-muted-foreground mt-1">
+              Fresh posts from Mets fans, featured and newest first.
             </p>
           </div>
-          <Button
-            onClick={() => navigate("/community")}
-            size="sm"
-            className="group text-xs sm:text-sm font-semibold rounded-full px-4 sm:px-6 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">
+          <button
+            type="button"
+            onClick={openWall}
+            className="shrink-0 h-11 px-4 sm:px-7 rounded-full bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity inline-flex items-center gap-1.5"
+          >
+            Open the wall <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
 
-            Join Community
-            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1.5 sm:ml-2 group-hover:translate-x-1 transition-transform" />
-          </Button>
-        </motion.div>
-
-        {/* Posts Feed */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
-              <Flame className="w-4 h-4 sm:w-5 sm:h-5 text-destructive" />
-              Trending Posts
-            </h3>
+        {posts.length === 0 && !article ? (
+          <div className="bg-card/60 border border-border/40 rounded-2xl p-8 text-center">
+            <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">Be the first to post on the wall!</p>
+            <button
+              type="button"
+              onClick={openWall}
+              className="mt-4 h-11 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold"
+            >
+              Start a post
+            </button>
           </div>
-
-          {posts.length > 0 ?
-          <>
-              {/* Featured Post */}
-              <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4 }}
-              onClick={handlePostClick}
-              className="cursor-pointer group relative rounded-2xl overflow-hidden border border-border/30 bg-card/70 backdrop-blur-md hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-primary/5">
-
-                <div className="flex flex-col sm:flex-row">
-                  {/* Image */}
-                  <div className="relative w-full sm:w-2/5 aspect-[16/10] sm:aspect-auto overflow-hidden">
-                    {posts[0].image_url ?
-                  <img
-                    src={posts[0].image_url}
-                    alt="Featured Post"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" /> :
-
-
-                  <div className="w-full h-full min-h-[180px] bg-gradient-to-br from-primary/15 via-primary/5 to-secondary/15 flex items-center justify-center">
-                        <Avatar className="w-20 h-20 ring-4 ring-primary/20">
-                          <AvatarFallback className="bg-primary/20 text-primary text-2xl font-bold">
-                            {posts[0].isAdmin ? "M" : posts[0].profiles?.full_name?.[0] || "M"}
-                          </AvatarFallback>
-                        </Avatar>
-                      </div>
-                  }
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent sm:bg-gradient-to-r sm:from-transparent sm:to-card/20" />
-                    <Badge className="absolute top-3 left-3 text-[10px] px-2.5 py-1 bg-primary text-primary-foreground border-0 shadow-lg font-semibold uppercase tracking-wider">
-                      {posts[0].is_pinned ? (
-                        <><Pin className="w-3 h-3 mr-1" /> Featured Post</>
-                      ) : (
-                        <><Flame className="w-3 h-3 mr-1" /> Trending</>
-                      )}
-                    </Badge>
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 p-4 sm:p-6 flex flex-col justify-center">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Avatar className="w-7 h-7">
-                        <AvatarFallback className="bg-primary/15 text-primary text-xs font-semibold">
-                          {posts[0].isAdmin ? "M" : posts[0].profiles?.full_name?.[0] || "M"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-semibold text-foreground">
-                        {posts[0].isAdmin ? "MetsXMFanZone" : posts[0].profiles?.full_name || "Member"}
-                      </span>
-                      <span className="text-[11px] text-muted-foreground">· {formatTimeAgo(posts[0].created_at)}</span>
-                    </div>
-                    {posts[0].content &&
-                  <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                        {posts[0].content}
-                      </p>
-                  }
-                    <div className="mt-3 flex items-center gap-1.5 text-xs text-primary font-medium group-hover:gap-2.5 transition-all">
-                      Read more <ArrowRight className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Post Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                {posts.slice(1).map((post, index) =>
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 15 }}
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 lg:grid-rows-[250px_250px] gap-3 sm:gap-4">
+            {/* Featured */}
+            {featured && (
+              <motion.button
+                type="button"
+                onClick={openWall}
+                initial={{ opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.06 }}
-                onClick={handlePostClick}
-                className="cursor-pointer group rounded-xl overflow-hidden border border-border/30 bg-card/70 backdrop-blur-md hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5">
-
-                    {/* Thumbnail */}
-                    <div className="relative aspect-[16/9] overflow-hidden">
-                      {post.image_url ?
+                transition={{ duration: 0.4 }}
+                className="group relative col-span-2 lg:row-span-2 h-[230px] sm:h-[300px] lg:h-auto rounded-2xl overflow-hidden border border-border/30 bg-gradient-to-br from-secondary via-muted to-background text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                {featured.image_url && (
                   <img
-                    src={post.image_url}
-                    alt="Post"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /> :
-
-
-                  <div className="w-full h-full bg-gradient-to-br from-primary/10 via-card to-secondary/10 flex items-center justify-center">
-                          <Avatar className="w-12 h-12">
-                            <AvatarFallback className="bg-primary/15 text-primary font-semibold">
-                              {post.isAdmin ? "M" : post.profiles?.full_name?.[0] || "M"}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                  }
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-3 sm:p-4">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="font-semibold text-foreground text-sm truncate">
-                          {post.isAdmin ? "MetsXMFanZone" : post.profiles?.full_name?.split(" ")[0] || "Member"}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground flex-shrink-0">
-                          {formatTimeAgo(post.created_at)}
-                        </span>
-                      </div>
-                      {post.content &&
-                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                          {post.content}
-                        </p>
-                  }
-                    </div>
-                  </motion.div>
-              )}
-              </div>
-            </> :
-
-          <div className="bg-card/60 backdrop-blur-md border border-border/40 rounded-2xl p-8 text-center">
-              <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">Be the first to post!</p>
-            </div>
-          }
-
-          {/* CTA Banner */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="relative rounded-2xl overflow-hidden border border-primary/20 bg-gradient-to-r from-primary/10 via-card/80 to-secondary/10 backdrop-blur-md mt-4">
-
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(var(--primary)/0.08),transparent_60%)]" />
-            <div className="relative p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3 text-center sm:text-left">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-muted">
-                  <img src={logo} alt="MetsXMFanZone" className="w-6 h-6 sm:w-7 sm:h-7" />
+                    src={featured.image_url}
+                    alt=""
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background/95" />
+                <span className="absolute top-3 left-3 sm:top-4 sm:left-4 inline-flex items-center gap-1 rounded-full bg-[#c93b00] text-white text-[11px] sm:text-xs font-bold uppercase tracking-wider px-2.5 py-1">
+                  {featured.is_pinned && <Pin className="w-3 h-3" />} Featured
+                </span>
+                <div className="absolute left-3.5 right-3.5 bottom-3.5 sm:left-5 sm:right-5 sm:bottom-5">
+                  <div className="flex items-center gap-2">
+                    <Avatar letter={authorInitial(featured)} size={30} admin={featured.isAdmin} />
+                    <span className="text-sm font-bold text-foreground">{authorName(featured)}</span>
+                    <span className="text-xs text-muted-foreground">{timeAgo(featured.created_at)} ago</span>
+                  </div>
+                  {featured.content && (
+                    <p className="mt-2 text-base sm:text-xl lg:text-2xl font-bold leading-snug text-foreground line-clamp-3">
+                      {featured.content}
+                    </p>
+                  )}
                 </div>
-                <div>
-                  <h4 className="font-bold text-foreground text-sm sm:text-base">Ready to join the conversation?</h4>
-                  <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                    Share your takes, reactions & highlights with fellow Mets fans
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={() => navigate("/community")}
-                className="rounded-full px-6 font-semibold shadow-md shadow-primary/15 hover:shadow-primary/30 transition-all">
+              </motion.button>
+            )}
 
-                Get Started
-                <ArrowRight className="w-4 h-4 ml-1.5" />
-              </Button>
-            </div>
-          </motion.div>
+            {/* Small tiles */}
+            {tilePosts.map((post, i) => {
+              const hasImage = !!post.image_url;
+              return (
+                <motion.button
+                  type="button"
+                  key={post.id}
+                  onClick={openWall}
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`group text-left rounded-2xl overflow-hidden border border-border/30 bg-card/80 hover:border-primary/50 transition-colors flex flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${
+                    hasImage ? "" : "border-t-[3px] border-t-primary"
+                  }`}
+                >
+                  {hasImage && (
+                    <div className="h-[100px] lg:h-[125px] overflow-hidden bg-muted shrink-0">
+                      <img
+                        src={post.image_url!}
+                        alt=""
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+                  <div className="p-2.5 sm:p-3">
+                    <div className="flex items-center gap-1.5">
+                      <Avatar letter={authorInitial(post)} size={22} admin={post.isAdmin} />
+                      <span className="text-[13px] sm:text-sm font-bold text-foreground truncate">{authorName(post)}</span>
+                      <span className="text-[11px] sm:text-xs text-muted-foreground shrink-0">{timeAgo(post.created_at)}</span>
+                    </div>
+                    {post.content && (
+                      <p
+                        className={`mt-1.5 leading-snug ${
+                          hasImage
+                            ? "text-[13px] sm:text-sm text-muted-foreground line-clamp-2"
+                            : "text-[15px] sm:text-lg font-semibold text-foreground line-clamp-5"
+                        }`}
+                      >
+                        {post.content}
+                      </p>
+                    )}
+                  </div>
+                </motion.button>
+              );
+            })}
+
+            {/* Latest blog article */}
+            {article && (
+              <motion.a
+                href={`/blog/${article.slug}`}
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="group rounded-2xl overflow-hidden border border-border/30 bg-card/80 hover:border-primary/50 transition-colors flex flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+              >
+                <div className="relative h-[100px] lg:h-[125px] overflow-hidden bg-gradient-to-br from-muted to-secondary shrink-0">
+                  {article.featured_image_url && (
+                    <img
+                      src={article.featured_image_url}
+                      alt=""
+                      loading="lazy"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  )}
+                  {articleIsNew && (
+                    <span className="absolute top-2 left-2 rounded-full bg-[#c93b00] text-white text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5">
+                      New article
+                    </span>
+                  )}
+                </div>
+                <div className="p-2.5 sm:p-3">
+                  <p className="text-[13px] sm:text-sm font-bold text-foreground leading-snug line-clamp-3">{article.title}</p>
+                </div>
+              </motion.a>
+            )}
+          </div>
+        )}
+
+        {/* Join strip */}
+        <div className="mt-4 sm:mt-5 rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 via-card/80 to-secondary/30 px-4 py-3.5 sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <p className="font-bold text-foreground text-[15px] sm:text-base">Ready to join the conversation?</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Share your takes, reactions and highlights with fellow Mets fans.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={openWall}
+            className="h-11 px-7 rounded-full bg-primary text-primary-foreground text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
+          >
+            Get started
+          </button>
         </div>
       </div>
-    </section>);
-
+    </section>
+  );
 };
 
 export default CommunityPreviewSection;

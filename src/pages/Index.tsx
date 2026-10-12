@@ -195,6 +195,13 @@ const Index = () => {
         {/* Sports networks: shown in TV mode only (see .sports-networks in index.css) */}
         <SportsNetworksStrip />
 
+        {/* The wall: MetsXMFanZone Feed sits at the top of the home page */}
+        <LazySection fallback={<SectionSkeleton height="h-72" />}>
+          <Suspense fallback={<SectionSkeleton height="h-72" />}>
+            <CommunityPreviewSection />
+          </Suspense>
+        </LazySection>
+
         {/* Live & upcoming */}
         {SHOW_METS_GAME_CENTER && (
           <Suspense fallback={<SectionSkeleton height="h-16" />}>
