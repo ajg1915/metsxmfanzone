@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import BlogShareDialog from "@/components/admin/BlogShareDialog";
 import MediaPickerDialog from "@/components/admin/MediaPickerDialog";
@@ -18,6 +17,7 @@ import { validateFile } from "@/utils/fileValidation";
 import {
   ArrowLeft, Save, Loader2, Code2, ImagePlus, Music, CalendarClock,
   Share2, Eye, CloudUpload, CheckCircle2, MonitorSmartphone, FolderOpen,
+  ArrowRight, Check, Circle, RotateCcw,
 } from "lucide-react";
 import ArticlePreviewDialog from "@/components/admin/ArticlePreviewDialog";
 import { z } from "zod";
@@ -59,6 +59,9 @@ export default function ArticleEditor() {
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [restored, setRestored] = useState(false);
+  // Unsaved work found on this device. Never applied until the owner taps Continue.
+  const [pendingLocal, setPendingLocal] = useState<(FormState & { savedAt?: number }) | null>(null);
+  const [step, setStep] = useState(0);
   const [uploading, setUploading] = useState<"featured" | "inline" | "audio" | null>(null);
   const [existingSlugs, setExistingSlugs] = useState<string[]>([]);
   const [savedPost, setSavedPost] = useState<{ id: string; title: string; slug: string; excerpt?: string | null; featured_image_url?: string | null } | null>(null);
@@ -68,6 +71,8 @@ export default function ArticleEditor() {
   const [picker, setPicker] = useState<{ open: boolean; target: "featured" | "inline" | "audio" }>({ open: false, target: "featured" });
 
   const ready = useRef(false);
+  // After a save, ignore autosaves of that exact text so a late timer can't bring the article back.
+  const blockedSnap = useRef<string | null>(null);
   const inlineInput = useRef<HTMLInputElement>(null);
 
   const handlePickedFromLibrary = (url: string) => {
@@ -83,6 +88,9 @@ export default function ArticleEditor() {
   // Load post (edit) + any unsaved local draft
   useEffect(() => {
     let cancelled = false;
+    ready.current = false;
+    blockedSnap.current = null;
+    setStep(0);
     (async () => {
       let base: FormState = emptyForm;
       if (id) {
@@ -109,21 +117,23 @@ export default function ArticleEditor() {
         }
       }
 
-      let next = base;
+      let pending: (FormState & { savedAt?: number }) | null = null;
       try {
         const raw = localStorage.getItem(draftKey);
         if (raw) {
           const d = JSON.parse(raw);
-          if (Date.now() - (d.savedAt || 0) < 7 * 24 * 60 * 60 * 1000) {
-            const { savedAt: _s, ...rest } = d;
-            next = { ...base, ...rest };
-            if (!cancelled) setRestored(true);
-          }
+          const fresh = Date.now() - (d.savedAt || 0) < 7 * 24 * 60 * 60 * 1000;
+          const merged = { ...base, ...d };
+          delete (merged as any).savedAt;
+          const differs = JSON.stringify(merged) !== JSON.stringify(base);
+          if (fresh && (d.title || d.content) && differs) pending = d;
+          else localStorage.removeItem(draftKey);
         }
       } catch { /* ignore */ }
 
       if (cancelled) return;
-      setForm(next);
+      setForm(base);
+      setPendingLocal(pending);
       setLoading(false);
       ready.current = true;
     })();
@@ -139,18 +149,18 @@ export default function ArticleEditor() {
   // Auto-slug from title (new posts only)
   useEffect(() => {
     if (autoSlug && form.title) setForm((f) => ({ ...f, slug: slugify(f.title) }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.title, autoSlug]);
 
   // Autosave — survives refresh for both new and edited articles
   const saveLocal = useCallback(() => {
-    if (!ready.current) return;
+    if (!ready.current || pendingLocal) return;
     if (!form.title && !form.content) return;
+    if (blockedSnap.current !== null && JSON.stringify(form) === blockedSnap.current) return;
     try {
       localStorage.setItem(draftKey, JSON.stringify({ ...form, savedAt: Date.now() }));
       setSavedAt(Date.now());
     } catch { /* quota */ }
-  }, [form, draftKey]);
+  }, [form, draftKey, pendingLocal]);
 
   useEffect(() => {
     const t = setTimeout(saveLocal, 1200);
@@ -171,6 +181,19 @@ export default function ArticleEditor() {
     try { localStorage.removeItem(draftKey); } catch { /* ignore */ }
     setSavedAt(null);
     setRestored(false);
+  };
+
+  const continueLocal = () => {
+    if (!pendingLocal) return;
+    const { savedAt: _s, ...rest } = pendingLocal;
+    setForm((f) => ({ ...f, ...rest }));
+    setPendingLocal(null);
+    setRestored(true);
+  };
+
+  const startFresh = () => {
+    clearLocal();
+    setPendingLocal(null);
   };
 
   const upload = async (
@@ -237,6 +260,7 @@ export default function ArticleEditor() {
       is_draft: !published && !future,
     };
 
+    blockedSnap.current = JSON.stringify(form);
     setSaving(true);
     try {
       let saved: any;
@@ -272,6 +296,7 @@ export default function ArticleEditor() {
         setApprovalStatus(null);
         setWasLive(false);
         setAutoSlug(true);
+        setStep(0);
         navigate("/admin/blog/new");
       } else {
         setForm((f) => ({ ...f, published: payload.published }));
@@ -283,6 +308,7 @@ export default function ArticleEditor() {
       }
     } catch (e: any) {
       const msg = e?.message?.includes("duplicate") ? "That web address is already used." : (e?.message || "Could not save");
+      blockedSnap.current = null;
       toast({ title: "Error", description: msg, variant: "destructive" });
     } finally { setSaving(false); }
   };
@@ -291,286 +317,336 @@ export default function ArticleEditor() {
     return <div className="p-6 text-sm text-muted-foreground flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Loading article…</div>;
   }
 
+  const STEPS = ["Write", "Details", "Publish"] as const;
+  const goStep = (n: number) => {
+    setStep(n);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const checks = [
+    { ok: form.title.trim().length >= 3, label: "Headline" },
+    { ok: wordCount >= 3, label: `Article (${wordCount} words)` },
+    { ok: !!form.excerpt.trim(), label: "Summary" },
+    { ok: !!form.meta_description.trim() && form.meta_description.length <= 160, label: "Google description" },
+    { ok: !!form.featured_image_url, label: "Cover image" },
+  ];
+
+  const mediaInputs = (
+    <>
+      <input ref={inlineInput} type="file" accept="image/*" className="hidden" onChange={async (e) => {
+        const file = e.target.files?.[0]; e.target.value = "";
+        if (!file) return;
+        const url = await upload(file, "inline");
+        if (url) setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
+      }} />
+      <MediaPickerDialog
+        open={picker.open}
+        onOpenChange={(open) => setPicker((p) => ({ ...p, open }))}
+        kind={picker.target === "audio" ? "audio" : "image"}
+        onSelect={handlePickedFromLibrary}
+      />
+    </>
+  );
+
   return (
-    <div className="w-full max-w-4xl mx-auto pb-24 sm:pb-8">
-      {/* Sticky header */}
-      <div className="sticky top-0 z-20 -mx-1 px-1 py-2 bg-background/90 backdrop-blur border-b border-border/40">
+    <div className="w-full max-w-3xl mx-auto pb-28 sm:pb-10">
+      {/* Header */}
+      <div className="sticky top-0 z-20 -mx-1 px-1 pt-2 pb-2 bg-background/95 backdrop-blur border-b border-border/40">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => navigate("/admin/blog")}>
+          <Button variant="ghost" size="sm" className="h-9 px-2" onClick={() => navigate("/admin/blog")} aria-label="Back to articles">
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold truncate">{form.title || (id ? "Edit article" : "New article")}</p>
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
               <span>{wordCount} words · {readMinutes} min read</span>
               {savedAt && (
                 <span className="text-green-400 flex items-center gap-0.5">
-                  <CheckCircle2 className="w-2.5 h-2.5" /> saved {new Date(savedAt).toLocaleTimeString()}
+                  <CheckCircle2 className="w-3 h-3" /> kept on this device
                 </span>
               )}
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5">
-            {savedPost && (
-              <>
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => window.open(`/blog/${savedPost.slug}`, "_blank")}>
-                  <Eye className="w-3.5 h-3.5 mr-1" /> View
-                </Button>
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setShareOpen(true)}>
-                  <Share2 className="w-3.5 h-3.5 mr-1" /> Share
-                </Button>
-              </>
-            )}
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => setPreviewOpen(true)}>
-              <MonitorSmartphone className="w-3.5 h-3.5 mr-1" /> Preview
-            </Button>
-            <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => save(false)} disabled={saving}>
-              <Save className="w-3.5 h-3.5 mr-1" /> Save draft
-            </Button>
-            <Button size="sm" className="h-8 text-xs" onClick={() => save(true)} disabled={saving || slugConflict}>
-              {saving ? <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" /> : <CloudUpload className="w-3.5 h-3.5 mr-1" />}
-              Publish
-            </Button>
-          </div>
-        </div>
-        {restored && (
-          <div className="mt-1.5 flex items-center justify-between gap-2 rounded bg-amber-500/10 border border-amber-500/30 px-2 py-1">
-            <span className="text-[10px] text-amber-300">Restored your unsaved work from this device.</span>
-            <Button variant="ghost" size="sm" className="h-6 text-[10px]" onClick={() => { clearLocal(); window.location.reload(); }}>
-              Discard
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <Tabs defaultValue="write" className="mt-3">
-        <TabsList className="grid grid-cols-3 h-9 w-full">
-          <TabsTrigger value="write" className="text-xs">Write</TabsTrigger>
-          <TabsTrigger value="seo" className="text-xs">Preview &amp; SEO</TabsTrigger>
-          <TabsTrigger value="publish" className="text-xs">Publish</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="write" className="space-y-3 mt-3">
-          <Input
-            value={form.title}
-            onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-            placeholder="Article headline…"
-            className="h-12 text-base sm:text-lg font-semibold"
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <Label className="text-[11px]">Category</Label>
-              <Input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="h-9 text-sm" />
-            </div>
-            <div>
-              <Label className="text-[11px]">Tags (comma separated)</Label>
-              <Input value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} placeholder="mets, news" className="h-9 text-sm" />
-            </div>
-          </div>
-
-          <div>
-            <Label className="text-[11px]">Cover image</Label>
-            <div className="flex gap-2 items-center mt-1">
-              <label className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-border/50 text-xs cursor-pointer">
-                {uploading === "featured" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
-                Upload
-                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                  const file = e.target.files?.[0]; e.target.value = "";
-                  if (!file) return;
-                  const url = await upload(file, "featured");
-                  if (url) setForm((f) => ({ ...f, featured_image_url: url }));
-                }} />
-              </label>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-9 px-3 text-xs"
-                onClick={() => setPicker({ open: true, target: "featured" })}
-              >
-                <FolderOpen className="w-3.5 h-3.5 mr-1" /> Media Library
-              </Button>
-            </div>
-            {form.featured_image_url && (
-              <img src={form.featured_image_url} alt="" className="mt-2 w-full max-h-48 rounded-md object-cover" />
-            )}
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <Label className="text-[11px]">Article body</Label>
-              <Button type="button" variant="ghost" size="sm" className="h-7 text-[10px]" onClick={() => setHtmlMode((v) => !v)}>
-                <Code2 className="w-3 h-3 mr-1" /> {htmlMode ? "Visual editor" : "Edit HTML"}
-              </Button>
-            </div>
-            {htmlMode ? (
-              <Textarea
-                value={form.content}
-                onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                className="font-mono text-[11px] min-h-[50vh]"
-                spellCheck={false}
-              />
-            ) : (
-              <RichTextEditor
-                value={form.content}
-                onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                placeholder="Start writing… use the toolbar to format."
-                onImageUploadRequest={() => inlineInput.current?.click()}
-                onMediaPick={() => setPicker({ open: true, target: "inline" })}
-              />
-            )}
-            <input ref={inlineInput} type="file" accept="image/*" className="hidden" onChange={async (e) => {
-              const file = e.target.files?.[0]; e.target.value = "";
-              if (!file) return;
-              const url = await upload(file, "inline");
-              if (url) setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
-            }} />
-      {uploading === "inline" && (
-            <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Adding image…</p>
-          )}
-        </div>
-
-        <MediaPickerDialog
-          open={picker.open}
-          onOpenChange={(open) => setPicker((p) => ({ ...p, open }))}
-          kind={picker.target === "audio" ? "audio" : "image"}
-          onSelect={handlePickedFromLibrary}
-        />
-
-          <div>
-            <Label className="text-[11px]">Audio version (optional)</Label>
-            <div className="flex gap-2 items-center mt-1">
-              <label className="inline-flex items-center gap-1 h-9 px-3 rounded-md border border-border/50 text-xs cursor-pointer">
-                {uploading === "audio" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Music className="w-3.5 h-3.5" />}
-                Upload
-                <input type="file" accept="audio/*" className="hidden" onChange={async (e) => {
-                  const file = e.target.files?.[0]; e.target.value = "";
-                  if (!file) return;
-                  const url = await upload(file, "audio");
-                  if (url) setForm((f) => ({ ...f, audio_url: url }));
-                }} />
-              </label>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-9 px-3 text-xs"
-                onClick={() => setPicker({ open: true, target: "audio" })}
-              >
-                <FolderOpen className="w-3.5 h-3.5 mr-1" /> Media Library
-              </Button>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="seo" className="space-y-3 mt-3">
-          <div>
-            <Label className="text-[11px]">Web address</Label>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-muted-foreground">/blog/</span>
-              <Input
-                value={form.slug}
-                onChange={(e) => { setAutoSlug(false); setForm((f) => ({ ...f, slug: slugify(e.target.value) })); }}
-                className="h-9 text-xs flex-1"
-              />
-              <Button type="button" variant="ghost" size="sm" className="h-8 text-[10px]" onClick={() => { setAutoSlug(true); setForm((f) => ({ ...f, slug: slugify(f.title) })); }}>
-                Auto
-              </Button>
-            </div>
-            {slugConflict
-              ? <p className="text-[10px] text-red-400 mt-1">That address is already used by another article.</p>
-              : form.slug && <p className="text-[10px] text-muted-foreground mt-1 truncate">{SITE_URL}/blog/{form.slug}</p>}
-          </div>
-
-          <div>
-            <Label className="text-[11px]">Summary (cards &amp; social)</Label>
-            <Textarea value={form.excerpt} onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))} rows={2} className="text-xs mt-1" />
-            <p className="text-[10px] text-muted-foreground">{form.excerpt.length}/500</p>
-          </div>
-
-          <div>
-            <Label className="text-[11px]">Google description (≤160)</Label>
-            <Textarea value={form.meta_description} onChange={(e) => setForm((f) => ({ ...f, meta_description: e.target.value }))} rows={2} className="text-xs mt-1" />
-            <p className={`text-[10px] ${form.meta_description.length > 160 ? "text-red-400" : "text-muted-foreground"}`}>{form.meta_description.length}/160</p>
-          </div>
-
-          <div className="border border-border/40 rounded-md p-2 bg-card/50">
-            <p className="text-[10px] font-medium text-muted-foreground mb-1.5">Social share preview</p>
-            <div className="rounded border border-border/40 overflow-hidden">
-              {form.featured_image_url && (
-                <div className="aspect-[1200/630] bg-muted overflow-hidden">
-                  <img src={form.featured_image_url} alt="" className="w-full h-full object-cover" />
-                </div>
-              )}
-              <div className="p-2 bg-background/50">
-                <p className="text-[9px] uppercase text-muted-foreground">metsxmfanzone.com</p>
-                <p className="text-xs font-semibold line-clamp-2">{form.title || "Article title…"}</p>
-                <p className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{form.meta_description || form.excerpt || "Description…"}</p>
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="publish" className="space-y-3 mt-3">
-          <div className="flex items-center justify-between rounded-md border border-border/40 p-3">
-            <div>
-              <Label className="text-xs font-semibold">Live on the blog</Label>
-              <p className="text-[10px] text-muted-foreground">Turn on to show this article publicly.</p>
-            </div>
-            <Switch checked={form.published} onCheckedChange={(v) => setForm((f) => ({ ...f, published: v, scheduled_publish_at: v ? "" : f.scheduled_publish_at }))} />
-          </div>
-
-          <div className="rounded-md border border-border/40 p-3 space-y-2">
-            <Label className="text-xs font-semibold flex items-center gap-1.5"><CalendarClock className="w-3.5 h-3.5" /> Schedule for later</Label>
-            <Input type="datetime-local" value={form.scheduled_publish_at}
-              onChange={(e) => setForm((f) => ({ ...f, scheduled_publish_at: e.target.value, published: e.target.value ? false : f.published }))}
-              className="h-9 text-xs" />
-            {scheduledFuture && <p className="text-[10px] text-blue-400">Publishes {new Date(form.scheduled_publish_at).toLocaleString()}</p>}
-          </div>
-
-          {savedPost && (
-            <div className="rounded-md border border-border/40 p-3 space-y-2">
-              <p className="text-[11px] font-medium">This article's own page</p>
-              <p className="text-[10px] text-muted-foreground break-all">{SITE_URL}/blog/{savedPost.slug}</p>
-              <div className="flex gap-2 flex-wrap">
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => window.open(`/blog/${savedPost.slug}`, "_blank")}>
-                  <Eye className="w-3.5 h-3.5 mr-1" /> Open page
-                </Button>
-                <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => window.open(`/blog-html/${savedPost.slug}`, "_blank")}>
-                  <Code2 className="w-3.5 h-3.5 mr-1" /> Plain HTML page
-                </Button>
-                <Button size="sm" className="h-8 text-xs" onClick={() => setShareOpen(true)}>
-                  <Share2 className="w-3.5 h-3.5 mr-1" /> Share
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <div className="rounded-md border border-border/40 p-3 bg-muted/20 text-[10px] text-muted-foreground space-y-0.5">
-            <p>Status: {form.published ? "Live" : scheduledFuture ? "Scheduled" : "Draft"}</p>
-            <p>Words: {wordCount} · {readMinutes} min read</p>
-            <p>Your work saves on this device automatically — a refresh won't lose it.</p>
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      {/* Mobile action bar */}
-      <div className="sm:hidden fixed bottom-0 inset-x-0 z-30 border-t border-border/40 bg-background/95 backdrop-blur p-2 flex gap-2">
-        {savedPost && (
-          <Button variant="outline" size="sm" className="h-10 px-3" onClick={() => setShareOpen(true)}>
-            <Share2 className="w-4 h-4" />
+          <Button variant="outline" size="sm" className="h-9 text-xs" onClick={() => setPreviewOpen(true)}>
+            <MonitorSmartphone className="w-3.5 h-3.5 mr-1" /> Preview
           </Button>
-        )}
-        <Button variant="outline" size="sm" className="h-10 flex-1 text-xs" onClick={() => save(false)} disabled={saving}>
-          <Save className="w-4 h-4 mr-1" /> Save draft
-        </Button>
-        <Button variant="outline" size="sm" className="h-10 flex-1 text-xs" onClick={() => setPreviewOpen(true)}>
-          <MonitorSmartphone className="w-4 h-4 mr-1" /> Preview
-        </Button>
-        <Button size="sm" className="h-10 flex-1 text-xs" onClick={() => save(true)} disabled={saving || slugConflict}>
-          {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <CloudUpload className="w-4 h-4 mr-1" />} Publish
-        </Button>
+        </div>
+
+        {/* Step bar */}
+        <div className="grid grid-cols-3 gap-1.5 mt-2">
+          {STEPS.map((name, i) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => goStep(i)}
+              className={`h-10 rounded-lg text-xs font-semibold border transition-colors ${
+                step === i
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : i < step
+                    ? "bg-primary/10 text-foreground border-primary/30"
+                    : "bg-card text-muted-foreground border-border/50"
+              }`}
+            >
+              <span className="opacity-70 mr-1">{i + 1}</span>{name}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {/* Unsaved work found: asks first, never silently loads old text */}
+      {pendingLocal && (
+        <div className="mt-3 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 space-y-2">
+          <p className="text-sm font-semibold text-amber-200">Unsaved work found on this device</p>
+          <p className="text-xs text-amber-100/80 line-clamp-2">
+            {pendingLocal.title || "Untitled"}
+            {pendingLocal.savedAt ? ` · ${new Date(pendingLocal.savedAt).toLocaleString()}` : ""}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button size="sm" className="h-10 text-xs" onClick={continueLocal}>
+              <RotateCcw className="w-3.5 h-3.5 mr-1" /> Continue it
+            </Button>
+            <Button size="sm" variant="outline" className="h-10 text-xs" onClick={startFresh}>
+              Start fresh
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {restored && !pendingLocal && (
+        <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-amber-500/10 border border-amber-500/30 px-3 py-2">
+          <span className="text-xs text-amber-300">Continuing your unsaved work.</span>
+          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => { clearLocal(); window.location.reload(); }}>
+            Discard
+          </Button>
+        </div>
+      )}
+
+      <div className={`mt-4 space-y-4 ${pendingLocal ? "opacity-40 pointer-events-none select-none" : ""}`}>
+        {/* STEP 1: WRITE */}
+        {step === 0 && (
+          <>
+            <Input
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              placeholder="Article headline…"
+              className="h-14 text-lg font-semibold"
+            />
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <Label className="text-xs">Article</Label>
+                <Button type="button" variant="ghost" size="sm" className="h-8 text-[11px]" onClick={() => setHtmlMode((v) => !v)}>
+                  <Code2 className="w-3 h-3 mr-1" /> {htmlMode ? "Visual editor" : "Edit HTML"}
+                </Button>
+              </div>
+              {htmlMode ? (
+                <Textarea
+                  value={form.content}
+                  onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                  className="font-mono text-[11px] min-h-[50vh]"
+                  spellCheck={false}
+                />
+              ) : (
+                <RichTextEditor
+                  value={form.content}
+                  onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                  placeholder="Start writing… use the toolbar to format."
+                  onImageUploadRequest={() => inlineInput.current?.click()}
+                  onMediaPick={() => setPicker({ open: true, target: "inline" })}
+                />
+              )}
+              {uploading === "inline" && (
+                <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Adding image…</p>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-border/50 bg-card/50 p-3 space-y-2">
+              <Label className="text-xs">Cover image</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="inline-flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-border/50 text-xs cursor-pointer">
+                  {uploading === "featured" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImagePlus className="w-3.5 h-3.5" />}
+                  Upload
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const file = e.target.files?.[0]; e.target.value = "";
+                    if (!file) return;
+                    const url = await upload(file, "featured");
+                    if (url) setForm((f) => ({ ...f, featured_image_url: url }));
+                  }} />
+                </label>
+                <Button type="button" variant="outline" className="h-10 px-3 text-xs" onClick={() => setPicker({ open: true, target: "featured" })}>
+                  <FolderOpen className="w-3.5 h-3.5 mr-1" /> Media Library
+                </Button>
+              </div>
+              {form.featured_image_url && (
+                <img src={form.featured_image_url} alt="" className="w-full max-h-48 rounded-md object-cover" />
+              )}
+            </div>
+          </>
+        )}
+
+        {/* STEP 2: DETAILS */}
+        {step === 1 && (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Category</Label>
+                <Input value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="h-11 text-sm mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Tags (comma separated)</Label>
+                <Input value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} placeholder="mets, news" className="h-11 text-sm mt-1" />
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs">Summary (cards &amp; social)</Label>
+              <Textarea value={form.excerpt} onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))} rows={3} className="text-sm mt-1" />
+              <p className="text-[11px] text-muted-foreground mt-0.5">{form.excerpt.length}/500</p>
+            </div>
+
+            <div>
+              <Label className="text-xs">Google description (160 characters or fewer)</Label>
+              <Textarea value={form.meta_description} onChange={(e) => setForm((f) => ({ ...f, meta_description: e.target.value }))} rows={3} className="text-sm mt-1" />
+              <p className={`text-[11px] mt-0.5 ${form.meta_description.length > 160 ? "text-red-400" : "text-muted-foreground"}`}>{form.meta_description.length}/160</p>
+            </div>
+
+            <div>
+              <Label className="text-xs">Web address</Label>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[11px] text-muted-foreground">/blog/</span>
+                <Input
+                  value={form.slug}
+                  onChange={(e) => { setAutoSlug(false); setForm((f) => ({ ...f, slug: slugify(e.target.value) })); }}
+                  className="h-11 text-xs flex-1"
+                />
+                <Button type="button" variant="ghost" size="sm" className="h-9 text-xs" onClick={() => { setAutoSlug(true); setForm((f) => ({ ...f, slug: slugify(f.title) })); }}>
+                  Auto
+                </Button>
+              </div>
+              {slugConflict
+                ? <p className="text-[11px] text-red-400 mt-1">That address is already used by another article.</p>
+                : form.slug && <p className="text-[11px] text-muted-foreground mt-1 truncate">{SITE_URL}/blog/{form.slug}</p>}
+            </div>
+
+            <div className="rounded-xl border border-border/50 bg-card/50 p-3 space-y-2">
+              <Label className="text-xs">Audio version (optional)</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="inline-flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-border/50 text-xs cursor-pointer">
+                  {uploading === "audio" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Music className="w-3.5 h-3.5" />}
+                  Upload
+                  <input type="file" accept="audio/*" className="hidden" onChange={async (e) => {
+                    const file = e.target.files?.[0]; e.target.value = "";
+                    if (!file) return;
+                    const url = await upload(file, "audio");
+                    if (url) setForm((f) => ({ ...f, audio_url: url }));
+                  }} />
+                </label>
+                <Button type="button" variant="outline" className="h-10 px-3 text-xs" onClick={() => setPicker({ open: true, target: "audio" })}>
+                  <FolderOpen className="w-3.5 h-3.5 mr-1" /> Media Library
+                </Button>
+              </div>
+              {form.audio_url && <p className="text-[11px] text-green-400">Audio added.</p>}
+            </div>
+
+            <div className="border border-border/40 rounded-xl p-3 bg-card/50">
+              <p className="text-[11px] font-medium text-muted-foreground mb-2">How it looks when shared</p>
+              <div className="rounded-lg border border-border/40 overflow-hidden">
+                {form.featured_image_url && (
+                  <div className="aspect-[1200/630] bg-muted overflow-hidden">
+                    <img src={form.featured_image_url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="p-2.5 bg-background/50">
+                  <p className="text-[10px] uppercase text-muted-foreground">metsxmfanzone.com</p>
+                  <p className="text-sm font-semibold line-clamp-2">{form.title || "Article title…"}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{form.meta_description || form.excerpt || "Description…"}</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* STEP 3: PUBLISH */}
+        {step === 2 && (
+          <>
+            <div className="rounded-xl border border-border/50 bg-card/50 p-3">
+              <p className="text-xs font-semibold mb-2">Before you publish</p>
+              <ul className="space-y-1.5">
+                {checks.map((c) => (
+                  <li key={c.label} className="flex items-center gap-2 text-sm">
+                    {c.ok ? <Check className="w-4 h-4 text-green-400" /> : <Circle className="w-4 h-4 text-muted-foreground" />}
+                    <span className={c.ok ? "" : "text-muted-foreground"}>{c.label}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-[11px] text-muted-foreground mt-2">Status: {form.published ? "Live" : scheduledFuture ? "Scheduled" : "Draft"}</p>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-border/50 p-3">
+              <div className="pr-3">
+                <Label className="text-sm font-semibold">Live on the blog</Label>
+                <p className="text-[11px] text-muted-foreground">Turn on to show this article publicly.</p>
+              </div>
+              <Switch checked={form.published} onCheckedChange={(v) => setForm((f) => ({ ...f, published: v, scheduled_publish_at: v ? "" : f.scheduled_publish_at }))} />
+            </div>
+
+            <div className="rounded-xl border border-border/50 p-3 space-y-2">
+              <Label className="text-sm font-semibold flex items-center gap-1.5"><CalendarClock className="w-4 h-4" /> Schedule for later</Label>
+              <Input type="datetime-local" value={form.scheduled_publish_at}
+                onChange={(e) => setForm((f) => ({ ...f, scheduled_publish_at: e.target.value, published: e.target.value ? false : f.published }))}
+                className="h-11 text-sm" />
+              {scheduledFuture && <p className="text-[11px] text-blue-400">Publishes {new Date(form.scheduled_publish_at).toLocaleString()}</p>}
+            </div>
+
+            {savedPost && (
+              <div className="rounded-xl border border-border/50 p-3 space-y-2">
+                <p className="text-xs font-medium">This article's own page</p>
+                <p className="text-[11px] text-muted-foreground break-all">{SITE_URL}/blog/{savedPost.slug}</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button variant="outline" size="sm" className="h-10 text-xs" onClick={() => window.open(`/blog/${savedPost.slug}`, "_blank")}>
+                    <Eye className="w-3.5 h-3.5 mr-1" /> Open
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-10 text-xs" onClick={() => window.open(`/blog-html/${savedPost.slug}`, "_blank")}>
+                    <Code2 className="w-3.5 h-3.5 mr-1" /> HTML
+                  </Button>
+                  <Button size="sm" className="h-10 text-xs" onClick={() => setShareOpen(true)}>
+                    <Share2 className="w-3.5 h-3.5 mr-1" /> Share
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <p className="text-[11px] text-muted-foreground">Your work is kept on this device while you write. Starting a new article always opens a clean page.</p>
+          </>
+        )}
+      </div>
+
+      {/* Bottom bar */}
+      <div className="fixed bottom-0 inset-x-0 z-30 border-t border-border/40 bg-background/95 backdrop-blur p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        <div className="max-w-3xl mx-auto flex gap-2">
+          {step > 0 && (
+            <Button variant="outline" size="sm" className="h-11 px-4 text-sm" onClick={() => goStep(step - 1)}>
+              <ArrowLeft className="w-4 h-4 mr-1" /> Back
+            </Button>
+          )}
+          {step < 2 ? (
+            <Button size="sm" className="h-11 flex-1 text-sm" onClick={() => goStep(step + 1)}>
+              {step === 0 ? "Next: Details" : "Next: Publish"} <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" className="h-11 flex-1 text-sm" onClick={() => save(false)} disabled={saving}>
+                <Save className="w-4 h-4 mr-1" /> Save draft
+              </Button>
+              <Button size="sm" className="h-11 flex-1 text-sm" onClick={() => save(true)} disabled={saving || slugConflict}>
+                {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <CloudUpload className="w-4 h-4 mr-1" />} Publish
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {mediaInputs}
       {savedPost && <Badge className="sr-only">{savedPost.slug}</Badge>}
       <BlogShareDialog open={shareOpen} onOpenChange={setShareOpen} post={savedPost} />
       <ArticlePreviewDialog
