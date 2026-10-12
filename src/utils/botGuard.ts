@@ -56,9 +56,13 @@ export const useBotGuard = (formKey: string) => {
   /** Props to spread onto a visually hidden text input inside the form. */
   const honeypotProps = {
     type: "text" as const,
-    name: "company_website",
+    // A neutral name: browsers auto-fill fields called "website" or "company", which tripped the guard for real people
+    name: "hp_confirm_field",
     tabIndex: -1,
     autoComplete: "off",
+    "data-lpignore": "true",
+    "data-1p-ignore": "true",
+    "data-form-type": "other",
     "aria-hidden": true,
     value: honeypot,
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => setHoneypot(e.target.value),
