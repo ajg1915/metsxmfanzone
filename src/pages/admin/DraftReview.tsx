@@ -43,8 +43,20 @@ const Counter = ({ value }: { value: string }) => (
 );
 
 /** One draft, full size: read everything, fix anything, then approve & publish or reject. */
-export default function DraftReview() {
-  const { id = "" } = useParams();
+export default function DraftReview({
+  draftId,
+  embedded = false,
+  onChanged,
+}: {
+  /** Draft to show. Without it the id comes from the address (phone layout). */
+  draftId?: string;
+  /** True inside the desktop two-pane layout: no back button, narrower chrome. */
+  embedded?: boolean;
+  /** Called after the draft changed (saved, approved, rejected, moved) so the list can refresh. */
+  onChanged?: () => void;
+} = {}) {
+  const params = useParams();
+  const id = draftId ?? params.id ?? "";
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -116,6 +128,7 @@ export default function DraftReview() {
     setBusy(true);
     try {
       setDraft(await updateDraft(draft.id, edits));
+      onChanged?.();
       setEditing(false);
       toast({ title: "Changes saved" });
     } catch (e) {
@@ -132,6 +145,7 @@ export default function DraftReview() {
     try {
       const live = await publishDraft(draft);
       forgetDraftsWaiting();
+      onChanged?.();
       toast({
         title: live.alreadyLive ? "Already live, draft marked approved" : "Approved & published",
         description: live.alreadyLive ? undefined : "The article is live and subscribers were notified.",
@@ -151,6 +165,7 @@ export default function DraftReview() {
     try {
       await setDraftStatus(draft.id, to);
       forgetDraftsWaiting();
+      onChanged?.();
       toast({ title: to === "rejected" ? "Rejected" : "Moved back to Waiting" });
       if (to === "rejected") navigate("/admin/drafts");
       else await load();
@@ -170,13 +185,14 @@ export default function DraftReview() {
       <ChevronLeft className="h-5 w-5" />
     </Link>
   );
+  const shell = embedded ? "w-full max-w-3xl" : "mx-auto w-full max-w-2xl";
 
   if (loading) return <p className="py-10 text-center text-[14px] text-slate-300">Loading draft…</p>;
 
   if (error || !draft) {
     return (
-      <div className="mx-auto w-full max-w-2xl space-y-3">
-        {back}
+      <div className={`${shell} space-y-3`}>
+        {!embedded && back}
         <div role="alert" className="space-y-3 rounded-2xl border border-red-400/40 bg-red-500/10 p-4">
           <p className="text-[14px] text-red-100">{error || "Draft not found"}</p>
           <button type="button" onClick={load} className="min-h-11 rounded-xl border border-white/25 px-4 text-[14px] font-bold text-white">
@@ -190,9 +206,9 @@ export default function DraftReview() {
   const isPending = draft.status === "pending";
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
+    <div className={shell}>
       <div className="mb-4 flex items-center gap-3 border-b border-white/10 pb-3">
-        {back}
+        {!embedded && back}
         <div className="min-w-0 flex-1">
           <p className="text-[18px] font-extrabold leading-tight text-white">{editing ? "Edit draft" : "Review draft"}</p>
           <p className="text-[13px] text-slate-300">

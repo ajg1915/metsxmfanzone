@@ -55,8 +55,7 @@ const MetsXMPlayer = lazyWithRetry(() => import("./pages/MetsXMPlayer"), "page-m
 const EventsManagement = lazyWithRetry(() => import("./pages/admin/EventsManagement"), "page-admin-events-management");
 const BlogManagement = lazyWithRetry(() => import("./pages/admin/BlogManagement"), "page-admin-blog-management");
 const ArticleEditor = lazyWithRetry(() => import("./pages/admin/ArticleEditor"), "page-admin-article-editor");
-const DraftsPage = lazyWithRetry(() => import("./pages/admin/DraftsPage"), "page-admin-drafts");
-const DraftReview = lazyWithRetry(() => import("./pages/admin/DraftReview"), "page-admin-draft-review");
+const DraftsWorkspace = lazyWithRetry(() => import("./pages/admin/DraftsWorkspace"), "page-admin-drafts-workspace");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
 const PodcastManagement = lazyWithRetry(() => import("./pages/admin/PodcastManagement"), "page-admin-podcast-management");
 const ClubhouseStudio = lazyWithRetry(() => import("./pages/admin/ClubhouseStudio"), "page-admin-clubhouse-studio");
@@ -383,8 +382,8 @@ const AppContent = () => {
               <Route path="blog" element={<BlogManagement />} />
               <Route path="media-library" element={<MediaLibrary />} />
               <Route path="media" element={<MediaLibrary />} />
-              <Route path="drafts" element={<DraftsPage />} />
-              <Route path="drafts/:id" element={<DraftReview />} />
+              <Route path="drafts" element={<DraftsWorkspace />} />
+              <Route path="drafts/:id" element={<DraftsWorkspace />} />
               <Route path="blog/new" element={<ArticleEditor />} />
               <Route path="blog/edit/:id" element={<ArticleEditor />} />
               <Route path="video-gallery-management" element={<VideoGalleryManagement />} />

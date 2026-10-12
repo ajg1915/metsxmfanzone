@@ -26,7 +26,18 @@ const EMPTY: Record<DraftStatus, string> = {
 };
 
 /** Every draft article in one place: read it, approve it, or reject it before it reaches the site. */
-export default function DraftsPage() {
+export default function DraftsPage({
+  compact = false,
+  selectedId,
+  refreshKey = 0,
+}: {
+  /** Desktop left pane: fills its column instead of centring a narrow page. */
+  compact?: boolean;
+  /** Highlights the draft that is open in the right pane. */
+  selectedId?: string;
+  /** Bump to reload the list after the right pane changed a draft. */
+  refreshKey?: number;
+} = {}) {
   const { toast } = useToast();
   const [status, setStatus] = useState<DraftStatus>("pending");
   const [drafts, setDrafts] = useState<DraftSummary[]>([]);
@@ -51,7 +62,7 @@ export default function DraftsPage() {
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load, refreshKey]);
 
   const move = async (draft: DraftSummary, to: DraftStatus) => {
     setBusyId(draft.id);
@@ -75,7 +86,7 @@ export default function DraftsPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-4">
+    <div className={compact ? "w-full space-y-4" : "mx-auto w-full max-w-2xl space-y-4"}>
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <h1>Drafts</h1>
@@ -146,7 +157,12 @@ export default function DraftsPage() {
             const waiting = daysWaiting(d.created_at);
             const busy = busyId === d.id;
             return (
-              <li key={d.id} className="space-y-2.5 rounded-2xl border border-white/10 bg-[#14223F] p-4">
+              <li
+                key={d.id}
+                className={`space-y-2.5 rounded-2xl border p-4 ${
+                  d.id === selectedId ? "border-[#FF5910] bg-[#1b2d52]" : "border-white/10 bg-[#14223F]"
+                }`}
+              >
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[12px] font-extrabold tracking-wider text-[#FF9A6B]">
                     {draftStamp(d.created_at)}
