@@ -1,4 +1,4 @@
-import { Tv, BookOpen, Lock, CalendarDays } from "lucide-react";
+import { Tv, BookOpen, Lock, CalendarDays, MessageSquare } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +20,7 @@ const navItems: NavItem[] = [
   { label: "Watch Live", path: "/metsxmfanzone", requiresPremium: true },
   { label: "Blog", path: "/blog", requiresPremium: false },
   { label: "Games", path: "/mets-schedule-2026", requiresPremium: false },
+  { label: "Feed", path: "/community", requiresPremium: false },
 ];
 
 
@@ -90,6 +91,8 @@ const SocialMediaBar = () => {
                   <BookOpen className="h-6 w-6" />
                 ) : item.label === "Games" ? (
                   <CalendarDays className="h-6 w-6" />
+                ) : item.label === "Feed" ? (
+                  <MessageSquare className="h-6 w-6" />
                 ) : (
                   <img src={metsLogo} alt="" className="h-6 w-auto object-contain" />
                 )}

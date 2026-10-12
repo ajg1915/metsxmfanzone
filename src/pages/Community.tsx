@@ -485,234 +485,204 @@ const Community = () => {
         <StoriesSection />
       </div>
       
-      <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-3xl mx-auto w-full">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary mb-6 sm:mb-8">
-            Community
-          </h1>
+      <main className="flex-1 container mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="mb-4 sm:mb-6">
+            <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.16em] text-primary">Fan Wall</p>
+            <h1 className="font-display text-3xl sm:text-5xl leading-none tracking-wide text-foreground mt-0.5">
+              MetsXMFanZone <span className="text-primary">Community</span>
+            </h1>
+          </div>
 
           {user && <MemberSearch />}
 
-
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>What's on your mind?</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {!user ? (
-                <div className="text-center p-6 bg-muted/50 rounded-lg">
-                  <Lock className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground mb-4">
-                    Join the conversation! Log in or sign up to post in the community.
-                  </p>
-                  <Button onClick={() => navigate("/auth?mode=login")}>
-                    Log In to Post
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <Textarea
-                    placeholder="Share your thoughts with the Mets community..."
-                    value={newPost}
-                    onChange={(e) => setNewPost(e.target.value)}
-                    className="min-h-[100px]"
-                  />
-
-                  {/* Media previews */}
-                  {selectedImage && (
-                    <div className="relative inline-block">
-                      <div className="bg-muted rounded-md px-3 py-2 flex items-center gap-2 text-sm">
-                        <ImageIcon className="w-4 h-4 text-primary" />
-                        <span className="truncate max-w-[200px]">{selectedImage.name}</span>
-                      </div>
-                      <button
-                        onClick={() => setSelectedImage(null)}
-                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-                  {selectedPostGif && (
-                    <div className="relative inline-block">
-                      <img
-                        src={selectedPostGif}
-                        alt="Selected GIF"
-                        className="rounded-md max-w-[200px] max-h-[120px] object-contain"
-                      />
-                      <button
-                        onClick={() => setSelectedPostGif(null)}
-                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-                  {selectedPostVideo && (
-                    <div className="relative inline-block">
-                      <div className="bg-muted rounded-md px-3 py-2 flex items-center gap-2 text-sm">
-                        <Film className="w-4 h-4 text-primary" />
-                        <span className="truncate max-w-[200px]">{selectedPostVideo.name}</span>
-                      </div>
-                      <button
-                        onClick={() => setSelectedPostVideo(null)}
-                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-2">
-                      {/* Photo upload */}
-                      <Input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif"
-                        onChange={handleImageSelect}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <label htmlFor="image-upload">
-                        <Button variant="outline" size="sm" asChild>
-                          <span className="cursor-pointer">
-                            <ImageIcon className="w-4 h-4 mr-1" />
-                            Photo
-                          </span>
-                        </Button>
-                      </label>
-
-                      {/* GIF button - available to all logged-in users */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setShowPostGifPicker(!showPostGifPicker)}
-                      >
-                        <span className="text-sm font-bold mr-1">GIF</span>
-                      </Button>
-
-                      {/* Video button - admin only */}
-                      {isCurrentUserAdmin && (
-                        <>
-                          <Input
-                            type="file"
-                            accept="video/mp4,video/webm,video/quicktime"
-                            onChange={handlePostVideoSelect}
-                            className="hidden"
-                            id="post-video-upload"
-                          />
-                          <label htmlFor="post-video-upload">
-                            <Button variant="outline" size="sm" asChild>
-                              <span className="cursor-pointer">
-                                <Film className="w-4 h-4 mr-1" />
-                                Video
-                              </span>
-                            </Button>
-                          </label>
-                        </>
-                      )}
-                    </div>
-                    
-                    <Button
-                      onClick={handleSubmitPost}
-                      disabled={(!newPost.trim() && !selectedImage && !selectedPostGif && !selectedPostVideo) || uploading}
-                    >
-                      <Send className="w-4 h-4 mr-2" />
-                      {uploading ? "Posting..." : "Post"}
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,640px)_minmax(0,1fr)] gap-6 items-start">
+            {/* ---------- Feed column ---------- */}
+            <div className="min-w-0 space-y-4">
+              {/* Composer */}
+              <div className="rounded-2xl border border-border/30 bg-card/80 p-3 sm:p-4">
+                {!user ? (
+                  <div className="text-center p-4">
+                    <Lock className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground mb-4">
+                      Join the conversation! Log in or sign up to post in the community.
+                    </p>
+                    <Button onClick={() => navigate("/auth?mode=login")} className="h-11 px-6 rounded-full">
+                      Log In to Post
                     </Button>
                   </div>
-
-                  {showPostGifPicker && (
-                    <GifPicker onSelect={handlePostGifSelect} onClose={() => setShowPostGifPicker(false)} />
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="mb-6">
-            <CardContent className="py-6">
-              <SocialShareButtons title="MetsXMFanZone Community" />
-            </CardContent>
-          </Card>
-
-          <Card className="mb-6 bg-primary/5 border-primary">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-                <Megaphone className="w-5 h-5 text-primary" />
-                Community Podcast
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Join our fan-driven podcast with discussions, stories, and Mets coverage
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                onClick={() => navigate("/community-podcast")} 
-                className="w-full"
-              >
-                Listen Now
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Featured Business Ads Section */}
-          <BusinessAdsSection />
-
-          {user && (
-            <Card className="mb-6">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base sm:text-lg">Business Advertisement</CardTitle>
-                <CardDescription className="text-xs">
-                  Promote your business to the Mets fan community (requires admin approval)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  onClick={() => navigate("/business-partner")} 
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Megaphone className="w-4 h-4 mr-2" />
-                  Submit Business Ad
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="space-y-4">
-            {feedItems.map((item) => (
-              <Card key={`${item.type}-${item.id}`} className={item.type === 'post' && item.is_pinned ? 'border-primary border-2 relative bg-primary/5' : ''}>
-                {item.type === 'post' && item.is_pinned && (
-                  <div className="absolute top-2 right-2 flex items-center gap-1.5">
-                    <Badge className="bg-primary text-primary-foreground text-[10px] px-2 py-0.5 flex items-center gap-1">
-                      <Pin className="w-3 h-3 fill-primary-foreground" />
-                      Featured Post
-                    </Badge>
-                  </div>
-                )}
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarFallback>
-                          {item.isAdmin ? "A" : (item.profiles?.full_name?.[0] || item.profiles?.email?.[0] || "U")}
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Avatar className="w-10 h-10 shrink-0">
+                        <AvatarFallback className="bg-secondary text-secondary-foreground font-bold">
+                          {(user.email?.[0] || "U").toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-semibold">
-                            {item.isAdmin ? "Admin" : (item.profiles?.full_name?.split(' ')[0] || item.profiles?.email || "Anonymous")}
+                      <Textarea
+                        placeholder="What's on your mind?"
+                        aria-label="Write a post"
+                        value={newPost}
+                        onChange={(e) => setNewPost(e.target.value)}
+                        className="min-h-[72px] rounded-2xl bg-background/60"
+                      />
+                    </div>
+
+                    {/* Media previews */}
+                    {selectedImage && (
+                      <div className="relative inline-block">
+                        <div className="bg-muted rounded-md px-3 py-2 flex items-center gap-2 text-sm">
+                          <ImageIcon className="w-4 h-4 text-primary" />
+                          <span className="truncate max-w-[200px]">{selectedImage.name}</span>
+                        </div>
+                        <button
+                          onClick={() => setSelectedImage(null)}
+                          aria-label="Remove photo"
+                          className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                    {selectedPostGif && (
+                      <div className="relative inline-block">
+                        <img
+                          src={selectedPostGif}
+                          alt="Selected GIF"
+                          className="rounded-md max-w-[200px] max-h-[120px] object-contain"
+                        />
+                        <button
+                          onClick={() => setSelectedPostGif(null)}
+                          aria-label="Remove GIF"
+                          className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+                    {selectedPostVideo && (
+                      <div className="relative inline-block">
+                        <div className="bg-muted rounded-md px-3 py-2 flex items-center gap-2 text-sm">
+                          <Film className="w-4 h-4 text-primary" />
+                          <span className="truncate max-w-[200px]">{selectedPostVideo.name}</span>
+                        </div>
+                        <button
+                          onClick={() => setSelectedPostVideo(null)}
+                          aria-label="Remove video"
+                          className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between flex-wrap gap-2 border-t border-border/30 pt-3">
+                      <div className="flex items-center gap-2">
+                        {/* Photo upload */}
+                        <Input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          onChange={handleImageSelect}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label htmlFor="image-upload">
+                          <Button variant="secondary" size="sm" asChild className="h-11 px-4 rounded-xl">
+                            <span className="cursor-pointer">
+                              <ImageIcon className="w-4 h-4 mr-1.5 text-primary" />
+                              Photo
+                            </span>
+                          </Button>
+                        </label>
+
+                        {/* GIF button - available to all logged-in users */}
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="h-11 px-4 rounded-xl"
+                          onClick={() => setShowPostGifPicker(!showPostGifPicker)}
+                        >
+                          <span className="text-sm font-bold text-primary">GIF</span>
+                        </Button>
+
+                        {/* Video button - admin only */}
+                        {isCurrentUserAdmin && (
+                          <>
+                            <Input
+                              type="file"
+                              accept="video/mp4,video/webm,video/quicktime"
+                              onChange={handlePostVideoSelect}
+                              className="hidden"
+                              id="post-video-upload"
+                            />
+                            <label htmlFor="post-video-upload">
+                              <Button variant="secondary" size="sm" asChild className="h-11 px-4 rounded-xl">
+                                <span className="cursor-pointer">
+                                  <Film className="w-4 h-4 mr-1.5 text-primary" />
+                                  Video
+                                </span>
+                              </Button>
+                            </label>
+                          </>
+                        )}
+                      </div>
+
+                      <Button
+                        onClick={handleSubmitPost}
+                        disabled={(!newPost.trim() && !selectedImage && !selectedPostGif && !selectedPostVideo) || uploading}
+                        className="h-11 px-6 rounded-full"
+                      >
+                        <Send className="w-4 h-4 mr-2" />
+                        {uploading ? "Posting..." : "Post"}
+                      </Button>
+                    </div>
+
+                    {showPostGifPicker && (
+                      <GifPicker onSelect={handlePostGifSelect} onClose={() => setShowPostGifPicker(false)} />
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Feed */}
+              {feedItems.map((item) => {
+                const isBlog = item.type === 'blog';
+                const when = isBlog ? (item.published_at || item.created_at) : item.created_at;
+                const isNewItem = Date.now() - new Date(when).getTime() < 48 * 60 * 60 * 1000;
+                return (
+                  <article
+                    key={`${item.type}-${item.id}`}
+                    className={`rounded-2xl overflow-hidden border bg-card/80 ${
+                      item.type === 'post' && item.is_pinned ? 'border-primary border-2' : 'border-border/30'
+                    }`}
+                  >
+                    {/* Post header */}
+                    <div className="flex items-start gap-3 px-3 sm:px-4 pt-3 sm:pt-4 pb-2">
+                      <Avatar className="w-11 h-11 shrink-0">
+                        <AvatarFallback className={item.isAdmin ? "bg-primary text-primary-foreground font-bold" : "bg-secondary text-secondary-foreground font-bold"}>
+                          {item.isAdmin ? "M" : (item.profiles?.full_name?.[0] || item.profiles?.email?.[0] || "U").toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="font-bold text-[15px] leading-tight">
+                            {item.isAdmin ? "MetsXMFanZone" : (item.profiles?.full_name?.split(' ')[0] || item.profiles?.email || "Anonymous")}
                           </p>
-                          {item.type === 'blog' && (
-                            <Badge variant="secondary" className="text-xs">
+                          {item.type === 'post' && item.is_pinned && (
+                            <Badge className="bg-[#c93b00] text-white text-[10px] px-2 py-0.5 flex items-center gap-1 border-0">
+                              <Pin className="w-3 h-3" />
+                              Featured
+                            </Badge>
+                          )}
+                          {isBlog && (
+                            <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
                               <FileText className="w-3 h-3 mr-1" />
                               Blog
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          {new Date(item.type === 'blog' ? (item.published_at || item.created_at) : item.created_at).toLocaleDateString("en-US", {
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(when).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
@@ -721,147 +691,212 @@ const Community = () => {
                           })}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {/* Admin pin/unpin button */}
-                      {item.type === 'post' && isCurrentUserAdmin && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleTogglePin(item.id, !!item.is_pinned)}
-                          className={item.is_pinned ? "text-primary hover:text-primary/80" : "text-muted-foreground hover:text-primary"}
-                          title={item.is_pinned ? "Unpin post" : "Pin post"}
-                        >
-                          {item.is_pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
-                        </Button>
-                      )}
-                      {/* Owner edit/delete buttons */}
-                      {item.type === 'post' && item.user_id === user?.id && (
-                        <>
-                          {editingPostId !== item.id && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditPost(item as Post & { type: 'post' })}
-                              className="text-muted-foreground hover:text-primary"
-                              title="Edit post"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </Button>
-                          )}
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        {/* Admin pin/unpin button */}
+                        {item.type === 'post' && isCurrentUserAdmin && (
                           <Button
                             variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeletePost(item.id)}
-                            className="text-muted-foreground hover:text-destructive"
-                            title="Delete post"
+                            size="icon"
+                            onClick={() => handleTogglePin(item.id, !!item.is_pinned)}
+                            className={`h-11 w-11 ${item.is_pinned ? "text-primary hover:text-primary/80" : "text-muted-foreground hover:text-primary"}`}
+                            title={item.is_pinned ? "Unpin post" : "Pin post"}
+                            aria-label={item.is_pinned ? "Unpin post" : "Pin post"}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            {item.is_pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
                           </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {item.type === 'blog' ? (
-                    <div className="space-y-3">
-                      <Link to={`/blog/${item.slug}`} className="block group">
-                        <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                          {item.title}
-                        </h3>
-                      </Link>
-                      {item.featured_image_url && (
-                        <Link to={`/blog/${item.slug}`}>
-                          <img
-                            src={item.featured_image_url}
-                            alt={item.title}
-                            className="rounded-lg w-full h-48 object-cover"
-                          />
-                        </Link>
-                      )}
-                      <p className="text-muted-foreground line-clamp-3">
-                        {item.excerpt || item.content.substring(0, 200)}...
-                      </p>
-                      <Button variant="outline" size="sm" asChild>
-                        <Link to={`/blog/${item.slug}`}>Read Full Article</Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        {editingPostId === item.id ? (
-                          <div className="space-y-2">
-                            <Textarea
-                              value={editContent}
-                              onChange={(e) => setEditContent(e.target.value)}
-                              className="min-h-[60px] text-sm"
-                            />
-                            <div className="flex items-center gap-2">
-                              <Button size="sm" onClick={() => handleSaveEdit(item.id)}>
-                                <Check className="w-3 h-3 mr-1" />
-                                Save
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={handleCancelEdit}>
-                                <X className="w-3 h-3 mr-1" />
-                                Cancel
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
+                        )}
+                        {/* Owner edit/delete buttons */}
+                        {item.type === 'post' && item.user_id === user?.id && (
                           <>
-                            {item.content && (
-                              <p className="text-sm text-foreground leading-snug whitespace-pre-wrap">{item.content}</p>
+                            {editingPostId !== item.id && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEditPost(item as Post & { type: 'post' })}
+                                className="h-11 w-11 text-muted-foreground hover:text-primary"
+                                title="Edit post"
+                                aria-label="Edit post"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
                             )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeletePost(item.id)}
+                              className="h-11 w-11 text-muted-foreground hover:text-destructive"
+                              title="Delete post"
+                              aria-label="Delete post"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </>
                         )}
                       </div>
-                      {/* Full-width media (image/gif/video) */}
-                      {item.image_url && (
-                        <div className="relative w-full rounded-lg overflow-hidden bg-muted">
-                          {item.image_url.includes('.mp4') || item.image_url.includes('.webm') || item.image_url.includes('.mov') ? (
-                            <video
-                              src={item.image_url}
-                              controls
-                              className="w-full h-auto rounded-lg max-h-[400px]"
-                              preload="metadata"
-                            />
-                          ) : (
+                    </div>
+
+                    {/* Body */}
+                    {item.type === 'blog' ? (
+                      <div>
+                        {item.featured_image_url && (
+                          <Link to={`/blog/${item.slug}`} className="relative block">
                             <img
-                              src={item.image_url}
-                              alt="Post"
-                              className="w-full h-auto object-contain rounded-lg"
+                              src={item.featured_image_url}
+                              alt={item.title}
+                              className="w-full h-52 sm:h-64 object-cover"
                             />
+                            {isNewItem && (
+                              <span className="absolute top-3 left-3 rounded-full bg-[#c93b00] text-white text-[11px] font-bold uppercase tracking-wider px-2.5 py-1">
+                                New article
+                              </span>
+                            )}
+                          </Link>
+                        )}
+                        <div className="px-3 sm:px-4 py-3 space-y-2">
+                          {!item.featured_image_url && isNewItem && (
+                            <span className="inline-block rounded-full bg-[#c93b00] text-white text-[11px] font-bold uppercase tracking-wider px-2.5 py-1">
+                              New article
+                            </span>
+                          )}
+                          <Link to={`/blog/${item.slug}`} className="block group">
+                            <h3 className="text-lg font-bold leading-snug group-hover:text-primary transition-colors">
+                              {item.title}
+                            </h3>
+                          </Link>
+                          <p className="text-sm text-muted-foreground line-clamp-3">
+                            {item.excerpt || item.content.substring(0, 200)}...
+                          </p>
+                          <Button size="sm" asChild className="h-11 px-5 rounded-full">
+                            <Link to={`/blog/${item.slug}`}>Read article</Link>
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="px-3 sm:px-4 pb-3">
+                          {editingPostId === item.id ? (
+                            <div className="space-y-2">
+                              <Textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                className="min-h-[60px] text-sm"
+                              />
+                              <div className="flex items-center gap-2">
+                                <Button size="sm" className="h-11" onClick={() => handleSaveEdit(item.id)}>
+                                  <Check className="w-3 h-3 mr-1" />
+                                  Save
+                                </Button>
+                                <Button size="sm" className="h-11" variant="outline" onClick={handleCancelEdit}>
+                                  <X className="w-3 h-3 mr-1" />
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            item.content && (
+                              <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap">{item.content}</p>
+                            )
                           )}
                         </div>
+                        {/* Full-width media (image/gif/video) */}
+                        {item.image_url && (
+                          <div className="relative w-full bg-muted">
+                            {item.image_url.includes('.mp4') || item.image_url.includes('.webm') || item.image_url.includes('.mov') ? (
+                              <video
+                                src={item.image_url}
+                                controls
+                                className="w-full h-auto max-h-[480px]"
+                                preload="metadata"
+                              />
+                            ) : (
+                              <img
+                                src={item.image_url}
+                                alt="Post"
+                                className="w-full h-auto object-contain"
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 mt-1 border-t border-border/30">
+                      <Button variant="ghost" size="sm" className="h-11 px-4">
+                        <Heart className="w-4 h-4 mr-2" />
+                        Like
+                      </Button>
+                      {item.type === 'post' && (
+                        <PostComments postId={item.id} isCurrentUserAdmin={isCurrentUserAdmin} />
                       )}
                     </div>
-                  )}
-                  <div className="flex items-center gap-4 mt-4 pt-4 border-t">
-                    <Button variant="ghost" size="sm">
-                      <Heart className="w-4 h-4 mr-2" />
-                      Like
-                    </Button>
-                    {item.type === 'post' && (
-                      <PostComments postId={item.id} isCurrentUserAdmin={isCurrentUserAdmin} />
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </article>
+                );
+              })}
 
-            {feedItems.length === 0 && (
-              <Card>
-                <CardContent className="p-8 text-center">
+              {feedItems.length === 0 && (
+                <div className="rounded-2xl border border-border/30 bg-card/80 p-8 text-center">
                   <p className="text-muted-foreground">
                     No posts yet. Be the first to share something!
                   </p>
+                </div>
+              )}
+            </div>
+
+            {/* ---------- Side column (below the feed on phones) ---------- */}
+            <aside className="min-w-0 space-y-4 lg:sticky lg:top-24">
+              <Card className="rounded-2xl">
+                <CardContent className="py-5">
+                  <SocialShareButtons title="MetsXMFanZone Community" />
                 </CardContent>
               </Card>
-            )}
+
+              <Card className="rounded-2xl bg-primary/5 border-primary">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+                    <Megaphone className="w-5 h-5 text-primary" />
+                    Community Podcast
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Join our fan-driven podcast with discussions, stories, and Mets coverage
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={() => navigate("/community-podcast")}
+                    className="w-full h-11 rounded-full"
+                  >
+                    Listen Now
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Featured Business Ads Section */}
+              <BusinessAdsSection />
+
+              {user && (
+                <Card className="rounded-2xl">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base sm:text-lg">Business Advertisement</CardTitle>
+                    <CardDescription className="text-xs">
+                      Promote your business to the Mets fan community (requires admin approval)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Button
+                      onClick={() => navigate("/business-partner")}
+                      variant="outline"
+                      className="w-full h-11 rounded-full"
+                    >
+                      <Megaphone className="w-4 h-4 mr-2" />
+                      Submit Business Ad
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </aside>
           </div>
-          
+
           {/* Events Section */}
           <div className="mt-16">
             <Events />
