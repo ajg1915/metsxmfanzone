@@ -8,96 +8,61 @@ const corsHeaders = {
   "X-Frame-Options": "DENY",
 };
 
-type WelcomeRequest = {
-  email?: string;
-  name?: string;
-  record?: {
-    id?: string;
-    email?: string | null;
-    full_name?: string | null;
-  };
-};
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 
-async function resolveRecipient(
-  supabase: ReturnType<typeof createClient>,
-  body: WelcomeRequest,
-) {
-  const directEmail = body.email?.trim().toLowerCase();
-  if (directEmail) {
-    return {
-      email: directEmail,
-      name: body.name?.trim() || "Mets Fan",
-    };
-  }
-
-  const recordId = body.record?.id;
-  if (!recordId) {
-    return { email: null, name: null };
-  }
-
-  const { data: authUser } = await supabase.auth.admin.getUserById(recordId);
-  const email = authUser?.user?.email?.trim().toLowerCase() || body.record?.email?.trim().toLowerCase() || null;
-  const name =
-    body.name?.trim() ||
-    body.record?.full_name?.trim() ||
-    authUser?.user?.user_metadata?.full_name ||
-    "Mets Fan";
-
-  return { email, name };
-}
+// A welcome email for a new signup may only go to that new account's own address.
+const NEW_ACCOUNT_WINDOW_MS = 10 * 60 * 1000;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Server-to-server only: the caller must present the service role key.
-  const serviceKeyForAuth = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!serviceKeyForAuth || req.headers.get("Authorization") !== `Bearer ${serviceKeyForAuth}`) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
   try {
-    const body: WelcomeRequest = await req.json();
+    const body = await req.json().catch(() => ({}));
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const recipient = await resolveRecipient(supabase, body);
+    const isServer = !!supabaseKey && req.headers.get("Authorization") === `Bearer ${supabaseKey}`;
 
-    if (!recipient.email) {
-      return new Response(
-        JSON.stringify({ error: "Email is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+    let email: string | null = null;
+    let name = "Mets Fan";
+
+    if (isServer && body?.email) {
+      // Trusted server-to-server call (service role key).
+      email = String(body.email).trim().toLowerCase();
+      name = String(body.name ?? "").trim() || name;
+    } else {
+      // Public path (database trigger): ignore any email in the body. Look the
+      // account up by id and only email a brand-new account at its own address.
+      const id = body?.record?.id;
+      if (!id || typeof id !== "string") return json({ error: "Unauthorized" }, 401);
+      const { data } = await supabase.auth.admin.getUserById(id);
+      const user = data?.user;
+      const createdAt = user?.created_at ? Date.parse(user.created_at) : 0;
+      if (!user?.email || !createdAt || Date.now() - createdAt > NEW_ACCOUNT_WINDOW_MS) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+      email = user.email.trim().toLowerCase();
+      name = String(user.user_metadata?.full_name ?? body?.record?.full_name ?? "").trim() || name;
     }
+
+    if (!email) return json({ error: "Email is required" }, 400);
 
     const { error } = await supabase.functions.invoke("send-confirmation-email", {
-      body: {
-        type: "welcome",
-        email: recipient.email,
-        name: recipient.name,
-      },
+      body: { type: "welcome", email, name },
     });
+    if (error) throw error;
 
-    if (error) {
-      throw error;
-    }
-
-    return new Response(
-      JSON.stringify({ success: true }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return json({ success: true });
   } catch (error: unknown) {
     console.error("Error in send-welcome-email:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-    return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return json({ error: error instanceof Error ? error.message : "Unknown error occurred" }, 500);
   }
 });
