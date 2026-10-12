@@ -60,7 +60,7 @@ const NewsletterSection = () => {
             <img src={logo} alt="MetsXMFanZone" className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14" />
           </div>
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground mb-2 sm:mb-3 leading-tight">
-            Get Mets news in your inbox
+            Get MetsXMFanZone News
           </h2>
           <p className="text-muted-foreground mb-4 sm:mb-5 md:mb-6 text-xs sm:text-sm max-w-md mx-auto">
             Mets news, game highlights and updates from MetsXMFanZone, straight to your email.
