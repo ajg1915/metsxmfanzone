@@ -53,8 +53,8 @@ const Install = () => {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Get the MetsXMFanZone App"
-        description="Download the MetsXMFanZone app for Android, or add it to your iPhone, iPad or computer. Paid members get TV mode on smart TVs."
-        keywords="MetsXMFanZone app, Mets app, Mets Android app, Mets TV app"
+        description="Download the MetsXMFanZone app for Android, or add it to your iPhone, iPad or computer."
+        keywords="MetsXMFanZone app, Mets app, Mets Android app"
         canonical="https://www.metsxmfanzone.com/install"
       />
       <Navigation />
@@ -137,33 +137,35 @@ const Install = () => {
               </Card>
             </div>
 
-            {/* MetsXMFanZone TV: its own app, separate from the phone app */}
-            <Card className="order-3 flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center">
-              <div className="flex flex-1 items-center gap-4">
-                <div className="rounded-xl bg-primary/15 p-3">
-                  <Tv className="h-7 w-7 text-primary" />
+            {/* MetsXMFanZone TV: only shown to signed-in members, the code is never public */}
+            {user && (
+              <Card className="order-3 flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center">
+                <div className="flex flex-1 items-center gap-4">
+                  <div className="rounded-xl bg-primary/15 p-3">
+                    <Tv className="h-7 w-7 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold">MetsXMFanZone TV app</h2>
+                    <p className="text-sm text-muted-foreground">
+                      A separate app for Fire TV, Android TV and Google TV. On your TV, open the Downloader app and enter code{" "}
+                      <b className="text-foreground">6750144</b>.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-lg font-bold">MetsXMFanZone TV app</h2>
-                  <p className="text-sm text-muted-foreground">
-                    A separate app for Fire TV, Android TV and Google TV. On your TV, open the Downloader app and enter code{" "}
-                    <b className="text-foreground">6750144</b>.
-                  </p>
-                </div>
-              </div>
-              {isMember ? (
-                <Button asChild size="lg" className="gap-2">
-                  <a href="/tv-app">
-                    <Tv className="h-5 w-5" />
-                    Download TV app
-                  </a>
-                </Button>
-              ) : (
-                <Button asChild size="lg" variant="outline" className="gap-2">
-                  <Link to={user ? "/pricing" : "/auth?mode=login"}>{user ? "See plans" : "Sign in to download"}</Link>
-                </Button>
-              )}
-            </Card>
+                {isMember ? (
+                  <Button asChild size="lg" className="gap-2">
+                    <a href="/tv-app">
+                      <Tv className="h-5 w-5" />
+                      Download TV app
+                    </a>
+                  </Button>
+                ) : (
+                  <Button asChild size="lg" variant="outline" className="gap-2">
+                    <Link to={user ? "/pricing" : "/auth?mode=login"}>{user ? "See plans" : "Sign in to download"}</Link>
+                  </Button>
+                )}
+              </Card>
+            )}
           </div>
         </div>
       </main>
