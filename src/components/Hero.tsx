@@ -141,7 +141,7 @@ const Hero = () => {
       <section className="home-hero-shell relative max-sm:!p-0 sm:pt-2" aria-busy="true" aria-label="Loading featured content">
         <div className="h-[calc(100svh-8.5rem)] min-h-[460px] max-h-[720px] bg-gradient-to-b from-[#0b3e75]/40 to-[#07111d] sm:hidden" />
         <div className="home-feed-shell hidden overflow-hidden sm:block">
-          <div className="aspect-[16/8] rounded-md border border-border/40 bg-gradient-to-br from-[#0b3e75]/40 to-[#07111d] lg:aspect-[16/7]" />
+          <div className="aspect-[1200/630] rounded-md border border-border/40 bg-gradient-to-br from-[#0b3e75]/40 to-[#07111d]" />
         </div>
       </section>
     );
@@ -169,7 +169,11 @@ const Hero = () => {
             ) : /\.(mp4|webm|mov|m4v)(\?|$)/i.test(sl.image) ? (
               <video src={sl.image} autoPlay muted loop playsInline preload={i === current ? "auto" : "metadata"} className="absolute inset-0 h-full w-full object-cover" />
             ) : (
-              <img src={sl.image} alt="" loading={i === 0 ? "eager" : "lazy"} className={`absolute inset-0 h-full w-full object-cover object-[48%_40%] ${i === current ? "mx-hero-zoom" : ""}`} />
+              <>
+                {/* Blurred copy fills the tall phone box; the real image sits on top uncropped */}
+                <img src={sl.image} alt="" aria-hidden="true" loading={i === 0 ? "eager" : "lazy"} className="absolute inset-0 h-full w-full scale-125 object-cover blur-2xl brightness-[0.55]" />
+                <img src={sl.image} alt="" loading={i === 0 ? "eager" : "lazy"} className="absolute inset-0 h-full w-full object-contain object-[50%_32%]" />
+              </>
             )}
           </div>
         ))}
@@ -268,7 +272,7 @@ const Hero = () => {
             <div
               key={index}
               aria-hidden={current !== index}
-              className="relative col-start-1 row-start-1 min-w-0 h-[224px] sm:h-auto sm:aspect-[16/8] lg:aspect-[16/7] overflow-hidden rounded-xl sm:rounded-md border border-border/40 bg-card shadow-elevation-high transition-opacity duration-1000 ease-in-out motion-reduce:transition-none"
+              className="relative col-start-1 row-start-1 min-w-0 h-[224px] sm:h-auto sm:aspect-[1200/630] overflow-hidden rounded-xl sm:rounded-md border border-border/40 bg-card shadow-elevation-high transition-opacity duration-1000 ease-in-out motion-reduce:transition-none"
               style={{
                 opacity: current === index ? 1 : 0,
                 zIndex: current === index ? 10 : 0,
@@ -294,7 +298,7 @@ const Hero = () => {
                 }
                 return url ? (
                   <div
-                    className={`absolute inset-0 bg-cover bg-center bg-no-repeat ${current === index ? "mx-hero-zoom" : ""}`}
+                    className="absolute inset-0 bg-contain bg-center bg-no-repeat"
                     style={{ backgroundImage: `url(${url})` }}
                   />
                 ) : (
