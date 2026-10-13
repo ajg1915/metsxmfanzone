@@ -76,9 +76,18 @@ export const setPageMetadata = ({
   setMeta('meta[property="og:image"]', { property: "og:image", content: imageUrl });
   setMeta('meta[property="og:image:secure_url"]', { property: "og:image:secure_url", content: imageUrl });
   setMeta('meta[property="og:image:alt"]', { property: "og:image:alt", content: alt });
-  setMeta('meta[property="og:image:width"]', { property: "og:image:width", content: "1200" });
-  setMeta('meta[property="og:image:height"]', { property: "og:image:height", content: "630" });
-  setMeta('meta[property="og:image:type"]', { property: "og:image:type", content: "image/png" });
+  // Only the site's own share images are known to be 1200x630 PNG/JPG. A page that
+  // passes its own image (a post's featured image) can be any size, so drop the
+  // size tags instead of declaring a wrong one that makes previews crop.
+  if (image) {
+    ["og:image:width", "og:image:height", "og:image:type"].forEach((name) =>
+      document.head.querySelector(`meta[property="${name}"]`)?.remove(),
+    );
+  } else {
+    setMeta('meta[property="og:image:width"]', { property: "og:image:width", content: "1200" });
+    setMeta('meta[property="og:image:height"]', { property: "og:image:height", content: "630" });
+    setMeta('meta[property="og:image:type"]', { property: "og:image:type", content: chosenImage.endsWith(".png") ? "image/png" : "image/jpeg" });
+  }
 
   setMeta('meta[name="twitter:card"]', { name: "twitter:card", content: "summary_large_image" });
   setMeta('meta[name="twitter:site"]', { name: "twitter:site", content: TWITTER_HANDLE });
