@@ -9,11 +9,13 @@ import { getBlogShareUrl } from "@/lib/blogLinks";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { Facebook, Instagram, Twitter, Share2, Loader2, Copy, Link2, Send } from "lucide-react";
+import { Facebook, Instagram, Twitter, Share2, Loader2, Copy, Link2, Send, Check } from "lucide-react";
 
 interface BlogShareDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Shows the "Published" header, for right after an article goes live. */
+  justPublished?: boolean;
   post: {
     id: string;
     title: string;
@@ -29,7 +31,7 @@ interface SocialConnection {
   account_username: string | null;
 }
 
-export default function BlogShareDialog({ open, onOpenChange, post }: BlogShareDialogProps) {
+export default function BlogShareDialog({ open, onOpenChange, post, justPublished = false }: BlogShareDialogProps) {
   const { toast } = useToast();
   const [connections, setConnections] = useState<SocialConnection[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -70,6 +72,18 @@ export default function BlogShareDialog({ open, onOpenChange, post }: BlogShareD
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast({ title: "Link copied" });
+    } catch {
+      toast({ title: "Copy failed", variant: "destructive" });
+    }
+  };
+
+  const copyCaption = async (where?: string) => {
+    try {
+      await navigator.clipboard.writeText(caption);
+      toast({
+        title: "Caption copied",
+        description: where ? `Paste it in ${where} with the cover image.` : undefined,
+      });
     } catch {
       toast({ title: "Copy failed", variant: "destructive" });
     }
@@ -162,69 +176,104 @@ export default function BlogShareDialog({ open, onOpenChange, post }: BlogShareD
     }
   };
 
+  const tile =
+    "min-h-[52px] rounded-xl border border-white/15 bg-[#14223F] px-3 text-[15px] font-bold text-white hover:bg-[#1b2d52] active:bg-[#1b2d52]";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="grid max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-md grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden p-0 sm:max-h-[calc(100dvh-2rem)]">
-        <DialogHeader className="border-b border-border/40 px-4 py-3 pr-11 text-left sm:px-5 sm:py-4">
-          <DialogTitle className="text-base flex items-center gap-2">
-            <Share2 className="w-4 h-4" /> Share article
+      <DialogContent className="grid max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-md grid-rows-[auto_minmax(0,1fr)_auto] gap-0 overflow-hidden rounded-2xl border-white/15 bg-[#0B1730] p-0 text-white sm:max-h-[calc(100dvh-2rem)]">
+        <DialogHeader className="space-y-1 border-b border-white/10 px-4 py-4 pr-12 text-left">
+          <DialogTitle className="flex items-center gap-2 text-[22px] font-extrabold">
+            {justPublished ? (
+              <>
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-800 text-emerald-100">
+                  <Check className="h-5 w-5" />
+                </span>
+                Published
+              </>
+            ) : (
+              <>
+                <Share2 className="h-5 w-5" /> Share article
+              </>
+            )}
           </DialogTitle>
-          <DialogDescription className="line-clamp-2 break-words text-[11px] leading-4">{post?.title}</DialogDescription>
+          <DialogDescription className="line-clamp-2 break-words text-[14px] leading-snug text-slate-300">
+            {justPublished ? `${post?.title} is live and subscribers got the alert.` : post?.title}
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 space-y-4 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
-          <div className="rounded-md border border-border/40 p-2 flex items-center gap-2">
-            <Link2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-            <span className="text-[11px] truncate flex-1">{shareUrl}</span>
-            <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={copyLink}>
-              <Copy className="w-3.5 h-3.5" />
-            </Button>
+        <div className="min-h-0 space-y-5 overflow-y-auto overscroll-contain px-4 py-4">
+          <div className="space-y-2">
+            <p className="text-[12px] font-extrabold tracking-wider text-[#FF9A6B]">ARTICLE LINK</p>
+            <div className="flex gap-2">
+              <div className="flex min-h-[52px] min-w-0 flex-1 items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-3">
+                <Link2 className="h-4 w-4 shrink-0 text-slate-300" />
+                <span className="truncate text-[14px]">{shareUrl.replace(/^https?:\/\//, "")}</span>
+              </div>
+              <button type="button" onClick={copyLink} className="min-h-[52px] shrink-0 rounded-xl bg-[#FF5910] px-5 text-[15px] font-extrabold text-[#0B1730] active:opacity-90">
+                Copy
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
-            <Button type="button" variant="outline" size="sm" className="h-9 text-xs" onClick={nativeShare}>
-              <Share2 className="w-3.5 h-3.5 mr-1.5" /> Share sheet
-            </Button>
-            <Button type="button" variant="outline" size="sm" className="h-9 text-xs" onClick={() => openIntent("facebook")}>
-              <Facebook className="w-3.5 h-3.5 mr-1.5" /> Facebook
-            </Button>
-            <Button type="button" variant="outline" size="sm" className="h-9 text-xs" onClick={() => openIntent("twitter")}>
-              <Twitter className="w-3.5 h-3.5 mr-1.5" /> X / Twitter
-            </Button>
-            <Button type="button" variant="outline" size="sm" className="h-9 text-xs" onClick={() => openIntent("whatsapp")}>
-              <Send className="w-3.5 h-3.5 mr-1.5" /> WhatsApp
-            </Button>
+          <div className="space-y-2">
+            <p className="text-[12px] font-extrabold tracking-wider text-[#FF9A6B]">SHARE TO</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" className={tile} onClick={() => openIntent("facebook")}>
+                <Facebook className="mr-1.5 inline h-4 w-4" /> Facebook
+              </button>
+              <button type="button" className={tile} onClick={() => openIntent("twitter")}>
+                <Twitter className="mr-1.5 inline h-4 w-4" /> X
+              </button>
+              <button type="button" className={tile} onClick={() => copyCaption("Instagram")}>
+                <Instagram className="mr-1.5 inline h-4 w-4" /> Instagram
+              </button>
+              <button type="button" className={tile} onClick={() => copyCaption("TikTok")}>
+                <Share2 className="mr-1.5 inline h-4 w-4" /> TikTok
+              </button>
+              <button type="button" className={tile} onClick={() => openIntent("whatsapp")}>
+                <Send className="mr-1.5 inline h-4 w-4" /> WhatsApp
+              </button>
+              <button type="button" className={tile} onClick={nativeShare}>
+                <Share2 className="mr-1.5 inline h-4 w-4" /> Share sheet
+              </button>
+            </div>
+            <p className="text-[12px] text-slate-300">Instagram and TikTok copy the caption so you can paste it in the app.</p>
           </div>
 
-          <div>
-            <Label className="text-[11px]">Caption</Label>
-            <Textarea value={caption} onChange={(e) => setCaption(e.target.value)} rows={4} className="text-xs mt-1" />
+          <div className="space-y-2">
+            <p className="text-[12px] font-extrabold tracking-wider text-[#FF9A6B]">READY-TO-POST CAPTION</p>
+            <Textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              rows={5}
+              className="rounded-xl border-white/20 bg-white/5 text-[15px] leading-snug text-white"
+            />
+            <button type="button" onClick={() => copyCaption()} className="min-h-11 w-full rounded-xl border border-white/25 text-[14px] font-bold text-white active:bg-white/10">
+              Copy caption
+            </button>
           </div>
 
-          <div>
-            <Label className="text-[11px]">Post to your connected accounts</Label>
+          <div className="space-y-2">
+            <p className="text-[12px] font-extrabold tracking-wider text-[#FF9A6B]">POST TO YOUR CONNECTED ACCOUNTS</p>
             {loading ? (
-              <p className="text-[11px] text-muted-foreground mt-2">Loading…</p>
+              <p className="text-[13px] text-slate-300">Loading…</p>
             ) : connections.length === 0 ? (
-              <p className="text-[11px] text-muted-foreground mt-2">
-                No connected accounts yet — connect them in Settings → Social Media.
-              </p>
+              <p className="text-[13px] text-slate-300">No connected accounts yet. Connect them in Settings, Social Media.</p>
             ) : (
-              <div className="space-y-1.5 mt-2">
+              <div className="space-y-2">
                 {connections.map((c) => (
                   <button
                     type="button"
                     key={c.platform}
                     onClick={() => toggle(c.platform)}
-                    className="w-full flex items-center gap-3 p-2 rounded-lg border border-border/40 hover:bg-muted/40 text-left"
+                    className="flex min-h-[52px] w-full items-center gap-3 rounded-xl border border-white/15 bg-[#14223F] px-3 text-left"
                   >
                     <Checkbox checked={selected.includes(c.platform)} />
                     {icon(c.platform)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium capitalize">{c.platform}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">
-                        {c.page_name || c.account_username || "Connected"}
-                      </p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[14px] font-bold capitalize">{c.platform}</p>
+                      <p className="truncate text-[12px] text-slate-300">{c.page_name || c.account_username || "Connected"}</p>
                     </div>
                   </button>
                 ))}
@@ -233,14 +282,18 @@ export default function BlogShareDialog({ open, onOpenChange, post }: BlogShareD
           </div>
         </div>
 
-        <DialogFooter className="shrink-0 gap-2 border-t border-border/40 bg-background px-4 py-3 sm:px-5">
-          <Button variant="outline" size="sm" className="h-9 text-xs" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
-          <Button size="sm" className="h-9 text-xs" onClick={postToAccounts} disabled={posting || selected.length === 0}>
-            {posting ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Share2 className="w-3.5 h-3.5 mr-1.5" />}
+        <DialogFooter className="shrink-0 flex-row gap-2 border-t border-white/10 bg-[#0E1C43] px-4 py-3 sm:space-x-0">
+          <button type="button" onClick={() => onOpenChange(false)} className="min-h-[52px] flex-1 rounded-xl border border-white/25 text-[15px] font-bold text-white active:bg-white/10">
+            {justPublished ? "Back to Drafts" : "Close"}
+          </button>
+          <button
+            type="button"
+            onClick={postToAccounts}
+            disabled={posting || selected.length === 0}
+            className="min-h-[52px] flex-1 rounded-xl bg-[#FF5910] text-[16px] font-extrabold text-[#0B1730] active:opacity-90 disabled:opacity-40"
+          >
             {posting ? "Posting…" : "Post now"}
-          </Button>
+          </button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

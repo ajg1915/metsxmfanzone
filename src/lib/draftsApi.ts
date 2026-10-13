@@ -79,7 +79,7 @@ const wordsOf = (html: string) =>
   (html || "").replace(/<[^>]*>/g, " ").replace(/&[a-z#0-9]+;/gi, " ").split(/\s+/).filter(Boolean).length;
 
 const postStatus = (p: any): DraftStatus =>
-  p.approval_status === "rejected" ? "rejected" : p.approval_status === "approved" ? "approved" : "pending";
+  p.approval_status === "rejected" && !p.published ? "rejected" : p.published ? "approved" : "pending";
 
 const postSummary = (p: any): DraftSummary => ({
   id: POST_PREFIX + p.id,
@@ -110,27 +110,84 @@ const postDraft = (p: any): Draft => ({
   published_slug: p.published ? p.slug : undefined,
 });
 
+// What counts as what, for articles in the blog table:
+//   Waiting    not live, not rejected, no publish date set
+//   Published  live, or approved with a future publish date (shown as Scheduled)
+//   Rejected   rejected and not live
+const notRejected = "approval_status.is.null,approval_status.neq.rejected";
+
 async function listPosts(status: DraftStatus): Promise<DraftSummary[]> {
-  if (status === "approved") return []; // approved articles are just the live blog
-  const { data, error } = await supabase
+  if (status === "approved") return []; // live articles have their own list, see listPublished
+  let q = supabase
     .from("blog_posts")
     .select("id, title, excerpt, category, tags, content, created_at, approval_status, published")
-    .eq("approval_status", status)
-    .eq("published", false)
-    .order("created_at", { ascending: false })
-    .limit(50);
+    .eq("published", false);
+  q = status === "rejected"
+    ? q.eq("approval_status", "rejected")
+    : q.or(notRejected).is("scheduled_publish_at", null);
+  const { data, error } = await q.order("created_at", { ascending: false }).limit(50);
   if (error) throw new Error("Could not load the waiting articles from the blog");
   return (data || []).map(postSummary);
 }
 
 async function countPosts(status: "pending" | "rejected"): Promise<number> {
+  let q = supabase.from("blog_posts").select("id", { count: "exact", head: true }).eq("published", false);
+  q = status === "rejected"
+    ? q.eq("approval_status", "rejected")
+    : q.or(notRejected).is("scheduled_publish_at", null);
+  const { count, error } = await q;
+  if (error) throw new Error("Could not count the waiting articles");
+  return count || 0;
+}
+
+export interface PublishedPost {
+  id: string; // draft-style id, "post-<uuid>"
+  postId: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  category: string;
+  featured_image_url: string | null;
+  live: boolean; // false = scheduled for later
+  at: string; // when it went live, or when it will
+}
+
+const publishedFilter = "published.eq.true,and(published.eq.false,scheduled_publish_at.not.is.null,approval_status.eq.approved)";
+
+/** Live articles, plus ones scheduled to go live, newest first. */
+export async function listPublished(): Promise<PublishedPost[]> {
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .select("id, title, slug, excerpt, category, featured_image_url, published, published_at, scheduled_publish_at, created_at")
+    .or(publishedFilter)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw new Error("Could not load your published articles");
+  return (data || []).map((p: any) => ({
+    id: POST_PREFIX + p.id,
+    postId: p.id,
+    title: p.title,
+    slug: p.slug,
+    excerpt: p.excerpt || "",
+    category: p.category || "",
+    featured_image_url: p.featured_image_url || null,
+    live: !!p.published,
+    at: (p.published ? p.published_at : p.scheduled_publish_at) || p.created_at,
+  }));
+}
+
+export async function countPublished(): Promise<number> {
   const { count, error } = await supabase
     .from("blog_posts")
     .select("id", { count: "exact", head: true })
-    .eq("approval_status", status)
-    .eq("published", false);
-  if (error) throw new Error("Could not count the waiting articles");
+    .or(publishedFilter);
+  if (error) throw new Error("Could not count your published articles");
   return count || 0;
+}
+
+export async function deletePost(postId: string): Promise<void> {
+  const { error } = await supabase.from("blog_posts").delete().eq("id", postId);
+  if (error) throw new Error("Could not delete the article");
 }
 
 const workerList = (status: DraftStatus) =>
@@ -206,7 +263,7 @@ export async function setDraftStatus(
     if (status === "approved") throw new Error("Use Approve & publish for this article");
     const { data, error } = await supabase
       .from("blog_posts")
-      .update({ approval_status: status, published: false } as any)
+      .update({ approval_status: status, published: false, is_draft: false, scheduled_publish_at: null } as any)
       .eq("id", postUuid(id))
       .select("*")
       .maybeSingle();
@@ -273,6 +330,7 @@ export async function publishDraft(draft: Draft): Promise<{ postId: string; slug
         published_at: new Date().toISOString(),
         is_draft: false,
         approval_status: "approved",
+        scheduled_publish_at: null,
       } as any)
       .eq("id", uuid);
     if (updateError) throw new Error("Could not publish the article to the site");

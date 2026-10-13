@@ -18,6 +18,7 @@ import {
   draftStamp,
   getDraft,
   htmlToText,
+  isPostDraftId,
   publishDraft,
   setDraftStatus,
   textToHtml,
@@ -94,6 +95,11 @@ export default function DraftReview({
 
   const startEdit = () => {
     if (!draft) return;
+    // Articles saved in the blog table open in the full editor (cover image, audio, schedule).
+    if (isPostDraftId(draft.id)) {
+      navigate(`/admin/drafts/${draft.id}/edit`);
+      return;
+    }
     setTitle(draft.title);
     setText(originalText);
     setSummary(draft.summary);

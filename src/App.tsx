@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate, useParams, Navigate } from "react-router-dom";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { useSessionExpiryWarning } from "@/hooks/useSessionExpiryWarning";
@@ -53,8 +53,7 @@ const PrivatePlayer = lazyWithRetry(() => import("./pages/admin/PrivatePlayer"),
 const PrivateLivePlayer = lazyWithRetry(() => import("./pages/PrivateLivePlayer"), "page-private-live-player");
 const MetsXMPlayer = lazyWithRetry(() => import("./pages/MetsXMPlayer"), "page-metsxm-player");
 const EventsManagement = lazyWithRetry(() => import("./pages/admin/EventsManagement"), "page-admin-events-management");
-const BlogManagement = lazyWithRetry(() => import("./pages/admin/BlogManagement"), "page-admin-blog-management");
-const ArticleEditor = lazyWithRetry(() => import("./pages/admin/ArticleEditor"), "page-admin-article-editor");
+const DraftEditor = lazyWithRetry(() => import("./pages/admin/DraftEditor"), "page-admin-draft-editor");
 const DraftsWorkspace = lazyWithRetry(() => import("./pages/admin/DraftsWorkspace"), "page-admin-drafts-workspace");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
 const PodcastManagement = lazyWithRetry(() => import("./pages/admin/PodcastManagement"), "page-admin-podcast-management");
@@ -213,6 +212,12 @@ const PageLoader = () => (
 );
 
 // Wrapper to access maintenance mode inside router context
+// Old "edit article" links open the new editor on the Drafts side.
+const BlogEditRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/admin/drafts/post-${id}/edit`} replace />;
+};
+
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -379,13 +384,15 @@ const AppContent = () => {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
               <Route path="hero" element={<HeroManagement />} />
-              <Route path="blog" element={<BlogManagement />} />
+              <Route path="blog" element={<Navigate to="/admin/drafts" replace />} />
               <Route path="media-library" element={<MediaLibrary />} />
               <Route path="media" element={<MediaLibrary />} />
               <Route path="drafts" element={<DraftsWorkspace />} />
+              <Route path="drafts/new" element={<DraftEditor />} />
+              <Route path="drafts/:id/edit" element={<DraftEditor />} />
               <Route path="drafts/:id" element={<DraftsWorkspace />} />
-              <Route path="blog/new" element={<ArticleEditor />} />
-              <Route path="blog/edit/:id" element={<ArticleEditor />} />
+              <Route path="blog/new" element={<Navigate to="/admin/drafts/new" replace />} />
+              <Route path="blog/edit/:id" element={<BlogEditRedirect />} />
               <Route path="video-gallery-management" element={<VideoGalleryManagement />} />
               <Route path="podcasts" element={<PodcastManagement />} />
               <Route path="studio" element={<ClubhouseStudio />} />
