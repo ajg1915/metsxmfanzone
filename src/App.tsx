@@ -18,7 +18,6 @@ import SocialMediaBar from "@/components/SocialMediaBar";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
 import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
-import { DesktopWelcomeGate } from "@/components/DesktopWelcomeGate";
 
 
 
@@ -315,7 +314,6 @@ const AppContent = () => {
         <SocialMediaBar />
         <ForceNotificationPrompt />
         <SweepstakesWheel />
-        <DesktopWelcomeGate />
         <RouteShareMetadata />
         
         <RouteErrorBoundary resetKey={location.pathname}>
