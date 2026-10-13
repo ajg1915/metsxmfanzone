@@ -50,7 +50,7 @@ button, input { font: inherit; }
 .story-copy time { font-size: .78rem; }
 .article { padding-block: 32px 64px; max-width: 850px; }
 .back-link { display: inline-block; margin-bottom: 18px; color: var(--orange); }
-.article-image { width: 100%; max-height: 520px; object-fit: cover; border-radius: var(--radius); }
+.article-image { display: block; width: 100%; height: auto; object-fit: contain; border-radius: var(--radius); }
 .article header { padding-block: 24px 16px; border-bottom: 1px solid var(--border); }
 .article header time { color: var(--muted); }
 .article-actions { display: flex; gap: 8px; margin: 18px 0; }

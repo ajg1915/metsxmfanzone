@@ -99,6 +99,12 @@ Deno.serve(async (req) => {
       socialImage = `${SITE_URL}${socialImage}`;
     }
 
+    // Only the site's own logo fallback has a known size (512x512). A post's own
+    // featured image can be any size, so leave the size off and let crawlers measure it.
+    const socialImageSize = socialImage === `${SITE_URL}/logo-512.png`
+      ? `<meta property="og:image:width" content="512">\n  <meta property="og:image:height" content="512">`
+      : "";
+
     const socialTitle = `${post.title} | MetsXMFanZone`;
 
     const rawDescription =
@@ -139,8 +145,7 @@ Deno.serve(async (req) => {
   <meta property="og:description" content="${safeDescriptionAttr}">
   <meta property="og:image" content="${socialImage}">
   <meta property="og:image:secure_url" content="${socialImage}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  ${socialImageSize}
   <meta property="og:image:alt" content="${safePostTitleAttr}">
   <meta property="og:locale" content="en_US">
 

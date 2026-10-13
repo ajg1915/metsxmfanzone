@@ -81,6 +81,10 @@ function buildHead({ title, description, canonical, image, imageAlt, type = 'web
   const t = esc(title);
   const d = esc(clamp(description, 200));
   const img = esc(absoluteImage(image));
+  // Only the site's own share images are known to be 1200x630. A post's own
+  // featured image can be any size, so declaring 1200x630 for it makes
+  // Facebook/X crop it wrongly. Leave the size off and let crawlers measure it.
+  const siteOwned = img === esc(FALLBACK_IMAGE) || img.includes('/share/');
   const rows = [
     `<title>${t}</title>`,
     `<meta name="title" content="${t}" />`,
@@ -93,9 +97,11 @@ function buildHead({ title, description, canonical, image, imageAlt, type = 'web
     `<meta property="og:description" content="${d}" />`,
     `<meta property="og:image" content="${img}" />`,
     `<meta property="og:image:secure_url" content="${img}" />`,
-    `<meta property="og:image:width" content="1200" />`,
-    `<meta property="og:image:height" content="630" />`,
-    `<meta property="og:image:type" content="${img.endsWith('.png') ? 'image/png' : 'image/jpeg'}" />`,
+    ...(siteOwned ? [
+      `<meta property="og:image:width" content="1200" />`,
+      `<meta property="og:image:height" content="630" />`,
+      `<meta property="og:image:type" content="${img.endsWith('.png') ? 'image/png' : 'image/jpeg'}" />`,
+    ] : []),
     `<meta property="og:image:alt" content="${esc(imageAlt || title)}" />`,
     `<meta property="og:locale" content="en_US" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,

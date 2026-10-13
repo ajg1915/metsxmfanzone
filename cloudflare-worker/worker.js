@@ -66,6 +66,11 @@ function resolveImage(url, siteUrl) {
 function buildHtml(post, slug, siteUrl) {
   const postUrl = `${siteUrl}/blog/${encodeURIComponent(slug)}`;
   const image = resolveImage(post.featured_image_url, siteUrl);
+  // Only the site's own logo fallback has a known size (512x512). A post's own
+  // featured image can be any size, so leave the size off and let crawlers measure it.
+  const imageSize = image === `${siteUrl}/logo-512.png`
+    ? `<meta property="og:image:width" content="512">\n  <meta property="og:image:height" content="512">`
+    : "";
   const rawDesc =
     (post.excerpt && String(post.excerpt).trim().length > 0
       ? String(post.excerpt)
@@ -93,8 +98,7 @@ function buildHtml(post, slug, siteUrl) {
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:image" content="${image}">
   <meta property="og:image:secure_url" content="${image}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
+  ${imageSize}
   <meta property="og:image:alt" content="${escapeHtml(post.title || "")}">
   <meta property="og:locale" content="en_US">
 
