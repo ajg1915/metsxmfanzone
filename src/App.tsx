@@ -16,9 +16,7 @@ import { StreamExitDialog } from "@/components/StreamExitDialog";
 import { LiveStreamToast } from "@/components/LiveStreamToast";
 import SocialMediaBar from "@/components/SocialMediaBar";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
-import ForceNotificationPrompt from "@/components/ForceNotificationPrompt";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
-import { DesktopWelcomeGate } from "@/components/DesktopWelcomeGate";
 
 
 
@@ -313,9 +311,7 @@ const AppContent = () => {
         {/* Removed: ExitIntentPopup, most toasts. Only Live/Offline kept */}
         <StreamExitDialog />
         <SocialMediaBar />
-        <ForceNotificationPrompt />
         <SweepstakesWheel />
-        <DesktopWelcomeGate />
         <RouteShareMetadata />
         
         <RouteErrorBoundary resetKey={location.pathname}>

@@ -34,11 +34,10 @@ const PhoneJoinSection = lazyWithRetry(() => import("@/components/landing/PhoneJ
 const PlansSection = lazyWithRetry(() => import("@/components/landing/PlansSection"), "home-plans-section");
 const NewsletterSection = lazyWithRetry(() => import("@/components/NewsletterSection"), "home-newsletter-section");
 const SignedOutLanding = lazyWithRetry(() => import("@/components/landing/SignedOutLanding"), "home-signed-out-landing");
-const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"), "home-install-prompt");
+const GetTheAppStrip = lazyWithRetry(() => import("@/components/GetTheAppStrip"), "home-get-the-app-strip");
 const OnboardingWalkthrough = lazyWithRetry(() => import("@/components/OnboardingWalkthrough"), "home-onboarding-walkthrough");
 const NotificationPrompt = lazyWithRetry(() => import("@/components/NotificationPrompt"), "home-notification-prompt");
 const ToastPoll = lazyWithRetry(() => import("@/components/ToastPoll"), "home-toast-poll");
-const PopupNotification = lazyWithRetry(() => import("@/components/PopupNotification"), "home-popup-notification");
 
 
 // Section loading skeleton
@@ -154,7 +153,6 @@ const Index = () => {
     <div className="min-h-screen bg-background relative">
       {/* Popup notification modal */}
       <Suspense fallback={null}>
-        <PopupNotification />
       </Suspense>
 
       {/* Poll Toast notification */}
@@ -278,13 +276,13 @@ const Index = () => {
           </Suspense>
         </LazySection>
       </div>
+      {/* How to get the app (a strip, never a popup) */}
+      <Suspense fallback={null}>
+        <GetTheAppStrip />
+      </Suspense>
       <Footer />
       
       
-      {/* Install prompt */}
-      <Suspense fallback={null}>
-        <InstallPrompt />
-      </Suspense>
     </div>
   );
 };
