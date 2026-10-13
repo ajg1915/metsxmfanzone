@@ -48,7 +48,7 @@ const GetTheAppStrip = () => {
               <Bell className={icon} />
               <span>
                 <span className="block font-semibold text-white">All install options</span>
-                <span className="block text-sm text-[#c3cfdb]">Phone, tablet, computer and TV.</span>
+                <span className="block text-sm text-[#c3cfdb]">Step-by-step help for the MetsXMFanZone app.</span>
               </span>
             </Link>
           )}
