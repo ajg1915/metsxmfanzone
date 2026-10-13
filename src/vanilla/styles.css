@@ -79,7 +79,7 @@ button, input { font: inherit; }
 .site-footer > p { opacity: .6; font-size: .68rem; }
 @media (max-width: 720px) { .footer-top { justify-content: center; text-align: center; } .footer-brand, .footer-social { width: 100%; justify-content: center; } .footer-grid { grid-template-columns: repeat(2, 1fr); } }
 .empty-message { color: var(--muted); }
-.static-hero { min-height: min(76vh, 720px); display: grid; align-items: end; background-image: linear-gradient(180deg, hsl(211 63% 7% / .12), var(--background)), var(--page-image); background-size: cover; background-position: center; }
+.static-hero { min-height: min(76vh, 720px); display: grid; align-items: end; background-image: linear-gradient(180deg, hsl(211 63% 7% / .12), var(--background)), var(--page-image); background-size: auto, contain; background-repeat: no-repeat; background-position: center, center 20%; background-color: var(--background); }
 .static-hero-overlay { padding-block: 42px; }
 .static-hero h1 { max-width: 760px; margin: 5px 0 12px; font-family: "Bebas Neue", sans-serif; font-size: clamp(2.8rem, 10vw, 6rem); font-weight: 400; line-height: .92; }
 .static-hero p:not(.eyebrow) { max-width: 620px; color: hsl(210 20% 92%); font-size: 1.08rem; line-height: 1.55; }
@@ -101,7 +101,7 @@ button, input { font: inherit; }
 .hero-rail, .stream-rail { display: grid; grid-auto-flow: column; grid-auto-columns: min(86%, 340px); gap: 12px; margin: 0; padding: 0 0 6px; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
 .hero-rail::-webkit-scrollbar, .stream-rail::-webkit-scrollbar { display: none; }
 .hero-slide, .stream-card { scroll-snap-align: start; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--surface); }
-.hero-slide { min-height: 200px; display: grid; align-items: end; background-image: linear-gradient(180deg, transparent, hsl(211 63% 6% / .92)), var(--slide-image); background-size: cover; background-position: center; }
+.hero-slide { min-height: 200px; display: grid; align-items: end; background-image: linear-gradient(180deg, transparent, hsl(211 63% 6% / .92)), var(--slide-image); background-size: auto, contain; background-repeat: no-repeat; background-position: center, center; background-color: var(--surface); aspect-ratio: 1200 / 630; }
 .hero-slide-copy { padding: 14px; display: grid; gap: 8px; justify-items: start; }
 .hero-slide-copy h2 { margin: 0; font-size: 1.15rem; }
 .hero-slide-copy p { margin: 0; color: hsl(210 20% 88%); font-size: .85rem; }
