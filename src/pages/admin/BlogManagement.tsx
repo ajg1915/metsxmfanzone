@@ -46,6 +46,7 @@ export default function BlogManagement() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "published" | "draft" | "scheduled" | "pending">("all");
   const [sharePost, setSharePost] = useState<BlogPost | null>(null);
+  const [waitingInDrafts, setWaitingInDrafts] = useState(0);
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -55,7 +56,10 @@ export default function BlogManagement() {
         .select(`*, profiles ( full_name, email )`)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      setPosts((data as any) || []);
+      // Articles waiting for approval are reviewed on the Drafts page, not here.
+      const all: BlogPost[] = (data as any) || [];
+      setWaitingInDrafts(all.filter((p) => p.approval_status === "pending" && !p.published).length);
+      setPosts(all.filter((p) => !(p.approval_status === "pending" && !p.published)));
     } catch (e) {
       console.error("Error fetching posts:", e);
       toast({ title: "Error", description: "Failed to load blog posts", variant: "destructive" });
@@ -157,6 +161,16 @@ export default function BlogManagement() {
         </Button>
       </div>
 
+      {waitingInDrafts > 0 && (
+        <button
+          type="button"
+          onClick={() => navigate("/admin/drafts")}
+          className="w-full rounded-md border border-yellow-500/50 bg-yellow-500/10 px-3 py-2 text-left text-xs text-yellow-300"
+        >
+          {waitingInDrafts} {waitingInDrafts === 1 ? "article is" : "articles are"} waiting for your approval in Drafts →
+        </button>
+      )}
+
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[180px]">
@@ -169,7 +183,6 @@ export default function BlogManagement() {
             ["all", "All", counts.all],
             ["published", "Live", counts.published],
             ["scheduled", "Scheduled", counts.scheduled],
-            ["pending", "Pending", counts.pending],
             ["draft", "Drafts", counts.draft],
           ] as const).map(([k, label, n]) => (
             <Button key={k} variant={filter === k ? "default" : "outline"} size="sm"

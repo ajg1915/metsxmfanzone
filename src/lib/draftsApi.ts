@@ -66,32 +66,177 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export const listDrafts = (status: DraftStatus) =>
+// ----- drafts the daily 5am task saves straight into the blog table -----
+// Those are articles in `blog_posts` with approval_status "pending" (or "rejected").
+// They show up here beside the Worker's drafts, with ids like "post-<uuid>", so
+// this page is the one place to review and approve every waiting article.
+
+const POST_PREFIX = "post-";
+export const isPostDraftId = (id: string) => id.startsWith(POST_PREFIX);
+const postUuid = (id: string) => id.slice(POST_PREFIX.length);
+
+const wordsOf = (html: string) =>
+  (html || "").replace(/<[^>]*>/g, " ").replace(/&[a-z#0-9]+;/gi, " ").split(/\s+/).filter(Boolean).length;
+
+const postStatus = (p: any): DraftStatus =>
+  p.approval_status === "rejected" ? "rejected" : p.approval_status === "approved" ? "approved" : "pending";
+
+const postSummary = (p: any): DraftSummary => ({
+  id: POST_PREFIX + p.id,
+  title: p.title,
+  summary: p.excerpt || "",
+  category: p.category || "Mets News",
+  tags: p.tags || [],
+  created_at: p.created_at,
+  status: postStatus(p),
+  word_count: wordsOf(p.content),
+});
+
+const postDraft = (p: any): Draft => ({
+  id: POST_PREFIX + p.id,
+  slug: p.slug,
+  title: p.title,
+  content: p.content || "",
+  summary: p.excerpt || "",
+  meta_description: p.meta_description || "",
+  category: p.category || "Mets News",
+  tags: p.tags || [],
+  sources: [],
+  status: postStatus(p),
+  source: "blog-table",
+  created_at: p.created_at,
+  updated_at: p.updated_at || p.created_at,
+  published_post_id: p.published ? p.id : undefined,
+  published_slug: p.published ? p.slug : undefined,
+});
+
+async function listPosts(status: DraftStatus): Promise<DraftSummary[]> {
+  if (status === "approved") return []; // approved articles are just the live blog
+  const { data, error } = await supabase
+    .from("blog_posts")
+    .select("id, title, excerpt, category, tags, content, created_at, approval_status, published")
+    .eq("approval_status", status)
+    .eq("published", false)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error) throw new Error("Could not load the waiting articles from the blog");
+  return (data || []).map(postSummary);
+}
+
+async function countPosts(status: "pending" | "rejected"): Promise<number> {
+  const { count, error } = await supabase
+    .from("blog_posts")
+    .select("id", { count: "exact", head: true })
+    .eq("approval_status", status)
+    .eq("published", false);
+  if (error) throw new Error("Could not count the waiting articles");
+  return count || 0;
+}
+
+const workerList = (status: DraftStatus) =>
   request<{ drafts: DraftSummary[] }>(`/drafts?status=${status}`).then((r) => r.drafts);
 
-export const getDraft = (id: string) =>
-  request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}`).then((r) => r.draft);
+export async function listDrafts(status: DraftStatus): Promise<DraftSummary[]> {
+  const [w, p] = await Promise.allSettled([workerList(status), listPosts(status)]);
+  if (w.status === "rejected" && p.status === "rejected") throw w.reason;
+  const items = [
+    ...(w.status === "fulfilled" ? w.value : []),
+    ...(p.status === "fulfilled" ? p.value : []),
+  ];
+  // If the drafts service is down and nothing else is waiting, say so rather than show "no drafts".
+  if (w.status === "rejected" && items.length === 0) throw w.reason;
+  return items.sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
 
-export const draftCounts = () => request<Record<DraftStatus, number>>("/drafts/counts");
+export async function getDraft(id: string): Promise<Draft> {
+  if (isPostDraftId(id)) {
+    const { data, error } = await supabase.from("blog_posts").select("*").eq("id", postUuid(id)).maybeSingle();
+    if (error || !data) throw new Error("Draft not found");
+    return postDraft(data);
+  }
+  return request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}`).then((r) => r.draft);
+}
 
-export const updateDraft = (id: string, edits: DraftEdits) =>
-  request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}`, {
+export async function draftCounts(): Promise<Record<DraftStatus, number>> {
+  const [w, pp, pr] = await Promise.allSettled([
+    request<Record<DraftStatus, number>>("/drafts/counts"),
+    countPosts("pending"),
+    countPosts("rejected"),
+  ]);
+  if (w.status === "rejected" && pp.status === "rejected") throw w.reason;
+  const base = w.status === "fulfilled" ? w.value : { pending: 0, approved: 0, rejected: 0 };
+  return {
+    pending: base.pending + (pp.status === "fulfilled" ? pp.value : 0),
+    approved: base.approved,
+    rejected: base.rejected + (pr.status === "fulfilled" ? pr.value : 0),
+  };
+}
+
+export async function updateDraft(id: string, edits: DraftEdits): Promise<Draft> {
+  if (isPostDraftId(id)) {
+    const patch: Record<string, unknown> = {};
+    if (edits.title !== undefined) patch.title = edits.title;
+    if (edits.content !== undefined) patch.content = edits.content;
+    if (edits.summary !== undefined) patch.excerpt = edits.summary;
+    if (edits.meta_description !== undefined) patch.meta_description = edits.meta_description;
+    if (edits.category !== undefined) patch.category = edits.category;
+    if (edits.tags !== undefined) patch.tags = edits.tags;
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .update(patch as any)
+      .eq("id", postUuid(id))
+      .eq("published", false)
+      .select("*")
+      .maybeSingle();
+    if (error || !data) throw new Error("Could not save your changes");
+    return postDraft(data);
+  }
+  return request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}`, {
     method: "PUT",
     body: JSON.stringify(edits),
   }).then((r) => r.draft);
+}
 
-export const setDraftStatus = (
+export async function setDraftStatus(
   id: string,
   status: DraftStatus,
   published?: { postId: string; slug: string },
-) =>
-  request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}/status`, {
+): Promise<Draft> {
+  if (isPostDraftId(id)) {
+    if (status === "approved") throw new Error("Use Approve & publish for this article");
+    const { data, error } = await supabase
+      .from("blog_posts")
+      .update({ approval_status: status, published: false } as any)
+      .eq("id", postUuid(id))
+      .select("*")
+      .maybeSingle();
+    if (error || !data) throw new Error("Could not update the article");
+    return postDraft(data);
+  }
+  return request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}/status`, {
     method: "POST",
     body: JSON.stringify({
       status,
       ...(published ? { published_post_id: published.postId, published_slug: published.slug } : {}),
     }),
   }).then((r) => r.draft);
+}
+
+async function sendNewArticlePush(title: string, slug: string, postId: string) {
+  try {
+    await supabase.functions.invoke("send-push-notification", {
+      body: {
+        title: "📰 New Article on MetsXMFanZone!",
+        body: title,
+        url: `/blog/${slug}`,
+        icon: "/logo-192.png",
+        tag: `blog-${postId}`,
+      },
+    });
+  } catch (e) {
+    console.error("Push failed:", e);
+  }
+}
 
 const todayStamp = () => new Date().toISOString().slice(0, 10);
 
@@ -108,6 +253,32 @@ export async function publishDraft(draft: Draft): Promise<{ postId: string; slug
   const { data: auth } = await supabase.auth.getUser();
   const userId = auth.user?.id;
   if (!userId) throw new Error("Not signed in");
+
+  // An article the 5am task already saved in the blog table: approving just switches it on.
+  if (isPostDraftId(draft.id)) {
+    const uuid = postUuid(draft.id);
+    const { data: existing, error: readError } = await supabase
+      .from("blog_posts")
+      .select("id, slug, title, published, approval_status")
+      .eq("id", uuid)
+      .maybeSingle();
+    if (readError || !existing) throw new Error("Could not find this article on the site");
+    if (existing.published && existing.approval_status === "approved") {
+      return { postId: existing.id, slug: existing.slug, alreadyLive: true };
+    }
+    const { error: updateError } = await supabase
+      .from("blog_posts")
+      .update({
+        published: true,
+        published_at: new Date().toISOString(),
+        is_draft: false,
+        approval_status: "approved",
+      } as any)
+      .eq("id", uuid);
+    if (updateError) throw new Error("Could not publish the article to the site");
+    await sendNewArticlePush(existing.title, existing.slug, existing.id);
+    return { postId: existing.id, slug: existing.slug, alreadyLive: false };
+  }
 
   const candidates = [
     draft.slug,
@@ -160,21 +331,7 @@ export async function publishDraft(draft: Draft): Promise<{ postId: string; slug
 
   if (!live) throw new Error("Could not find a free web address for this article");
 
-  if (!live.alreadyLive) {
-    try {
-      await supabase.functions.invoke("send-push-notification", {
-        body: {
-          title: "📰 New Article on MetsXMFanZone!",
-          body: draft.title,
-          url: `/blog/${live.slug}`,
-          icon: "/logo-192.png",
-          tag: `blog-${live.postId}`,
-        },
-      });
-    } catch (e) {
-      console.error("Push failed:", e);
-    }
-  }
+  if (!live.alreadyLive) await sendNewArticlePush(draft.title, live.slug, live.postId);
 
   try {
     await setDraftStatus(draft.id, "approved", { postId: live.postId, slug: live.slug });
