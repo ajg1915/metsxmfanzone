@@ -19,6 +19,8 @@ interface RichTextEditorProps {
   onImageUploadRequest?: () => void;
   onMediaPick?: () => void;
   className?: string;
+  /** "drafts" = the dark navy look of the Drafts pages, with bigger touch buttons. */
+  tone?: "default" | "drafts";
 }
 
 export default function RichTextEditor({
@@ -28,7 +30,9 @@ export default function RichTextEditor({
   onImageUploadRequest,
   onMediaPick,
   className,
+  tone = "default",
 }: RichTextEditorProps) {
+  const drafts = tone === "drafts";
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -46,8 +50,9 @@ export default function RichTextEditor({
     content: value || "",
     editorProps: {
       attributes: {
-        class:
-          "prose max-w-none min-h-[260px] sm:min-h-[360px] focus:outline-none px-3 py-3 text-sm leading-relaxed text-card prose-headings:text-card prose-p:text-card prose-li:text-card prose-strong:text-card prose-blockquote:text-card",
+        class: drafts
+          ? "prose max-w-none min-h-[300px] sm:min-h-[400px] focus:outline-none px-3.5 py-3 text-[16px] leading-relaxed text-white prose-headings:text-white prose-p:text-white prose-li:text-white prose-strong:text-white prose-blockquote:text-slate-200 prose-a:text-[#FFB08A]"
+          : "prose max-w-none min-h-[260px] sm:min-h-[360px] focus:outline-none px-3 py-3 text-sm leading-relaxed text-card prose-headings:text-card prose-p:text-card prose-li:text-card prose-strong:text-card prose-blockquote:text-card",
       },
     },
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
@@ -90,8 +95,8 @@ export default function RichTextEditor({
       title={title}
       onClick={onClick}
       className={cn(
-        "h-7 w-7 p-0 rounded",
-        active && "bg-primary/20 text-primary",
+        drafts ? "h-11 w-11 p-0 rounded-lg text-white" : "h-7 w-7 p-0 rounded",
+        active && (drafts ? "bg-[#FF5910] text-[#0B1730]" : "bg-primary/20 text-primary"),
       )}
     >
       {children}
@@ -99,8 +104,22 @@ export default function RichTextEditor({
   );
 
   return (
-    <div className={cn("rounded-md border border-primary/40 bg-foreground text-card", className)}>
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-border/40 p-1.5 sticky top-0 bg-card/90 text-foreground backdrop-blur z-10 rounded-t-md">
+    <div
+      className={cn(
+        drafts
+          ? "rounded-xl border border-white/20 bg-white/5 text-white"
+          : "rounded-md border border-primary/40 bg-foreground text-card",
+        className,
+      )}
+    >
+      <div
+        className={cn(
+          "flex flex-wrap items-center gap-0.5 border-b p-1.5 sticky top-0 backdrop-blur z-10",
+          drafts
+            ? "rounded-t-xl border-white/15 bg-[#0E1C43]/95 text-white"
+            : "rounded-t-md border-border/40 bg-card/90 text-foreground",
+        )}
+      >
         <ToolbarBtn title="Heading 1" active={editor.isActive("heading", { level: 1 })} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}><Heading1 className="w-3.5 h-3.5" /></ToolbarBtn>
         <ToolbarBtn title="Heading 2" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}><Heading2 className="w-3.5 h-3.5" /></ToolbarBtn>
         <ToolbarBtn title="Heading 3" active={editor.isActive("heading", { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}><Heading3 className="w-3.5 h-3.5" /></ToolbarBtn>

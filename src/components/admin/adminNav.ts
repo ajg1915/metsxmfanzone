@@ -78,12 +78,11 @@ export const ADMIN_HUBS: AdminHub[] = [
     icon: FileText,
     hint: "Drafts, articles, media, podcasts",
     groups: [
-      { title: "Drafts", items: [{ title: "Drafts", url: "/admin/drafts", icon: ClipboardCheck }] },
       {
         title: "Articles",
         items: [
-          { title: "Write Article", url: "/admin/blog/new", icon: PenLine },
-          { title: "All Articles", url: "/admin/blog", icon: FileText },
+          { title: "Drafts", url: "/admin/drafts", icon: ClipboardCheck },
+          { title: "Write Article", url: "/admin/drafts/new", icon: PenLine },
         ],
       },
       {

@@ -267,7 +267,7 @@ export default function AdminDashboard() {
       sub: "Published articles",
       icon: FileText,
       tone: "blue",
-      url: "/admin/blog",
+      url: "/admin/drafts",
     },
     {
       label: "Feeds",
@@ -291,7 +291,7 @@ export default function AdminDashboard() {
     { title: "Live streams", description: "Schedule, go live, monitor", icon: Radio, url: "/admin/live-streams", tag: isLive ? "Live now" : "Standby" },
     { title: "Chat", description: "Live fan chats and left messages", icon: MessageCircle, url: "/admin/chat", tag: "Fans" },
     { title: "Stream tester", description: "Test M3U8 links before going live", icon: Link2, url: "/admin/stream-tester", tag: "Tool" },
-    { title: "Blog", description: "Write and publish articles", icon: FileText, url: "/admin/blog", tag: `${stats.totalBlogs} posts` },
+    { title: "Blog", description: "Write and publish articles", icon: FileText, url: "/admin/drafts", tag: `${stats.totalBlogs} posts` },
     { title: "Media library", description: "Images, video and audio", icon: ImageIcon, url: "/admin/media-library", tag: "Uploads" },
     { title: "Highlights", description: "Video gallery and clips", icon: Video, url: "/admin/video-gallery-management", tag: "Videos" },
     { title: "Podcasts", description: "Episodes and shows", icon: Mic, url: "/admin/podcasts", tag: `${stats.totalPodcasts} episodes` },
