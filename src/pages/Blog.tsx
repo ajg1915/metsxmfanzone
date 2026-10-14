@@ -19,7 +19,14 @@ interface BlogPost {
   category: string;
   tags: string[];
   published_at: string;
+  created_at?: string;
 }
+
+// Every card shows a date: the publish date, or the created date when a post has no publish date.
+const postDate = (post: { published_at?: string | null; created_at?: string | null }) => {
+  const d = new Date(post.published_at || post.created_at || "");
+  return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString();
+};
 
 export default function Blog() {
   const navigate = useNavigate();
@@ -165,7 +172,7 @@ export default function Blog() {
                     <span className="line-clamp-3 text-[23px] font-bold uppercase italic leading-[1.05] text-foreground" style={{ fontFamily: "'Oswald','Bebas Neue',sans-serif" }}>
                       {filteredPosts[0].title}
                     </span>
-                    <span className="text-[12.5px] text-foreground/80">{new Date(filteredPosts[0].published_at).toLocaleDateString()}</span>
+                    <span className="text-[12.5px] text-foreground/80">{postDate(filteredPosts[0])}</span>
                   </div>
                 </button>
 
@@ -184,7 +191,7 @@ export default function Blog() {
                       </div>
                       <div className="min-w-0">
                         <p className="line-clamp-3 text-[15.5px] font-bold leading-tight text-foreground">{post.title}</p>
-                        <p className="mt-1 text-[12.5px] text-muted-foreground">{new Date(post.published_at).toLocaleDateString()}</p>
+                        <p className="mt-1 text-[12.5px] text-muted-foreground">{postDate(post)}</p>
                       </div>
                     </button>
                   ))}
@@ -259,7 +266,7 @@ export default function Blog() {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
-                            {new Date(filteredPosts[0].published_at).toLocaleDateString()}
+                            {postDate(filteredPosts[0])}
                           </span>
                           {filteredPosts[0].tags.length > 0 && (
                             <div className="flex gap-1">
@@ -304,7 +311,7 @@ export default function Blog() {
                           <CardTitle className="line-clamp-2">{post.title}</CardTitle>
                           <CardDescription className="flex items-center gap-2">
                             <Calendar className="w-3 h-3" />
-                            {new Date(post.published_at).toLocaleDateString()}
+                            {postDate(post)}
                           </CardDescription>
                         </CardHeader>
                         <CardContent>

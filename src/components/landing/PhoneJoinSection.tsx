@@ -35,7 +35,7 @@ export default function PhoneJoinSection() {
               <Mic className="h-4 w-4" /> The podcast, live
             </div>
             <p className="mt-1 font-display text-2xl uppercase text-white">When we go live</p>
-            <p className="mt-2 text-sm text-[#c4cfdf]">Live shows are announced on the site and our socials. Listen to the latest episodes anytime.</p>
+            <p className="mt-2 text-sm text-[#c4cfdf]">MetsXMFanZone Radio is live every morning 6:30–8:30 AM ET, plus the Afternoon Hour at 5:30 PM ET. Listen to the latest episodes anytime.</p>
           </div>
 
           <div className="grid grid-cols-3 gap-2 text-center">

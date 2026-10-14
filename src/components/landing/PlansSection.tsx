@@ -9,7 +9,7 @@ const PLANS = [
     price: "$3.99",
     period: "/ week",
     blurb: "Try it for a series.",
-    features: ["All live streams", "Full game replays", "All highlights", "HD streaming", "Community access"],
+    features: ["Everything in Free", "All live streams", "Full game replays", "All highlights", "HD streaming"],
   },
   {
     id: "premium",
@@ -17,7 +17,7 @@ const PLANS = [
     price: "$9.99",
     period: "/ month",
     blurb: "The full season experience.",
-    features: ["Everything in Weekly", "Ad-free experience", "Exclusive content", "Watch on all your devices", "Android and TV apps"],
+    features: ["Everything in Weekly", "Ad-free experience", "Exclusive content", "Watch on all your devices (Android + TV apps)"],
     popular: true,
   },
   {
@@ -26,7 +26,7 @@ const PLANS = [
     price: "$129.99",
     period: "/ year",
     blurb: "One payment, the whole year.",
-    features: ["Everything in Monthly", "Priority support", "Early access to content", "Merch discounts", "VIP community badge"],
+    features: ["Everything in Monthly", "Merch discounts", "VIP community badge", "Priority support", "Early access to content"],
   },
 ];
 

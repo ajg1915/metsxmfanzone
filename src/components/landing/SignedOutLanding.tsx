@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { sectionStyle, useFrontPageStyles, type SectionStyle } from "@/lib/frontPageSections";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 import PlansSection from "@/components/landing/PlansSection";
+import LatestPostsSection from "@/components/landing/LatestPostsSection";
 
 // Front page for visitors who are not signed in: what members get, the plans, and why to trust us.
 
@@ -179,8 +180,8 @@ export default function SignedOutLanding() {
           <div className="grid min-w-0 flex-[1_1_420px] grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="rounded-2xl bg-white/[0.08] p-4">
               <p className="text-[13px] font-bold uppercase tracking-wider text-[#ffb48f]">Watch the podcast live</p>
-              <p className="mt-1 font-display text-3xl uppercase">When we go live</p>
-              <p className="text-sm text-[#c4cfdf]">Live shows are announced on the site and our socials</p>
+              <p className="mt-1 font-display text-3xl uppercase">MetsXMFanZone Radio</p>
+              <p className="text-sm text-[#c4cfdf]">Live every morning 6:30–8:30 AM ET, plus the Afternoon Hour at 5:30 PM ET</p>
             </div>
             <div className="rounded-2xl bg-white/[0.08] p-4">
               <p className="text-[13px] font-bold uppercase tracking-wider text-[#ffb48f]">Listen anytime</p>
@@ -215,7 +216,7 @@ export default function SignedOutLanding() {
         <div className="mx-auto max-w-[1240px]">
           <Eyebrow>A look inside</Eyebrow>
           <H2 className="mb-2 mt-1.5">Your members home</H2>
-          <p className="mb-5 text-[17px] text-[#b6c3d6]">This is what you see after you join.</p>
+          <p className="mb-5 text-[17px] text-[#b6c3d6]">This is what you see after you join — live streams, full replays, the podcast, and the fan community, all in one place on your phone, computer, or TV.</p>
           <div className="relative overflow-hidden rounded-[22px] border border-white/10 bg-[#0a1424] p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2.5">
               <div className="flex items-center gap-2.5">
@@ -282,6 +283,9 @@ export default function SignedOutLanding() {
           </div>
         </div>
       </Section>
+
+      {/* Latest blog posts */}
+      <LatestPostsSection />
 
       {/* Plans */}
       <PlansSection bg={bgs.plans} />
