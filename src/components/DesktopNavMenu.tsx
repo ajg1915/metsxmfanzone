@@ -34,7 +34,7 @@ type Entry = {
 };
 
 const METS: Entry[] = [
-  { label: "Schedule", hint: "Every game, date and time", icon: CalendarDays, to: "/mets-schedule-2026", gate: "protected" },
+  { label: "Schedule", hint: "Every game, date and time", icon: CalendarDays, to: "/mets-schedule-2027", gate: "protected" },
   { label: "Scores", hint: "Live and final scores", icon: Trophy, to: "/mets-scores" },
   { label: "Game Center", hint: "Lineups, players to watch, stats, replays", icon: LayoutGrid, to: "/game-center" },
   { label: "Roster", hint: "Players and stats", icon: Users, to: "/mets-roster", membersOnly: true },
@@ -43,7 +43,7 @@ const METS: Entry[] = [
   { label: "Mets History", hint: "Moments and legends", icon: Landmark, to: "/mets-history" },
 ];
 
-const METS_PATHS = ["/mets-schedule-2026", "/mets-scores", "/game-center", "/mets-roster", "/video-gallery", "/mets-game-recaps", "/mets-history", "/player/"];
+const METS_PATHS = ["/mets-schedule-2027", "/mets-scores", "/game-center", "/mets-roster", "/video-gallery", "/mets-game-recaps", "/mets-history", "/player/"];
 
 const pill =
   "inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[14px] 2xl:px-3.5 font-semibold text-foreground/85 outline-none transition-colors hover:bg-white/[0.07] hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70 data-[state=open]:bg-white/[0.07] data-[state=open]:text-foreground";

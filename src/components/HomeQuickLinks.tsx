@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 const links = [
   { label: "Watch", path: "/metsxmfanzone", icon: Play, featured: true },
-  { label: "Games", path: "/mets-schedule-2026", icon: CalendarDays },
+  { label: "Games", path: "/mets-schedule-2027", icon: CalendarDays },
   { label: "Community", path: "/community", icon: MessageCircle },
   { label: "Scores", path: "/mets-scores", icon: BarChart3 },
 ];

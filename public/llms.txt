@@ -12,7 +12,7 @@ MetsXMFanZone is an independent fan platform covering the New York Mets. Members
 - [Community](/community): Fan posts, comments, and discussions.
 - [Pricing](/pricing): Premium and annual membership plans.
 - [Mets Roster](/mets-roster): Current 2026 NY Mets roster.
-- [Mets Schedule](/mets-schedule-2026): 2026 spring training and regular-season schedule.
+- [Mets Schedule](/mets-schedule-2027): 2027 regular-season schedule.
 - [Mets Scores](/mets-scores): Latest Mets game scores.
 - [Mets Gamecast](/mets-gamecast): Real-time scoreboard, lineups, plays, and box score.
 - [Mets History](/mets-history): Franchise history and milestones.

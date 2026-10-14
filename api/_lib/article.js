@@ -297,7 +297,7 @@ export const ARTICLE_STYLES = `
 
 const FOOT_COLUMNS = [
   ["Watch", [["/metsxmfanzone", "Live Network"], ["/gameday-live", "Game Day Live"], ["/replay-games", "Game Replays"], ["/broadcast-schedule", "TV Schedule"], ["/tv", "TV Mode"]]],
-  ["Read", [["/blog", "News"], ["/mets-game-recaps", "Game Recaps"], ["/mets-scores", "Scores"], ["/mets-schedule-2026", "2026 Schedule"], ["/mets-roster", "Roster"]]],
+  ["Read", [["/blog", "News"], ["/mets-game-recaps", "Game Recaps"], ["/mets-scores", "Scores"], ["/mets-schedule-2027", "2027 Schedule"], ["/mets-roster", "Roster"]]],
   ["Community", [["/community", "Community"], ["/podcast", "Podcast"], ["/video-gallery", "Highlights"], ["/social", "Follow Us"], ["/business-partner", "Business Partners"]]],
   ["Support", [["/help-center", "Help Center"], ["/faqs", "FAQ"], ["/contact", "Contact Us"], ["/pricing", "Plans & Pricing"], ["/install", "Install App"]]],
 ];
@@ -328,7 +328,7 @@ function siteHeader() {
     <a href="${SITE_URL}/">Home</a>
     <a href="${SITE_URL}/metsxmfanzone">Watch Live</a>
     <a class="on" href="${SITE_URL}/blog">Blog</a>
-    <a href="${SITE_URL}/mets-schedule-2026">Games</a>
+    <a href="${SITE_URL}/mets-schedule-2027">Games</a>
     <a href="${SITE_URL}/podcast">Podcast</a>
     <a href="${SITE_URL}/auth?mode=signup" class="join">Join</a>
   </nav>

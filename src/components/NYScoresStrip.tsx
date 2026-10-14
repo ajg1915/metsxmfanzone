@@ -29,7 +29,7 @@ type Game = {
 type TeamScores = { key: string; label: string; league: string; main: Game | null; next: Game | null };
 type Feed = { updatedAt: string; anyLive: boolean; teams: TeamScores[] };
 
-const scheduleHref = (key: string) => `/mets-schedule-2026?team=${key}#ny-teams`;
+const scheduleHref = (key: string) => `/mets-schedule-2027?team=${key}#ny-teams`;
 
 const fmtET = (iso: string, opts: Intl.DateTimeFormatOptions) =>
   new Intl.DateTimeFormat("en-US", { timeZone: ET, ...opts }).format(new Date(iso));
@@ -240,7 +240,7 @@ export default function NYScoresStrip() {
           </div>
           <button
             type="button"
-            onClick={() => navigate("/mets-schedule-2026#ny-teams")}
+            onClick={() => navigate("/mets-schedule-2027#ny-teams")}
             className="flex min-h-[44px] items-center gap-1 pl-2 text-xs font-medium text-primary transition-colors hover:text-primary/80 sm:text-sm"
           >
             Schedules

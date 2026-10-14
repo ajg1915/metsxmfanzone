@@ -4,7 +4,7 @@ import { escapeHtml } from "../core/sanitize.js";
 import { bindShell, renderShell, statusPanel } from "../ui/shell.js";
 
 const METS_ID = 121;
-const SEASON = 2026;
+const SEASON = 2027;
 const STATS_API = "https://statsapi.mlb.com/api/v1";
 
 const etDate = (value, options) =>
@@ -46,19 +46,19 @@ const loadSchedule = async (startDate, endDate) => {
 
 const todayEt = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
 
-export const renderSchedule = async (root, pathname = "/mets-schedule-2026") => {
+export const renderSchedule = async (root, pathname = "/mets-schedule-2027") => {
   setPageMetadata({
-    title: "Mets 2026 Schedule | MetsXMFanZone",
-    description: "The full New York Mets 2026 regular season schedule with dates, opponents, and start times in Eastern Time.",
+    title: "Mets 2027 Schedule | MetsXMFanZone",
+    description: "The full New York Mets 2027 regular season schedule with dates, opponents, and start times in Eastern Time.",
     path: pathname,
   });
 
-  root.innerHTML = renderShell({ content: statusPanel("Schedule", "Loading the 2026 schedule…"), currentPath: pathname });
+  root.innerHTML = renderShell({ content: statusPanel("Schedule", "Loading the 2027 schedule…"), currentPath: pathname });
   bindShell(root);
 
   let games = [];
   try {
-    games = await loadSchedule(`${SEASON}-03-01`, `${SEASON}-10-05`);
+    games = await loadSchedule(`${SEASON}-03-01`, `${SEASON}-10-15`);
   } catch {
     root.innerHTML = renderShell({
       content: statusPanel("Schedule", "The schedule is temporarily unavailable.", { href: pathname, label: "Try again" }),
@@ -74,7 +74,7 @@ export const renderSchedule = async (root, pathname = "/mets-schedule-2026") => 
 
   const content = `
     <section class="content-width page-heading">
-      <p class="eyebrow">2026 Regular Season</p>
+      <p class="eyebrow">2027 Regular Season</p>
       <h1>Mets Schedule</h1>
       <p>All times Eastern.</p>
     </section>

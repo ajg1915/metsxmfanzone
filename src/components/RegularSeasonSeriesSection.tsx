@@ -209,7 +209,7 @@ const RegularSeasonSeriesSection = () => {
             </h2>
           </div>
           <a
-            href="/mets-schedule-2026"
+            href="/mets-schedule-2027"
             className="flex min-h-[44px] items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
           >
             Full Schedule

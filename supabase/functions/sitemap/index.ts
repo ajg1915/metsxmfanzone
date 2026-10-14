@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       { url: '/podcast', changefreq: 'weekly', priority: '0.9' },
       { url: '/community', changefreq: 'daily', priority: '0.85' },
       { url: '/mets-roster', changefreq: 'weekly', priority: '0.85' },
-      { url: '/mets-schedule-2026', changefreq: 'monthly', priority: '0.85' },
+      { url: '/mets-schedule-2027', changefreq: 'monthly', priority: '0.85' },
       { url: '/mets-scores', changefreq: 'daily', priority: '0.8' },
       { url: '/mets-gamecast', changefreq: 'daily', priority: '0.8' },
       { url: '/mets-history', changefreq: 'monthly', priority: '0.75' },

@@ -19,7 +19,7 @@ const navItems: NavItem[] = [
   { label: "Home", path: "/", requiresPremium: false },
   { label: "Watch Live", path: "/metsxmfanzone", requiresPremium: true },
   { label: "Blog", path: "/blog", requiresPremium: false },
-  { label: "Games", path: "/mets-schedule-2026", requiresPremium: false },
+  { label: "Games", path: "/mets-schedule-2027", requiresPremium: false },
   { label: "Feed", path: "/community", requiresPremium: false },
 ];
 

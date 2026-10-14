@@ -6,7 +6,7 @@ const navItems = [
   ["/blog", "News"],
   ["/podcast", "Podcast"],
   ["/metsxmfanzone", "Watch"],
-  ["/mets-schedule-2026", "Games"],
+  ["/mets-schedule-2027", "Games"],
 ];
 
 // Keep in sync with: src/components/Footer.tsx and scripts/build-static-site.mjs
@@ -20,7 +20,7 @@ const footerQuick = [
 ];
 const footerColumns = [
   ["Watch", [["/metsxmfanzone", "Live Network"], ["/gameday-live", "Game Day Live"], ["/replay-games", "Game Replays"], ["/broadcast-schedule", "TV Schedule"], ["/tv", "TV Mode"]]],
-  ["Read", [["/blog", "News"], ["/mets-game-recaps", "Game Recaps"], ["/mets-scores", "Scores"], ["/mets-schedule-2026", "2026 Schedule"], ["/mets-roster", "Roster"]]],
+  ["Read", [["/blog", "News"], ["/mets-game-recaps", "Game Recaps"], ["/mets-scores", "Scores"], ["/mets-schedule-2027", "2027 Schedule"], ["/mets-roster", "Roster"]]],
   ["Community", [["/community", "Community"], ["/podcast", "Podcast"], ["/gallery", "Highlights"], ["/social", "Follow Us"], ["/business-partner", "Business Partners"]]],
   ["Support", [["/help-center", "Help Center"], ["/faqs", "FAQ"], ["/contact", "Contact Us"], ["/pricing", "Plans & Pricing"], ["/install", "Install App"]]],
 ];

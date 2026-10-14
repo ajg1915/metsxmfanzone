@@ -104,7 +104,7 @@ const PayPalSuccess = lazyWithRetry(() => import("./pages/PayPalSuccess"), "page
 
 const SpringTrainingLive = lazyWithRetry(() => import("./pages/SpringTrainingLive"), "page-spring-training-live");
 const ReplayGames = lazyWithRetry(() => import("./pages/ReplayGames"), "page-replay-games");
-const MetsSchedule2026 = lazyWithRetry(() => import("./pages/MetsSchedule2026"), "page-mets-schedule-2026");
+const MetsSchedule2027 = lazyWithRetry(() => import("./pages/MetsSchedule2027"), "page-mets-schedule-2027");
 const TVBroadcastSchedule = lazyWithRetry(() => import("./pages/TVBroadcastSchedule"), "page-tv-broadcast-schedule");
 const TVDashboard = lazyWithRetry(() => import("./pages/TVDashboard"), "page-tv-dashboard");
 const MetsLineupCard = lazyWithRetry(() => import("./pages/MetsLineupCard"), "page-mets-lineup-card");
@@ -448,7 +448,8 @@ const AppContent = () => {
             <Route path="/writer/edit/:id" element={<WriterArticleEditor />} />
             <Route path="/spring-training-live" element={<SpringTrainingLive />} />
             <Route path="/replay-games" element={<ReplayGames />} />
-            <Route path="/mets-schedule-2026" element={<MetsSchedule2026 />} />
+            <Route path="/mets-schedule-2027" element={<MetsSchedule2027 />} />
+            <Route path="/mets-schedule-2026" element={<Navigate to="/mets-schedule-2027" replace />} />
             <Route path="/broadcast-schedule" element={<TVBroadcastSchedule />} />
             <Route path="/tv" element={<TVDashboard />} />
             {/* Lineup Card page removed - kept on main page */}

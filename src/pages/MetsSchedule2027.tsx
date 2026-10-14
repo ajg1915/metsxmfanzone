@@ -9,7 +9,6 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import TVGuide from "@/components/TVGuide";
 import SEOHead from "@/components/SEOHead";
-import { supabase } from "@/integrations/supabase/client";
 import { parseISO } from "date-fns";
 
 // Format a UTC ISO date string in Eastern Time so all Mets games display in
@@ -36,6 +35,9 @@ const MATCHUP_ROUTES: Record<string, string> = {
   'Toronto Blue Jays': '/matchup/bluejays',
 };
 
+const METS_TEAM_ID = 121;
+const SEASON = 2027;
+
 interface Game {
   gameId: number;
   date: string;
@@ -56,7 +58,7 @@ interface GroupedGames {
   [month: string]: Game[];
 }
 
-export default function MetsSchedule2026() {
+export default function MetsSchedule2027() {
   const navigate = useNavigate();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,19 +72,37 @@ export default function MetsSchedule2026() {
   const fetchSchedule = async () => {
     setLoading(true);
     setError(null);
-    
-    try {
-      const { data, error: fnError } = await supabase.functions.invoke('fetch-mets-schedule', {
-        body: { year: 2026, gameTypes: ['R'] }
-      });
 
-      if (fnError) throw fnError;
-      
-      if (data?.success && data?.games) {
-        setGames(data.games);
-      } else {
-        throw new Error(data?.error || 'Failed to fetch schedule');
+    try {
+      // Straight from the MLB schedule feed, no database involved.
+      const res = await fetch(
+        `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${METS_TEAM_ID}&season=${SEASON}&gameType=R&startDate=${SEASON}-03-01&endDate=${SEASON}-10-31&hydrate=team,venue`
+      );
+      if (!res.ok) throw new Error(`MLB schedule is unavailable right now (${res.status})`);
+      const json = await res.json();
+      const list: Game[] = [];
+      for (const day of json.dates ?? []) {
+        for (const g of day.games ?? []) {
+          const isHome = g.teams.home.team.id === METS_TEAM_ID;
+          const opp = isHome ? g.teams.away : g.teams.home;
+          const mets = isHome ? g.teams.home : g.teams.away;
+          list.push({
+            gameId: g.gamePk,
+            date: g.gameDate,
+            gameType: g.gameType,
+            gameTypeLabel: "Regular Season",
+            status: g.status?.detailedState ?? "",
+            isHome,
+            opponent: opp.team.name,
+            venue: g.venue?.name ?? "",
+            metsScore: mets.score,
+            opponentScore: opp.score,
+            seriesDescription: g.seriesDescription,
+          });
+        }
       }
+      list.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      setGames(list);
     } catch (err: any) {
       console.error('Error fetching schedule:', err);
       setError(err.message || 'Failed to load schedule');
@@ -150,10 +170,10 @@ export default function MetsSchedule2026() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
-        title="2026 NY Mets Regular Season Schedule"
-        description="View the complete 2026 New York Mets Regular Season schedule. Game times, opponents, and venues."
-        keywords="Mets schedule 2026, New York Mets games, Mets Regular Season, MLB schedule"
-        canonical="https://www.metsxmfanzone.com/mets-schedule-2026"
+        title="2027 NY Mets Regular Season Schedule"
+        description="View the complete 2027 New York Mets Regular Season schedule. Game times, opponents, and venues."
+        keywords="Mets schedule 2027, New York Mets games, Mets Regular Season, MLB schedule"
+        canonical="https://www.metsxmfanzone.com/mets-schedule-2027"
       />
       
       <Navigation />
@@ -165,7 +185,7 @@ export default function MetsSchedule2026() {
           className="mb-8 text-center"
         >
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3">
-            2026 New York Mets Schedule
+            2027 New York Mets Schedule
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base mb-4">
             Regular Season Schedule
@@ -186,7 +206,7 @@ export default function MetsSchedule2026() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-            <p className="text-muted-foreground">Loading 2026 Mets schedule...</p>
+            <p className="text-muted-foreground">Loading 2027 Mets schedule...</p>
           </div>
         ) : error ? (
           <div className="text-center py-20">
