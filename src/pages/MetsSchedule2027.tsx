@@ -52,6 +52,7 @@ interface Game {
   metsScore?: number;
   opponentScore?: number;
   seriesDescription?: string;
+  timeTBD?: boolean;
 }
 
 interface GroupedGames {
@@ -98,6 +99,8 @@ export default function MetsSchedule2027() {
             metsScore: mets.score,
             opponentScore: opp.score,
             seriesDescription: g.seriesDescription,
+            // MLB sends a placeholder clock time until real start times are set.
+            timeTBD: g.status?.startTimeTBD === true,
           });
         }
       }
@@ -292,7 +295,7 @@ export default function MetsSchedule2027() {
                                       {game.isHome ? 'vs' : '@'} {game.opponent}
                                     </p>
                                     <p className="text-xs text-muted-foreground">
-                                      {dayLabelET(game.date)} • {timeLabelET(game.date)}
+                                      {dayLabelET(game.date)} • {game.timeTBD ? "Time TBD" : timeLabelET(game.date)}
                                     </p>
                                   </div>
                                 </div>
