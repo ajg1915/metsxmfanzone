@@ -269,8 +269,10 @@ const LiveStreamsSection = () => {
     fetchStreams();
     runAutoStatusCheck();
 
-    // Check every 60 seconds
-    const interval = setInterval(runAutoStatusCheck, 60000);
+    // Check every 60 seconds, but only while the tab is visible (hidden tabs made constant requests).
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") runAutoStatusCheck();
+    }, 60000);
 
     const channel = supabase.channel('live-streams-changes').on('postgres_changes', {
       event: '*',

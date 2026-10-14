@@ -76,12 +76,7 @@ const StoriesSection = () => {
   useEffect(() => {
     fetchStories();
 
-    const refreshStories = () => {
-      if (document.visibilityState === "visible") fetchStories();
-    };
-    const intervalId = window.setInterval(refreshStories, 20_000);
-    document.addEventListener("visibilitychange", refreshStories);
-
+    // New and changed stories arrive through the live channel below, so no timer is needed.
     const channel = supabase
       .channel("public-stories-feed")
       .on(
@@ -92,8 +87,6 @@ const StoriesSection = () => {
       .subscribe();
 
     return () => {
-      window.clearInterval(intervalId);
-      document.removeEventListener("visibilitychange", refreshStories);
       supabase.removeChannel(channel);
     };
   }, []);
