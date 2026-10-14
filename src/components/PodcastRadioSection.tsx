@@ -57,6 +57,21 @@ const SoonArt = ({ iso }: { iso: string }) => {
   );
 };
 
+const EpisodeArt = ({ iso }: { iso: string | null }) => {
+  const [failed, setFailed] = useState<string | null>(null);
+  const bad = !iso || failed === iso;
+  return (
+    <img
+      src={bad ? podcastLogo : artUrl(iso)}
+      alt="MetsXMFanZone Podcast"
+      className={`shrink-0 drop-shadow-[0_8px_24px_rgba(0,0,0,0.5)] ${bad ? "h-auto w-[104px] sm:w-[160px]" : "h-[104px] w-[104px] rounded-xl object-cover sm:h-[160px] sm:w-[160px]"}`}
+      width={160}
+      height={bad ? 136 : 160}
+      onError={() => setFailed(iso)}
+    />
+  );
+};
+
 const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) => {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [live, setLive] = useState<LiveShow>(null);
@@ -208,13 +223,9 @@ const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) 
             <div className="pointer-events-none absolute -right-16 -top-16 h-52 w-52 rounded-full bg-primary/25 blur-3xl" aria-hidden="true" />
 
             <div className="relative flex items-center gap-4 sm:gap-6">
-              <img
-                src={podcastLogo}
-                alt="MetsXMFanZone Podcast"
-                className={`h-auto w-[104px] shrink-0 drop-shadow-[0_8px_24px_rgba(0,0,0,0.5)] sm:w-[160px] ${playing ? "motion-safe:animate-[pulse_3s_ease-in-out_infinite]" : ""}`}
-                width={160}
-                height={136}
-              />
+              <div className={playing ? "motion-safe:animate-[pulse_3s_ease-in-out_infinite]" : ""}>
+                <EpisodeArt iso={active?.published_at ?? null} />
+              </div>
               <div className="min-w-0 flex-1">
                 <div className="mb-1.5 flex items-center gap-2">
                   <span className={`inline-flex items-center gap-1.5 rounded px-2 py-[3px] text-[11px] font-extrabold tracking-[0.1em] ${playing ? "bg-red-700 text-white" : "bg-white/10 text-white/70"}`}>

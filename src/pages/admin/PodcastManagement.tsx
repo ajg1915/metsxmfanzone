@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToR2 } from "@/lib/r2Upload";
+import { fetchAllShows, fmtShowWhen, type LenoreEpisode } from "@/lib/lenore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,9 @@ export default function PodcastManagement() {
   const [editData, setEditData] = useState({ title: "", description: "" });
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const [shows, setShows] = useState<LenoreEpisode[]>([]);
+  const [showId, setShowId] = useState("");
+  const [publishNow, setPublishNow] = useState(true);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -41,7 +45,15 @@ export default function PodcastManagement() {
 
   useEffect(() => {
     fetchPodcasts();
+    fetchAllShows().then(setShows).catch(() => setShows([]));
   }, []);
+
+  // Picking one of Lenore's shows fills in its title and description.
+  const chooseShow = (id: string) => {
+    setShowId(id);
+    const show = shows.find((x) => x.id === id);
+    if (show) setFormData((f) => ({ ...f, title: show.title, description: show.description }));
+  };
 
   const fetchPodcasts = async () => {
     const { data, error } = await supabase
@@ -90,12 +102,17 @@ export default function PodcastManagement() {
       // Upload audio file
       const { publicUrl } = await uploadToR2(formData.audioFile, "podcasts", formData.audioFile.name);
 
-      // Create podcast record
+      // Create podcast record. A Lenore show is dated to its own show time, so its
+      // fan art (named by date) and its place in the episode list line up.
+      const show = shows.find((x) => x.id === showId);
       const { error: insertError } = await supabase.from("podcasts").insert({
         title: formData.title,
         description: formData.description,
         audio_url: publicUrl,
         duration: 0,
+        ...(publishNow
+          ? { published: true, published_at: show ? show.available : new Date().toISOString() }
+          : {}),
       });
 
       if (insertError) throw insertError;
@@ -105,6 +122,7 @@ export default function PodcastManagement() {
       });
 
       setFormData({ title: "", description: "", audioFile: null });
+      setShowId("");
       fetchPodcasts();
     } catch (error: any) {
       toast({
@@ -208,6 +226,32 @@ export default function PodcastManagement() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="lenore-show">Which show is this?</Label>
+              <select
+                id="lenore-show"
+                value={showId}
+                onChange={(e) => chooseShow(e.target.value)}
+                className="mt-1 h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="">Not one of Lenore's shows</option>
+                {shows.map((x) => (
+                  <option key={x.id} value={x.id}>
+                    {fmtShowWhen(x.available)} · {x.title}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Pick Lenore's show for the day you are uploading. It fills in the title and description and ties the audio to that show.
+              </p>
+            </div>
+            <div className="flex items-center justify-between gap-3 rounded-md border p-3">
+              <div>
+                <Label htmlFor="publish-now">Publish right away</Label>
+                <p className="text-xs text-muted-foreground">The episode shows on the home podcast section as soon as the upload finishes.</p>
+              </div>
+              <Switch id="publish-now" checked={publishNow} onCheckedChange={setPublishNow} />
+            </div>
             <div>
               <Label htmlFor="title">Podcast Title</Label>
               <Input
