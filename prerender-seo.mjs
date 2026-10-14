@@ -196,7 +196,7 @@ const STATIC_ROUTES = [
   ['/shop', 'Mets Fan Shop — Gear & Merchandise | MetsXMFanZone', 'Shop curated New York Mets gear, apparel, and exclusive MetsXMFanZone merchandise.'],
   ['/gallery', 'Mets Photo Gallery | MetsXMFanZone', 'Fan photos, game-day moments, and Mets memorabilia from the MetsXMFanZone community.'],
   ['/mets-roster', '2026 New York Mets Roster | MetsXMFanZone', 'Complete 2026 New York Mets roster, lineup, and player stats — updated for the regular season.'],
-  ['/mets-schedule-2026', '2026 Mets Schedule & Game Times | MetsXMFanZone', 'Full 2026 New York Mets schedule with game times, opponents, and matchup analysis.'],
+  ['/mets-schedule-2027', '2027 Mets Schedule & Game Times | MetsXMFanZone', 'Full 2027 New York Mets schedule with game times, opponents, and matchup analysis.'],
   ['/game-center', 'Mets Game Center — Lineups, Players to Watch, Stats & Replays | MetsXMFanZone', 'Everything for game day in one place: Mets lineups, players to watch, stats, series, Spring Training games and full-game replays.'],
   ['/mets-history', 'New York Mets History | MetsXMFanZone', 'Relive the greatest moments in New York Mets history — championships, legends, unforgettable seasons.'],
   ['/mets-scores', 'Mets Scores & Results | MetsXMFanZone', 'Latest New York Mets scores, results, and box scores — updated in real time.'],

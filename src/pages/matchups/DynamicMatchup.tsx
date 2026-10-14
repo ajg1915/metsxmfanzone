@@ -9,7 +9,7 @@ export default function DynamicMatchup() {
   const opponent = slug ? getOpponent(slug) : undefined;
 
   if (!opponent) {
-    return <Navigate to="/mets-schedule-2026" replace />;
+    return <Navigate to="/mets-schedule-2027" replace />;
   }
 
   const anthonyPick = {

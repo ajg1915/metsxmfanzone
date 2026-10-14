@@ -41,7 +41,7 @@ const InternalLinks = ({ title = "Explore More", links, className = "" }: Intern
 // Pre-defined link groups for different pages
 export const metsContentLinks: InternalLink[] = [
   { title: "2026 Mets Roster", description: "Full roster breakdown with stats and player profiles", href: "/mets-roster" },
-  { title: "Mets Schedule 2026", description: "Complete game schedule with dates, times, and opponents", href: "/mets-schedule-2026" },
+  { title: "Mets Schedule 2027", description: "Complete game schedule with dates, times, and opponents", href: "/mets-schedule-2027" },
   { title: "Live Scores", description: "Real-time Mets game scores and live updates", href: "/mets-scores" },
   { title: "Today's Lineup Card", description: "Starting lineup and batting order for today's game", href: "/mets-lineup-card" },
   { title: "Mets History", description: "Iconic moments, championships, and franchise legends", href: "/mets-history" },

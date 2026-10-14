@@ -42,7 +42,7 @@ const Offseason = () => {
           {[
             { to: "/replay-games", icon: Film, label: "Watch replays" },
             { to: "/blog", icon: Newspaper, label: "Mets news" },
-            { to: "/mets-schedule-2026", icon: CalendarDays, label: "Schedule" },
+            { to: "/mets-schedule-2027", icon: CalendarDays, label: "Schedule" },
           ].map(({ to, icon: Icon, label }) => (
             <Link key={to} to={to} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border/60 bg-background/50 text-sm font-bold text-foreground transition-colors hover:border-primary/50">
               <Icon className="h-4 w-4 text-[#ff5a1f]" /> {label}

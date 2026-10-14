@@ -14,7 +14,7 @@ const MAIN_PAGES = [
   "/community",
   "/podcast",
   "/mets-game-recaps",
-  "/mets-schedule-2026",
+  "/mets-schedule-2027",
   "/mets-scores",
   "/mets-gamecast",
   "/mets-roster",

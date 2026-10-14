@@ -909,7 +909,7 @@ const buildMatchupContent = (opponent) => {
 export const renderMatchup = async (root, slug) => {
   const opponent = getOpponent(slug || "");
   if (!opponent) {
-    window.location.replace("/mets-schedule-2026");
+    window.location.replace("/mets-schedule-2027");
     return;
   }
 
@@ -918,7 +918,7 @@ export const renderMatchup = async (root, slug) => {
     title: `Mets vs ${opponent.name} | MetsXMFanZone`,
     description: `${opponent.rivalryNote} See rosters, odds, and head-to-head history for Mets vs ${opponent.name}.`,
     path: pathname,
-    image: "/share/mets-schedule-2026.jpg",
+    image: "/share/mets-schedule-2027.jpg",
   });
 
   root.innerHTML = renderShell({ content: buildMatchupContent(opponent), currentPath: pathname });

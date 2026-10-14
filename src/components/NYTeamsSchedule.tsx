@@ -136,7 +136,7 @@ export default function NYTeamsSchedule() {
   const [games, setGames] = useState<NYGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  // Home page score cards link here as /mets-schedule-2026?team=knicks#ny-teams
+  // Home page score cards link here as /mets-schedule-2027?team=knicks#ny-teams
   const [team, setTeam] = useState<TeamKey>(() => {
     if (typeof window === "undefined") return "jets";
     const wanted = new URLSearchParams(window.location.search).get("team");
