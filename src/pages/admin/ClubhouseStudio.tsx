@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mic, Video, Upload, Film, Radio } from "lucide-react";
+import { Mic, Video, Upload, Film, Radio, Sparkles } from "lucide-react";
 import LiveStudioTab from "@/components/admin/studio/LiveStudioTab";
 import EpisodesTab from "@/components/admin/studio/EpisodesTab";
 import FilmRoomTab from "@/components/admin/studio/FilmRoomTab";
 import TurboUploadTab from "@/components/admin/studio/TurboUploadTab";
+import LenoreTab from "@/components/admin/studio/LenoreTab";
 
 export default function ClubhouseStudio() {
   const [activeTab, setActiveTab] = useState("episodes");
@@ -21,7 +22,7 @@ export default function ClubhouseStudio() {
       <div className="flex items-center gap-2">
         <Radio className="w-4 h-4 text-primary flex-shrink-0" />
         <div className="min-w-0">
-          <h1 className="text-sm sm:text-base font-bold truncate">The Clubhouse Studio</h1>
+          <h1 className="text-sm sm:text-base font-bold truncate">Podcast Shows</h1>
           <p className="text-[10px] text-muted-foreground">
             Major League Content Production
           </p>
@@ -30,7 +31,7 @@ export default function ClubhouseStudio() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 h-11 bg-muted/60 backdrop-blur-sm border border-border/50">
+        <TabsList className="grid w-full grid-cols-5 h-11 bg-muted/60 backdrop-blur-sm border border-border/50">
           <TabsTrigger value="live-studio" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white">
             <Video className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Live Studio</span>
@@ -51,6 +52,10 @@ export default function ClubhouseStudio() {
             <span className="hidden sm:inline">Turbo Upload</span>
             <span className="sm:hidden">Upload</span>
           </TabsTrigger>
+          <TabsTrigger value="lenore" className="gap-1.5 text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Lenore</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="live-studio" className="mt-4">
@@ -64,6 +69,9 @@ export default function ClubhouseStudio() {
         </TabsContent>
         <TabsContent value="turbo-upload" className="mt-4">
           <TurboUploadTab />
+        </TabsContent>
+        <TabsContent value="lenore" className="mt-4">
+          <LenoreTab />
         </TabsContent>
       </Tabs>
     </div>

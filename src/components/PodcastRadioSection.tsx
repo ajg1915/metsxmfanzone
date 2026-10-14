@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import podcastLogo from "@/assets/podcast-logo.png";
 import NewBadge from "@/components/NewBadge";
 import { isFresh } from "@/lib/newItem";
+import { artUrl, fetchComingSoon, fmtCountdown, fmtShowWhen, type LenoreEpisode } from "@/lib/lenore";
 
 type Episode = {
   id: string;
@@ -43,6 +44,19 @@ const Equalizer = ({ active }: { active: boolean }) => (
   </span>
 );
 
+const SoonArt = ({ iso }: { iso: string }) => {
+  const [ok, setOk] = useState(true);
+  return (
+    <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-white/15 bg-muted/30">
+      {ok ? (
+        <img src={artUrl(iso)} alt="" width={64} height={64} loading="lazy" className="h-full w-full object-cover" onError={() => setOk(false)} />
+      ) : (
+        <Radio className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+      )}
+    </span>
+  );
+};
+
 const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) => {
   const [episodes, setEpisodes] = useState<Episode[]>([]);
   const [live, setLive] = useState<LiveShow>(null);
@@ -52,6 +66,8 @@ const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) 
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState(false);
+  const [soon, setSoon] = useState<LenoreEpisode[]>([]);
+  const [now, setNow] = useState(() => Date.now());
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -73,6 +89,18 @@ const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) 
     })();
     return () => {
       cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchComingSoon().then((list) => {
+      if (!cancelled) setSoon(list);
+    });
+    const t = window.setInterval(() => setNow(Date.now()), 60000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(t);
     };
   }, []);
 
@@ -116,7 +144,7 @@ const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) 
     });
   }, [active]);
 
-  if (!loaded || (episodes.length === 0 && !live?.is_live)) return null;
+  if (!loaded || (episodes.length === 0 && !live?.is_live && soon.length === 0)) return null;
 
   const progress = duration > 0 ? Math.min(100, (current / duration) * 100) : 0;
 
@@ -155,6 +183,17 @@ const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) 
               Watch <ArrowRight className="h-4 w-4" />
             </span>
           </Link>
+        )}
+
+        {soon.length > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-[#ff5910] bg-[#0f2a63]/80 px-4 py-3.5">
+            <span className="rounded-md bg-[#ff5910] px-2.5 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.1em] text-[#07163a]">Next show</span>
+            <span className="min-w-0 flex-1 basis-[220px]">
+              <span className="block text-[17px] font-bold leading-tight text-white sm:text-xl">{soon[0].title}</span>
+              <span className="block text-sm text-white/70">{fmtShowWhen(soon[0].available)}</span>
+            </span>
+            <span className="text-sm font-semibold text-[#ffb38a]">{fmtCountdown(soon[0].available, now)}</span>
+          </div>
         )}
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
@@ -244,7 +283,23 @@ const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) 
 
           {/* Episode list */}
           <div className="rounded-2xl border border-border/50 bg-card/60 p-2 sm:p-3">
-            <p className="px-2 pb-1 pt-1 text-[11px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground">Episodes</p>
+            {soon.length > 0 && (
+              <>
+                <p className="px-2 pb-1 pt-1 text-[11px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground">Coming soon</p>
+                <ul className="mb-3 space-y-2">
+                  {soon.map((ep) => (
+                    <li key={ep.id} className="flex items-center gap-3 rounded-xl bg-[#0f2a63]/70 p-2.5">
+                      <SoonArt iso={ep.available} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block line-clamp-2 text-[15px] font-semibold leading-tight text-foreground">{ep.title}</span>
+                        <span className="mt-0.5 block text-[12.5px] text-muted-foreground">{fmtShowWhen(ep.available)}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            <p className="px-2 pb-1 pt-1 text-[11px] font-extrabold uppercase tracking-[0.2em] text-muted-foreground">Latest episodes</p>
             <ul className="max-h-[420px] divide-y divide-border/30 overflow-y-auto lg:max-h-[360px]">
               {episodes.map((ep, i) => {
                 const isActive = ep.id === active?.id;

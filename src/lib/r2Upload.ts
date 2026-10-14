@@ -79,3 +79,30 @@ export function isR2Url(url: string | null | undefined): boolean {
   if (!url) return false;
   return !url.includes("/storage/v1/object/");
 }
+
+/** Uploads a file to R2 under an exact key (no timestamp), replacing any file already there. */
+export async function uploadToR2Key(
+  file: File | Blob,
+  key: string,
+  onProgress?: (percent: number) => void,
+): Promise<R2UploadResult> {
+  const signed = await signR2(key, "upload");
+
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", signed.uploadUrl);
+    if (file.type) xhr.setRequestHeader("Content-Type", file.type);
+    xhr.upload.onprogress = (e) => {
+      if (onProgress && e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error(`Upload failed (${xhr.status})`));
+    xhr.onerror = () => reject(new Error("Upload failed — check your connection"));
+    xhr.send(file);
+  });
+
+  onProgress?.(100);
+  return { key: signed.key, publicUrl: signed.publicUrl };
+}
