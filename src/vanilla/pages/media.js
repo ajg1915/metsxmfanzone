@@ -38,7 +38,7 @@ export const renderPodcast = async (root, pathname = "/podcast") => {
   const content = `
     <section class="content-width page-heading">
       <p class="eyebrow">MetsXMFanZone Podcast</p>
-      <h1>Straight From The Fan Zone</h1>
+      <h1>Straight From MetsXMFanZone</h1>
       <p>Game reactions, roster talk, interviews, and the Mets conversations fans care about.</p>
     </section>
     <section class="content-width episode-list">

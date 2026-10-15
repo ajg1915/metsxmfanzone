@@ -12,7 +12,7 @@ const copyByPath = {
   },
   "/podcast": {
     eyebrow: "MetsXMFanZone Podcast",
-    heading: "Straight From The Fan Zone",
+    heading: "Straight From MetsXMFanZone",
     body: "Game reactions, roster talk, interviews, and the Mets conversations fans care about.",
     actions: [["/community-podcast", "Explore Episodes"], ["/blog", "Mets News"]],
   },
