@@ -22,6 +22,7 @@ interface Podcast {
   audio_url: string;
   duration: number;
   published: boolean;
+  published_at: string | null;
   created_at: string;
 }
 
@@ -49,6 +50,11 @@ export default function PodcastManagement() {
   }, []);
 
   // Picking one of Lenore's shows fills in its title and description.
+  // A show already has audio when an episode exists dated to its show time.
+  const hasAudio = (show: LenoreEpisode) =>
+    podcasts.some((x) => x.published_at && new Date(x.published_at).getTime() === new Date(show.available).getTime());
+  const picked = shows.find((x) => x.id === showId);
+
   const chooseShow = (id: string) => {
     setShowId(id);
     const show = shows.find((x) => x.id === id);
@@ -110,15 +116,19 @@ export default function PodcastManagement() {
         description: formData.description,
         audio_url: publicUrl,
         duration: 0,
-        ...(publishNow
-          ? { published: true, published_at: show ? show.available : new Date().toISOString() }
-          : {}),
+        ...(show
+          ? { published: true, published_at: show.available }
+          : publishNow
+            ? { published: true, published_at: new Date().toISOString() }
+            : {}),
       });
 
       if (insertError) throw insertError;
 
       toast({
-        title: "Podcast uploaded successfully",
+        title: show && new Date(show.available).getTime() > Date.now()
+          ? `Audio attached. Goes live ${fmtShowWhen(show.available)}`
+          : "Podcast uploaded successfully",
       });
 
       setFormData({ title: "", description: "", audioFile: null });
@@ -236,15 +246,21 @@ export default function PodcastManagement() {
               >
                 <option value="">Not one of Lenore's shows</option>
                 {shows.map((x) => (
-                  <option key={x.id} value={x.id}>
+                  <option key={x.id} value={x.id} disabled={hasAudio(x)}>
+                    {hasAudio(x) ? "Audio attached · " : "Needs audio · "}
                     {fmtShowWhen(x.available)} · {x.title}
                   </option>
                 ))}
               </select>
               <p className="mt-1 text-xs text-muted-foreground">
-                Pick Lenore's show for the day you are uploading. It fills in the title and description and ties the audio to that show.
+                Record ahead and upload anytime. Pick Lenore's show and the audio attaches to it. It stays hidden until the show's scheduled time, then goes live on its own.
               </p>
             </div>
+            {picked ? (
+              <div className="rounded-md border p-3 text-sm">
+                Goes live <strong>{fmtShowWhen(picked.available)}</strong>, no matter when you upload.
+              </div>
+            ) : (
             <div className="flex items-center justify-between gap-3 rounded-md border p-3">
               <div>
                 <Label htmlFor="publish-now">Publish right away</Label>
@@ -252,6 +268,7 @@ export default function PodcastManagement() {
               </div>
               <Switch id="publish-now" checked={publishNow} onCheckedChange={setPublishNow} />
             </div>
+            )}
             <div>
               <Label htmlFor="title">Podcast Title</Label>
               <Input
@@ -260,8 +277,10 @@ export default function PodcastManagement() {
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
+                readOnly={!!picked}
                 required
               />
+              {picked && <p className="mt-1 text-xs text-muted-foreground">Locked. Lenore writes the title.</p>}
             </div>
 
             <div>
@@ -273,6 +292,7 @@ export default function PodcastManagement() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={3}
+                readOnly={!!picked}
               />
             </div>
 

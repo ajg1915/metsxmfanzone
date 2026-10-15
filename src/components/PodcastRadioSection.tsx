@@ -93,6 +93,7 @@ const PodcastRadioSection = ({ showAllLink = true }: { showAllLink?: boolean }) 
           .from("podcasts")
           .select("id, title, description, audio_url, published_at, duration")
           .eq("published", true)
+          .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
           .order("published_at", { ascending: false })
           .limit(8),
         supabase.from("podcast_live_stream").select("is_live, title").order("updated_at", { ascending: false }).limit(1).maybeSingle(),

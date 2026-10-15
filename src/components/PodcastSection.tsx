@@ -60,6 +60,7 @@ const PodcastSection = () => {
       .from("podcasts")
       .select("*")
       .eq("published", true)
+      .or(`published_at.is.null,published_at.lte.${new Date().toISOString()}`)
       .order("published_at", { ascending: false })
       .limit(3);
     if (data) setPodcasts(data);
