@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { sectionStyle, type SectionStyle } from "@/lib/frontPageSections";
 
-// "Latest from the FanZone": the 4 newest published blog posts, on the signed-out front page.
+// "Latest from MetsXMFanZone": the 4 newest published blog posts, on the signed-out front page.
 
 type Post = {
   id: string;
@@ -43,7 +43,7 @@ export default function LatestPostsSection({ bg }: { bg?: SectionStyle }) {
         <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#ff7a3d]">The blog</p>
-            <h2 className="mt-1.5 font-display text-[clamp(32px,4vw,48px)] uppercase leading-none text-white">Latest from the FanZone</h2>
+            <h2 className="mt-1.5 font-display text-[clamp(32px,4vw,48px)] uppercase leading-none text-white">Latest from MetsXMFanZone</h2>
           </div>
           <Link to="/blog" className="inline-flex min-h-[44px] items-center font-bold text-[#ff7a3d] hover:underline">
             All articles
