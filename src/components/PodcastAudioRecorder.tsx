@@ -14,7 +14,18 @@ import { fetchAllShows, fmtShowWhen, type LenoreEpisode } from "@/lib/lenore";
 
 // lenoreMode is for the admin Podcasts page: pick Lenore's show, title and description fill in
 // and lock, and the episode goes live at the show's scheduled time.
-const PodcastAudioRecorder = ({ lenoreMode = false }: { lenoreMode?: boolean }) => {
+// Pass `show` (a Lenore show, or null for none picked yet) to control the picked show from outside,
+// as the Podcast Studio page does. Without it, the recorder shows its own show dropdown.
+const PodcastAudioRecorder = ({
+  lenoreMode = false,
+  show,
+  onAttached,
+}: {
+  lenoreMode?: boolean;
+  show?: LenoreEpisode | null;
+  onAttached?: () => void;
+}) => {
+  const controlled = show !== undefined;
   const { user } = useAuth();
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
@@ -29,16 +40,24 @@ const PodcastAudioRecorder = ({ lenoreMode = false }: { lenoreMode?: boolean }) 
   const [shows, setShows] = useState<LenoreEpisode[]>([]);
   const [showId, setShowId] = useState("");
   const [haveAudio, setHaveAudio] = useState<number[]>([]);
-  const picked = lenoreMode ? shows.find((x) => x.id === showId) : undefined;
+  const picked = lenoreMode ? (controlled ? show ?? undefined : shows.find((x) => x.id === showId)) : undefined;
+  const needsShow = lenoreMode && controlled && !picked;
 
   const loadShows = useCallback(() => {
-    if (!lenoreMode) return;
+    if (!lenoreMode || controlled) return;
     fetchAllShows().then(setShows).catch(() => setShows([]));
     supabase.from("podcasts").select("published_at").not("published_at", "is", null).then(({ data }) =>
       setHaveAudio((data || []).map((r: any) => new Date(r.published_at).getTime())),
     );
-  }, [lenoreMode]);
+  }, [lenoreMode, controlled]);
   useEffect(() => { loadShows(); }, [loadShows]);
+
+  // A show picked from outside fills in its title and description.
+  useEffect(() => {
+    if (!controlled) return;
+    setTitle(show?.title ?? "");
+    setDescription(show?.description ?? "");
+  }, [controlled, show?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const chooseShow = (id: string) => {
     setShowId(id);
@@ -181,6 +200,7 @@ const PodcastAudioRecorder = ({ lenoreMode = false }: { lenoreMode?: boolean }) 
       setDescription("");
       setShowId("");
       loadShows();
+      onAttached?.();
       clearRecording();
     } catch (err: any) {
       console.error("Upload error:", err);
@@ -199,11 +219,14 @@ const PodcastAudioRecorder = ({ lenoreMode = false }: { lenoreMode?: boolean }) 
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {needsShow && (
+          <p className="text-sm text-muted-foreground">Pick one of Lenore's shows above to start.</p>
+        )}
         {!user && (
           <p className="text-sm text-destructive font-medium">You must be logged in to submit a recording.</p>
         )}
 
-        {lenoreMode && (
+        {lenoreMode && !controlled && (
           <div className="space-y-2">
             <Label htmlFor="recorder-show">Which show is this?</Label>
             <select
@@ -243,7 +266,7 @@ const PodcastAudioRecorder = ({ lenoreMode = false }: { lenoreMode?: boolean }) 
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             {!isRecording ? (
-              <Button onClick={startRecording} variant="default" className="gap-2" disabled={!!audioBlob || !user}>
+              <Button onClick={startRecording} variant="default" className="gap-2" disabled={!!audioBlob || !user || needsShow}>
                 <Mic className="w-4 h-4" />
                 Record Audio
               </Button>
@@ -256,7 +279,7 @@ const PodcastAudioRecorder = ({ lenoreMode = false }: { lenoreMode?: boolean }) 
 
             <span className="text-muted-foreground text-sm">or</span>
 
-            <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isRecording || !!audioBlob || !user}>
+            <Button variant="outline" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isRecording || !!audioBlob || !user || needsShow}>
               <Upload className="w-4 h-4" />
               Upload File
             </Button>
@@ -291,7 +314,7 @@ const PodcastAudioRecorder = ({ lenoreMode = false }: { lenoreMode?: boolean }) 
           </div>
         )}
 
-        <Button onClick={handleSubmit} disabled={!audioBlob || !title.trim() || isUploading || !user} className="w-full gap-2" size="lg">
+        <Button onClick={handleSubmit} disabled={!audioBlob || !title.trim() || isUploading || !user || needsShow} className="w-full gap-2" size="lg">
           <Upload className="w-4 h-4" />
           {isUploading ? "Submitting..." : picked ? "Attach to Show" : "Submit for Review"}
         </Button>

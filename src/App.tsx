@@ -54,8 +54,7 @@ const EventsManagement = lazyWithRetry(() => import("./pages/admin/EventsManagem
 const DraftEditor = lazyWithRetry(() => import("./pages/admin/DraftEditor"), "page-admin-draft-editor");
 const DraftsWorkspace = lazyWithRetry(() => import("./pages/admin/DraftsWorkspace"), "page-admin-drafts-workspace");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
-const PodcastManagement = lazyWithRetry(() => import("./pages/admin/PodcastManagement"), "page-admin-podcast-management");
-const ClubhouseStudio = lazyWithRetry(() => import("./pages/admin/ClubhouseStudio"), "page-admin-clubhouse-studio");
+const PodcastStudio = lazyWithRetry(() => import("./pages/admin/PodcastStudio"), "page-admin-podcast-studio");
 const PodcastLiveStreamManagement = lazyWithRetry(() => import("./pages/admin/PodcastLiveStreamManagement"), "page-admin-podcast-live-stream-management");
 
 
@@ -390,8 +389,8 @@ const AppContent = () => {
               <Route path="blog/new" element={<Navigate to="/admin/drafts/new" replace />} />
               <Route path="blog/edit/:id" element={<BlogEditRedirect />} />
               <Route path="video-gallery-management" element={<VideoGalleryManagement />} />
-              <Route path="podcasts" element={<PodcastManagement />} />
-              <Route path="studio" element={<ClubhouseStudio />} />
+              <Route path="podcasts" element={<PodcastStudio />} />
+              <Route path="studio" element={<Navigate to="/admin/podcasts" replace />} />
               <Route path="live-streams" element={<LiveStreamManagement />} />
               <Route path="podcast-live-stream" element={<PodcastLiveStreamManagement />} />
               

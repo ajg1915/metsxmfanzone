@@ -317,7 +317,7 @@ export function AdminLayout() {
     if (!isAdmin && !pinOnlyAuth) return;
 
     const inactivityMs = 5 * 60 * 1000;
-    let timeoutId: ReturnType<typeof setTimeout>;
+    let timeoutId: number;
     const signOutForInactivity = async () => {
       // A recording or upload is in progress: nobody is touching the screen, so keep the session.
       if (adminSessionHeld()) {

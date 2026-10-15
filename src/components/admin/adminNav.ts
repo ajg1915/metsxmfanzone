@@ -103,8 +103,7 @@ export const ADMIN_HUBS: AdminHub[] = [
       {
         title: "Podcasts",
         items: [
-          { title: "Podcasts", url: "/admin/podcasts", icon: Mic },
-          { title: "Clubhouse Studio", url: "/admin/studio", icon: Radio },
+          { title: "Podcast Studio", url: "/admin/podcasts", icon: Mic },
           { title: "Podcast Outlines", url: "/admin/podcast-outlines", icon: ClipboardList },
         ],
       },
