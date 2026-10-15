@@ -18,6 +18,7 @@ import { AdminMobileMenu } from "@/components/admin/AdminMobileMenu";
 import { useDraftsWaiting } from "@/hooks/useDraftsWaiting";
 import { NavLink } from "react-router-dom";
 import { withTimeout } from "@/utils/asyncTimeout";
+import { adminSessionHeld } from "@/lib/adminActivity";
 
 function AdminMobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {
   const { pathname } = useLocation();
@@ -318,6 +319,11 @@ export function AdminLayout() {
     const inactivityMs = 5 * 60 * 1000;
     let timeoutId: ReturnType<typeof setTimeout>;
     const signOutForInactivity = async () => {
+      // A recording or upload is in progress: nobody is touching the screen, so keep the session.
+      if (adminSessionHeld()) {
+        resetTimer();
+        return;
+      }
       clearAdminSession();
       if (user) await signOut();
       navigate(user ? "/auth?mode=login" : "/admin-portal", { replace: true });

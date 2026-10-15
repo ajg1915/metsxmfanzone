@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadToR2 } from "@/lib/r2Upload";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { holdAdminSession } from "@/lib/adminActivity";
 import { fetchAllShows, fmtShowWhen, type LenoreEpisode } from "@/lib/lenore";
 
 // lenoreMode is for the admin Podcasts page: pick Lenore's show, title and description fill in
@@ -51,6 +52,22 @@ const PodcastAudioRecorder = ({ lenoreMode = false }: { lenoreMode?: boolean }) 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // While recording, uploading, or holding an unsaved recording, keep the admin signed in
+  // and warn before the page is closed, so a recording is never lost to the inactivity timer.
+  useEffect(() => {
+    if (!(isRecording || audioBlob || isUploading)) return;
+    const release = holdAdminSession();
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => {
+      release();
+      window.removeEventListener("beforeunload", warn);
+    };
+  }, [isRecording, audioBlob, isUploading]);
 
   const startRecording = useCallback(async () => {
     try {
