@@ -324,7 +324,7 @@ export default function PodcastManagement() {
         </CardContent>
       </Card>
 
-      <PodcastAudioRecorder />
+      <PodcastAudioRecorder lenoreMode />
 
       <Card>
         <CardHeader>

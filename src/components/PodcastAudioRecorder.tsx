@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadToR2 } from "@/lib/r2Upload";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { fetchAllShows, fmtShowWhen, type LenoreEpisode } from "@/lib/lenore";
 
-const PodcastAudioRecorder = () => {
+// lenoreMode is for the admin Podcasts page: pick Lenore's show, title and description fill in
+// and lock, and the episode goes live at the show's scheduled time.
+const PodcastAudioRecorder = ({ lenoreMode = false }: { lenoreMode?: boolean }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
@@ -22,6 +25,26 @@ const PodcastAudioRecorder = () => {
   const [description, setDescription] = useState("");
   const [recordingTime, setRecordingTime] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [shows, setShows] = useState<LenoreEpisode[]>([]);
+  const [showId, setShowId] = useState("");
+  const [haveAudio, setHaveAudio] = useState<number[]>([]);
+  const picked = lenoreMode ? shows.find((x) => x.id === showId) : undefined;
+
+  const loadShows = useCallback(() => {
+    if (!lenoreMode) return;
+    fetchAllShows().then(setShows).catch(() => setShows([]));
+    supabase.from("podcasts").select("published_at").not("published_at", "is", null).then(({ data }) =>
+      setHaveAudio((data || []).map((r: any) => new Date(r.published_at).getTime())),
+    );
+  }, [lenoreMode]);
+  useEffect(() => { loadShows(); }, [loadShows]);
+
+  const chooseShow = (id: string) => {
+    setShowId(id);
+    const s = shows.find((x) => x.id === id);
+    setTitle(s ? s.title : "");
+    setDescription(s ? s.description : "");
+  };
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -125,14 +148,22 @@ const PodcastAudioRecorder = () => {
         description: description.trim() || null,
         audio_url: publicUrl,
         duration: recordingTime || null,
-        published: false,
+        ...(picked
+          ? { published: true, published_at: picked.available }
+          : { published: false }),
       });
 
       if (insertError) throw insertError;
 
-      toast({ title: "Submitted!", description: "Your recording has been submitted for review." });
+      toast(
+        picked
+          ? { title: "Audio attached", description: `Goes live ${fmtShowWhen(picked.available)}.` }
+          : { title: "Submitted!", description: "Your recording has been submitted for review." },
+      );
       setTitle("");
       setDescription("");
+      setShowId("");
+      loadShows();
       clearRecording();
     } catch (err: any) {
       console.error("Upload error:", err);
@@ -155,14 +186,40 @@ const PodcastAudioRecorder = () => {
           <p className="text-sm text-destructive font-medium">You must be logged in to submit a recording.</p>
         )}
 
+        {lenoreMode && (
+          <div className="space-y-2">
+            <Label htmlFor="recorder-show">Which show is this?</Label>
+            <select
+              id="recorder-show"
+              value={showId}
+              onChange={(e) => chooseShow(e.target.value)}
+              className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">Pick Lenore's show</option>
+              {shows.map((x) => {
+                const done = haveAudio.includes(new Date(x.available).getTime());
+                return (
+                  <option key={x.id} value={x.id} disabled={done}>
+                    {done ? "Audio attached · " : "Needs audio · "}
+                    {fmtShowWhen(x.available)} · {x.title}
+                  </option>
+                );
+              })}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Record ahead of time. The title and description come from Lenore, and the show goes live at its scheduled time.
+            </p>
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="episode-title">Episode Title *</Label>
-          <Input id="episode-title" placeholder="Give your episode a title..." value={title} onChange={(e) => setTitle(e.target.value)} />
+          <Input id="episode-title" placeholder="Give your episode a title..." value={title} onChange={(e) => setTitle(e.target.value)} readOnly={!!picked} />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="episode-desc">Description</Label>
-          <Textarea id="episode-desc" placeholder="What's this episode about?" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          <Textarea id="episode-desc" placeholder="What's this episode about?" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} readOnly={!!picked} />
         </div>
 
         {/* Recording controls */}
@@ -219,11 +276,11 @@ const PodcastAudioRecorder = () => {
 
         <Button onClick={handleSubmit} disabled={!audioBlob || !title.trim() || isUploading || !user} className="w-full gap-2" size="lg">
           <Upload className="w-4 h-4" />
-          {isUploading ? "Submitting..." : "Submit for Review"}
+          {isUploading ? "Submitting..." : picked ? "Attach to Show" : "Submit for Review"}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          Submissions are reviewed before publishing. Max 50MB for uploads.
+          {picked ? "Goes live on the show's schedule." : "Submissions are reviewed before publishing."} Max 50MB for uploads.
         </p>
       </CardContent>
     </Card>
