@@ -769,7 +769,7 @@ const terms = {
 };
 
 // ---------------------------------------------------------------------------
-// Contact (real insert -> contact_submissions)
+// Contact (email only, online service)
 // ---------------------------------------------------------------------------
 const contact = {
   path: "/contact",
@@ -777,70 +777,32 @@ const contact = {
     const pathname = ctx?.pathname || "/contact";
     setPageMetadata({
       title: "Contact MetsXMFanZone - Get in Touch",
-      description: "Contact MetsXMFanZone for support, feedback, or questions. We're here to help Mets fans with subscriptions, content, and more.",
+      description: "Email MetsXMFanZone for questions or member support. We are a strictly online service.",
       path: pathname,
     });
 
     const content = `
       <section class="content-width page-heading">
         <h1>Contact Us</h1>
-        <p>Have a question or feedback? We'd love to hear from you.</p>
+        <p>MetsXMFanZone is a strictly online service. Email is the best way to reach us.</p>
       </section>
-      <section class="content-width" style="display:grid;gap:20px;grid-template-columns:minmax(0,2fr) minmax(0,1fr);align-items:start">
+      <section class="content-width" style="display:grid;gap:14px;max-width:760px">
         <div class="card-panel">
-          <h2>Send us a message</h2>
-          <p class="form-note">Fill out the form below and we'll respond within 24 hours</p>
-          <form class="stacked-form" id="contact-form" style="max-width:none">
-            <label>Name<input type="text" name="name" required></label>
-            <label>Email<input type="email" name="email" required></label>
-            <label>Subject<input type="text" name="subject" required></label>
-            <label>Message<textarea name="message" rows="6" required></textarea></label>
-            <p class="form-error" id="contact-error" hidden role="alert"></p>
-            <button class="button primary" type="submit">Send Message</button>
-          </form>
+          <h2>Email us</h2>
+          <p class="form-note">Questions, feedback or anything else about MetsXMFanZone.</p>
+          <p><a href="mailto:support@metsxmfanzone.com"><strong>support@metsxmfanzone.com</strong></a></p>
         </div>
-        <div style="display:grid;gap:14px">
-          <div class="card-panel"><h2>Email</h2><p class="form-note">support@metsxmfanzone.com</p></div>
-          <div class="card-panel"><h2>Phone</h2><p class="form-note">1-800-METS-FAN</p></div>
-          <div class="card-panel"><h2>Address</h2><p class="form-note">123 Baseball Ave<br>New York, NY 10001</p></div>
+        <div class="card-panel">
+          <h2>Members: having an issue?</h2>
+          <p class="form-note">Email us at support@metsxmfanzone.com from the email address on your account. Tell us what happened, such as a login problem, a billing question or a stream that will not play, and which device you are using. We will get back to you as soon as we can.</p>
+        </div>
+        <div class="card-panel">
+          <h2>Online only</h2>
+          <p class="form-note">MetsXMFanZone is strictly an online service. We do not have an office, a store or a phone line, and we cannot help in person. Everything is handled by email.</p>
         </div>
       </section>`;
 
     mount(root, pathname, content);
-
-    const form = root.querySelector("#contact-form");
-    form?.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const error = root.querySelector("#contact-error");
-      const submit = form.querySelector("button[type=submit]");
-      const data = Object.fromEntries(new FormData(form).entries());
-
-      submit.disabled = true;
-      submit.textContent = "Sending...";
-      error.hidden = true;
-
-      const { user } = auth.state;
-      const { error: insertError } = await backend.from("contact_submissions").insert({
-        name: String(data.name || "").trim(),
-        email: String(data.email || "").trim(),
-        subject: String(data.subject || "").trim() || null,
-        message: String(data.message || "").trim(),
-        user_id: user?.id || null,
-      });
-
-      if (insertError) {
-        error.textContent = insertError.message || "Message could not be sent. Please try again.";
-        error.hidden = false;
-        submit.textContent = "Send Message";
-      } else {
-        form.reset();
-        submit.textContent = "Message sent!";
-        setTimeout(() => {
-          submit.textContent = "Send Message";
-        }, 2500);
-      }
-      submit.disabled = false;
-    });
   },
 };
 // ---------------------------------------------------------------------------
