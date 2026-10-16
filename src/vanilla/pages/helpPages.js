@@ -798,7 +798,7 @@ const contact = {
         </div>
         <div class="card-panel">
           <h2>Online only</h2>
-          <p class="form-note">MetsXMFanZone is strictly an online service. We do not have an office, a store or a phone line, and we cannot help in person. Everything is handled by email.</p>
+          <p class="form-note">MetsXMFanZone is a strictly online service. All support is handled by email, so please write to us at support@metsxmfanzone.com and we will take care of you.</p>
         </div>
       </section>`;
 

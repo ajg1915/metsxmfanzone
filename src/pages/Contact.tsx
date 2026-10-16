@@ -88,8 +88,8 @@ const Contact = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-sm sm:text-base text-muted-foreground">
-                  MetsXMFanZone is strictly an online service. We do not have an office, a store or a phone
-                  line, and we cannot help in person. Everything is handled by email.
+                  MetsXMFanZone is a strictly online service. All support is handled by email, so please
+                  write to us at {SUPPORT_EMAIL} and we will take care of you.
                 </p>
               </CardContent>
             </Card>
