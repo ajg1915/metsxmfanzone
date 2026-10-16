@@ -800,6 +800,10 @@ const contact = {
           <h2>Online only</h2>
           <p class="form-note">MetsXMFanZone is a strictly online service. All support is handled by email, so please write to us at support@metsxmfanzone.com and we will take care of you.</p>
         </div>
+        <div class="card-panel">
+          <h2>Office</h2>
+          <p class="form-note">2202 5th Ave<br>New York, NY 10001</p>
+        </div>
       </section>`;
 
     mount(root, pathname, content);

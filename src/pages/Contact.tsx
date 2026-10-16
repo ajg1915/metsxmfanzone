@@ -2,7 +2,7 @@ import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe, LifeBuoy, Mail } from "lucide-react";
+import { Globe, LifeBuoy, Mail, MapPin } from "lucide-react";
 
 const SUPPORT_EMAIL = "support@metsxmfanzone.com";
 
@@ -90,6 +90,21 @@ const Contact = () => {
                 <p className="text-sm sm:text-base text-muted-foreground">
                   MetsXMFanZone is a strictly online service. All support is handled by email, so please
                   write to us at {SUPPORT_EMAIL} and we will take care of you.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                  <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Office
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  2202 5th Ave<br />
+                  New York, NY 10001
                 </p>
               </CardContent>
             </Card>
