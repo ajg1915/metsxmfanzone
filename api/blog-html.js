@@ -5,10 +5,9 @@
 import { fetchPublishedPost, fetchRelatedPosts, renderStandalonePage, SITE_URL } from "./_lib/article.js";
 
 export default async function handler(req, res) {
-  const slugParam = req.query?.slug;
-  const slug = decodeURIComponent(
-    (Array.isArray(slugParam) ? slugParam.join("/") : slugParam || "").trim(),
-  );
+  // Read the slug from the URL directly. req.query makes Vercel call the deprecated url.parse().
+  const slugParam = new URL(req.url, "https://metsxmfanzone.com").searchParams.getAll("slug").join("/");
+  const slug = decodeURIComponent(slugParam.trim());
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
 

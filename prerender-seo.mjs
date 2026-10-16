@@ -34,8 +34,6 @@ const SUPABASE_URL = 'https://rdmrxeplasttewtlfetc.supabase.co';
 const SUPABASE_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkbXJ4ZXBsYXN0dGV3dGxmZXRjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3NTIyNjAsImV4cCI6MjA3NzMyODI2MH0.P5msjdR8tgbx-rL2ifeSjqW1jvFzKtPNT4oapJIAkJA';
 
-const OLD_STORAGE_HOST = 'clwghkbtkofacsjeyrtk.supabase.co';
-const NEW_STORAGE_HOST = 'rdmrxeplasttewtlfetc.supabase.co';
 const FALLBACK_IMAGE = `${SITE_URL}/og-image.png`;
 
 const quiet = process.argv.includes('--quiet');
@@ -56,7 +54,7 @@ const clamp = (v, n) => {
 
 function absoluteImage(url) {
   if (!url) return FALLBACK_IMAGE;
-  let u = String(url).split(OLD_STORAGE_HOST).join(NEW_STORAGE_HOST);
+  let u = String(url);
   if (u.startsWith('data:')) return FALLBACK_IMAGE;
   if (u.startsWith('http://')) return `https://${u.slice(7)}`;
   if (u.startsWith('https://')) return u;

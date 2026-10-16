@@ -7,7 +7,6 @@ export const SUPABASE_ANON_KEY =
 
 export const SITE_URL = process.env.PUBLIC_SITE_URL || "https://metsxmfanzone.com";
 export const FALLBACK_IMAGE = `${SITE_URL}/og-image.png`;
-const OLD_STORAGE = "https://clwghkbtkofacsjeyrtk.supabase.co";
 
 export function escapeHtml(input) {
   return String(input ?? "").replace(
@@ -35,7 +34,7 @@ export function stripHtml(input) {
 
 export function resolveImage(url) {
   if (!url || String(url).startsWith("data:")) return FALLBACK_IMAGE;
-  const fixed = String(url).split(OLD_STORAGE).join(SUPABASE_URL);
+  const fixed = String(url);
   if (fixed.startsWith("http")) return fixed;
   return `${SITE_URL}${fixed.startsWith("/") ? "" : "/"}${fixed}`;
 }
