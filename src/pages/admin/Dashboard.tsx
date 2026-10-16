@@ -33,7 +33,6 @@ import {
   Loader2,
   Mail,
   Megaphone,
-  MessageCircle,
   Mic,
   Radio,
   RefreshCw,
@@ -289,7 +288,6 @@ export default function AdminDashboard() {
 
   const jumpItems = [
     { title: "Live streams", description: "Schedule, go live, monitor", icon: Radio, url: "/admin/live-streams", tag: isLive ? "Live now" : "Standby" },
-    { title: "Chat", description: "Live fan chats and left messages", icon: MessageCircle, url: "/admin/chat", tag: "Fans" },
     { title: "Stream tester", description: "Test M3U8 links before going live", icon: Link2, url: "/admin/stream-tester", tag: "Tool" },
     { title: "Blog", description: "Write and publish articles", icon: FileText, url: "/admin/drafts", tag: `${stats.totalBlogs} posts` },
     { title: "Media library", description: "Images, video and audio", icon: ImageIcon, url: "/admin/media-library", tag: "Uploads" },

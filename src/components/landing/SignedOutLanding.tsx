@@ -78,6 +78,21 @@ function Section({
   );
 }
 
+// The admin's TV video: muted loop over the picture. The picture (the box's background) shows
+// while it loads, and on phones that block autoplay.
+const TvVideo = ({ src }: { src: string }) => (
+  <video
+    src={src}
+    autoPlay
+    muted
+    loop
+    playsInline
+    preload="metadata"
+    aria-hidden="true"
+    className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+  />
+);
+
 const Eyebrow = ({ children, light }: { children: ReactNode; light?: boolean }) => (
   <p className={`text-sm font-bold uppercase tracking-[0.14em] ${light ? "text-[#ffb48f]" : "text-[#ff7a3d]"}`}>{children}</p>
 );
@@ -89,6 +104,7 @@ export default function SignedOutLanding() {
   const { data: bgs = {} } = useFrontPageStyles();
   const { data: media } = useLandingMedia();
   const tvPicture = bgs.tv?.image || media?.tv || null;
+  const tvVideo = bgs.tv?.video || null;
   const tvPictureStyle: CSSProperties | undefined = tvPicture
     ? { backgroundImage: `url("${tvPicture.replace(/"/g, "%22")}")`, backgroundSize: "cover", backgroundPosition: "center" }
     : undefined;
@@ -145,7 +161,8 @@ export default function SignedOutLanding() {
               className="relative aspect-video overflow-hidden rounded-[18px] border-[10px] border-[#151a22] bg-[radial-gradient(80%_90%_at_70%_30%,#1b3d6b_0%,#0a1d3d_60%,#050b16_100%)] shadow-2xl"
               style={tvPictureStyle}
             >
-              {tvPicture && <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/70" />}
+              {tvVideo && <TvVideo src={tvVideo} />}
+              {(tvPicture || tvVideo) && <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/70" />}
               <div className="absolute left-5 top-4 flex items-center gap-2.5">
                 <img src={metsLogo} alt="" className="h-11 w-auto" />
                 <div>
@@ -234,7 +251,8 @@ export default function SignedOutLanding() {
               className="relative flex min-h-[200px] flex-col justify-end gap-2 overflow-hidden rounded-2xl bg-[radial-gradient(80%_120%_at_85%_10%,rgba(255,89,16,0.35),transparent_60%),linear-gradient(120deg,#0d2a5c,#0a1d3d_60%,#07101f)] p-6 sm:min-h-[240px]"
               style={tvPictureStyle}
             >
-              {tvPicture && <div className="absolute inset-0 bg-gradient-to-r from-[#07101f]/85 via-[#07101f]/40 to-transparent" />}
+              {tvVideo && <TvVideo src={tvVideo} />}
+              {(tvPicture || tvVideo) && <div className="absolute inset-0 bg-gradient-to-r from-[#07101f]/85 via-[#07101f]/40 to-transparent" />}
               <span className="relative self-start rounded-full bg-[#e11d48] px-3 py-0.5 text-xs font-extrabold">LIVE NOW</span>
               <p className="relative font-display text-[34px] uppercase leading-none">MetsXMFanZone TV</p>
               <span className="relative self-start rounded-full bg-white px-4 py-2 text-sm font-bold text-[#07101f]">Watch live</span>

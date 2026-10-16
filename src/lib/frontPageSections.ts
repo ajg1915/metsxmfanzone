@@ -27,6 +27,8 @@ export interface SectionStyle {
   color?: string;
   /** Background image URL (R2). */
   image?: string;
+  /** Optional video URL (R2). Only used by the TV picture: plays muted on a loop over the image. */
+  video?: string;
   /** How dark the shade over the image is, 0–90 (%). */
   dim?: number;
 }

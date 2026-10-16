@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ImagePlus, Loader2, RotateCcw, Save, Trash2 } from "lucide-react";
+import { ImagePlus, Loader2, RotateCcw, Save, Trash2, Video } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,9 @@ export default function FrontPageSections() {
   const [uploading, setUploading] = useState<FrontPageSection | null>(null);
   const [saving, setSaving] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoPercent, setVideoPercent] = useState(0);
   const uploadFor = useRef<FrontPageSection | null>(null);
 
   useEffect(() => {
@@ -66,6 +69,31 @@ export default function FrontPageSections() {
     }
   };
 
+  const MAX_VIDEO_MB = 30;
+  const onVideo = async (file: File | undefined) => {
+    if (!file) return;
+    if (!file.type.startsWith("video/")) {
+      toast.error("Please choose a video file (MP4 works best).");
+      return;
+    }
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      toast.error(`That video is over ${MAX_VIDEO_MB} MB. Please compress it and try again.`);
+      return;
+    }
+    setVideoUploading(true);
+    setVideoPercent(0);
+    try {
+      const { publicUrl } = await uploadToR2(file, "front-page", undefined, setVideoPercent);
+      update("tv", { video: publicUrl });
+      toast.success("Video uploaded. Press Save to put it live.");
+    } catch (err) {
+      toast.error("Upload failed: " + (err instanceof Error ? err.message : "try again"));
+    } finally {
+      setVideoUploading(false);
+      if (videoRef.current) videoRef.current.value = "";
+    }
+  };
+
   const save = async () => {
     setSaving(true);
     const { error } = await supabase.from("site_settings").upsert(
@@ -103,6 +131,7 @@ export default function FrontPageSections() {
       </div>
 
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => void onFile(e.target.files?.[0])} />
+      <input ref={videoRef} type="file" accept="video/mp4,video/webm,video/*" className="hidden" onChange={(e) => void onVideo(e.target.files?.[0])} />
 
       {isLoading ? (
         <p className="text-muted-foreground">Loading…</p>
@@ -152,6 +181,25 @@ export default function FrontPageSections() {
                     </Button>
                   )}
                 </div>
+
+                {"imageOnly" in sec && (
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1 gap-2" disabled={videoUploading} onClick={() => videoRef.current?.click()}>
+                        {videoUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />}
+                        {videoUploading ? `Uploading ${videoPercent}%` : st.video ? "Change video" : "Add video"}
+                      </Button>
+                      {st.video && (
+                        <Button variant="ghost" size="icon" aria-label="Remove video" onClick={() => update(sec.key, { video: undefined })}>
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {st.video ? "A video plays over the picture on the TV screen (muted, on a loop). " : ""}MP4 works best, under {MAX_VIDEO_MB} MB. The picture shows while it loads.
+                    </p>
+                  </div>
+                )}
 
                 {st.image && !("imageOnly" in sec) && (
                   <div className="space-y-2">
