@@ -104,7 +104,7 @@ const Contact = () => {
               <CardContent>
                 <p className="text-sm sm:text-base text-muted-foreground">
                   2202 5th Ave<br />
-                  New York, NY 10001
+                  New York, NY 10037
                 </p>
               </CardContent>
             </Card>

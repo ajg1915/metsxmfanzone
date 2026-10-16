@@ -802,7 +802,7 @@ const contact = {
         </div>
         <div class="card-panel">
           <h2>Office</h2>
-          <p class="form-note">2202 5th Ave<br>New York, NY 10001</p>
+          <p class="form-note">2202 5th Ave<br>New York, NY 10037</p>
         </div>
       </section>`;
 
