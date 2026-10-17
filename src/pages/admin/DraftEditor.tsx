@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { forgetDraftsWaiting } from "@/hooks/useDraftsWaiting";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import BlogShareDialog from "@/components/admin/BlogShareDialog";
+import OriginalityCard from "@/components/admin/OriginalityCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -90,6 +91,8 @@ export default function DraftEditor() {
   const [confirm, setConfirm] = useState<"publish" | "unpublish" | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [justPublished, setJustPublished] = useState(false);
+  const [grammarlyDone, setGrammarlyDone] = useState(false);
+  const [flagged, setFlagged] = useState(false);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [pendingLocal, setPendingLocal] = useState<FormState | null>(null);
 
@@ -525,6 +528,18 @@ export default function DraftEditor() {
           </p>
         </div>
 
+        {!live && (
+          <OriginalityCard
+            key={rawId || "new"}
+            draftId={rawId || "new"}
+            title={form.title}
+            html={form.content}
+            sources={[]}
+            onGrammarlyChange={setGrammarlyDone}
+            onResult={(r) => setFlagged(r?.level === "review")}
+          />
+        )}
+
         <div className="space-y-2">
           <label htmlFor="d-tags" className={label}>TAGS (separate with commas)</label>
           <input id="d-tags" value={form.tags} onChange={(e) => set("tags", e.target.value)} className={field} />
@@ -624,6 +639,8 @@ export default function DraftEditor() {
               </button>
             </div>
             <p className="text-center text-[12px] text-slate-300">Publishing also sends the new-article alert to subscribers</p>
+            {!grammarlyDone && <p className="text-center text-[12px] text-[#FFB08A]">Grammarly check not marked yet</p>}
+            {flagged && <p className="text-center text-[12px] text-[#FFB08A]">The source check flagged passages. Review them before publishing.</p>}
           </>
         )}
       </div>
@@ -634,6 +651,8 @@ export default function DraftEditor() {
             <AlertDialogTitle>Publish this article now?</AlertDialogTitle>
             <AlertDialogDescription>
               It goes live on metsxmfanzone.com right away and every subscriber gets the new-article alert.
+              {!grammarlyDone && " You haven't marked the Grammarly check as done."}
+              {flagged && " The source check flagged passages that are close to a source."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
