@@ -15,9 +15,12 @@ import {
   Check,
   BarChart3,
   SlidersHorizontal,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { rememberSound } from "@/lib/playerSound";
+import { CastButton } from "@/components/CastButton";
+import { StreamIssueDialog } from "@/components/StreamIssueDialog";
 
 interface StreamControlsProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -25,6 +28,9 @@ interface StreamControlsProps {
   containerRef: React.RefObject<HTMLElement>;
   onReload?: () => void;
   channelLabel?: string;
+  /** Stream address, used by the Cast item in the settings menu. */
+  source?: string;
+  streamId?: string;
 }
 
 type MenuView = "closed" | "main" | "quality";
@@ -38,6 +44,9 @@ export function StreamControls({
   hlsRef,
   containerRef,
   onReload,
+  channelLabel,
+  source,
+  streamId,
 }: StreamControlsProps) {
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -52,6 +61,8 @@ export function StreamControls({
   const [stats, setStats] = useState({ resolution: "—", bitrate: "—", buffer: "0.0s" });
   const [behindLive, setBehindLive] = useState(false);
   const [visible, setVisible] = useState(true);
+  const [casting, setCasting] = useState(false);
+  const [issueOpen, setIssueOpen] = useState(false);
   const hideTimer = useRef<number>();
   const menuRef = useRef<HTMLDivElement>(null);
   const gearRef = useRef<HTMLButtonElement>(null);
@@ -161,6 +172,10 @@ export function StreamControls({
           }));
         }
       }
+      try {
+        const ctx = window.cast?.framework?.CastContext?.getInstance?.();
+        setCasting(!!ctx && String(ctx.getCastState()) === "CONNECTED");
+      } catch {}
       if (v && v.buffered.length) {
         const liveEdge = hls?.liveSyncPosition ?? v.buffered.end(v.buffered.length - 1);
         setBehindLive(liveEdge - v.currentTime > 12);
@@ -308,11 +323,20 @@ export function StreamControls({
   );
   const VolumeIcon = muted ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
   const menuItem = cn(
-    "flex w-full shrink-0 items-center gap-3 text-left text-white hover:bg-white/10",
+    "flex w-full shrink-0 items-center gap-3 text-left text-white hover:bg-secondary/50",
     compact ? "px-3 py-1.5 text-xs" : "px-4 py-2.5 text-[13px]"
   );
 
   return (
+    <>
+    <StreamIssueDialog
+      streamId={streamId}
+      streamTitle={channelLabel || "Live Stream"}
+      video={videoRef.current}
+      open={issueOpen}
+      onOpenChange={setIssueOpen}
+      hideTrigger
+    />
     <div
       className={cn(
         "absolute inset-x-0 bottom-0 z-20 select-none transition-opacity duration-200",
@@ -341,12 +365,19 @@ export function StreamControls({
           ref={menuRef}
           style={{ maxHeight: popupMaxHeight }}
           className={cn(
-            "absolute bottom-full right-2 mb-1 flex max-w-[calc(100%-1rem)] flex-col overflow-y-auto rounded-xl bg-[rgba(28,28,28,0.92)] shadow-2xl backdrop-blur-sm sm:right-3 sm:mb-2",
+            "absolute bottom-full right-2 mb-1 flex max-w-[calc(100%-1rem)] flex-col overflow-y-auto rounded-xl border border-secondary border-t-[3px] border-t-primary bg-background/95 shadow-2xl backdrop-blur-sm sm:right-3 sm:mb-2",
             compact ? "min-w-[200px] py-1" : "min-w-[240px] py-2"
           )}
         >
           {menu === "main" && (
             <>
+              <div className="border-b border-white/10 bg-secondary/30 pb-1 mb-1">
+                <CastButton source={source || ""} title={channelLabel} variant="menu" />
+                <button className={menuItem} onClick={() => { setMenu("closed"); setIssueOpen(true); }}>
+                  <AlertTriangle className="h-5 w-5" />
+                  <span className="flex-1">Report a stream issue</span>
+                </button>
+              </div>
               <button className={menuItem} onClick={() => setMenu("quality")}>
                 <SlidersHorizontal className="h-5 w-5" />
                 <span className="flex-1">Quality</span>
@@ -392,7 +423,7 @@ export function StreamControls({
         </div>
       )}
 
-      <div className={cn("bg-gradient-to-t from-black/80 via-black/40 to-transparent px-1.5 pb-0.5 sm:px-3 sm:pb-1", compact ? "pt-6" : "pt-12")}>
+      <div className={cn("bg-gradient-to-t from-background/95 via-secondary/50 to-transparent px-1.5 pb-0.5 sm:px-3 sm:pb-1", compact ? "pt-6" : "pt-12")}>
         {/* Progress bar: live streams sit at the live edge */}
         <button
           type="button"
@@ -401,11 +432,11 @@ export function StreamControls({
           className="group/bar relative mx-1 flex h-4 w-[calc(100%-0.5rem)] items-center"
         >
           <span className="relative h-[3px] w-full rounded-full bg-white/25 transition-all group-hover/bar:h-[5px]">
-            <span className={cn("absolute inset-y-0 left-0 rounded-full bg-[#ff0000]", behindLive ? "w-[92%]" : "w-full")} />
+            <span className={cn("absolute inset-y-0 left-0 rounded-full bg-primary", behindLive ? "w-[92%]" : "w-full")} />
           </span>
           <span
             className={cn(
-              "absolute h-3 w-3 -translate-x-1/2 rounded-full bg-[#ff0000] transition-transform group-hover/bar:scale-110",
+              "absolute h-3 w-3 -translate-x-1/2 rounded-full bg-primary transition-transform group-hover/bar:scale-110",
               behindLive ? "left-[92%]" : "left-[calc(100%-2px)]"
             )}
           />
@@ -433,7 +464,7 @@ export function StreamControls({
               onChange={(e) => changeVolume(Number(e.target.value))}
               aria-label="Volume"
               className={cn(
-                "h-1 cursor-pointer accent-white transition-all duration-200",
+                "h-1 cursor-pointer accent-primary transition-all duration-200",
                 showVolume ? "mr-2 w-16 opacity-100 sm:w-20" : "w-0 opacity-0 pointer-events-none"
               )}
             />
@@ -445,7 +476,7 @@ export function StreamControls({
             className="ml-1 flex items-center gap-1.5 rounded px-1.5 py-1 text-[13px] font-medium text-white/90 hover:text-white"
             aria-label={behindLive ? "Go to live" : "Live"}
           >
-            <span className={cn("h-2 w-2 rounded-full", behindLive ? "bg-white/50" : "bg-[#ff0000]")} />
+            <span className={cn("h-2 w-2 rounded-full", behindLive ? "bg-white/50" : "bg-primary")} />
             LIVE
           </button>
 
@@ -459,8 +490,11 @@ export function StreamControls({
             aria-label="Settings"
           >
             <Settings className={cn("h-6 w-6 transition-transform duration-300 sm:h-[26px] sm:w-[26px]", menuOpen && "rotate-[30deg]")} />
+            {casting && (
+              <span className="absolute bottom-2 right-2 h-2.5 w-2.5 rounded-full border border-background bg-primary" title="Casting" />
+            )}
             {hd && (
-              <span className="absolute right-1 top-2 rounded-sm bg-[#ff0000] px-[3px] text-[8px] font-bold leading-[11px] text-white sm:right-1.5 sm:top-2.5">
+              <span className="absolute right-1 top-2 rounded-sm bg-primary px-[3px] text-[8px] font-bold leading-[11px] text-white sm:right-1.5 sm:top-2.5">
                 HD
               </span>
             )}
@@ -471,6 +505,7 @@ export function StreamControls({
         </div>
       </div>
     </div>
+    </>
   );
 }
 

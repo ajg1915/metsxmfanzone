@@ -20,6 +20,8 @@ interface CastButtonProps {
   source: string;
   title?: string;
   poster?: string;
+  /** "menu" renders a row for the player settings menu instead of the floating pill. */
+  variant?: "pill" | "menu";
 }
 
 const CAST_FRAMEWORK_SRC =
@@ -80,7 +82,7 @@ function loadCastFramework(): Promise<boolean> {
   return frameworkReady;
 }
 
-export function CastButton({ source, title, poster }: CastButtonProps) {
+export function CastButton({ source, title, poster, variant = "pill" }: CastButtonProps) {
   const [ready, setReady] = useState(false);
   const [connected, setConnected] = useState(false);
   const contextRef = useRef<any>(null);
@@ -246,6 +248,34 @@ export function CastButton({ source, title, poster }: CastButtonProps) {
   }, [connected]);
 
   if (!ready && !castSupported) return null;
+
+  if (variant === "menu") {
+    return (
+      <button
+        type="button"
+        className="relative flex w-full items-center gap-3 overflow-hidden px-4 py-2.5 text-left text-[13px] text-white hover:bg-secondary/50"
+        onClick={connected || !ready || window.self !== window.top ? handleCast : undefined}
+        aria-label={connected ? "Stop casting" : "Cast to TV"}
+        title={connected ? "Stop casting" : "Cast to TV"}
+      >
+        <Cast className={`h-5 w-5 ${connected ? "text-primary" : ""}`} />
+        <span className="flex-1">{connected ? "Stop casting" : "Cast to TV"}</span>
+        {connected && <span className="text-[11px] font-bold text-primary">Casting</span>}
+        {/* Click surface for the Google launcher, clipped to this row. */}
+        <span className="absolute inset-0 overflow-hidden">
+          {ready && !connected && window.self === window.top ? (
+            <google-cast-launcher
+              aria-label="Cast to TV"
+              title="Cast to TV"
+              className="cast-launcher-overlay"
+            />
+          ) : (
+            <span className="absolute inset-0 cursor-pointer" onClick={handleCast} />
+          )}
+        </span>
+      </button>
+    );
+  }
 
 
   return (

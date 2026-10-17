@@ -1,7 +1,6 @@
 import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Hls from "hls.js";
 import { Loader2, AlertCircle, RotateCw, Play, Volume2 } from "lucide-react";
-import { CastButton } from "./CastButton";
 import { StreamIssueDialog } from "./StreamIssueDialog";
 import { StreamControls } from "./player/StreamControls";
 import { Button } from "@/components/ui/button";
@@ -406,12 +405,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       />
 
 
-      {/* Top-left so the cast and issue buttons don't cover the logo in the top-right. */}
-      <div className="absolute left-2 top-2 z-40 flex items-center gap-2 sm:left-3 sm:top-3">
-        <CastButton source={activeSource} title={pageTitle} />
-        <StreamIssueDialog streamId={streamId} streamTitle={pageTitle} video={videoRef.current} compact />
-      </div>
-
+      {/* Cast and Report a stream issue now live in the settings (gear) menu of the control bar. */}
 
       {tvFull && <TVStreamOverlay title={pageTitle} streamId={streamId} />}
 
@@ -422,6 +416,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           containerRef={containerRef}
           onReload={handleRetry}
           channelLabel={pageTitle}
+          source={activeSource}
+          streamId={streamId}
         />
       )}
 
@@ -445,6 +441,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           >
             <RotateCw className="w-3.5 h-3.5" /> Retry
           </Button>
+          <StreamIssueDialog streamId={streamId} streamTitle={pageTitle} video={videoRef.current} />
         </div>
       )}
 

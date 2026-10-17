@@ -23,6 +23,10 @@ interface StreamIssueDialogProps {
   streamTitle: string;
   video?: HTMLVideoElement | null;
   compact?: boolean;
+  /** Controlled mode: the player's settings menu opens the dialog, so no trigger button is drawn. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  hideTrigger?: boolean;
 }
 
 function getSessionId() {
@@ -34,8 +38,13 @@ function getSessionId() {
   return value;
 }
 
-export function StreamIssueDialog({ streamId, streamTitle, video, compact }: StreamIssueDialogProps) {
-  const [open, setOpen] = useState(false);
+export function StreamIssueDialog({ streamId, streamTitle, video, compact, open: openProp, onOpenChange, hideTrigger }: StreamIssueDialogProps) {
+  const [openState, setOpenState] = useState(false);
+  const open = openProp ?? openState;
+  const setOpen = (value: boolean) => {
+    setOpenState(value);
+    onOpenChange?.(value);
+  };
   const [category, setCategory] = useState<IssueCategory>("buffering");
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
@@ -87,7 +96,7 @@ export function StreamIssueDialog({ streamId, streamTitle, video, compact }: Str
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      {!hideTrigger && <DialogTrigger asChild>
         <Button
           type="button"
           variant="ghost"
@@ -99,7 +108,7 @@ export function StreamIssueDialog({ streamId, streamTitle, video, compact }: Str
           <AlertTriangle className="h-4 w-4" />
           {!compact && <span>Report issue</span>}
         </Button>
-      </DialogTrigger>
+      </DialogTrigger>}
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Report a stream issue</DialogTitle>
