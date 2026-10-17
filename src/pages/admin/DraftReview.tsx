@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { forgetDraftsWaiting } from "@/hooks/useDraftsWaiting";
 import ArticleBody from "@/components/blog/ArticleBody";
+import OriginalityCard from "@/components/admin/OriginalityCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +26,7 @@ import {
   updateDraft,
   type Draft,
   type DraftEdits,
+  type OriginalityResult,
 } from "@/lib/draftsApi";
 
 const META_LIMIT = 160;
@@ -66,6 +68,8 @@ export default function DraftReview({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [grammarlyDone, setGrammarlyDone] = useState(false);
+  const [originality, setOriginality] = useState<OriginalityResult | null>(null);
 
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
@@ -315,6 +319,18 @@ export default function DraftReview({
               </ul>
             </div>
           )}
+
+          {isPending && (
+            <OriginalityCard
+              key={draft.id}
+              draftId={draft.id}
+              title={draft.title}
+              html={draft.content}
+              sources={draft.sources}
+              onGrammarlyChange={setGrammarlyDone}
+              onResult={setOriginality}
+            />
+          )}
         </div>
       )}
 
@@ -342,6 +358,12 @@ export default function DraftReview({
               </button>
             </div>
             <p className="text-center text-[12px] text-slate-300">Publishing also sends the new-article alert to subscribers</p>
+            {!grammarlyDone && (
+              <p className="text-center text-[12px] text-[#FFB08A]">Grammarly check not marked yet</p>
+            )}
+            {originality?.level === "review" && (
+              <p className="text-center text-[12px] text-[#FFB08A]">The source check flagged passages. Review them before publishing.</p>
+            )}
           </>
         ) : draft.status === "rejected" ? (
           <button type="button" disabled={busy} onClick={() => move("pending")} className={`${ghostBtn} w-full`}>
@@ -368,6 +390,8 @@ export default function DraftReview({
             <AlertDialogTitle>Publish this article now?</AlertDialogTitle>
             <AlertDialogDescription>
               It goes live on metsxmfanzone.com right away and every subscriber gets the new-article alert.
+              {!grammarlyDone && " You haven't marked the Grammarly check as done."}
+              {originality?.level === "review" && " The source check flagged passages that are close to a source."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

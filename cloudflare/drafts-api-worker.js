@@ -33,6 +33,8 @@
 //   PUT  /drafts/<id>                               edit a pending draft
 //   POST /drafts/<id>/status                        { status, published_post_id? }
 //   POST /ingest                                    save a new pending draft (INGEST_TOKEN)
+//   POST /check                                     { text, sources[] } originality check against the
+//                                                   source articles (nothing is saved)
 
 const DEFAULT_SUPABASE_URL = "https://rdmrxeplasttewtlfetc.supabase.co";
 // Publishable (public) key of the MetsXMFanZone-app project; override with SUPABASE_ANON_KEY if it ever rotates.
@@ -225,6 +227,157 @@ const summaryOf = (d) => ({
   word_count: wordCount(d.content),
 });
 
+// ---------- originality check ----------
+// Compares an article with the source articles it was written from and reports any
+// passages that share long runs of identical words. Free: it runs here, nothing is saved.
+const CHECK_MAX_SOURCES = 10;
+const CHECK_FETCH_MS = 8000;
+const CHECK_MAX_CHARS = 1_500_000;
+const SHINGLE = 6; // words per fingerprint
+const FLAG_RUN = 8; // a shared run this long (in words) is flagged
+const FLAG_OVERLAP = 10; // or this much of the article (percent) overlapping
+
+const safeSourceUrl = (u) => {
+  try {
+    const x = new URL(String(u).trim());
+    if (x.protocol !== "https:" && x.protocol !== "http:") return null;
+    const h = x.hostname.toLowerCase();
+    if (h === "localhost" || h.endsWith(".local") || h.endsWith(".internal") || h.includes(":") || /^\d+\.\d+\.\d+\.\d+$/.test(h)) {
+      return null;
+    }
+    return x.href;
+  } catch {
+    return null;
+  }
+};
+
+const decodeEntities = (s) =>
+  s
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0?39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&[a-z]+;/gi, " ");
+
+const plainText = (html) =>
+  decodeEntities(
+    String(html || "")
+      .replace(/<(script|style|noscript|svg|nav|footer|header|form)[\s\S]*?<\/\1>/gi, " ")
+      .replace(/<!--[\s\S]*?-->/g, " ")
+      .replace(/<[^>]*>/g, " ")
+  )
+    .replace(/\s+/g, " ")
+    .trim();
+
+// Words with their position in the text, lower-cased and without apostrophes.
+const wordsWithPositions = (text) => {
+  const out = [];
+  const re = /[\p{L}\p{N}][\p{L}\p{N}'\u2019]*/gu;
+  let m;
+  while ((m = re.exec(text))) {
+    const norm = m[0].toLowerCase().replace(/['\u2019]/g, "");
+    if (norm) out.push({ w: norm, start: m.index, end: m.index + m[0].length });
+  }
+  return out;
+};
+
+async function fetchSourceText(url) {
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; MetsXMFanZone-originality-check)", Accept: "text/html,*/*" },
+      redirect: "follow",
+      signal: AbortSignal.timeout(CHECK_FETCH_MS),
+    });
+    if (!res.ok) return null;
+    const raw = (await res.text()).slice(0, CHECK_MAX_CHARS);
+    const text = /<html|<body|<p[ >]/i.test(raw) ? plainText(raw) : raw;
+    return text.length > 200 ? text : null;
+  } catch {
+    return null;
+  }
+}
+
+function compareArticle(articleText, sourceTexts) {
+  const words = wordsWithPositions(articleText);
+  const total = words.length;
+  const owner = new Map(); // fingerprint -> index of the first source that has it
+  sourceTexts.forEach((t, i) => {
+    const sw = wordsWithPositions(t).map((x) => x.w);
+    for (let k = 0; k + SHINGLE <= sw.length; k++) {
+      const key = sw.slice(k, k + SHINGLE).join(" ");
+      if (!owner.has(key)) owner.set(key, i);
+    }
+  });
+
+  const covered = new Array(total).fill(false);
+  const hits = []; // [startWord, sourceIndex] for each matching fingerprint
+  for (let i = 0; i + SHINGLE <= total; i++) {
+    const key = words
+      .slice(i, i + SHINGLE)
+      .map((x) => x.w)
+      .join(" ");
+    if (owner.has(key)) {
+      hits.push([i, owner.get(key)]);
+      for (let k = i; k < i + SHINGLE; k++) covered[k] = true;
+    }
+  }
+
+  // Merge neighbouring matches into runs of shared words.
+  const runs = [];
+  for (const [i, src] of hits) {
+    const last = runs[runs.length - 1];
+    if (last && i <= last.endWord - SHINGLE + 2) last.endWord = i + SHINGLE - 1;
+    else runs.push({ startWord: i, endWord: i + SHINGLE - 1, src });
+  }
+  const sized = runs.map((r) => ({ ...r, words: r.endWord - r.startWord + 1 }));
+  const flagged = sized
+    .filter((r) => r.words >= FLAG_RUN)
+    .sort((a, b) => b.words - a.words)
+    .slice(0, 8)
+    .map((r) => ({
+      text: articleText.slice(words[r.startWord].start, words[r.endWord].end),
+      words: r.words,
+      source: r.src,
+    }));
+
+  const coveredCount = covered.filter(Boolean).length;
+  const overlap = total ? Math.round((coveredCount / total) * 100) : 0;
+  const longest = sized.reduce((m, r) => Math.max(m, r.words), 0);
+  return {
+    level: flagged.length > 0 || overlap >= FLAG_OVERLAP ? "review" : "pass",
+    overlap,
+    longest_run: longest,
+    word_count: total,
+    flagged,
+  };
+}
+
+async function checkOriginality(env, request) {
+  const body = await request.json().catch(() => null);
+  const text = typeof body?.text === "string" ? body.text.slice(0, 60000) : "";
+  if (text.trim().length < 50) return json({ error: "There is no article text to check" }, 400);
+  const asked = Array.isArray(body?.sources) ? body.sources.slice(0, CHECK_MAX_SOURCES) : [];
+  const urls = [...new Set(asked.map(safeSourceUrl).filter(Boolean))];
+  if (!urls.length) return json({ level: "no_sources", sources_checked: 0, sources_failed: [], flagged: [] });
+
+  const fetched = await Promise.all(urls.map(async (u) => ({ url: u, text: await fetchSourceText(u) })));
+  const ok = fetched.filter((f) => f.text);
+  const failed = fetched.filter((f) => !f.text).map((f) => f.url);
+  if (!ok.length) return json({ level: "no_sources", sources_checked: 0, sources_failed: failed, flagged: [] });
+
+  const result = compareArticle(text, ok.map((f) => f.text));
+  return json({
+    ...result,
+    flagged: result.flagged.map((f) => ({ text: f.text, words: f.words, source: ok[f.source].url })),
+    sources_checked: ok.length,
+    sources_failed: failed,
+    checked_at: new Date().toISOString(),
+  });
+}
+
 // ---------- routes ----------
 async function listDrafts(env, url) {
   const status = url.searchParams.get("status") || "pending";
@@ -335,6 +488,12 @@ export default {
       if (path === "/ingest") {
         if (request.method !== "POST") return json({ error: "POST only" }, 405);
         return await ingest(env, request);
+      }
+
+      if (path === "/check") {
+        if (request.method !== "POST") return json({ error: "POST only" }, 405);
+        if (!(await isAdmin(request, env))) return json({ error: "Admin sign-in required" }, 401);
+        return await checkOriginality(env, request);
       }
 
       if (path === "/drafts" || path.startsWith("/drafts/")) {

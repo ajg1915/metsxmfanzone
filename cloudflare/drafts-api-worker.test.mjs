@@ -182,3 +182,59 @@ test("list, counts, read, edit, approve, reject and undo", async () => {
 
   assert.deepEqual(await (await call(env, "GET", "/drafts/counts", t)).json(), { pending: 2, approved: 1, rejected: 0 });
 });
+
+
+// ---------- originality check ----------
+const SOURCE_TEXT =
+  "The New York Mets are expected to pursue at least one front line starting pitcher this winter according to people familiar with the planning, and the front office has already begun talking with several agents about the market. ".repeat(2) +
+  "Nobody expects a decision before the winter meetings begin in December.";
+
+// Serve a fake source article at https://source.test/a (the Supabase stand-in above handles the rest).
+const fetchWithSource = globalThis.fetch;
+globalThis.fetch = async (input, init) =>
+  String(input).startsWith("https://source.test/a")
+    ? new Response(`<html><body><nav>menu</nav><article><p>${SOURCE_TEXT}</p></article></body></html>`)
+    : fetchWithSource(input, init);
+
+const check = async (text, sources = ["https://source.test/a"]) => {
+  const res = await call(newEnv(), "POST", "/check", { token: "admin-token", body: { text, sources } });
+  assert.equal(res.status, 200);
+  return res.json();
+};
+
+test("check: article copied from a source is flagged", async () => {
+  const copied =
+    "Here is some of my own opening writing about the team. " +
+    "The New York Mets are expected to pursue at least one front line starting pitcher this winter according to people familiar with the planning. " +
+    "And here is more original closing writing that goes on for a while longer to pad things out.";
+  const r = await check(copied);
+  assert.equal(r.level, "review");
+  assert.ok(r.longest_run >= 15, `longest run ${r.longest_run}`);
+  assert.ok(r.flagged[0].text.startsWith("The New York Mets are expected"));
+  assert.equal(r.flagged[0].source, "https://source.test/a");
+  assert.equal(r.sources_checked, 1);
+});
+
+test("check: original wording passes", async () => {
+  const own =
+    "Mets ownership has money to spend and a rotation with holes, so expect Queens to be loud once the offseason market opens. " +
+    "A couple of arms at the top of the board would change the whole picture for next April, and the club knows it.";
+  const r = await check(own);
+  assert.equal(r.level, "pass");
+  assert.ok(r.overlap < 10);
+});
+
+test("check: a source that cannot be read is reported, not hidden", async () => {
+  const r = await check("word ".repeat(40), ["https://source.test/a", "https://unreachable.invalid/x"]);
+  assert.equal(r.sources_checked, 1);
+  assert.deepEqual(r.sources_failed, ["https://unreachable.invalid/x"]);
+});
+
+test("check: needs admin, text and usable sources", async () => {
+  const env = newEnv();
+  assert.equal((await call(env, "POST", "/check", { body: { text: "x" } })).status, 401);
+  assert.equal((await call(env, "POST", "/check", { token: "user-token", body: { text: "x" } })).status, 401);
+  assert.equal((await call(env, "POST", "/check", { token: "admin-token", body: { text: "short" } })).status, 400);
+  const none = await check("word ".repeat(40), ["file:///etc/passwd", "http://localhost/x", "http://10.0.0.1/"]);
+  assert.equal(none.level, "no_sources");
+});

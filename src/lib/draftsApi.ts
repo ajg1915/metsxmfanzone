@@ -38,6 +38,18 @@ export interface Draft {
   published_slug?: string;
 }
 
+/** Result of the originality check (drafts-api Worker, POST /check). */
+export interface OriginalityResult {
+  level: "pass" | "review" | "no_sources";
+  overlap?: number;
+  longest_run?: number;
+  word_count?: number;
+  sources_checked: number;
+  sources_failed: string[];
+  flagged: { text: string; words: number; source: string }[];
+  checked_at?: string;
+}
+
 export type DraftEdits = Partial<
   Pick<Draft, "title" | "content" | "summary" | "meta_description" | "category" | "tags">
 >;
@@ -212,6 +224,11 @@ export async function getDraft(id: string): Promise<Draft> {
     return postDraft(data);
   }
   return request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}`).then((r) => r.draft);
+}
+
+/** Compares the article text with the source articles it was written from. Nothing is saved. */
+export function checkOriginality(text: string, sources: string[]): Promise<OriginalityResult> {
+  return request<OriginalityResult>("/check", { method: "POST", body: JSON.stringify({ text, sources }) });
 }
 
 export async function draftCounts(): Promise<Record<DraftStatus, number>> {
