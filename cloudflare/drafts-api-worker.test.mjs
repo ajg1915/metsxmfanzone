@@ -238,3 +238,49 @@ test("check: needs admin, text and usable sources", async () => {
   const none = await check("word ".repeat(40), ["file:///etc/passwd", "http://localhost/x", "http://10.0.0.1/"]);
   assert.equal(none.level, "no_sources");
 });
+
+
+// ---------- web check (Brave Search stand-in) ----------
+const COPIED =
+  "The front office has already begun talking with several agents about the market according to people familiar with the planning";
+const OWN = "Mets ownership has money to spend and a rotation with holes so expect Queens to be loud once the offseason market opens up again";
+const ARTICLE_WEB = [COPIED + ".", OWN + ".", "Another original sentence about the bullpen that goes on long enough to be searched on the web today."].join(" ");
+
+let braveCalls = [];
+const fetchBeforeBrave = globalThis.fetch;
+globalThis.fetch = async (input, init = {}) => {
+  const url = String(input);
+  if (!url.startsWith("https://api.search.brave.com/")) return fetchBeforeBrave(input, init);
+  if (init.headers?.["X-Subscription-Token"] === "bad") return new Response("no", { status: 401 });
+  const q = decodeURIComponent(new URL(url).searchParams.get("q"));
+  braveCalls.push(q);
+  const results = q.includes("front office has already begun")
+    ? [{ url: "https://news.example.com/mets", title: "Mets plan", description: "The front office has already begun talking with several agents about the market according to people familiar with the planning, a source said." },
+       { url: "https://www.metsxmfanzone.com/blog/mine", title: "Own site", description: "The front office has already begun talking with several agents about the market according to people familiar" }]
+    : [{ url: "https://other.example.com/x", title: "Unrelated", description: "Something else entirely about baseball trades." }];
+  return Response.json({ web: { results } });
+};
+
+const web = async (text, env = newEnv({ BRAVE_API_KEY: "key" })) => {
+  const res = await call(env, "POST", "/check-web", { token: "admin-token", body: { text } });
+  return { status: res.status, body: await res.json() };
+};
+
+test("check-web: copied sentence is found, own site is ignored, original text is not flagged", async () => {
+  braveCalls = [];
+  const { status, body } = await web(ARTICLE_WEB);
+  assert.equal(status, 200);
+  assert.equal(body.level, "review");
+  assert.equal(body.matches.length, 1);
+  assert.equal(body.matches[0].url, "https://news.example.com/mets");
+  assert.ok(body.matches[0].words >= 8);
+  assert.equal(body.sentences_checked, 3);
+  assert.ok(braveCalls.every((q) => q.startsWith('"') && q.endsWith('"')), "searched as exact phrases");
+}, { timeout: 15000 });
+
+test("check-web: needs admin and a key, reports a rejected key", async () => {
+  assert.equal((await call(newEnv(), "POST", "/check-web", { body: { text: "x" } })).status, 401);
+  assert.equal((await web(ARTICLE_WEB, newEnv())).body.level, "not_configured");
+  assert.equal((await web(ARTICLE_WEB, newEnv({ BRAVE_API_KEY: "bad" }))).body.level, "bad_key");
+  assert.equal((await web("short")).status, 400);
+});

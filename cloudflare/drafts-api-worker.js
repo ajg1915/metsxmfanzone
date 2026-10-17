@@ -14,6 +14,8 @@
 // Optional settings (Settings → Variables and Secrets):
 //   INGEST_TOKEN   secret. Only needed if the 5am agent will save drafts through
 //                  POST /ingest. Without it, /ingest answers "disabled".
+//   BRAVE_API_KEY  secret. Free key from https://brave.com/search/api/ (2,000 searches a month).
+//                  Only needed for the "Check the whole article on the web" button.
 //   SUPABASE_URL / SUPABASE_ANON_KEY   only to override the built-in defaults below.
 //
 // Where drafts live in the bucket (one small JSON file each):
@@ -35,6 +37,8 @@
 //   POST /ingest                                    save a new pending draft (INGEST_TOKEN)
 //   POST /check                                     { text, sources[] } originality check against the
 //                                                   source articles (nothing is saved)
+//   POST /check-web                                 { text } searches the web (Brave Search) for the
+//                                                   article's own sentences; needs BRAVE_API_KEY
 
 const DEFAULT_SUPABASE_URL = "https://rdmrxeplasttewtlfetc.supabase.co";
 // Publishable (public) key of the MetsXMFanZone-app project; override with SUPABASE_ANON_KEY if it ever rotates.
@@ -378,6 +382,131 @@ async function checkOriginality(env, request) {
   });
 }
 
+// ---------- web check (Brave Search) ----------
+// Takes sentences spread across the article, searches each one in quotes, and reports
+// pages whose text shares a long run of words with it. Free on Brave's free plan.
+const WEB_MAX_QUERIES = 8;
+const WEB_MIN_WORDS = 12;
+const WEB_MAX_WORDS = 28; // words of each sentence used in the search
+const WEB_MATCH_RUN = 8; // shared words in a row that count as a match
+const WEB_GAP_MS = 1100; // Brave's free plan allows one search per second
+const OWN_HOSTS = ["metsxmfanzone.com"];
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Longest run of words that appears in both lists, in the same order.
+function longestSharedRun(a, b) {
+  let best = 0;
+  let prev = new Array(b.length + 1).fill(0);
+  for (let i = 1; i <= a.length; i++) {
+    const row = new Array(b.length + 1).fill(0);
+    for (let j = 1; j <= b.length; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        row[j] = prev[j - 1] + 1;
+        if (row[j] > best) best = row[j];
+      }
+    }
+    prev = row;
+  }
+  return best;
+}
+
+function pickSentences(text) {
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => {
+      const n = wordsWithPositions(s).length;
+      return n >= WEB_MIN_WORDS;
+    });
+  if (sentences.length <= WEB_MAX_QUERIES) return sentences;
+  const step = sentences.length / WEB_MAX_QUERIES;
+  return Array.from({ length: WEB_MAX_QUERIES }, (_, i) => sentences[Math.floor(i * step)]);
+}
+
+async function checkWeb(env, request) {
+  if (!env.BRAVE_API_KEY) return json({ level: "not_configured" });
+  const body = await request.json().catch(() => null);
+  const text = typeof body?.text === "string" ? body.text.slice(0, 60000) : "";
+  if (text.trim().length < 50) return json({ error: "There is no article text to check" }, 400);
+
+  const sentences = pickSentences(text);
+  if (!sentences.length) return json({ error: "The article has no full sentences to check yet" }, 400);
+
+  const matches = []; // strong: a long run of the sentence appears in the result's text
+  const possible = []; // the search returned the page, but its snippet doesn't show the wording
+  let searched = 0;
+  let stopped = null;
+
+  for (let i = 0; i < sentences.length; i++) {
+    if (i > 0) await sleep(WEB_GAP_MS);
+    const words = wordsWithPositions(sentences[i]);
+    const used = words.slice(0, WEB_MAX_WORDS);
+    const phrase = sentences[i].slice(0, used[used.length - 1].end).replace(/["\u201c\u201d]/g, "");
+    let res;
+    try {
+      res = await fetch(
+        `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(`"${phrase}"`)}&count=6&safesearch=off`,
+        {
+          headers: { Accept: "application/json", "X-Subscription-Token": env.BRAVE_API_KEY },
+          signal: AbortSignal.timeout(8000),
+        }
+      );
+    } catch {
+      stopped = "The search service did not answer";
+      break;
+    }
+    if (res.status === 401 || res.status === 403) return json({ level: "bad_key" });
+    if (res.status === 429) {
+      stopped = "The free search limit was reached";
+      break;
+    }
+    if (!res.ok) {
+      stopped = "The search service had a problem";
+      break;
+    }
+    searched++;
+    const data = await res.json().catch(() => null);
+    for (const r of data?.web?.results || []) {
+      let host = "";
+      try {
+        host = new URL(r.url).hostname.replace(/^www\./, "");
+      } catch {
+        continue;
+      }
+      if (OWN_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) continue;
+      const seen = plainText([r.title, r.description, ...(r.extra_snippets || [])].join(" . "));
+      const run = longestSharedRun(
+        used.map((x) => x.w),
+        wordsWithPositions(seen).map((x) => x.w)
+      );
+      const item = { sentence: sentences[i], url: r.url, title: String(r.title || host).slice(0, 140), words: run };
+      if (run >= WEB_MATCH_RUN) matches.push(item);
+      else possible.push(item);
+    }
+  }
+
+  const byUrl = (list) => {
+    const seen = new Set();
+    return list.filter((m) => (seen.has(m.url + m.sentence) ? false : seen.add(m.url + m.sentence)));
+  };
+  const strong = byUrl(matches).sort((a, b) => b.words - a.words).slice(0, 8);
+  const strongUrls = new Set(strong.map((m) => m.sentence));
+  const maybe = byUrl(possible)
+    .filter((m) => !strongUrls.has(m.sentence))
+    .slice(0, 5);
+
+  return json({
+    level: strong.length ? "review" : "pass",
+    sentences_checked: searched,
+    sentences_total: sentences.length,
+    matches: strong,
+    possible: maybe,
+    stopped,
+    checked_at: new Date().toISOString(),
+  });
+}
+
 // ---------- routes ----------
 async function listDrafts(env, url) {
   const status = url.searchParams.get("status") || "pending";
@@ -494,6 +623,12 @@ export default {
         if (request.method !== "POST") return json({ error: "POST only" }, 405);
         if (!(await isAdmin(request, env))) return json({ error: "Admin sign-in required" }, 401);
         return await checkOriginality(env, request);
+      }
+
+      if (path === "/check-web") {
+        if (request.method !== "POST") return json({ error: "POST only" }, 405);
+        if (!(await isAdmin(request, env))) return json({ error: "Admin sign-in required" }, 401);
+        return await checkWeb(env, request);
       }
 
       if (path === "/drafts" || path.startsWith("/drafts/")) {

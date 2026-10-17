@@ -26,7 +26,6 @@ import {
   updateDraft,
   type Draft,
   type DraftEdits,
-  type OriginalityResult,
 } from "@/lib/draftsApi";
 
 const META_LIMIT = 160;
@@ -69,7 +68,7 @@ export default function DraftReview({
   const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [grammarlyDone, setGrammarlyDone] = useState(false);
-  const [originality, setOriginality] = useState<OriginalityResult | null>(null);
+  const [flagged, setFlagged] = useState(false);
 
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
@@ -328,7 +327,7 @@ export default function DraftReview({
               html={draft.content}
               sources={draft.sources}
               onGrammarlyChange={setGrammarlyDone}
-              onResult={setOriginality}
+              onFlaggedChange={setFlagged}
             />
           )}
         </div>
@@ -361,8 +360,8 @@ export default function DraftReview({
             {!grammarlyDone && (
               <p className="text-center text-[12px] text-[#FFB08A]">Grammarly check not marked yet</p>
             )}
-            {originality?.level === "review" && (
-              <p className="text-center text-[12px] text-[#FFB08A]">The source check flagged passages. Review them before publishing.</p>
+            {flagged && (
+              <p className="text-center text-[12px] text-[#FFB08A]">The originality check flagged passages. Review them before publishing.</p>
             )}
           </>
         ) : draft.status === "rejected" ? (
@@ -391,7 +390,7 @@ export default function DraftReview({
             <AlertDialogDescription>
               It goes live on metsxmfanzone.com right away and every subscriber gets the new-article alert.
               {!grammarlyDone && " You haven't marked the Grammarly check as done."}
-              {originality?.level === "review" && " The source check flagged passages that are close to a source."}
+              {flagged && " The originality check flagged passages that are close to another page."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

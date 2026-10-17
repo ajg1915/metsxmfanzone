@@ -536,7 +536,7 @@ export default function DraftEditor() {
             html={form.content}
             sources={[]}
             onGrammarlyChange={setGrammarlyDone}
-            onResult={(r) => setFlagged(r?.level === "review")}
+            onFlaggedChange={setFlagged}
           />
         )}
 
@@ -640,7 +640,7 @@ export default function DraftEditor() {
             </div>
             <p className="text-center text-[12px] text-slate-300">Publishing also sends the new-article alert to subscribers</p>
             {!grammarlyDone && <p className="text-center text-[12px] text-[#FFB08A]">Grammarly check not marked yet</p>}
-            {flagged && <p className="text-center text-[12px] text-[#FFB08A]">The source check flagged passages. Review them before publishing.</p>}
+            {flagged && <p className="text-center text-[12px] text-[#FFB08A]">The originality check flagged passages. Review them before publishing.</p>}
           </>
         )}
       </div>
@@ -652,7 +652,7 @@ export default function DraftEditor() {
             <AlertDialogDescription>
               It goes live on metsxmfanzone.com right away and every subscriber gets the new-article alert.
               {!grammarlyDone && " You haven't marked the Grammarly check as done."}
-              {flagged && " The source check flagged passages that are close to a source."}
+              {flagged && " The originality check flagged passages that are close to another page."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

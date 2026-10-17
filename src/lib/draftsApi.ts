@@ -50,6 +50,17 @@ export interface OriginalityResult {
   checked_at?: string;
 }
 
+/** Result of the web check (drafts-api Worker, POST /check-web). */
+export interface WebCheckResult {
+  level: "pass" | "review" | "not_configured" | "bad_key";
+  sentences_checked?: number;
+  sentences_total?: number;
+  matches?: { sentence: string; url: string; title: string; words: number }[];
+  possible?: { sentence: string; url: string; title: string; words: number }[];
+  stopped?: string | null;
+  checked_at?: string;
+}
+
 export type DraftEdits = Partial<
   Pick<Draft, "title" | "content" | "summary" | "meta_description" | "category" | "tags">
 >;
@@ -229,6 +240,11 @@ export async function getDraft(id: string): Promise<Draft> {
 /** Compares the article text with the source articles it was written from. Nothing is saved. */
 export function checkOriginality(text: string, sources: string[]): Promise<OriginalityResult> {
   return request<OriginalityResult>("/check", { method: "POST", body: JSON.stringify({ text, sources }) });
+}
+
+/** Searches the web for the article's own sentences. Nothing is saved. */
+export function checkWeb(text: string): Promise<WebCheckResult> {
+  return request<WebCheckResult>("/check-web", { method: "POST", body: JSON.stringify({ text }) });
 }
 
 export async function draftCounts(): Promise<Record<DraftStatus, number>> {
