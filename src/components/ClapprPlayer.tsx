@@ -21,6 +21,10 @@ interface ClapprPlayerProps {
   streamId?: string;
 }
 
+/** Shown on a loop (muted) whenever a stream is not live. */
+export const OFFLINE_VIDEO_URL = "https://media.metsxmfanzone.com/offline/offline.mp4";
+const isFileVideo = (u: string) => /\.(mp4|webm)(\?|#|$)/i.test(u);
+
 const isMobile = (() => {
   if (typeof navigator === "undefined") return false;
   return /Android|iPad|iPhone|iPod|Mobile/i.test(navigator.userAgent || "");
@@ -50,9 +54,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   const [tvFull, setTvFull] = useState(false);
 
   const effectiveSource = source?.trim() || "";
-  const standbySource = fallbackSource?.trim() || "";
+  const standbySource = fallbackSource?.trim() || OFFLINE_VIDEO_URL;
   const [onStandby, setOnStandby] = useState(false);
-  const activeSource = onStandby && standbySource ? standbySource : effectiveSource;
+  // No stream link at all, or the main feed is down: show the standby ("We'll be right back") video.
+  const activeSource = (onStandby || !effectiveSource) && standbySource ? standbySource : effectiveSource;
 
   // A new main feed always starts from the main feed, not the standby.
   useEffect(() => {
@@ -120,6 +125,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       setStatus("error");
       return;
     }
+    // The standby is the "We'll be right back" video when no other standby is set.
+    const playingStandby = onStandby || !effectiveSource;
 
     let destroyed = false;
     let autoplayTimer: number | undefined;
@@ -128,19 +135,21 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
     // Try the link directly first, then through our HTTPS proxy, which adds the
     // CORS headers browsers need when the stream server doesn't send them.
-    const candidates = Array.from(
-      new Set(
-        [
-          activeSource,
-          isInsecureUrl(activeSource) ? toSecureStreamUrl(activeSource) : "",
-          toCorsProxyUrl(activeSource),
-        ].filter(Boolean)
-      )
-    );
+    const candidates = isFileVideo(activeSource)
+      ? [activeSource]
+      : Array.from(
+          new Set(
+            [
+              activeSource,
+              isInsecureUrl(activeSource) ? toSecureStreamUrl(activeSource) : "",
+              toCorsProxyUrl(activeSource),
+            ].filter(Boolean)
+          )
+        );
 
     // With a standby ready, give up on a dead main feed quickly so viewers aren't
     // left on a blank player while it retries.
-    const quickFail = !onStandby && !!standbySource;
+    const quickFail = !playingStandby && !!standbySource && !!effectiveSource;
 
     let index = 0;
     let mediaRecoveries = 0;
@@ -178,7 +187,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       } else {
         notifyAdmins();
         // Main feed is down: play the standby loop instead of an error screen.
-        if (!onStandby && standbySource) {
+        if (!playingStandby && standbySource) {
           setStatus("loading");
           setOnStandby(true);
           return;
@@ -202,6 +211,19 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         try { hlsRef.current.destroy(); } catch {}
         hlsRef.current = null;
       }
+
+      // A plain video file (the "We'll be right back" loop): play it directly, muted, on repeat.
+      if (isFileVideo(url)) {
+        video.removeAttribute("crossorigin");
+        video.muted = true;
+        video.loop = true;
+        video.src = url;
+        video.addEventListener("error", fail, { once: true });
+        video.play().catch(() => { if (!destroyed) setNeedsTap(true); });
+        return;
+      }
+      video.loop = false;
+      if (!isIos()) video.crossOrigin = "anonymous";
 
       // Safari / iOS: native HLS support.
       if (!Hls.isSupported() && video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -291,7 +313,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
     // Standby is a finished playlist, so restart it whenever it reaches the end.
     const onEnded = () => {
-      if (destroyed || !onStandby) return;
+      if (destroyed || !playingStandby) return;
       try { video.currentTime = 0; } catch {}
       video.play().catch(() => {});
     };
@@ -324,7 +346,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       }
       try { video.removeAttribute("src"); video.load(); } catch {}
     };
-  }, [activeSource, onStandby, standbySource, retryKey, notifyAdmins]);
+  }, [activeSource, onStandby, effectiveSource, standbySource, retryKey, notifyAdmins]);
 
   // TV mode: go straight to full screen when the stream page opens, whether or not the stream
   // has started yet (slow or standby streams never show the controls that used to trigger this).
