@@ -7,6 +7,8 @@ import { playWithSound, unmuteFromTap, rememberSound } from "@/lib/playerSound";
 
 // Proxied through the Supabase hls-proxy so HTTPS pages can play the HTTP origin without mixed-content blocking.
 const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+/** "We'll be right back" video, looped while the stream is not live. */
+const OFFLINE_VIDEO_URL = "https://media.metsxmfanzone.com/offline/offline.mp4";
 const DEFAULT_STREAM_URL = `https://${PROJECT_ID}.supabase.co/functions/v1/hls-proxy/hls/metsxmfanzone.m3u8`;
 
 
@@ -20,6 +22,8 @@ export default function MetsXMPlayer() {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMsg, setErrorMsg] = useState("");
   const [needsSound, setNeedsSound] = useState(false);
+  const [offline, setOffline] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   const startPlayback = (video: HTMLVideoElement) =>
     playWithSound(video, () => setNeedsSound(true), () => {});
@@ -57,6 +61,7 @@ export default function MetsXMPlayer() {
       } else {
         setStatus("error");
         setErrorMsg("No live stream is currently available.");
+        setOffline(true);
       }
     })();
   }, [streamUrl]);
@@ -79,6 +84,8 @@ export default function MetsXMPlayer() {
     );
 
     let index = 0;
+    let lastTime = -1;
+    let stuckSince = Date.now();
     let mediaRecoveries = 0;
     let networkRetries = 0;
 
@@ -90,6 +97,7 @@ export default function MetsXMPlayer() {
       } else {
         setStatus("error");
         setErrorMsg(msg);
+        setOffline(true);
       }
     };
 
@@ -133,6 +141,8 @@ export default function MetsXMPlayer() {
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         if (destroyed) return;
+        lastTime = -1;
+        stuckSince = Date.now();
         mediaRecoveries = 0;
         networkRetries = 0;
         setStatus("ready");
@@ -164,16 +174,59 @@ export default function MetsXMPlayer() {
 
     load();
 
+    // A feed marked live that isn't sending video never errors. If playback hasn't moved
+    // for 30 seconds, treat it as offline.
+    const progressTimer = window.setInterval(() => {
+      if (destroyed) return;
+      const t = video.currentTime;
+      if (video.paused || video.ended || t > lastTime + 0.1) {
+        lastTime = t;
+        stuckSince = Date.now();
+        return;
+      }
+      if (Date.now() - stuckSince > 30000) {
+        window.clearInterval(progressTimer);
+        setStatus("error");
+        setErrorMsg("The stream is not live right now.");
+        setOffline(true);
+      }
+    }, 3000);
+
     return () => {
       destroyed = true;
+      window.clearInterval(progressTimer);
       if (hlsRef.current) {
         try { hlsRef.current.destroy(); } catch {}
         hlsRef.current = null;
       }
       try { video.removeAttribute("src"); video.load(); } catch {}
     };
-  }, [streamUrl]);
+  }, [streamUrl, retryKey]);
 
+  // Not live: loop the "We'll be right back" video, and look for the stream again every 20 seconds.
+  useEffect(() => {
+    if (!offline) return;
+    const video = videoRef.current;
+    if (!video) return;
+    if (hlsRef.current) {
+      try { hlsRef.current.destroy(); } catch {}
+      hlsRef.current = null;
+    }
+    video.removeAttribute("crossorigin");
+    video.muted = true;
+    video.loop = true;
+    video.src = OFFLINE_VIDEO_URL;
+    video.play().catch(() => {});
+    const timer = window.setTimeout(() => {
+      setOffline(false);
+      setRetryKey((k) => k + 1);
+    }, 20000);
+    return () => {
+      window.clearTimeout(timer);
+      video.loop = false;
+      try { video.removeAttribute("src"); video.load(); } catch {}
+    };
+  }, [offline]);
 
   const play = () => videoRef.current?.play();
   const pause = () => videoRef.current?.pause();

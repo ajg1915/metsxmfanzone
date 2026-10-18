@@ -333,8 +333,33 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       }, 25000);
     }
 
+    // A feed marked "live" that isn't really sending video (empty or leftover playlist) never
+    // errors, it just sits there. If playback hasn't moved for 30 seconds, show the standby.
+    let progressTimer: number | undefined;
+    if (!playingStandby && standbySource && effectiveSource) {
+      let lastTime = -1;
+      let stuckSince = Date.now();
+      progressTimer = window.setInterval(() => {
+        if (destroyed) return;
+        const t = video.currentTime;
+        // Paused (autoplay blocked or the viewer paused) or moving normally: not stuck.
+        if (video.paused || video.ended || t > lastTime + 0.1) {
+          lastTime = t;
+          stuckSince = Date.now();
+          return;
+        }
+        if (Date.now() - stuckSince > 30000) {
+          window.clearInterval(progressTimer);
+          notifyAdmins();
+          setStatus("loading");
+          setOnStandby(true);
+        }
+      }, 3000);
+    }
+
     return () => {
       destroyed = true;
+      if (progressTimer) window.clearInterval(progressTimer);
       if (autoplayTimer) window.clearTimeout(autoplayTimer);
       if (retryTimer) window.clearTimeout(retryTimer);
       if (watchdogTimer) window.clearTimeout(watchdogTimer);
