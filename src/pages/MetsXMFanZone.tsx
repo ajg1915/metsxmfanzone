@@ -21,8 +21,8 @@ import { useMarkEngaged } from "@/hooks/useMarkEngaged";
 // stream live (TV, Stream 2, Stream 3...), the page follows it automatically.
 const STREAM3_FEED_URL = "https://video1.getstreamhosting.com:1936/duuqkvxsmv/duuqkvxsmv/playlist.m3u8";
 const METSXM_STREAM_URL = STREAM3_FEED_URL;
-// Looping standby shown whenever the live feed above isn't up.
-const METSXM_STANDBY_URL = "https://metsxmfanzone.metsxmfanzone.com/hls-standby/metsxmfanzone.m3u8";
+// "We'll be right back" video, looped whenever the live feed above isn't up.
+const METSXM_STANDBY_URL = "https://media.metsxmfanzone.com/offline/offline.mp4";
 
 type MoreStream = { id: string; title: string; thumbnail_url: string | null; status: string; scheduled_start: string | null };
 
