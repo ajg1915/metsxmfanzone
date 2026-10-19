@@ -128,7 +128,9 @@ export default async function handler(req, res) {
     const loc = `${SITE_URL}/blog/${encodeURIComponent(slug)}`;
     if (seen.has(loc)) continue;
     seen.add(loc);
-    const stamp = p.updated_at || p.published_at;
+    // lastmod = the exact date and time the article was published. (updated_at
+    // gets touched by bulk edits, which made many posts share one fake date.)
+    const stamp = p.published_at || p.updated_at;
     lines.push(urlEntry(loc, stamp ? new Date(stamp).toISOString() : null));
   }
 
