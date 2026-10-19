@@ -85,7 +85,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       }
     };
     check();
-    const timer = window.setInterval(check, 20000);
+    const timer = window.setInterval(check, 5000);
     return () => {
       cancelled = true;
       window.clearInterval(timer);
@@ -255,10 +255,10 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         liveDurationInfinity: true,
         highBufferWatchdogPeriod: 2,
         nudgeMaxRetry: 20,
-        manifestLoadingTimeOut: quickFail ? 8000 : 20000,
-        manifestLoadingMaxRetry: quickFail ? 1 : 6,
-        levelLoadingTimeOut: quickFail ? 8000 : 20000,
-        levelLoadingMaxRetry: quickFail ? 1 : 6,
+        manifestLoadingTimeOut: quickFail ? 4000 : 20000,
+        manifestLoadingMaxRetry: quickFail ? 0 : 6,
+        levelLoadingTimeOut: quickFail ? 4000 : 20000,
+        levelLoadingMaxRetry: quickFail ? 0 : 6,
         fragLoadingTimeOut: 30000,
         fragLoadingMaxRetry: 10,
         startFragPrefetch: true,
@@ -297,7 +297,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
           } catch {}
         }
 
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR && networkRetries < (quickFail ? 1 : 3)) {
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR && networkRetries < (quickFail ? 0 : 3)) {
           networkRetries += 1;
           try {
             hls.startLoad();
@@ -330,7 +330,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         notifyAdmins();
         setStatus("loading");
         setOnStandby(true);
-      }, 25000);
+      }, 5000);
     }
 
     // A feed marked "live" that isn't really sending video (empty or leftover playlist) never
@@ -338,23 +338,26 @@ export const ClapprPlayer = memo(function ClapprPlayer({
     let progressTimer: number | undefined;
     if (!playingStandby && standbySource && effectiveSource) {
       let lastTime = -1;
+      let everMoved = false;
       let stuckSince = Date.now();
       progressTimer = window.setInterval(() => {
         if (destroyed) return;
         const t = video.currentTime;
         // Paused (autoplay blocked or the viewer paused) or moving normally: not stuck.
         if (video.paused || video.ended || t > lastTime + 0.1) {
+          if (!video.paused && t > 0.1) everMoved = true;
           lastTime = t;
           stuckSince = Date.now();
           return;
         }
-        if (Date.now() - stuckSince > 30000) {
+        // Never started: offline after 5 seconds. Froze mid-stream: after 10 seconds.
+        if (Date.now() - stuckSince > (everMoved ? 10000 : 5000)) {
           window.clearInterval(progressTimer);
           notifyAdmins();
           setStatus("loading");
           setOnStandby(true);
         }
-      }, 3000);
+      }, 1000);
     }
 
     return () => {

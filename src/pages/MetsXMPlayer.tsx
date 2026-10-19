@@ -85,6 +85,7 @@ export default function MetsXMPlayer() {
 
     let index = 0;
     let lastTime = -1;
+    let everMoved = false;
     let stuckSince = Date.now();
     let mediaRecoveries = 0;
     let networkRetries = 0;
@@ -133,7 +134,8 @@ export default function MetsXMPlayer() {
         lowLatencyMode: true,
         liveDurationInfinity: true,
         backBufferLength: 10,
-        manifestLoadingMaxRetry: 3,
+        manifestLoadingTimeOut: 4000,
+        manifestLoadingMaxRetry: 0,
         fragLoadingMaxRetry: 6,
       });
       hlsRef.current = hls;
@@ -160,7 +162,7 @@ export default function MetsXMPlayer() {
           } catch {}
         }
 
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR && networkRetries < 3) {
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR && networkRetries < 1) {
           networkRetries += 1;
           try {
             hls.startLoad();
@@ -180,17 +182,19 @@ export default function MetsXMPlayer() {
       if (destroyed) return;
       const t = video.currentTime;
       if (video.paused || video.ended || t > lastTime + 0.1) {
+        if (!video.paused && t > 0.1) everMoved = true;
         lastTime = t;
         stuckSince = Date.now();
         return;
       }
-      if (Date.now() - stuckSince > 30000) {
+      // Never started: offline after 5 seconds. Froze mid-stream: after 10 seconds.
+      if (Date.now() - stuckSince > (everMoved ? 10000 : 5000)) {
         window.clearInterval(progressTimer);
         setStatus("error");
         setErrorMsg("The stream is not live right now.");
         setOffline(true);
       }
-    }, 3000);
+    }, 1000);
 
     return () => {
       destroyed = true;
@@ -203,7 +207,7 @@ export default function MetsXMPlayer() {
     };
   }, [streamUrl, retryKey]);
 
-  // Not live: loop the "We'll be right back" video, and look for the stream again every 20 seconds.
+  // Not live: loop the "We'll be right back" video and check for the stream every 5 seconds.
   useEffect(() => {
     if (!offline) return;
     const video = videoRef.current;
@@ -217,16 +221,36 @@ export default function MetsXMPlayer() {
     video.loop = true;
     video.src = OFFLINE_VIDEO_URL;
     video.play().catch(() => {});
-    const timer = window.setTimeout(() => {
-      setOffline(false);
-      setRetryKey((k) => k + 1);
-    }, 20000);
+    // Keep the video playing and quietly watch the stream's playlist; a live stream rewrites
+    // it every few seconds, so once it changes, switch back to the stream.
+    let cancelled = false;
+    let last = "";
+    const check = async () => {
+      if (!streamUrl) return;
+      for (const url of [toSecureStreamUrl(streamUrl), streamUrl]) {
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          if (!res.ok) continue;
+          const text = await res.text();
+          if (!text.includes("#EXT")) return;
+          if (!cancelled && last && text !== last) {
+            setOffline(false);
+            setRetryKey((k) => k + 1);
+          }
+          last = text;
+          return;
+        } catch {}
+      }
+    };
+    check();
+    const timer = window.setInterval(check, 5000);
     return () => {
-      window.clearTimeout(timer);
+      cancelled = true;
+      window.clearInterval(timer);
       video.loop = false;
       try { video.removeAttribute("src"); video.load(); } catch {}
     };
-  }, [offline]);
+  }, [offline, streamUrl]);
 
   const play = () => videoRef.current?.play();
   const pause = () => videoRef.current?.pause();
