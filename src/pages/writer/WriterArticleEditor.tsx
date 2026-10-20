@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToR2 } from "@/lib/r2Upload";
+import ImageCropDialog from "@/components/admin/ImageCropDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,7 @@ export default function WriterArticleEditor() {
   const [tags, setTags] = useState("");
   const [featuredImageUrl, setFeaturedImageUrl] = useState("");
   const [imageUploading, setImageUploading] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [checking, setChecking] = useState(false);
   const [checkResult, setCheckResult] = useState<any>(null);
   const initialized = useRef(false);
@@ -183,10 +185,16 @@ export default function WriterArticleEditor() {
 
   // Slug is entered manually by the writer (no auto-generation)
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Pick a photo: it opens the cropper first (GIFs and SVGs skip it), then uploads.
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
+    if (/^image\/(gif|svg)/.test(file.type)) void uploadFeatured(file);
+    else setCropFile(file);
+  };
 
+  const uploadFeatured = async (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -625,6 +633,13 @@ export default function WriterArticleEditor() {
           </Card>
         )}
       </main>
+
+      <ImageCropDialog
+        file={cropFile}
+        defaultAspect={16 / 9}
+        onCancel={() => setCropFile(null)}
+        onDone={(cropped) => { setCropFile(null); void uploadFeatured(cropped); }}
+      />
     </div>
   );
 }

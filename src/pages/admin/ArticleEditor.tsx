@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToR2 } from "@/lib/r2Upload";
+import ImageCropDialog from "@/components/admin/ImageCropDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +64,7 @@ export default function ArticleEditor() {
   const [pendingLocal, setPendingLocal] = useState<(FormState & { savedAt?: number }) | null>(null);
   const [step, setStep] = useState(0);
   const [uploading, setUploading] = useState<"featured" | "inline" | "audio" | null>(null);
+  const [cropReq, setCropReq] = useState<{ file: File; kind: "featured" | "inline" } | null>(null);
   const [existingSlugs, setExistingSlugs] = useState<string[]>([]);
   const [savedPost, setSavedPost] = useState<{ id: string; title: string; slug: string; excerpt?: string | null; featured_image_url?: string | null } | null>(null);
   const [approvalStatus, setApprovalStatus] = useState<string | null>(null);
@@ -213,6 +215,18 @@ export default function ArticleEditor() {
     } finally { setUploading(null); }
   };
 
+  // Images are cropped first, then uploaded. GIFs and SVGs skip the cropper so they keep animation/vectors.
+  const finishImage = async (file: File, kind: "featured" | "inline") => {
+    const url = await upload(file, kind);
+    if (!url) return;
+    if (kind === "inline") setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
+    else setForm((f) => ({ ...f, featured_image_url: url }));
+  };
+  const startImage = (file: File, kind: "featured" | "inline") => {
+    if (/^image\/(gif|svg)/.test(file.type)) void finishImage(file, kind);
+    else setCropReq({ file, kind });
+  };
+
   const wordCount = useMemo(() => {
     const txt = form.content.replace(/<[^>]*>/g, " ").trim();
     return txt ? txt.split(/\s+/).length : 0;
@@ -336,9 +350,14 @@ export default function ArticleEditor() {
       <input ref={inlineInput} type="file" accept="image/*" className="hidden" onChange={async (e) => {
         const file = e.target.files?.[0]; e.target.value = "";
         if (!file) return;
-        const url = await upload(file, "inline");
-        if (url) setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
+        startImage(file, "inline");
       }} />
+      <ImageCropDialog
+        file={cropReq?.file ?? null}
+        defaultAspect={cropReq?.kind === "featured" ? 16 / 9 : null}
+        onCancel={() => setCropReq(null)}
+        onDone={(cropped) => { const k = cropReq?.kind ?? "inline"; setCropReq(null); void finishImage(cropped, k); }}
+      />
       <MediaPickerDialog
         open={picker.open}
         onOpenChange={(open) => setPicker((p) => ({ ...p, open }))}
@@ -469,8 +488,7 @@ export default function ArticleEditor() {
                   <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
                     const file = e.target.files?.[0]; e.target.value = "";
                     if (!file) return;
-                    const url = await upload(file, "featured");
-                    if (url) setForm((f) => ({ ...f, featured_image_url: url }));
+                    startImage(file, "featured");
                   }} />
                 </label>
                 <Button type="button" variant="outline" className="h-10 px-3 text-xs" onClick={() => setPicker({ open: true, target: "featured" })}>
