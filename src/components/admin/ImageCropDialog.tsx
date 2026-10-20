@@ -11,7 +11,7 @@ import { Loader2, RotateCcw, RotateCw } from "lucide-react";
 
 const MAX_OUTPUT_WIDTH = 1600;
 const MIN_CROP = 48; // smallest crop side, in source pixels
-const MAX_STAGE_HEIGHT = 400;
+const EDGE_ROOM = 24; // space kept around the photo so the corner handles stay visible
 
 const SHAPES: { label: string; aspect: number | null }[] = [
   { label: "Free", aspect: null },
@@ -38,7 +38,7 @@ export default function ImageCropDialog({ file, defaultAspect = null, onCancel, 
   const [nat, setNat] = useState({ w: 0, h: 0 });
   const [aspect, setAspect] = useState<number | null>(defaultAspect);
   const [crop, setCrop] = useState<Crop>({ x: 0, y: 0, w: 0, h: 0 });
-  const [scale, setScale] = useState(1);
+  const [avail, setAvail] = useState({ w: 0, h: 0 }); // space the photo can use
   const [busy, setBusy] = useState(false);
 
   const imgRef = useRef<HTMLImageElement | null>(null);
@@ -68,26 +68,26 @@ export default function ImageCropDialog({ file, defaultAspect = null, onCancel, 
     setCrop({ x: (w0 - w) / 2, y: (h0 - h) / 2, w, h });
   }, []);
 
-  const measure = useCallback((w0: number, h0: number) => {
-    const cw = Math.max(200, (holderRef.current?.clientWidth ?? 600) - 2);
-    setScale(Math.min(cw / w0, MAX_STAGE_HEIGHT / h0, 1));
-  }, []);
-
   const onImgLoad = () => {
     const im = imgRef.current;
     if (!im) return;
     const w0 = im.naturalWidth, h0 = im.naturalHeight;
     setNat({ w: w0, h: h0 });
-    measure(w0, h0);
     fitCrop(aspect, w0, h0);
   };
 
-  // Re-fit the preview when the window size changes
+  // Keep the photo sized to the space the window actually has (phone, tablet, desktop, rotated screen)
   useEffect(() => {
-    const onResize = () => { if (nat.w) measure(nat.w, nat.h); };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [nat, measure]);
+    const el = holderRef.current;
+    if (!el || !src) return;
+    const read = () => setAvail({ w: Math.max(0, el.clientWidth - EDGE_ROOM), h: Math.max(0, el.clientHeight - EDGE_ROOM) });
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [src]);
+
+  const scale = nat.w && avail.w && avail.h ? Math.min(avail.w / nat.w, avail.h / nat.h, 2) : 0.05;
 
   const pickShape = (a: number | null) => {
     setAspect(a);
@@ -190,13 +190,13 @@ export default function ImageCropDialog({ file, defaultAspect = null, onCancel, 
 
   return (
     <Dialog open={!!file} onOpenChange={(o) => { if (!o && !busy) onCancel(); }}>
-      <DialogContent className="max-w-3xl">
-        <DialogHeader>
+      <DialogContent className="flex h-[100dvh] max-h-[100dvh] w-screen max-w-none flex-col gap-2 overflow-hidden rounded-none p-3 sm:h-[92dvh] sm:max-h-[92dvh] sm:max-w-4xl sm:rounded-lg sm:p-5 [@media(max-height:520px)]:h-[100dvh] [@media(max-height:520px)]:max-h-[100dvh] [@media(max-height:520px)]:max-w-none [@media(max-height:520px)]:rounded-none [@media(max-height:520px)]:p-2">
+        <DialogHeader className="shrink-0 [@media(max-height:520px)]:sr-only">
           <DialogTitle>Crop image</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3">
-          <div ref={holderRef} className="flex justify-center rounded-md bg-black/80 p-3 min-h-[200px]">
+        <div className="flex min-h-0 flex-1 flex-col gap-2 [@media(max-height:520px)]:flex-row">
+          <div ref={holderRef} className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-md bg-black/80">
             {src && (
               <div className="relative select-none touch-none leading-[0]" style={{ width: dw || undefined, height: dh || undefined }}>
                 <img ref={imgRef} src={src} alt="Image to crop" onLoad={onImgLoad} draggable={false}
@@ -228,35 +228,39 @@ export default function ImageCropDialog({ file, defaultAspect = null, onCancel, 
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex shrink-0 flex-col gap-2 [@media(max-height:520px)]:w-64 [@media(max-height:520px)]:justify-between [@media(max-height:520px)]:overflow-y-auto">
+          <div className="flex flex-col gap-2">
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
             {SHAPES.map((s) => (
-              <Button key={s.label} type="button" size="sm"
+              <Button key={s.label} type="button" size="sm" className="shrink-0"
                 variant={aspect === s.aspect ? "default" : "outline"}
                 onClick={() => pickShape(s.aspect)}>
                 {s.label}
               </Button>
             ))}
-            <span className="mx-1 h-5 w-px bg-border" />
-            <Button type="button" size="sm" variant="outline" onClick={() => rotate(-1)} aria-label="Rotate left">
+            <span className="mx-1 h-5 w-px shrink-0 bg-border" />
+            <Button type="button" size="sm" variant="outline" className="shrink-0" onClick={() => rotate(-1)} aria-label="Rotate left">
               <RotateCcw className="w-4 h-4" />
             </Button>
-            <Button type="button" size="sm" variant="outline" onClick={() => rotate(1)} aria-label="Rotate right">
+            <Button type="button" size="sm" variant="outline" className="shrink-0" onClick={() => rotate(1)} aria-label="Rotate right">
               <RotateCw className="w-4 h-4" />
             </Button>
           </div>
 
-          <p className="text-xs text-muted-foreground tabular-nums">
+          <p className="shrink-0 text-xs text-muted-foreground tabular-nums">
             Uploads as {outW} &times; {outH} px (original {nat.w} &times; {nat.h} px)
           </p>
-        </div>
+          </div>
 
-        <DialogFooter className="gap-2 sm:gap-2">
-          <Button type="button" variant="outline" onClick={onCancel} disabled={busy}>Cancel</Button>
-          <Button type="button" onClick={finish} disabled={busy || !nat.w}>
-            {busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-            Crop &amp; upload
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="shrink-0 flex-row justify-end gap-2 sm:gap-2">
+            <Button type="button" variant="outline" onClick={onCancel} disabled={busy}>Cancel</Button>
+            <Button type="button" onClick={finish} disabled={busy || !nat.w}>
+              {busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Crop &amp; upload
+            </Button>
+          </DialogFooter>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
