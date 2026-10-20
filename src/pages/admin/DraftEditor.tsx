@@ -10,6 +10,7 @@ import { forgetDraftsWaiting } from "@/hooks/useDraftsWaiting";
 import RichTextEditor from "@/components/admin/RichTextEditor";
 import BlogShareDialog from "@/components/admin/BlogShareDialog";
 import OriginalityCard from "@/components/admin/OriginalityCard";
+import ImageCropDialog from "@/components/admin/ImageCropDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,6 +88,7 @@ export default function DraftEditor() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState<"cover" | "inline" | "audio" | null>(null);
+  const [cropReq, setCropReq] = useState<{ file: File; kind: "cover" | "inline" } | null>(null);
   const [mode, setMode] = useState<"now" | "schedule">("now");
   const [confirm, setConfirm] = useState<"publish" | "unpublish" | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -223,15 +225,21 @@ export default function DraftEditor() {
     }
   };
 
-  const onPick = (kind: "cover" | "inline" | "audio") => async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
+  const finishUpload = async (file: File, kind: "cover" | "inline" | "audio") => {
     const url = await upload(file, kind);
     if (!url) return;
     if (kind === "cover") set("featured_image_url", url);
     else if (kind === "audio") set("audio_url", url);
     else setForm((f) => ({ ...f, content: f.content + `<p><img src="${url}" alt="" /></p>` }));
+  };
+
+  // Images open the cropper first, then upload. Audio, GIFs and SVGs upload as they are.
+  const onPick = (kind: "cover" | "inline" | "audio") => async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (kind === "audio" || /^image\/(gif|svg)/.test(file.type)) await finishUpload(file, kind);
+    else setCropReq({ file, kind });
   };
 
   // ----- saving -----
@@ -676,6 +684,13 @@ export default function DraftEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ImageCropDialog
+        file={cropReq?.file ?? null}
+        defaultAspect={cropReq?.kind === "cover" ? 16 / 9 : null}
+        onCancel={() => setCropReq(null)}
+        onDone={(cropped) => { const k = cropReq?.kind ?? "inline"; setCropReq(null); void finishUpload(cropped, k); }}
+      />
 
       <BlogShareDialog
         open={shareOpen}
