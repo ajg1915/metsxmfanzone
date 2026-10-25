@@ -1,4 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
+import StreamSourceStatusPanel from "@/components/admin/StreamSourceStatusPanel";
+import LiveNotificationManagement from "@/pages/admin/LiveNotificationManagement";
+import StreamHealthDashboard from "@/pages/admin/StreamHealthDashboard";
+import StreamIssues from "@/pages/admin/StreamIssues";
+import StreamTester from "@/pages/admin/StreamTester";
 import { supabase } from "@/integrations/supabase/client";
 import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
 import { NY_TEAM_PAGES } from "@/lib/nyTeamStreamCheck";
@@ -113,6 +119,22 @@ const TEAM_TABS = [
 ] as const;
 
 type TeamTabKey = (typeof TEAM_TABS)[number]["key"];
+
+// Top-level sections of the Live Streams area. Each tab has one job.
+const HUB_TABS = [
+  { key: "now", label: "Live Now" },
+  { key: "networks", label: "Sports Networks" },
+  { key: "games", label: "Games & Events" },
+  { key: "feeds", label: "Feeds" },
+  { key: "health", label: "Health & Issues" },
+  { key: "notifications", label: "Notifications" },
+] as const;
+type HubTabKey = (typeof HUB_TABS)[number]["key"];
+
+// Streams assigned to one of these pages are sports network streams.
+const NETWORK_PAGES = ["mlb-network", "espn-network", "msg-network", "sny-tv", "pix11-network", "metsxmfanzone-2", "metsxmfanzone"];
+const isNetworkStream = (s: { assigned_pages?: string[] | null }) =>
+  (s.assigned_pages || []).some((p) => NETWORK_PAGES.includes(p));
 
 const getStreamTeam = (stream: { assigned_pages?: string[] | null }): Exclude<TeamTabKey, "all"> => {
   const pages = (stream.assigned_pages || []).map((p) => p.toLowerCase());
@@ -389,15 +411,36 @@ export default function LiveStreamManagement() {
   const [bulkMediaPickerOpen, setBulkMediaPickerOpen] = useState(false);
   const [activeTeam, setActiveTeam] = useState<TeamTabKey>("all");
 
-  const teamCounts = streams.reduce<Record<string, number>>((acc, s) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const rawTab = searchParams.get("tab");
+  const hubTab: HubTabKey = HUB_TABS.some((t) => t.key === rawTab) ? (rawTab as HubTabKey) : "now";
+  const isStreamTab = hubTab === "now" || hubTab === "networks" || hubTab === "games";
+
+  const gameStreams = streams.filter((s) => !isNetworkStream(s));
+  const hubCounts: Record<HubTabKey, number> = {
+    now: streams.filter((s) => s.status === "live").length,
+    networks: streams.filter(isNetworkStream).length,
+    games: gameStreams.length,
+    feeds: 0,
+    health: 0,
+    notifications: 0,
+  };
+
+  const teamCounts = gameStreams.reduce<Record<string, number>>((acc, s) => {
     const team = getStreamTeam(s);
     acc[team] = (acc[team] || 0) + 1;
     return acc;
-  }, { all: streams.length });
+  }, { all: gameStreams.length });
 
-  const visibleStreams = activeTeam === "all"
-    ? streams
-    : streams.filter((s) => getStreamTeam(s) === activeTeam);
+  const tabStreams =
+    hubTab === "now" ? streams.filter((s) => s.status === "live")
+    : hubTab === "networks" ? streams.filter(isNetworkStream)
+    : hubTab === "games" ? gameStreams
+    : streams;
+
+  const visibleStreams = hubTab === "games" && activeTeam !== "all"
+    ? tabStreams.filter((s) => getStreamTeam(s) === activeTeam)
+    : tabStreams;
 
   const allVisibleSelected = visibleStreams.length > 0 && visibleStreams.every((s) => selectedIds.has(s.id));
 
@@ -814,15 +857,15 @@ export default function LiveStreamManagement() {
 
   return (
     <AdminPage>
-      <TikTokLiveToggle />
+      {hubTab === "now" && <TikTokLiveToggle />}
       <AdminPageHeader
         icon={Radio}
-        title="Live Stream Management"
+        title="Live Streams"
         count={streams.length}
         countLabel="streams"
         actions={
         <div className="grid w-full min-w-0 grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end">
-          {streams.length > 0 && (
+          {isStreamTab && streams.length > 0 && (
             <Button size="sm" variant="outline" className="h-8 min-w-0 px-2 text-xs" onClick={selectAll}>
               <CheckSquare className="w-3.5 h-3.5 mr-1" />
               {allVisibleSelected ? "Deselect All" : "Select All"}
@@ -1244,12 +1287,43 @@ export default function LiveStreamManagement() {
         }
       />
 
-      {loading ? (
+      <div className="flex min-w-0 gap-1 overflow-x-auto border-b border-border" role="tablist" aria-label="Live streams sections">
+        {HUB_TABS.map((tab) => {
+          const active = hubTab === tab.key;
+          const count = hubCounts[tab.key];
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => { setSearchParams({ tab: tab.key }, { replace: true }); setSelectedIds(new Set()); }}
+              className={`shrink-0 whitespace-nowrap rounded-t-md border border-b-0 px-3 py-2 text-xs font-semibold transition-colors ${active ? "border-border bg-card text-foreground shadow-[inset_0_2px_0_hsl(var(--primary))]" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            >
+              {tab.label}
+              {count > 0 && <span className="ml-1.5 rounded-full bg-muted px-1.5 text-[10px] text-muted-foreground">{count}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {hubTab === "feeds" ? (
+        <StreamSourceStatusPanel />
+      ) : hubTab === "health" ? (
+        <div className="space-y-6">
+          <StreamHealthDashboard />
+          <StreamIssues />
+          <StreamTester />
+        </div>
+      ) : hubTab === "notifications" ? (
+        <LiveNotificationManagement />
+      ) : loading ? (
         <AdminLoading label="Loading streams…" />
       ) : streams.length === 0 ? (
         <AdminEmpty message='No live streams yet. Click "Add Live Stream" to schedule your first stream.' />
       ) : (
         <>
+        {hubTab === "games" && (
         <div className="mb-4 flex min-w-0 gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Filter streams by team">
           {TEAM_TABS.map((tab) => {
             const active = activeTeam === tab.key;
@@ -1272,8 +1346,9 @@ export default function LiveStreamManagement() {
             );
           })}
         </div>
+        )}
         {visibleStreams.length === 0 ? (
-          <AdminEmpty message="No streams in this category yet." />
+          <AdminEmpty message={hubTab === "now" ? "Nothing is live right now." : hubTab === "networks" ? "No sports network streams yet." : "No streams in this category yet."} />
         ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={visibleStreams.map(s => s.id)} strategy={rectSortingStrategy}>

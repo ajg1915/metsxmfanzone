@@ -59,7 +59,6 @@ const PodcastLiveStreamManagement = lazyWithRetry(() => import("./pages/admin/Po
 
 
 const LiveStreamManagement = lazyWithRetry(() => import("./pages/admin/LiveStreamManagement"), "page-admin-live-stream-management");
-const LiveNotificationManagement = lazyWithRetry(() => import("./pages/admin/LiveNotificationManagement"), "page-admin-live-notification-management");
 const TrialManagement = lazyWithRetry(() => import("./pages/admin/TrialManagement"), "page-admin-trial-management");
 const SubscriptionManagement = lazyWithRetry(() => import("./pages/admin/SubscriptionManagement"), "page-admin-subscription-management");
 const StoriesManagement = lazyWithRetry(() => import("./pages/admin/StoriesManagement"), "page-admin-stories-management");
@@ -124,9 +123,6 @@ const BackgroundManagement = lazyWithRetry(() => import("./pages/admin/Backgroun
 const ActivityDashboard = lazyWithRetry(() => import("./pages/admin/ActivityDashboard"), "page-admin-activity-dashboard");
 const WriterApplications = lazyWithRetry(() => import("./pages/admin/WriterApplications"), "page-admin-writer-applications");
 const RealtimeAnalytics = lazyWithRetry(() => import("./pages/admin/RealtimeAnalytics"), "page-admin-realtime-analytics");
-const StreamHealthDashboard = lazyWithRetry(() => import("./pages/admin/StreamHealthDashboard"), "page-admin-stream-health-dashboard");
-const StreamIssues = lazyWithRetry(() => import("./pages/admin/StreamIssues"), "page-admin-stream-issues");
-const StreamTester = lazyWithRetry(() => import("./pages/admin/StreamTester"), "page-admin-stream-tester");
 const FeedHealth = lazyWithRetry(() => import("./pages/admin/FeedHealth"), "page-admin-feed-health");
 const SEOManagement = lazyWithRetry(() => import("./pages/admin/SEOManagement"), "page-admin-seo-management");
 const HeroManagement = lazyWithRetry(() => import("./pages/admin/HeroManagement"), "page-admin-hero-management");
@@ -394,7 +390,7 @@ const AppContent = () => {
               <Route path="live-streams" element={<LiveStreamManagement />} />
               <Route path="podcast-live-stream" element={<PodcastLiveStreamManagement />} />
               
-              <Route path="live-notifications" element={<LiveNotificationManagement />} />
+              <Route path="live-notifications" element={<Navigate to="/admin/live-streams?tab=notifications" replace />} />
               <Route path="stories" element={<StoriesManagement />} />
               <Route path="events" element={<EventsManagement />} />
               <Route path="tutorial" element={<TutorialManagement />} />
@@ -414,9 +410,9 @@ const AppContent = () => {
               <Route path="activity" element={<ActivityDashboard />} />
               <Route path="writer-applications" element={<WriterApplications />} />
               <Route path="realtime-analytics" element={<RealtimeAnalytics />} />
-              <Route path="stream-health" element={<StreamHealthDashboard />} />
-              <Route path="stream-issues" element={<StreamIssues />} />
-              <Route path="stream-tester" element={<StreamTester />} />
+              <Route path="stream-health" element={<Navigate to="/admin/live-streams?tab=health" replace />} />
+              <Route path="stream-issues" element={<Navigate to="/admin/live-streams?tab=health" replace />} />
+              <Route path="stream-tester" element={<Navigate to="/admin/live-streams?tab=health" replace />} />
               <Route path="feed-health" element={<FeedHealth />} />
               <Route path="seo" element={<SEOManagement />} />
               <Route path="game-notifications" element={<GameNotifications />} />
