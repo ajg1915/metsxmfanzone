@@ -20,6 +20,9 @@ interface RelatedStream {
   href: string;
   external?: boolean;
   assignedPages?: string[];
+  /** Premium platform cards stay visible even when nothing is live */
+  alwaysShow?: boolean;
+  badge?: string;
 }
 
 interface LiveStreamRecord {
@@ -37,6 +40,8 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     subtitle: "Premium — Mets game events",
     thumbnail: channelMlb,
     href: "/apple-tv",
+    alwaysShow: true,
+    badge: "Premium",
   },
   {
     id: "sny-tv",
@@ -50,7 +55,9 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     title: "Peacock",
     subtitle: "Premium — Mets game events",
     thumbnail: channelMsg,
-    href: "/live/msg-network",
+    href: "/peacock",
+    alwaysShow: true,
+    badge: "Premium",
   },
   {
     id: "espn-network",
@@ -58,6 +65,8 @@ const FALLBACK_STREAMS: RelatedStream[] = [
     subtitle: "Premium — Mets game events",
     thumbnail: channelEspn,
     href: "/prime-video",
+    alwaysShow: true,
+    badge: "Premium",
   },
   {
     id: "pix11-network",
@@ -129,7 +138,7 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
   if (pages.includes("mlb-network")) href = "/apple-tv";
   else if (pages.includes("espn-network")) href = "/prime-video";
   else if (pages.includes("pix11-network")) href = "/pix11-network";
-  else if (pages.includes("msg-network")) href = "/live/msg-network";
+  else if (pages.includes("msg-network")) href = "/peacock";
   else if (pages.includes("metsxmfanzone-2")) href = "/live/metsxmfanzone-2";
   return {
     id: stream.id,
@@ -138,6 +147,8 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
     // Always prefer the artwork set in admin; bundled art is only a safety net
     thumbnail: stream.thumbnail_url || fallback.thumbnail,
     fallbackThumb: fallback.thumbnail,
+    alwaysShow: fallback.alwaysShow,
+    badge: fallback.badge,
     href,
     assignedPages: pages,
   };
@@ -196,11 +207,13 @@ const RelatedStreamsSection = () => {
       isMetsXM2,
     ];
 
-    // Only show channels that actually exist as live streams in the database.
+    // Show channels that are live in the database. Apple TV, Prime Video and Peacock
+    // always show, even when no game is live, using their built-in card.
     return matchers
       .map((matcher, i) => {
         const stream = networkStreams.find((candidate) => !isOffseasonTeamStream(candidate) && matcher(candidate));
-        return stream ? streamToCard(stream, FALLBACK_STREAMS[i]) : null;
+        if (stream) return streamToCard(stream, FALLBACK_STREAMS[i]);
+        return FALLBACK_STREAMS[i].alwaysShow ? FALLBACK_STREAMS[i] : null;
       })
       .filter((s): s is RelatedStream => s !== null);
   }, [networkStreams]);
@@ -295,7 +308,7 @@ const RelatedStreamsSection = () => {
 
                 <div className="absolute top-2 right-2">
                   <Badge className="text-[10px] px-1.5 py-0.5 font-semibold bg-primary/90 text-primary-foreground backdrop-blur-sm">
-                    24/7
+                    {s.badge || "24/7"}
                   </Badge>
                 </div>
 
