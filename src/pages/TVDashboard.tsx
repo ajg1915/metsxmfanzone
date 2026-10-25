@@ -19,6 +19,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Crown } from "lucide-react";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
+import channelMlb from "@/assets/channel-mlb.jpg";
+import channelEspn from "@/assets/channel-espn.jpg";
+import channelMsg from "@/assets/channel-msg.jpg";
 
 export type TVCategory = "home" | "live" | "highlights" | "replays";
 
@@ -60,9 +63,9 @@ const TVDashboard = () => {
         .from("live_streams")
         .select("*")
         .eq("published", true)
-        .eq("status", "live")
+        .in("status", ["live", "scheduled"])
         .order("created_at", { ascending: false })
-        .limit(12);
+        .limit(24);
       if (error) throw error;
       return data;
     },
@@ -152,6 +155,47 @@ const TVDashboard = () => {
     })),
     [liveStreams]
   );
+
+  // Live Now: only streams that are live right now (upcoming ones show on their own page/rail)
+  const liveNowItems = useMemo(
+    () => liveItems.filter((i) => i.isLive && !NETWORK_STREAM.test(i.title)),
+    [liveItems]
+  );
+
+  // Sports Networks: Apple TV, Prime Video and Peacock always show, even when nothing is live,
+  // then any other network streams that are live or upcoming.
+  const networkItems = useMemo(() => {
+    const platforms = [
+      { re: /apple tv|mlb network/i, title: "Apple TV", thumbnail: channelMlb },
+      { re: /prime video|espn/i, title: "Prime Video", thumbnail: channelEspn },
+      { re: /peacock|\bmsg\b/i, title: "Peacock", thumbnail: channelMsg },
+    ];
+    const networkStreams = liveItems.filter((i) => NETWORK_STREAM.test(i.title));
+    const used = new Set<string>();
+    const platformItems = platforms.map((p) => {
+      const matches = networkStreams.filter((i) => p.re.test(i.title));
+      matches.forEach((m) => used.add(m.id));
+      const found = matches.find((m) => m.isLive) || matches[0];
+      if (found) {
+        return {
+          ...found,
+          title: p.title,
+          thumbnail: found.thumbnail === "/placeholder.svg" ? p.thumbnail : found.thumbnail,
+          subtitle: found.isLive ? "Live now" : "Premium: Mets game events",
+        };
+      }
+      return {
+        id: `platform-${p.title}`,
+        title: p.title,
+        thumbnail: p.thumbnail,
+        badge: "Premium",
+        subtitle: "Mets game events",
+        isLive: false,
+      };
+    });
+    const others = networkStreams.filter((i) => !used.has(i.id));
+    return [...platformItems, ...others];
+  }, [liveItems]);
 
   const highlightItems = useMemo(() =>
     highlights.map((v: any) => ({
@@ -384,12 +428,10 @@ const TVDashboard = () => {
 
               {/* Live section */}
               <div ref={liveRef}>
-                {liveItems.filter((i) => !NETWORK_STREAM.test(i.title)).length > 0 && (
-                  <TVContentRail title="Live Now" items={liveItems.filter((i) => !NETWORK_STREAM.test(i.title))} accent onItemClick={openLive} />
+                {liveNowItems.length > 0 && (
+                  <TVContentRail title="Live Now" items={liveNowItems} accent onItemClick={openLive} />
                 )}
-                {liveItems.filter((i) => NETWORK_STREAM.test(i.title)).length > 0 && (
-                  <TVContentRail title="Sports Networks" items={liveItems.filter((i) => NETWORK_STREAM.test(i.title))} onItemClick={openLive} />
-                )}
+                <TVContentRail title="Sports Networks" items={networkItems} onItemClick={openLive} />
               </div>
 
               {/* News */}
