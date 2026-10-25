@@ -256,7 +256,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
             onCheckedChange={(v) => onToggleFree(stream.id, v)}
           />
         </div>
-        {stream.status === "live" && ['mlb-network', 'espn-network', 'msg-network'].some((p) => stream.assigned_pages?.includes(p)) && (
+        {stream.status === "live" && ['mlb-network', 'espn-network', 'msg-network', 'sny-tv'].some((p) => stream.assigned_pages?.includes(p)) && (
           <div className="flex items-center justify-between gap-2 mb-3 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
             <Label htmlFor={`offline-${stream.id}`} className="text-[11px] font-medium leading-tight">
               Showing offline loop

@@ -116,7 +116,12 @@ const SportsNetworksStrip = () => {
               {s.thumbnail_url && (
                 <img src={s.thumbnail_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
               )}
-              {s.status === "live" && (
+              {s.status === "live" && s.offline_loop && (
+                <span className="absolute left-2 top-2 rounded bg-zinc-700 px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide text-white">
+                  OFFLINE
+                </span>
+              )}
+              {s.status === "live" && !s.offline_loop && (
                 <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded bg-red-700 px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide text-white">
                   <Radio className="h-3 w-3" /> LIVE
                 </span>
@@ -125,7 +130,7 @@ const SportsNetworksStrip = () => {
             <span className="mt-2 block px-1">
               <span className="block truncate text-base font-bold text-foreground">{s.title.trim()}</span>
               <span className="block text-sm text-muted-foreground">
-                {s.status === "live" ? "Live now" : s.scheduled_start ? when(s.scheduled_start) : "Upcoming"}
+                {s.status === "live" && s.offline_loop ? "Offline: loop playing" : s.status === "live" ? "Live now" : s.scheduled_start ? when(s.scheduled_start) : "Upcoming"}
               </span>
             </span>
           </Link>

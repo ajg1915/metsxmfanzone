@@ -162,9 +162,11 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
     badge:
       stream.status === "scheduled"
         ? "Upcoming"
-        : fallback.alwaysShow && stream.status === "live"
-          ? (stream.offline_loop ? "Offline" : "Live")
-          : fallback.badge,
+        : stream.status === "live" && stream.offline_loop
+          ? "Offline"
+          : fallback.alwaysShow && stream.status === "live"
+            ? "Live"
+            : fallback.badge,
     href,
     assignedPages: pages,
   };

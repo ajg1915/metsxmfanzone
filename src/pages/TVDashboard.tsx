@@ -148,7 +148,7 @@ const TVDashboard = () => {
       id: s.id,
       title: s.title,
       thumbnail: s.thumbnail_url || "/placeholder.svg",
-      badge: s.status === "live" ? "LIVE" : s.status === "scheduled" ? "Upcoming" : undefined,
+      badge: s.status === "live" ? ((s as any).offline_loop ? "OFFLINE" : "LIVE") : s.status === "scheduled" ? "Upcoming" : undefined,
       subtitle: s.description?.slice(0, 80) || "",
       streamUrl: s.stream_url,
       isLive: s.status === "live",
