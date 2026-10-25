@@ -85,9 +85,7 @@ const Privacy = () => {
                 These services have their own privacy policies and we encourage you to review them.
               </p>
               <p className="text-muted-foreground mt-4">
-                All memberships, including the separate NY Sports Streaming package ($19.99/month, covering only the
-                New York Giants, Jets, Knicks, Rangers, Islanders and Brooklyn Nets plus our 24/7 sports network
-                streams), are secure plans processed by PayPal. We never see or store your card or bank details; we
+                All memberships are secure plans processed by PayPal. We never see or store your card or bank details; we
                 keep only your plan type, billing status and PayPal subscription reference so we can give you access
                 on all your devices and let you cancel anytime.
               </p>

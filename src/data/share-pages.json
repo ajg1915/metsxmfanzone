@@ -220,14 +220,14 @@
     "path": "/apple-tv",
     "label": "Apple TV",
     "title": "Apple TV | MetsXMFanZone",
-    "description": "Watch Apple TV event games live on MetsXMFanZone. The same games also stream on our 24/7 live streams.",
+    "description": "Watch Mets game events live on Apple TV. Premium, included with every paid plan.",
     "image": "/share/mlb-network.jpg"
   },
   {
     "path": "/prime-video",
     "label": "Prime Video",
     "title": "Prime Video | MetsXMFanZone",
-    "description": "Watch Prime Video event games live on MetsXMFanZone. The same games also stream on our 24/7 live streams.",
+    "description": "Watch Mets game events live on Prime Video. Premium, included with every paid plan.",
     "image": "/share/espn-network.jpg"
   },
   {
@@ -241,7 +241,7 @@
     "path": "/peacock",
     "label": "Peacock",
     "title": "Peacock | MetsXMFanZone",
-    "description": "Watch Peacock event games live on MetsXMFanZone. The same games also stream on our 24/7 live streams.",
+    "description": "Watch Mets game events live on Peacock. Premium, included with every paid plan.",
     "image": "/share/msg-network.jpg"
   },
   {

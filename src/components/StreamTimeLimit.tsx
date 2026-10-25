@@ -25,7 +25,7 @@ interface StreamTimeLimitProps {
   pageKey?: string | null;
   /** Scheduled games: let logged-out visitors watch for a limited window first */
   allowGuestPreview?: boolean;
-  /** Stream is covered by the NY Sports Streaming add-on (NY teams + 24/7 networks) */
+  /** Stream is covered by the NY Sports Streaming add-on (NY teams + premium platforms) */
   nySportsStream?: boolean;
 }
 

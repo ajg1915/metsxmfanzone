@@ -120,12 +120,11 @@ const PremiumContent = () => {
               </div>
 
               <div className="space-y-4 pt-6 border-t">
-                <h2 className="text-2xl font-bold text-primary">NY Sports Streaming Package</h2>
+                <h2 className="text-2xl font-bold text-primary">Premium Platforms: Apple TV, Prime Video and Peacock</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  NY Sports Streaming is a separate add-on plan for $19.99/month, billed through PayPal. It includes
-                  live streams for the New York Giants, Jets, Knicks, Rangers, Islanders and Brooklyn Nets only, plus
-                  our 24/7 sports network streams. Add it to any Mets membership or get it on its own. It does not
-                  include Mets streams or premium Mets content, and your current Mets plan stays the same.
+                  Mets game events on Apple TV, Prime Video and Peacock are premium content, included with every paid
+                  plan (Weekly, Monthly and Yearly). Free and trial members get a short preview. With the Monthly plan,
+                  all Mets games in 2027 that stream on these platforms are intended to be included too.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   Every plan is a secure plan you can watch on the go, on all your devices, and cancel anytime.

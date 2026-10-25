@@ -111,7 +111,7 @@ const Plans = () => {
       period: "per week",
       billingNote: "Billed weekly through PayPal",
       description: "Full access with a shorter commitment",
-      features: ["Everything in Free", "All live streams", "Full game replays", "All highlights", "HD streaming"],
+      features: ["Everything in Free", "All live streams", "Premium Mets game events on Apple TV, Prime Video and Peacock", "Full game replays", "All highlights", "HD streaming"],
       cta: "Choose Weekly",
       popular: false,
     },
@@ -125,6 +125,7 @@ const Plans = () => {
       description: "Most popular for true fans",
       features: [
         "Everything in Weekly",
+        "All 2027 games will also stream on our premium platforms: Prime Video, Peacock and Apple TV",
         "Ad-free experience",
         "Exclusive content",
         "Watch on all your devices (Android + TV apps)",
@@ -166,7 +167,12 @@ const Plans = () => {
     {
       question: "What is included with each membership?",
       answer:
-        "Free is for Spring Training streams only. Weekly, Monthly, and Yearly include live streams, replays, highlights, and premium content.",
+        "Free is for Spring Training streams only. Weekly, Monthly, and Yearly include live streams, replays, highlights, premium content, and the premium Mets game events on Apple TV, Prime Video and Peacock.",
+    },
+    {
+      question: "Are Apple TV, Prime Video and Peacock included?",
+      answer:
+        "Yes. Mets game events on Apple TV, Prime Video and Peacock are premium and included with every paid plan (Weekly, Monthly and Yearly). On the Monthly plan, all games in 2027 will also be on these premium platforms.",
     },
     {
       question: "Does the Free membership need PayPal?",

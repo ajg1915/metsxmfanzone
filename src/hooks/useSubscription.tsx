@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type SubscriptionTier = "free" | "trial" | "weekly" | "premium" | "annual";
 
-/** Separate $19.99/month add-on for NY team streams + 24/7 sports networks. */
+/** Legacy add-on plan (no longer sold). Apple TV, Prime Video and Peacock are now included with all paid plans. */
 export const NY_SPORTS_PLAN = "ny_sports";
 
 export const useSubscription = () => {
@@ -127,7 +127,7 @@ export const useSubscription = () => {
   const isPremium = isAdmin || (!limitedAccess && (tier === "weekly" || tier === "premium" || tier === "annual"));
   // Trial members can browse the whole site, but streams are preview-only
   const isTrial = !isAdmin && tier === "trial";
-  // NY team + 24/7 network streams: existing paid Mets plans keep access,
+  // NY team + premium platform (Apple TV, Prime Video, Peacock) streams: paid plans have access,
   // and the NY Sports add-on unlocks them on its own.
   const canWatchNYSports = isPremium || (!limitedAccess && hasNYSports);
 

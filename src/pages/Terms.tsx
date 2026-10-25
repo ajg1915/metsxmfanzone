@@ -73,28 +73,17 @@ const Terms = () => {
             </section>
 
             <section className="mb-8">
-              <h2 className="text-2xl font-semibold text-foreground mb-4">NY Sports Streaming Package</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">Premium Platforms: Apple TV, Prime Video and Peacock</h2>
               <p className="text-muted-foreground mb-4">
-                The NY Sports Streaming package is a separate subscription billed at $19.99 per month through
-                PayPal. It is independent of our Mets memberships (Free, Weekly, Monthly and Yearly): it can be added
-                to any Mets membership or purchased on its own, and adding or cancelling it does not change your Mets
-                membership.
+                Mets game events that stream on Apple TV, Prime Video and Peacock through MetsXMFanZone are premium
+                content. They are included with every paid membership (Weekly, Monthly and Yearly) at no extra charge.
+                Free and trial members can watch a short preview only.
               </p>
-              <p className="text-muted-foreground mb-4">The NY Sports Streaming package covers only:</p>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground mb-4">
-                <li>New York Giants</li>
-                <li>New York Jets</li>
-                <li>New York Knicks</li>
-                <li>New York Rangers</li>
-                <li>New York Islanders</li>
-                <li>Brooklyn Nets</li>
-                <li>Our 24/7 sports network streams, for as long as they are offered</li>
-              </ul>
-              <p className="text-muted-foreground">
-                It does not include Mets streams, replays or other premium Mets content, which require a Weekly,
-                Monthly or Yearly membership. Game availability depends on each team's schedule and may change. The
-                24/7 sports network streams may be removed from the package in a future season; we will post any
-                change on this page before it takes effect.
+              <p className="text-muted-foreground mb-4">
+                These pages show Mets game events, not 24/7 channels. Which games appear depends on each platform's
+                schedule and may change. For 2027, our Monthly plan is intended to include all Mets games that stream
+                on Apple TV, Prime Video and Peacock. Availability of any game can still depend on the platform and
+                its schedule, and we will post any change on this page before it takes effect.
               </p>
             </section>
 

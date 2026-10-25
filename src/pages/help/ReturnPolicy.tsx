@@ -70,16 +70,12 @@ const ReturnPolicy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold text-foreground mb-3">NY Sports Streaming Package</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-3">Premium Platforms</h2>
                 <div className="space-y-3">
                   <p>
-                    The NY Sports Streaming package is a separate $19.99/month subscription covering only the New York
-                    Giants, Jets, Knicks, Rangers, Islanders and Brooklyn Nets, plus our 24/7 sports network streams. It is
-                    billed separately from your Mets membership, and the same refund policy above applies to it.
-                  </p>
-                  <p>
-                    You can cancel NY Sports Streaming anytime from your Member Center without affecting your Mets
-                    membership, and cancelling your Mets membership does not cancel NY Sports Streaming.
+                    Mets game events on Apple TV, Prime Video and Peacock are included with every paid membership
+                    (Weekly, Monthly and Yearly). There is no separate charge, so the refund policy above applies to
+                    your membership as a whole.
                   </p>
                 </div>
               </section>

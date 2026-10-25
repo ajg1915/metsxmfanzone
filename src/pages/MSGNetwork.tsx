@@ -2,13 +2,13 @@ import { Radio, Clock, Star } from "lucide-react";
 import NetworkStreamPage, { type NetworkPageConfig } from "@/components/streaming/NetworkStreamPage";
 
 // The stream key (pageKey) stays the same on purpose: the player, the admin stream assignments and
-// the 24/7 streams all use it. Only the names people see changed.
+// the live streams all use it. Only the names people see changed.
 const config: NetworkPageConfig = {
   pageKey: "msg-network",
   route: "/peacock",
   seo: {
     title: "Peacock Live - Watch Mets & MLB Event Games | MetsXMFanZone",
-    description: "Watch Peacock event games live on MetsXMFanZone. The same games also stream on our 24/7 live streams.",
+    description: "Watch Mets game events live on Peacock. Premium, included with every paid MetsXMFanZone plan.",
     keywords: "Peacock, Peacock baseball, Peacock live stream, Mets event games, live baseball",
   },
   brand: { from: "#12121c", to: "#2a2142", accent: "#ffc83d" },
@@ -17,16 +17,16 @@ const config: NetworkPageConfig = {
   ),
   title: "Peacock",
   titleAccent: "",
-  tagline: "Event games stream live on this page. The same games also play on the MetsXMFanZone 24/7 live streams, so you can watch from either place.",
-  badges: ["Event Games", "HD Quality"],
-  facts: ["Live Games", "Also on the 24/7 Streams"],
-  notice: { title: "Games stream on Peacock", text: "Event games for the Mets and your New York teams stream on this page. The same games also play on the MetsXMFanZone 24/7 live streams, so you can watch from either place." },
+  tagline: "Mets game events stream live on this page. Premium, and included with every paid plan.",
+  badges: ["Mets Game Events", "Premium"],
+  facts: ["Live Game Events", "Included with Paid Plans"],
+  notice: { title: "Mets game events stream on Peacock", text: "Mets game events on Peacock are a premium feature, included with every paid plan (Weekly, Monthly and Yearly). Free and trial members get a short preview." },
   features: [
     { icon: Radio, title: "Live Game Streams", text: "Watch event games live right here with the same player you already use." },
-    { icon: Clock, title: "Also on the 24/7 Streams", text: "Every game on this page also plays on the MetsXMFanZone 24/7 live streams." },
-    { icon: Star, title: "Event Games", text: "Special game events for the Mets and your New York teams show up here first." }
+    { icon: Clock, title: "Included With Paid Plans", text: "Premium Mets game events are included with Weekly, Monthly and Yearly plans." },
+    { icon: Star, title: "Mets Game Events", text: "Mets game events stream here live, right in the same player you already use." }
   ],
-  player: { title: "Peacock Live", description: "Watch Peacock event games live" },
+  player: { title: "Peacock Game Events", description: "Watch Mets game events on Peacock live" },
 };
 
 const MSGNetwork = () => <NetworkStreamPage cfg={config} />;

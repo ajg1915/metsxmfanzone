@@ -43,7 +43,7 @@ export const isNYTeamStream = (stream: {
 
   return NY_TEAM_NAME_PATTERN.test(eventText);
 };
-// 24/7 sports network channels included with the NY Sports Streaming package
+// Premium platform and network channels (Apple TV, Prime Video, Peacock, etc.) included with paid plans
 // (in addition to the six NY team pages above).
 export const NY_SPORTS_NETWORK_PAGES = [
   "sny-tv",
