@@ -16,6 +16,7 @@ type NetworkStream = {
   status: string;
   scheduled_start: string | null;
   thumbnail_url: string | null;
+  offline_loop?: boolean | null;
 };
 
 // Sports networks: SNY, MSG, ESPN, MLB Network and other 24/7 channels
@@ -47,13 +48,13 @@ const SportsNetworksStrip = () => {
     (async () => {
       const { data } = await supabase
         .from("live_streams")
-        .select("id, title, status, scheduled_start, thumbnail_url")
+        .select("id, title, status, scheduled_start, thumbnail_url, offline_loop")
         .eq("published", true)
         .in("status", ["live", "scheduled"])
         .order("scheduled_start", { ascending: true })
         .limit(200);
       if (!alive || !data) return;
-      setStreams((data as NetworkStream[]).filter((s) => NETWORK.test(s.title)).slice(0, 10));
+      setStreams((data as unknown as NetworkStream[]).filter((s) => NETWORK.test(s.title)).slice(0, 10));
     })();
     return () => {
       alive = false;
@@ -83,7 +84,11 @@ const SportsNetworksStrip = () => {
           >
             <span className="relative block aspect-video w-full overflow-hidden rounded-lg bg-muted">
               <img src={found?.thumbnail_url || p.thumb} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
-              {found?.status === "live" ? (
+              {found?.status === "live" && found.offline_loop ? (
+                <span className="absolute left-2 top-2 rounded bg-zinc-700 px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide text-white">
+                  OFFLINE
+                </span>
+              ) : found?.status === "live" ? (
                 <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded bg-red-700 px-1.5 py-0.5 text-[10px] font-extrabold tracking-wide text-white">
                   <Radio className="h-3 w-3" /> LIVE
                 </span>
@@ -96,7 +101,7 @@ const SportsNetworksStrip = () => {
             <span className="mt-2 block px-1">
               <span className="block truncate text-base font-bold text-foreground">{p.title}</span>
               <span className="block text-sm text-muted-foreground">
-                {found?.status === "live" ? "Live now" : found?.scheduled_start ? when(found.scheduled_start) : "Premium: Mets game events"}
+                {found?.status === "live" && found.offline_loop ? "Offline: loop playing" : found?.status === "live" ? "Live now" : found?.scheduled_start ? when(found.scheduled_start) : "Premium: Mets game events"}
               </span>
             </span>
           </Link>

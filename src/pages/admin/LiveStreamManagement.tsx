@@ -93,6 +93,7 @@ interface LiveStream {
   published: boolean;
   created_at: string;
   display_order: number;
+  offline_loop?: boolean;
 }
 
 const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'metsxmfanzone-2': 'MetsXMFanZone Stream 2 24/7 (Sports Network Streams)', 'mlb-network': 'Apple TV (Premium Mets game events)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'Peacock (Premium Mets game events)', 'espn-network': 'Prime Video (Premium Mets game events)', 'pix11-network': 'Game Events (non-Mets)', 'ny-jets': 'New York Jets', 'ny-giants': 'New York Giants', 'ny-knicks': 'New York Knicks', 'ny-rangers': 'New York Rangers', 'ny-islanders': 'New York Islanders', 'brooklyn-nets': 'Brooklyn Nets', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
@@ -150,7 +151,7 @@ const withoutLegacyDestinations = (pages: string[] | null | undefined) => {
   return kept.includes('live') ? kept : [...kept, 'live'];
 };
 
-function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, onSelectWatchPage, onToggleLive }: {
+function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected, onToggleSelect, isFreeGame, onToggleFree, onSelectWatchPage, onToggleLive, onToggleOffline }: {
   stream: LiveStream;
   onEdit: (s: LiveStream) => void;
   onDelete: (id: string) => void;
@@ -161,6 +162,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
   onToggleFree: (id: string, free: boolean) => void;
   onSelectWatchPage: (id: string, page: string) => void;
   onToggleLive: (stream: LiveStream, target?: "scheduled") => void;
+  onToggleOffline: (stream: LiveStream, offline: boolean) => void;
 }) {
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: stream.id });
@@ -189,6 +191,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
             {stream.status === 'live' && <Radio className="w-3 h-3 mr-1" />}
             {stream.status.toUpperCase()}
           </Badge>
+          {stream.status === 'live' && stream.offline_loop && <Badge className="bg-zinc-600 text-white hover:bg-zinc-600">SHOWING OFFLINE</Badge>}
           {!stream.published && <Badge variant="outline">Draft</Badge>}
           {isFreeGame && <Badge className="bg-emerald-600 text-white hover:bg-emerald-600">FREE GAME</Badge>}
         </div>
@@ -231,6 +234,19 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
             onCheckedChange={(v) => onToggleFree(stream.id, v)}
           />
         </div>
+        {stream.status === "live" && ['mlb-network', 'espn-network', 'msg-network'].some((p) => stream.assigned_pages?.includes(p)) && (
+          <div className="flex items-center justify-between gap-2 mb-3 rounded-md border border-border/60 bg-muted/30 px-2 py-1.5">
+            <Label htmlFor={`offline-${stream.id}`} className="text-[11px] font-medium leading-tight">
+              Showing offline loop
+              <span className="block text-[10px] font-normal text-muted-foreground">Cards say OFFLINE instead of LIVE. The stream keeps playing.</span>
+            </Label>
+            <Switch
+              id={`offline-${stream.id}`}
+              checked={!!stream.offline_loop}
+              onCheckedChange={(v) => onToggleOffline(stream, v)}
+            />
+          </div>
+        )}
         <div className="flex gap-2">
           <Button
             variant={stream.status === "live" ? "secondary" : "default"}
@@ -281,6 +297,16 @@ export default function LiveStreamManagement() {
     toast({ title: "Stream feed updated", description: option.label });
   };
 
+  const handleToggleOffline = async (stream: LiveStream, offline: boolean) => {
+    const { error } = await (supabase as any).from("live_streams").update({ offline_loop: offline }).eq("id", stream.id);
+    if (error) {
+      toast({ title: "Could not update", description: error.message, variant: "destructive" });
+      return;
+    }
+    setStreams(prev => prev.map(item => item.id === stream.id ? { ...item, offline_loop: offline } : item));
+    toast({ title: offline ? "Showing offline loop" : "Showing live", description: `${stream.title} cards now say ${offline ? "OFFLINE" : "LIVE"}.` });
+  };
+
   const handleToggleLive = async (stream: LiveStream, target?: "scheduled") => {
     if (target === "scheduled") {
       const updates = { status: "scheduled" as const, actual_start: null, actual_end: null };
@@ -313,8 +339,10 @@ export default function LiveStreamManagement() {
       return;
     }
 
+    // A fresh go-live starts as LIVE, not the offline loop
+    if (goingLive) await (supabase as any).from("live_streams").update({ offline_loop: false }).eq("id", stream.id);
     if (goingLive) await sendLiveNotification(stream.title, stream.id);
-    setStreams(prev => prev.map(item => item.id === stream.id ? { ...item, ...updates } : item));
+    setStreams(prev => prev.map(item => item.id === stream.id ? { ...item, ...updates, ...(goingLive ? { offline_loop: false } : {}) } : item));
     toast({
       title: goingLive ? "Stream is live" : "Stream ended",
       description: goingLive ? `${stream.title} is published in Live Streams now.` : stream.title,
@@ -1263,6 +1291,7 @@ export default function LiveStreamManagement() {
                   onToggleFree={handleToggleFree}
                   onSelectWatchPage={handleSelectWatchPage}
                   onToggleLive={handleToggleLive}
+                  onToggleOffline={handleToggleOffline}
 
 
                 />

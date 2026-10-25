@@ -33,6 +33,7 @@ interface LiveStreamRecord {
   assigned_pages: string[] | null;
   status?: string | null;
   scheduled_start?: string | null;
+  offline_loop?: boolean | null;
 }
 
 const whenET = (iso: string) =>
@@ -149,14 +150,21 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
     id: stream.id,
     title: stream.title,
     subtitle:
-      stream.status === "scheduled"
+      stream.status === "live" && stream.offline_loop
+        ? "Offline: loop playing"
+        : stream.status === "scheduled"
         ? stream.scheduled_start ? `Upcoming — ${whenET(stream.scheduled_start)}` : "Upcoming — going live soon"
         : stream.description || fallback.subtitle,
     // Always prefer the artwork set in admin; bundled art is only a safety net
     thumbnail: stream.thumbnail_url || fallback.thumbnail,
     fallbackThumb: fallback.thumbnail,
     alwaysShow: fallback.alwaysShow,
-    badge: stream.status === "scheduled" ? "Upcoming" : fallback.badge,
+    badge:
+      stream.status === "scheduled"
+        ? "Upcoming"
+        : fallback.alwaysShow && stream.status === "live"
+          ? (stream.offline_loop ? "Offline" : "Live")
+          : fallback.badge,
     href,
     assignedPages: pages,
   };
@@ -177,7 +185,7 @@ const RelatedStreamsSection = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const { data, error } = await (supabase as any)
         .from(sessionData.session ? "live_streams" : "live_streams_public")
-        .select("id, title, description, thumbnail_url, assigned_pages, status, scheduled_start")
+        .select("id, title, description, thumbnail_url, assigned_pages, status, scheduled_start, offline_loop")
         .eq("published", true)
         .in("status", ["live", "scheduled"])
         .limit(25);

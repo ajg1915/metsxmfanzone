@@ -152,6 +152,7 @@ const TVDashboard = () => {
       subtitle: s.description?.slice(0, 80) || "",
       streamUrl: s.stream_url,
       isLive: s.status === "live",
+      offline: s.status === "live" && !!(s as any).offline_loop,
     })),
     [liveStreams]
   );
@@ -181,7 +182,9 @@ const TVDashboard = () => {
           ...found,
           title: p.title,
           thumbnail: found.thumbnail === "/placeholder.svg" ? p.thumbnail : found.thumbnail,
-          subtitle: found.isLive ? "Live now" : "Premium: Mets game events",
+          badge: found.isLive && (found as any).offline ? "OFFLINE" : found.badge,
+          isLive: found.isLive && !(found as any).offline,
+          subtitle: found.isLive ? ((found as any).offline ? "Offline: loop playing" : "Live now") : "Premium: Mets game events",
         };
       }
       return {
