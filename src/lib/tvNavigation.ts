@@ -35,15 +35,15 @@ export function handleTVBack(pathname: string, navigate: Navigate): boolean {
   return false;
 }
 
-/** Sports network streams (SNY, MSG, ESPN, MLB Network, 24/7 channels). */
-export const NETWORK_STREAM = /\bsny\b|\bmsg\b|espn|mlb network|pix11|24\/7|network/i;
+/** Sports network streams (SNY, Apple TV, Prime Video, Peacock, 24/7 channels; old MSG/ESPN/MLB names still match). */
+export const NETWORK_STREAM = /\bsny\b|\bmsg\b|espn|mlb network|apple tv|prime video|peacock|pix11|24\/7|network/i;
 
 /** The page that plays a given live stream: networks open their own page, not the Mets TV page. */
 export function streamPath(title: string, id: string): string {
   const t = title.trim();
-  if (/espn/i.test(t)) return "/espn-network";
-  if (/mlb network/i.test(t)) return "/mlb-network";
-  if (/\bmsg\b/i.test(t)) return "/msg-network";
+  if (/espn|prime video/i.test(t)) return "/prime-video";
+  if (/mlb network|apple tv/i.test(t)) return "/apple-tv";
+  if (/\bmsg\b|peacock/i.test(t)) return "/peacock";
   if (/pix11/i.test(t)) return "/pix11-network";
   if (/metsxmfanzone/i.test(t) && !NETWORK_STREAM.test(t.replace(/metsxmfanzone/gi, ""))) return "/metsxmfanzone";
   return `/live/${id}`;

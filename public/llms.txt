@@ -18,10 +18,10 @@ MetsXMFanZone is an independent fan platform covering the New York Mets. Members
 - [Mets History](/mets-history): Franchise history and milestones.
 - [Game Recaps](/mets-game-recaps): Recaps of recent Mets games.
 - [MetsXMFanZone Network](/metsxmfanzone): MetsXMFanZone live network channel.
-- [MLB Network](/mlb-network): MLB Network live channel.
-- [ESPN Network](/espn-network): ESPN live channel.
+- [Apple TV](/apple-tv): Apple TV event games, live.
+- [Prime Video](/prime-video): Prime Video event games, live.
 - [PIX11 Network](/pix11-network): PIX11 live channel.
-- [MSG Network](/msg-network): MSG live channel.
+- [Peacock](/peacock): Peacock event games, live.
 - [Gallery](/gallery): Photo gallery.
 - [Video Gallery](/video-gallery): Video highlights and clips.
 - [Replay Games](/replay-games): On-demand replays of past games.

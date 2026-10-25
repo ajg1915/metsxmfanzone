@@ -95,7 +95,7 @@ interface LiveStream {
   display_order: number;
 }
 
-const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'metsxmfanzone-2': 'MetsXMFanZone Stream 2 24/7 (Sports Network Streams)', 'mlb-network': 'MLB Network 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'MSG Network 24/7 (Sports Network Streams)', 'espn-network': 'ESPN 24/7 (Sports Network Streams)', 'pix11-network': 'Game Events (non-Mets)', 'ny-jets': 'New York Jets', 'ny-giants': 'New York Giants', 'ny-knicks': 'New York Knicks', 'ny-rangers': 'New York Rangers', 'ny-islanders': 'New York Islanders', 'brooklyn-nets': 'Brooklyn Nets', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
+const PAGE_LABELS: Record<string, string> = { guide: 'Guide Page', live: 'Live Page', metsxmfanzone: 'MetsXMFanZone TV', 'metsxmfanzone-2': 'MetsXMFanZone Stream 2 24/7 (Sports Network Streams)', 'mlb-network': 'Apple TV 24/7 (Sports Network Streams)', 'sny-tv': 'SNY.TV 24/7 (Sports Network Streams)', 'msg-network': 'Peacock 24/7 (Sports Network Streams)', 'espn-network': 'Prime Video 24/7 (Sports Network Streams)', 'pix11-network': 'Game Events (non-Mets)', 'ny-jets': 'New York Jets', 'ny-giants': 'New York Giants', 'ny-knicks': 'New York Knicks', 'ny-rangers': 'New York Rangers', 'ny-islanders': 'New York Islanders', 'brooklyn-nets': 'Brooklyn Nets', 'regular-season-games': 'Regular Season Games', 'replay-games': 'Replay Games' };
 
 // Team category tabs for the admin stream list. Each stream lands in the tab
 // of the NY team page it is assigned to; everything else (Mets games, 24/7

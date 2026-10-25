@@ -16,7 +16,7 @@ type NetworkStream = {
 };
 
 // Sports networks: SNY, MSG, ESPN, MLB Network and other 24/7 channels
-const NETWORK = /\bsny\b|\bmsg\b|espn|mlb network|24\/7|network/i;
+const NETWORK = /\bsny\b|\bmsg\b|espn|mlb network|apple tv|prime video|peacock|24\/7|network/i;
 const ET = "America/New_York";
 
 const when = (iso: string) =>

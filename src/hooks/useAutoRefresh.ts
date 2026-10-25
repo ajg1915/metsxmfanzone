@@ -5,6 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 
 const SUPPRESS_REFRESH_PATHS = [
   '/espn-network',
+  '/apple-tv',
+  '/prime-video',
+  '/peacock',
   '/pix11-network',
   '/mlb-network',
   '/metsxmfanzone',

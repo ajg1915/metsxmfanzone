@@ -1,29 +1,32 @@
-import { BarChart3, Trophy, Video } from "lucide-react";
+import { Trophy, Video, BarChart3 } from "lucide-react";
 import NetworkStreamPage, { type NetworkPageConfig } from "@/components/streaming/NetworkStreamPage";
 
+// The stream key (pageKey) stays the same on purpose: the player, the admin stream assignments and
+// the 24/7 streams all use it. Only the names people see changed.
 const config: NetworkPageConfig = {
   pageKey: "mlb-network",
-  route: "/mlb-network",
+  route: "/apple-tv",
   seo: {
-    title: "MLB Network Live - Watch Baseball Games & Analysis | MetsXMFanZone",
-    description: "Watch MLB Network live games, highlights, and expert baseball analysis. Stream 24/7 MLB coverage featuring your favorite teams.",
-    keywords: "MLB Network, live baseball, MLB live stream, baseball games live, MLB analysis, baseball coverage",
+    title: "Apple TV Live - Watch Mets & MLB Event Games | MetsXMFanZone",
+    description: "Watch Apple TV event games live on MetsXMFanZone. The same games also stream on our 24/7 live streams.",
+    keywords: "Apple TV, Apple TV baseball, Apple TV live stream, Mets event games, live baseball",
   },
-  brand: { from: "#041E42", to: "#0a2d5c", accent: "#e0345f" },
+  brand: { from: "#0b1020", to: "#1d2740", accent: "#9fb4ff" },
   mark: (
-    <span className="block text-lg font-black leading-none text-white sm:text-3xl">MLB<span className="mt-0.5 block rounded bg-white px-1 text-[7px] font-bold text-[#BF0D3E] sm:text-xs">NETWORK</span></span>
+    <span className="block text-center text-sm font-black leading-tight text-white sm:text-2xl">Apple TV</span>
   ),
-  title: "MLB",
-  titleAccent: "Network",
-  tagline: "Your 24/7 destination for live baseball coverage, expert analysis, and exclusive content from across Major League Baseball.",
-  badges: ["Official MLB", "HD Quality"],
-  facts: ["Nationwide", "24/7 Coverage"],
+  title: "Apple",
+  titleAccent: "TV",
+  tagline: "Event games stream live on this page. The same games also play on the MetsXMFanZone 24/7 live streams, so you can watch from either place.",
+  badges: ["Event Games", "HD Quality"],
+  facts: ["Live Games", "Also on the 24/7 Streams"],
+  notice: { title: "Games stream on Apple TV", text: "Event games for the Mets and your New York teams stream on this page. The same games also play on the MetsXMFanZone 24/7 live streams, so you can watch from either place." },
   features: [
-    { icon: Trophy, title: "Live Games", text: "Watch live baseball games from across Major League Baseball with expert commentary." },
-    { icon: BarChart3, title: "Expert Analysis", text: "In-depth analysis from former players and baseball experts breaking down every game." },
-    { icon: Video, title: "Highlights", text: "Catch all the best plays, home runs, and defensive gems from around the league." }
+    { icon: Trophy, title: "Live Game Streams", text: "Watch event games live right here with the same player you already use." },
+    { icon: Video, title: "Also on the 24/7 Streams", text: "Every game on this page also plays on the MetsXMFanZone 24/7 live streams." },
+    { icon: BarChart3, title: "Event Games", text: "Special game events for the Mets and your New York teams show up here first." }
   ],
-  player: { title: "MLB Network Live", description: "Watch live baseball games and expert analysis" },
+  player: { title: "Apple TV Live", description: "Watch Apple TV event games live" },
 };
 
 const MLBNetwork = () => <NetworkStreamPage cfg={config} />;

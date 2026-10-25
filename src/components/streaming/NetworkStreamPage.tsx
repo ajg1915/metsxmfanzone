@@ -26,6 +26,8 @@ export type NetworkPageConfig = {
   facts: string[];
   features: Feature[];
   player: { title: string; description: string };
+  /** short "where games stream" notice shown under the channel switcher */
+  notice?: { title: string; text: string };
   /** optional block rendered between the player facts and the channel switcher */
   extra?: ReactNode;
 };
@@ -62,6 +64,13 @@ const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
 
           <div className="container mx-auto max-w-6xl px-4 pt-4">
             <ChannelSwitcher activeKey={cfg.pageKey} brand={brand} className="mb-5" />
+
+            {cfg.notice && (
+              <div className="mb-4 rounded-xl border p-3.5" style={{ borderColor: brand.accent, background: `${brand.accent}18` }}>
+                <p className="font-display text-[19px] font-bold uppercase leading-none tracking-wide text-foreground">{cfg.notice.title}</p>
+                <p className="mt-1.5 text-[14px] leading-relaxed text-foreground/90">{cfg.notice.text}</p>
+              </div>
+            )}
 
             <p className="text-[15px] leading-relaxed text-muted-foreground sm:text-base">{cfg.tagline}</p>
             <div className="mt-3 flex flex-wrap gap-2">

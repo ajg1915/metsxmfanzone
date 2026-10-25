@@ -13,6 +13,9 @@
       "destination": "https://metsxmfanzone.com/:path*",
       "permanent": true
     },
+    { "source": "/mlb-network", "destination": "/apple-tv", "permanent": true },
+    { "source": "/espn-network", "destination": "/prime-video", "permanent": true },
+    { "source": "/msg-network", "destination": "/peacock", "permanent": true },
     {
       "source": "/mets-schedule-2026",
       "destination": "/mets-schedule-2027",

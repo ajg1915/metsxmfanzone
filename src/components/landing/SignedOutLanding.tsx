@@ -171,7 +171,7 @@ export default function SignedOutLanding() {
                 </div>
               </div>
               <div className="absolute inset-x-5 bottom-4 grid grid-cols-4 gap-2 text-center text-xs font-semibold">
-                {["MetsXMFanZone", "SNY", "MSG", "MLB Network"].map((c, i) => (
+                {["MetsXMFanZone", "Apple TV", "Prime Video", "Peacock"].map((c, i) => (
                   <div key={c} className={`rounded-lg bg-black/55 px-1 py-3 backdrop-blur-sm ${i === 0 ? "outline outline-2 outline-white" : ""}`}>{c}</div>
                 ))}
               </div>

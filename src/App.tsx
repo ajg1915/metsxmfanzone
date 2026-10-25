@@ -466,11 +466,14 @@ const AppContent = () => {
             <Route path="/mets-game-recaps" element={<MetsGameRecaps />} />
             <Route path="/mets-game-recaps/:slug" element={<MetsGameRecaps />} />
             <Route path="/gameday-live" element={<GameDayLive />} />
-            <Route path="/mlb-network" element={<MLBNetwork />} />
-            <Route path="/espn-network" element={<ESPNNetwork />} />
+            <Route path="/apple-tv" element={<MLBNetwork />} />
+            <Route path="/prime-video" element={<ESPNNetwork />} />
+            <Route path="/peacock" element={<MSGNetwork />} />
+            <Route path="/mlb-network" element={<Navigate to="/apple-tv" replace />} />
+            <Route path="/espn-network" element={<Navigate to="/prime-video" replace />} />
             <Route path="/pix11-network" element={<PIX11Network />} />
             <Route path="/game-events" element={<PIX11Network />} />
-            <Route path="/msg-network" element={<MSGNetwork />} />
+            <Route path="/msg-network" element={<Navigate to="/peacock" replace />} />
             <Route path="/msg-plus" element={<MSGPlus />} />
             <Route path="/live/:streamId" element={<LiveStream />} />
             <Route path="/matchup/astros" element={<MetsVsAstros />} />

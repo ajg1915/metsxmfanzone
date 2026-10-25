@@ -33,10 +33,10 @@ interface LiveStreamRecord {
 const FALLBACK_STREAMS: RelatedStream[] = [
   {
     id: "mlb-network",
-    title: "MLB Network 24/7",
-    subtitle: "24/7 — League-wide highlights, analysis & live look-ins",
+    title: "Apple TV 24/7",
+    subtitle: "24/7 — Event games and live streams",
     thumbnail: channelMlb,
-    href: "/mlb-network",
+    href: "/apple-tv",
   },
   {
     id: "sny-tv",
@@ -47,17 +47,17 @@ const FALLBACK_STREAMS: RelatedStream[] = [
   },
   {
     id: "msg-network",
-    title: "MSG Network 24/7",
-    subtitle: "24/7 — Madison Square Garden Network, NY sports all day",
+    title: "Peacock 24/7",
+    subtitle: "24/7 — Event games and live streams",
     thumbnail: channelMsg,
     href: "/live/msg-network",
   },
   {
     id: "espn-network",
-    title: "ESPN 24/7",
-    subtitle: "24/7 — ESPN live sports, highlights & analysis",
+    title: "Prime Video 24/7",
+    subtitle: "24/7 — Event games and live streams",
     thumbnail: channelEspn,
-    href: "/espn-network",
+    href: "/prime-video",
   },
   {
     id: "pix11-network",
@@ -88,7 +88,7 @@ const isOffseasonTeamStream = (stream: Pick<LiveStreamRecord, "title" | "descrip
 const isMlbNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
   if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
-  return title.includes("mlb network") && title.includes("24/7") || stream.assigned_pages?.includes("mlb-network");
+  return (title.includes("mlb network") || title.includes("apple tv")) && title.includes("24/7") || stream.assigned_pages?.includes("mlb-network");
 };
 
 const isSnyTv24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
@@ -100,13 +100,13 @@ const isSnyTv24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">)
 const isMsgNetwork24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
   if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
-  return title.includes("msg network") && title.includes("24/7") || stream.assigned_pages?.includes("msg-network");
+  return (title.includes("msg network") || title.includes("peacock")) && title.includes("24/7") || stream.assigned_pages?.includes("msg-network");
 };
 
 const isEspn24x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
   if (isGameBroadcast(stream.title)) return false;
   const title = stream.title.toLowerCase();
-  return title.includes("espn") && title.includes("24/7") || stream.assigned_pages?.includes("espn-network");
+  return (title.includes("espn") || title.includes("prime video")) && title.includes("24/7") || stream.assigned_pages?.includes("espn-network");
 };
 
 const isPix1124x7 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) => {
@@ -126,8 +126,8 @@ const isMetsXM2 = (stream: Pick<LiveStreamRecord, "title" | "assigned_pages">) =
 const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): RelatedStream => {
   const pages = stream.assigned_pages || [];
   let href = `/live/${stream.id}`;
-  if (pages.includes("mlb-network")) href = "/mlb-network";
-  else if (pages.includes("espn-network")) href = "/espn-network";
+  if (pages.includes("mlb-network")) href = "/apple-tv";
+  else if (pages.includes("espn-network")) href = "/prime-video";
   else if (pages.includes("pix11-network")) href = "/pix11-network";
   else if (pages.includes("msg-network")) href = "/live/msg-network";
   else if (pages.includes("metsxmfanzone-2")) href = "/live/metsxmfanzone-2";

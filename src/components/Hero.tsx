@@ -126,7 +126,7 @@ const Hero = () => {
     setTouchStartX(null);
   };
 
-  const premiumRoutes = ['/live', '/metsxmfanzone', '/mlb-network', '/espn-network', '/pix11-network', '/spring-training-live'];
+  const premiumRoutes = ['/live', '/metsxmfanzone', '/mlb-network', '/espn-network', '/apple-tv', '/prime-video', '/peacock', '/pix11-network', '/spring-training-live'];
   const requiresPremium = (url: string) => premiumRoutes.some(r => url.toLowerCase().includes(r.toLowerCase().replace('/', '')));
 
   const handleNav = (url: string) => {

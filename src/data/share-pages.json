@@ -217,17 +217,17 @@
     "image": "/share/gameday-live.jpg"
   },
   {
-    "path": "/mlb-network",
-    "label": "MLB Network",
-    "title": "MLB Network | MetsXMFanZone",
-    "description": "Find MLB Network programming and Mets-related baseball coverage.",
+    "path": "/apple-tv",
+    "label": "Apple TV",
+    "title": "Apple TV | MetsXMFanZone",
+    "description": "Watch Apple TV event games live on MetsXMFanZone. The same games also stream on our 24/7 live streams.",
     "image": "/share/mlb-network.jpg"
   },
   {
-    "path": "/espn-network",
-    "label": "ESPN",
-    "title": "ESPN Baseball | MetsXMFanZone",
-    "description": "Find ESPN Mets coverage, Sunday Night Baseball, and analysis.",
+    "path": "/prime-video",
+    "label": "Prime Video",
+    "title": "Prime Video | MetsXMFanZone",
+    "description": "Watch Prime Video event games live on MetsXMFanZone. The same games also stream on our 24/7 live streams.",
     "image": "/share/espn-network.jpg"
   },
   {
@@ -238,10 +238,10 @@
     "image": "/share/pix11-network.jpg"
   },
   {
-    "path": "/msg-network",
-    "label": "MSG Network",
-    "title": "MSG Network | MetsXMFanZone",
-    "description": "Find MSG Network programming and New York sports coverage.",
+    "path": "/peacock",
+    "label": "Peacock",
+    "title": "Peacock | MetsXMFanZone",
+    "description": "Watch Peacock event games live on MetsXMFanZone. The same games also stream on our 24/7 live streams.",
     "image": "/share/msg-network.jpg"
   },
   {

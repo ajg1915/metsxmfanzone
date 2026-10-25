@@ -361,7 +361,7 @@ const LiveStreamsSection = () => {
         //    PIX11) is a channel feed, not a game or event — even if it was
         //    also tagged to a MetsXMFanZone page.
         const titleLower = s.title.toLowerCase();
-        if (['sny', 'mlb network', 'msg', 'espn', 'pix11', 'pix 11', 'game events'].some(n => titleLower.includes(n))) return false;
+        if (['sny', 'mlb network', 'msg', 'espn', 'apple tv', 'prime video', 'peacock', 'pix11', 'pix 11', 'game events'].some(n => titleLower.includes(n))) return false;
 
         // 5. MetsXMFanZone live and event broadcasts belong here.
         if (pages.includes('metsxmfanzone') || pages.includes('metsxmfanzone-2')) return true;
@@ -401,8 +401,8 @@ const LiveStreamsSection = () => {
     if (networkPages.includes('metsxmfanzone')) return '/metsxmfanzone';
     if (networkPages.includes('metsxmfanzone-2')) return '/live/metsxmfanzone-2';
     if (networkPages.includes('pix11-network')) return '/pix11-network';
-    if (networkPages.includes('mlb-network')) return '/mlb-network';
-    if (networkPages.includes('espn-network')) return '/espn-network';
+    if (networkPages.includes('mlb-network')) return '/apple-tv';
+    if (networkPages.includes('espn-network')) return '/prime-video';
     return `/live/${stream.id}`;
   };
 

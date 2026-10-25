@@ -73,8 +73,8 @@ const ReplayGamesSection = () => {
   const getStreamPageUrl = (stream: LiveStream) => {
     const networkPages = (stream.assigned_pages || []).filter(page => page !== 'live' && page !== 'guide');
     if (networkPages.includes('metsxmfanzone')) return '/metsxmfanzone';
-    if (networkPages.includes('mlb-network')) return '/mlb-network';
-    if (networkPages.includes('espn-network')) return '/espn-network';
+    if (networkPages.includes('mlb-network')) return '/apple-tv';
+    if (networkPages.includes('espn-network')) return '/prime-video';
     if (networkPages.includes('pix11-network')) return '/pix11-network';
     if (networkPages.includes('spring-training-live')) return '/spring-training-live';
     return `/live/${stream.id}`;

@@ -9,9 +9,9 @@ export const METS_BRAND: StreamBrand = { from: "#0b3e75", to: "#0a2d5c", accent:
 // Every stream page links to its siblings so people can flip channels.
 export const CHANNELS: { label: string; to: string; key: string }[] = [
   { label: "MetsXMFanZone TV", to: "/metsxmfanzone", key: "metsxmfanzone" },
-  { label: "MLB Network", to: "/mlb-network", key: "mlb-network" },
-  { label: "ESPN", to: "/espn-network", key: "espn-network" },
-  { label: "MSG", to: "/msg-network", key: "msg-network" },
+  { label: "Apple TV", to: "/apple-tv", key: "mlb-network" },
+  { label: "Prime Video", to: "/prime-video", key: "espn-network" },
+  { label: "Peacock", to: "/peacock", key: "msg-network" },
   { label: "MSG+", to: "/msg-plus", key: "msg-plus" },
   { label: "Game Events", to: "/pix11-network", key: "pix11-network" },
   { label: "Spring Training", to: "/spring-training-live", key: "spring-training-live" },

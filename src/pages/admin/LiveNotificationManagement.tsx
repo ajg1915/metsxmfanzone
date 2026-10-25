@@ -20,7 +20,7 @@ const LiveNotificationManagement = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [linkUrl, setLinkUrl] = useState("/mlb-network");
+  const [linkUrl, setLinkUrl] = useState("/apple-tv");
   const [isActive, setIsActive] = useState(false);
   const { toast } = useToast();
 
@@ -77,7 +77,7 @@ const LiveNotificationManagement = () => {
       });
 
       setMessage("");
-      setLinkUrl("/mlb-network");
+      setLinkUrl("/apple-tv");
       setIsActive(false);
       fetchNotifications();
     } catch (error: any) {
@@ -175,7 +175,7 @@ const LiveNotificationManagement = () => {
                 id="link_url"
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
-                placeholder="/mlb-network"
+                placeholder="/apple-tv"
                 required
               />
             </div>

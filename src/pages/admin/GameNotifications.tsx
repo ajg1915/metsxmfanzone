@@ -195,7 +195,7 @@ const GameNotifications = () => {
     { title: "🔴 Mets Game Starting!", body: "The Mets are taking the field!", url: "/metsxmfanzone" },
     { title: "⚾ Spring Training Live", body: "Spring Training is about to begin!", url: "/spring-training-live" },
     { title: "🎙️ Podcast Going Live", body: "Join us for a live discussion!", url: "/community-podcast" },
-    { title: "📺 MLB Network", body: "Tune in for MLB Network coverage!", url: "/mlb-network" },
+    { title: "📺 Apple TV", body: "Tune in for the game on Apple TV!", url: "/apple-tv" },
   ];
 
   return (
