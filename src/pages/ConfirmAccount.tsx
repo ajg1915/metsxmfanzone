@@ -176,7 +176,7 @@ export default function ConfirmAccount() {
         if (!user) return;
 
         let planType = hasPendingPlan || "membership_selection_pending";
-        let amount = planType === "annual" ? "$129.99" : planType === "weekly" ? "$3.99" : planType === "premium" ? "$9.99" : "$0";
+        let amount = planType === "annual" ? "$119.88" : planType === "weekly" ? "$3.99" : planType === "premium" ? "$9.99" : "$0";
         let paymentMethod = pendingPaymentMethod || user.user_metadata?.preferred_payment_method || "paypal";
 
         const { data: sub } = await supabase
@@ -189,7 +189,7 @@ export default function ConfirmAccount() {
 
         if (sub && ["free", "weekly", "premium", "annual"].includes(sub.plan_type)) {
           planType = sub.plan_type;
-          amount = sub.amount ? `$${Number(sub.amount).toFixed(2)}` : planType === "annual" ? "$129.99" : planType === "weekly" ? "$3.99" : planType === "premium" ? "$9.99" : "$0";
+          amount = sub.amount ? `$${Number(sub.amount).toFixed(2)}` : planType === "annual" ? "$119.88" : planType === "weekly" ? "$3.99" : planType === "premium" ? "$9.99" : "$0";
           paymentMethod = sub.payment_method || paymentMethod;
         }
 

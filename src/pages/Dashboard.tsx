@@ -38,7 +38,7 @@ const PLAN_PRICES: Record<MemberPlan, string> = {
   trial: "Complimentary access",
   weekly: "$3.99 / week",
   premium: "$9.99 / month",
-  annual: "$129.99 / year",
+  annual: "$119.88 / year",
 };
 
 const Dashboard = () => {

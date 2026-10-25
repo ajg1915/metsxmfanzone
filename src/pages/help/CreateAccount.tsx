@@ -68,7 +68,7 @@ const CreateAccount = () => {
                     <strong>Monthly Plan ($9.99/month):</strong> Live streams, replays, and premium content
                   </li>
                   <li>
-                    <strong>Yearly Plan ($129.99/year):</strong> Full access with yearly PayPal billing
+                    <strong>Yearly Plan ($119.88/year):</strong> Full access with yearly PayPal billing
                   </li>
                 </ul>
               </div>

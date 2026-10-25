@@ -68,7 +68,7 @@ export default function SignupsTab() {
       const end = new Date();
       if (plan === "annual") end.setFullYear(end.getFullYear() + 1); else end.setMonth(end.getMonth() + 1);
       const payload: any = {
-        plan_type: plan, status: "active", amount: plan === "annual" ? 129.99 : 9.99,
+        plan_type: plan, status: "active", amount: plan === "annual" ? 119.88 : 9.99,
         payment_method: "manual", start_date: new Date().toISOString(), end_date: end.toISOString(),
       };
       if (r.sub_id) {

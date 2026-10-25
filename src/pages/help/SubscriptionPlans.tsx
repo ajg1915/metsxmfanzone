@@ -88,7 +88,7 @@ const SubscriptionPlans = () => {
                 <div className="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-lg border-2 border-green-500">
                   <h3 className="text-2xl font-bold text-primary mb-2">Yearly Plan</h3>
                   <p className="text-3xl font-bold text-primary mb-4">
-                    $129.99<span className="text-lg text-muted-foreground">/year</span>
+                    $119.88<span className="text-lg text-muted-foreground">/year</span>
                   </p>
                   <ul className="space-y-2 text-muted-foreground">
                     <li className="flex items-start gap-2">

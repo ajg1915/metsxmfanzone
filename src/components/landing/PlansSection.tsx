@@ -23,7 +23,7 @@ const PLANS = [
   {
     id: "annual",
     name: "Yearly",
-    price: "$129.99",
+    price: "$119.88",
     period: "/ year",
     blurb: "One payment, the whole year.",
     features: ["Everything in Monthly", "Merch discounts", "VIP community badge", "Priority support", "Early access to content"],

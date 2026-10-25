@@ -49,7 +49,7 @@ PLANS (all billed through PayPal; PayPal supports cards, debit and PayPal balanc
 - Free — $0 forever. PayPal link required but never charged ($0.00 agreement). Includes public Mets news, community access, member profile, membership notifications. No live streams.
 - Weekly — $3.99 per week. All live streams, full game replays, all highlights, community access, HD streaming.
 - Monthly — $9.99 per month (most popular). All live streams, full game replays, all highlights, community forum, ad-free, exclusive content, HD streaming, multi-device.
-- Yearly — $129.99 per year. Everything in Monthly plus priority support, early access to content, exclusive merch discounts, VIP community badge.
+- Yearly — $119.88 per year. Everything in Monthly plus priority support, early access to content, exclusive merch discounts, VIP community badge.
 POLICIES:
 - Sign up / upgrade at metsxmfanzone.com/plans. Switch paid plans from the Member Center; new PayPal schedule starts with the new plan.
 - Cancel anytime from account settings; access continues to the end of the billing period.

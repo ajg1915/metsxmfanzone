@@ -51,7 +51,7 @@ const helpArticles = [
         <li><strong>Free Plan:</strong> Access to basic content and community features</li>
         <li><strong>Weekly Plan ($3.99/week):</strong> Full access with weekly PayPal billing</li>
         <li><strong>Monthly Plan ($9.99/month):</strong> Live streams, replays, and premium content</li>
-        <li><strong>Yearly Plan ($129.99/year):</strong> Full access with yearly PayPal billing</li>
+        <li><strong>Yearly Plan ($119.88/year):</strong> Full access with yearly PayPal billing</li>
       </ul>
       <h3>Step 4: Complete Payment (for paid plans)</h3>
       <p>Complete the checkout process through PayPal to activate your subscription.</p>
@@ -93,7 +93,7 @@ const helpArticles = [
       <h2>Requirements</h2>
       <p>To watch live streams on MetsXMFanZone:</p>
       <ul>
-        <li>Active Premium ($9.99/month) or Annual ($129.99/year) subscription</li>
+        <li>Active Premium ($9.99/month) or Annual ($119.88/year) subscription</li>
         <li>Stable internet connection (minimum 5 Mbps recommended)</li>
         <li>Modern web browser (Chrome, Firefox, Safari, Edge)</li>
       </ul>
@@ -193,7 +193,7 @@ const helpArticles = [
       <ul><li>HD/Full HD streaming quality</li><li>Access to stream archives and replays</li><li>Ad-free experience</li><li>Priority customer support</li></ul>
       <h2>How to Upgrade</h2>
       <p>If you're on the Free plan and want to access premium content:</p>
-      <ol><li>Navigate to the <a href="/pricing">Pricing</a> page</li><li>Select either Premium ($9.99/month) or Annual ($129.99/year)</li><li>Complete the checkout process</li><li>Start enjoying premium content immediately</li></ol>
+      <ol><li>Navigate to the <a href="/pricing">Pricing</a> page</li><li>Select either Premium ($9.99/month) or Annual ($119.88/year)</li><li>Complete the checkout process</li><li>Start enjoying premium content immediately</li></ol>
       <h2>Free vs Premium</h2>
       <table><thead><tr><th>Feature</th><th>Free</th><th>Premium/Annual</th></tr></thead>
       <tbody>
@@ -390,7 +390,7 @@ const helpArticles = [
       <ul><li>Everything in Free plan</li><li>Access to live streams and replays</li><li>Premium content and HD viewing</li></ul>
       <h3>Monthly Plan — $9.99/month</h3>
       <ul><li>Everything in Free plan</li><li>Access to all live game streams</li><li>HD and Full HD quality</li></ul>
-      <h3>Yearly Plan — $129.99/year</h3>
+      <h3>Yearly Plan — $119.88/year</h3>
       <ul><li>Everything in Monthly plan</li><li>One convenient yearly payment</li><li>Exclusive yearly member perks</li></ul>`,
   },
   {
@@ -549,7 +549,7 @@ const helpCenter = {
 const faqData = [
   ["What is MetsXMFanZone?", "MetsXMFanZone is your ultimate destination for exclusive New York Mets content, including live streams, game highlights, community discussions, and in-depth analysis."],
   ["How do I watch live streams?", "Navigate to the Live section from the main menu or click on any live stream card on the homepage. Premium subscribers get access to all live content."],
-  ["What's the difference between Free and Premium plans?", "Free plan gives you basic access to highlights and community features. Premium ($9.99/month) unlocks all live streams, full game replays, HD quality, ad-free experience, and exclusive content. Annual plan ($129.99/year) includes everything in Premium plus 2 months free savings."],
+  ["What's the difference between Free and Premium plans?", "Free plan gives you basic access to highlights and community features. Premium ($9.99/month) unlocks all live streams, full game replays, HD quality, ad-free experience, and exclusive content. Annual plan ($119.88/year) includes everything in Premium plus 2 months free savings."],
   ["Can I switch between monthly and yearly billing?", "Yes! You can switch between monthly and annual billing anytime from your account settings. When you switch to annual, you'll save the equivalent of 2 months compared to monthly billing."],
   ["What payment methods do you accept?", "We accept PayPal and all major credit/debit cards through our secure payment processing partners."],
   ["Can I cancel my subscription anytime?", "Yes! You can cancel your subscription at any time from your account settings. Your access will continue until the end of your billing period."],

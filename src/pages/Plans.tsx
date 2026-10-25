@@ -137,8 +137,8 @@ const Plans = () => {
     {
       id: "annual",
       name: "Yearly",
-      price: "$129.99",
-      priceValue: 129.99,
+      price: "$119.88",
+      priceValue: 119.88,
       period: "per year",
       billingNote: "Billed annually",
       description: "One payment for a full year",

@@ -265,7 +265,7 @@ export default function SubscriptionsTab() {
   };
 
   const getPlanPrice = (planType: string) => {
-    switch (planType) { case "weekly": return "$3.99/wk"; case "premium": return "$9.99/mo"; case "annual": return "$129.99/yr"; default: return "Free"; }
+    switch (planType) { case "weekly": return "$3.99/wk"; case "premium": return "$9.99/mo"; case "annual": return "$119.88/yr"; default: return "Free"; }
   };
 
   const filteredSubscriptions = useMemo(() => {

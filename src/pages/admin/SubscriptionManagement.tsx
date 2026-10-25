@@ -438,7 +438,7 @@ export default function SubscriptionManagement() {
     switch (planType) {
       case "weekly": return "$3.99 / week";
       case "premium": return "$9.99 / month";
-      case "annual": return "$129.99 / year";
+      case "annual": return "$119.88 / year";
       default: return "Free";
     }
   };

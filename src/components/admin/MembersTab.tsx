@@ -150,7 +150,7 @@ export default function MembersTab() {
   const dispPhone = (m: MemberRow) => decrypted ? (decryptedData.get(m.user_id)?.phone_number || "—") : (m.phone_number ? maskSensitiveField(m.phone_number) : "—");
 
   const planMonths = (plan: string) => plan === "annual" ? 12 : plan === "premium" ? 1 : 0;
-  const planPrice = (plan: string) => plan === "annual" ? 129.99 : plan === "premium" ? 9.99 : plan === "weekly" ? 3.99 : 0;
+  const planPrice = (plan: string) => plan === "annual" ? 119.88 : plan === "premium" ? 9.99 : plan === "weekly" ? 3.99 : 0;
 
   const logActivity = async (m: MemberRow, action: string, details: any) => {
     if (!m.subscription_id) return;
