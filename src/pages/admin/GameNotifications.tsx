@@ -46,6 +46,7 @@ const GameNotifications = () => {
     pregame_5min: false,
     game_live: true,
     ny_sports_live: false,
+    live_events: true,
   });
 
   useEffect(() => {
@@ -60,7 +61,7 @@ const GameNotifications = () => {
       .from("gameday_email_settings")
       .select("trigger_type, enabled");
     if (data) {
-      const map: Record<string, boolean> = { pregame_20min: false, pregame_5min: false, game_live: true, ny_sports_live: false };
+      const map: Record<string, boolean> = { pregame_20min: false, pregame_5min: false, game_live: true, ny_sports_live: false, live_events: true };
       data.forEach((r: any) => { map[r.trigger_type] = r.enabled; });
       setEmailToggles(map);
     }
@@ -75,7 +76,7 @@ const GameNotifications = () => {
       toast({ title: "Failed to update", description: error.message, variant: "destructive" });
       fetchEmailToggles();
     } else {
-      toast({ title: enabled ? "Email enabled" : "Email disabled", description: triggerType === 'game_live' ? 'Game is live' : triggerType === 'ny_sports_live' ? 'NY Sports game is live' : triggerType === 'pregame_20min' ? '20 min to first pitch' : '5 min to first pitch' });
+      toast({ title: enabled ? "Email enabled" : "Email disabled", description: triggerType === 'game_live' ? 'Game is live' : triggerType === 'live_events' ? 'All games and events go live' : triggerType === 'ny_sports_live' ? 'NY Sports game is live' : triggerType === 'pregame_20min' ? '20 min to first pitch' : '5 min to first pitch' });
     }
   };
 
@@ -262,6 +263,16 @@ const GameNotifications = () => {
             <Switch
               checked={emailToggles.ny_sports_live}
               onCheckedChange={(v) => updateToggle('ny_sports_live', v)}
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-md border border-border/50 p-2">
+            <div className="min-w-0">
+              <p className="text-xs font-medium">📺 Any Game or Event Goes Live</p>
+              <p className="text-[10px] text-muted-foreground">Email + push to all members when a Mets game, Apple TV, Prime Video, Peacock or Game Event goes live (not the always-on feeds or the offline loop)</p>
+            </div>
+            <Switch
+              checked={emailToggles.live_events}
+              onCheckedChange={(v) => updateToggle('live_events', v)}
             />
           </div>
         </CardContent>

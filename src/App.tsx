@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, useLocation, useNavigate, useParams, Navigate } from "react-router-dom";
+import LiveEventBanner from "@/components/LiveEventBanner";
 import { PullToRefresh } from "@/components/PullToRefresh";
 import { useAutoRefresh } from "@/hooks/useAutoRefresh";
 import { useSessionExpiryWarning } from "@/hooks/useSessionExpiryWarning";
@@ -305,6 +306,7 @@ const AppContent = () => {
         <Sonner />
         {/* Removed: ExitIntentPopup, most toasts. Only Live/Offline kept */}
         <StreamExitDialog />
+        <LiveEventBanner />
         <SocialMediaBar />
         <SweepstakesWheel />
         <RouteShareMetadata />

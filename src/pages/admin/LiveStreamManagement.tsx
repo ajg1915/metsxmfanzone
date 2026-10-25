@@ -320,7 +320,7 @@ export default function LiveStreamManagement() {
   };
 
   const handleToggleOffline = async (stream: LiveStream, offline: boolean) => {
-    const { error } = await (supabase as any).from("live_streams").update({ offline_loop: offline }).eq("id", stream.id);
+    const { error } = await (supabase as any).from("live_streams").update(offline ? { offline_loop: true } : { offline_loop: false, actual_start: new Date().toISOString(), live_email_sent_at: null }).eq("id", stream.id);
     if (error) {
       toast({ title: "Could not update", description: error.message, variant: "destructive" });
       return;
