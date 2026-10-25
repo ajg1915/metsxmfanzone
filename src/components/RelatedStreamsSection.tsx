@@ -31,7 +31,12 @@ interface LiveStreamRecord {
   description: string | null;
   thumbnail_url: string | null;
   assigned_pages: string[] | null;
+  status?: string | null;
+  scheduled_start?: string | null;
 }
+
+const whenET = (iso: string) =>
+  new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(iso)) + " ET";
 
 const FALLBACK_STREAMS: RelatedStream[] = [
   {
@@ -143,12 +148,15 @@ const streamToCard = (stream: LiveStreamRecord, fallback: RelatedStream): Relate
   return {
     id: stream.id,
     title: stream.title,
-    subtitle: stream.description || fallback.subtitle,
+    subtitle:
+      stream.status === "scheduled"
+        ? stream.scheduled_start ? `Upcoming — ${whenET(stream.scheduled_start)}` : "Upcoming — going live soon"
+        : stream.description || fallback.subtitle,
     // Always prefer the artwork set in admin; bundled art is only a safety net
     thumbnail: stream.thumbnail_url || fallback.thumbnail,
     fallbackThumb: fallback.thumbnail,
     alwaysShow: fallback.alwaysShow,
-    badge: fallback.badge,
+    badge: stream.status === "scheduled" ? "Upcoming" : fallback.badge,
     href,
     assignedPages: pages,
   };
@@ -169,9 +177,9 @@ const RelatedStreamsSection = () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const { data, error } = await (supabase as any)
         .from(sessionData.session ? "live_streams" : "live_streams_public")
-        .select("id, title, description, thumbnail_url, assigned_pages")
+        .select("id, title, description, thumbnail_url, assigned_pages, status, scheduled_start")
         .eq("published", true)
-        .eq("status", "live")
+        .in("status", ["live", "scheduled"])
         .limit(25);
 
       if (error) {
@@ -211,7 +219,9 @@ const RelatedStreamsSection = () => {
     // always show, even when no game is live, using their built-in card.
     return matchers
       .map((matcher, i) => {
-        const stream = networkStreams.find((candidate) => !isOffseasonTeamStream(candidate) && matcher(candidate));
+        const matches = networkStreams.filter((candidate) => !isOffseasonTeamStream(candidate) && matcher(candidate));
+        // Live streams win over upcoming ones
+        const stream = matches.find((c) => c.status === "live") || matches[0];
         if (stream) return streamToCard(stream, FALLBACK_STREAMS[i]);
         return FALLBACK_STREAMS[i].alwaysShow ? FALLBACK_STREAMS[i] : null;
       })
