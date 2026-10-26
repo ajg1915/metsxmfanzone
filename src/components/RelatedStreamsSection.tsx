@@ -268,7 +268,7 @@ const RelatedStreamsSection = () => {
             <Radio className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             <div>
               <h2 className="text-[25px] leading-none tracking-wide sm:text-2xl md:text-3xl font-bold uppercase text-foreground">
-                Premium Services
+                Included Premium Services
               </h2>
               <p className="mt-1 text-xs sm:text-sm text-muted-foreground">All Game events are on these live Streams</p>
             </div>
