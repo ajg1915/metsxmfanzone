@@ -70,11 +70,12 @@ const SportsNetworksStrip = () => {
   const otherStreams = streams.filter((s) => !usedIds.has(s.id));
 
   return (
-    <section className="sports-networks container mx-auto max-w-[1600px] px-4 py-6" aria-label="Sports networks">
-      <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[color:var(--tv-accent)]">Sports networks</p>
-      <h2 className="mb-4 font-display text-[30px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-4xl">
-        Networks
+    <section className="sports-networks container mx-auto max-w-[1600px] px-4 py-6" aria-label="Premium Services">
+      <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[color:var(--tv-accent)]">Premium Services</p>
+      <h2 className="font-display text-[30px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-4xl">
+        Premium Services
       </h2>
+      <p className="mb-4 mt-1 text-sm text-muted-foreground">All Game events are on these live Streams</p>
       <div className="flex snap-x gap-4 overflow-x-auto pb-3 scrollbar-hide">
         {platformCards.map(({ p, found }) => (
           <Link

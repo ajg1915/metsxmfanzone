@@ -11,6 +11,7 @@ export interface TVRailItem {
 
 interface TVContentRailProps {
   title: string;
+  note?: string;
   items: TVRailItem[];
   accent?: boolean;
   onItemClick?: (item: TVRailItem) => void;
@@ -18,7 +19,7 @@ interface TVContentRailProps {
 
 // Row of large cards for the couch: big type, wide cards, and a focus treatment
 // that comes from the global .tv-mode :focus-visible ring (white outline + lift).
-export function TVContentRail({ title, items, accent, onItemClick }: TVContentRailProps) {
+export function TVContentRail({ title, note, items, accent, onItemClick }: TVContentRailProps) {
   if (items.length === 0) return null;
 
   return (
@@ -26,6 +27,7 @@ export function TVContentRail({ title, items, accent, onItemClick }: TVContentRa
       <div className="flex items-center gap-3 mb-[1.4vh] pl-[0.2vw]">
         {accent && <span className="h-3 w-3 rounded-full bg-[color:var(--tv-accent)] animate-pulse" />}
         <h2 className={cn("text-[1.7rem] font-medium", accent ? "text-[color:var(--tv-accent)]" : "text-[color:var(--tv-text)]")}>{title}</h2>
+        {note && <span className="text-[1.05rem] text-[color:var(--tv-subtext)]">{note}</span>}
         {items.length > 1 && (
           <span className="ml-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[0.95rem] text-[color:var(--tv-subtext)] opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100">
             <span aria-hidden="true">◀</span> Use left and right to browse <span aria-hidden="true">▶</span>

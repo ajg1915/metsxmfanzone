@@ -434,7 +434,7 @@ const TVDashboard = () => {
                 {liveNowItems.length > 0 && (
                   <TVContentRail title="Live Now" items={liveNowItems} accent onItemClick={openLive} />
                 )}
-                <TVContentRail title="Sports Networks" items={networkItems} onItemClick={openLive} />
+                <TVContentRail title="Premium Services" note="All Game events are on these live Streams" items={networkItems} onItemClick={openLive} />
               </div>
 
               {/* News */}
