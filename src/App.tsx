@@ -90,6 +90,7 @@ const Contact = lazyWithRetry(() => import("./pages/Contact"), "page-contact");
 const FAQs = lazyWithRetry(() => import("./pages/FAQs"), "page-faqs");
 const Privacy = lazyWithRetry(() => import("./pages/Privacy"), "page-privacy");
 const Terms = lazyWithRetry(() => import("./pages/Terms"), "page-terms");
+const ResponsibleGambling = lazyWithRetry(() => import("./pages/ResponsibleGambling"), "page-responsible-gambling");
 const Podcast = lazyWithRetry(() => import("./pages/Podcast"), "page-podcast");
 const ShopOrderSuccess = lazyWithRetry(() => import("./pages/ShopOrderSuccess"), "page-shop-order-success");
 const CommunityPodcast = lazyWithRetry(() => import("./pages/CommunityPodcast"), "page-community-podcast");
@@ -362,6 +363,7 @@ const AppContent = () => {
             <Route path="/faqs" element={<FAQs />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/responsible-gambling" element={<ResponsibleGambling />} />
             <Route path="/whats-new" element={<WhatsNew />} />
             <Route path="/install" element={<Install />} />
             <Route path="/podcast" element={<Podcast />} />

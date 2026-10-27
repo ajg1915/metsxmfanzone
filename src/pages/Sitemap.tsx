@@ -29,6 +29,7 @@ const Sitemap = () => {
         { url: '/faqs', changefreq: 'monthly', priority: '0.6' },
         { url: '/privacy', changefreq: 'yearly', priority: '0.3' },
         { url: '/terms', changefreq: 'yearly', priority: '0.3' },
+        { url: '/responsible-gambling', changefreq: 'yearly', priority: '0.3' },
         { url: '/business-partner', changefreq: 'monthly', priority: '0.5' },
         { url: '/metsxmfanzone', changefreq: 'weekly', priority: '0.8' },
         { url: '/apple-tv', changefreq: 'weekly', priority: '0.8' },
