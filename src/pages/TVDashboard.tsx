@@ -9,6 +9,7 @@ import { TVHeroCarousel, type TVHeroSlide } from "@/components/tv/TVHeroCarousel
 import { TVTopBar } from "@/components/tv/TVTopBar";
 import { TVSignIn } from "@/components/tv/TVSignIn";
 import { TVContentRail } from "@/components/tv/TVContentRail";
+import TVNYScores from "@/components/tv/TVNYScores";
 import { streamPath, NETWORK_STREAM, leaveTV } from "@/lib/tvNavigation";
 import GamecastBanner from "@/components/GamecastBanner";
 import { SHOW_METS_GAME_CENTER } from "@/config/season";
@@ -425,6 +426,9 @@ const TVDashboard = () => {
               <div ref={storiesRef}>
                 {storyItems.length > 0 && <TVContentRail title="Stories" items={storyItems} onItemClick={handleStoryClick} />}
               </div>
+
+              {/* NY team scores, before the live section */}
+              <TVNYScores />
 
               {/* Live section */}
               <div ref={liveRef}>
