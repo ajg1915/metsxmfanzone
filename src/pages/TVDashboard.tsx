@@ -9,8 +9,7 @@ import { TVHeroCarousel, type TVHeroSlide } from "@/components/tv/TVHeroCarousel
 import { TVTopBar } from "@/components/tv/TVTopBar";
 import { TVSignIn } from "@/components/tv/TVSignIn";
 import { TVContentRail } from "@/components/tv/TVContentRail";
-import { setTVModePreference } from "@/hooks/use-device";
-import { streamPath, NETWORK_STREAM } from "@/lib/tvNavigation";
+import { streamPath, NETWORK_STREAM, leaveTV } from "@/lib/tvNavigation";
 import GamecastBanner from "@/components/GamecastBanner";
 import { SHOW_METS_GAME_CENTER } from "@/config/season";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -376,9 +375,7 @@ const TVDashboard = () => {
             <Button
               variant="ghost"
               onClick={() => {
-                setTVModePreference(false);
-                navigate("/");
-                window.location.reload();
+                leaveTV(navigate);
               }}
               className="rounded-full bg-[color:var(--tv-surface)] text-[color:var(--tv-text)] text-[1.15rem] px-8 py-6"
             >

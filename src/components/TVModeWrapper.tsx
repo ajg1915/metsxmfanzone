@@ -1,8 +1,8 @@
-import { useDevice, setTVModePreference } from "@/hooks/use-device";
+import { useDevice } from "@/hooks/use-device";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { useTVFocusNav } from "@/hooks/useTVFocusNav";
-import { handleTVBack } from "@/lib/tvNavigation";
+import { handleTVBack, leaveTV } from "@/lib/tvNavigation";
 import { STREAMS_REFRESH_EVENT, watchForceRefresh } from "@/lib/forceRefresh";
 import { applyTVPalette, clearTVPalette, currentTVLook, useTVThemeSettings } from "@/lib/tvTheme";
 import { useQueryClient } from "@tanstack/react-query";
@@ -133,8 +133,7 @@ export function TVModeWrapper({ children }: TVModeWrapperProps) {
               size="sm"
               className="h-7 text-xs gap-1.5"
               onClick={() => {
-                setTVModePreference(false);
-                window.location.reload();
+                leaveTV(navigate);
               }}
             >
               <Monitor className="w-3.5 h-3.5" />

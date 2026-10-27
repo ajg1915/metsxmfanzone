@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { setTVModePreference } from "@/hooks/use-device";
+import { leaveTV } from "@/lib/tvNavigation";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
 // Big-screen sign-in for paid members. Arrow keys move between the fields and
@@ -59,9 +59,7 @@ export function TVSignIn() {
   };
 
   const exitTV = () => {
-    setTVModePreference(false);
-    navigate("/");
-    window.location.reload();
+    leaveTV(navigate);
   };
 
   const field =

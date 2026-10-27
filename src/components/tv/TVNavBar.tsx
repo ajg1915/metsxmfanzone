@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Radio, Film, RotateCcw, Home, Monitor, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { setTVModePreference } from "@/hooks/use-device";
+import { leaveTV } from "@/lib/tvNavigation";
 import { useNavigate } from "react-router-dom";
 import type { TVCategory } from "@/pages/TVDashboard";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
@@ -66,9 +66,7 @@ export function TVNavBar({ activeCategory, onCategoryChange }: TVNavBarProps) {
           size="sm"
           className="h-7 text-[10px] gap-1 px-2.5 text-primary-foreground/50 hover:text-primary-foreground hover:bg-primary/20 rounded-sm"
           onClick={() => {
-            setTVModePreference(false);
-            navigate("/");
-            window.location.reload();
+            leaveTV(navigate);
           }}
         >
           <Monitor className="w-3 h-3" />

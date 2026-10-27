@@ -1,6 +1,6 @@
 import { Tv, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { setTVModePreference } from "@/hooks/use-device";
+import { leaveTV } from "@/lib/tvNavigation";
 import { useNavigate } from "react-router-dom";
 
 export function TVHeader() {
@@ -21,9 +21,7 @@ export function TVHeader() {
           size="sm"
           className="h-6 text-[10px] gap-1 px-2"
           onClick={() => {
-            setTVModePreference(false);
-            navigate("/");
-            window.location.reload();
+            leaveTV(navigate);
           }}
         >
           <Monitor className="w-3 h-3" />

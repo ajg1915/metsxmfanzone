@@ -1,7 +1,33 @@
 // Shared helpers for TV mode: where Back goes, leaving the full-screen player, and
 // which page each live stream opens.
 
+import { detectTVUserAgent, setTVModePreference } from "@/hooks/use-device";
+
 type Navigate = (to: string, opts?: { replace?: boolean }) => void;
+
+/** True inside the Android TV app. */
+export function isTVApp(): boolean {
+  return typeof navigator !== "undefined" && navigator.userAgent.includes("MetsXMFanZoneTV");
+}
+
+/**
+ * "Leave TV" / "Exit TV" / "Switch to Desktop". On a real TV the app simply closes; a TV never
+ * switches to desktop mode. On a PC or tablet that turned TV mode on, it goes back to the normal site.
+ */
+export function leaveTV(navigate: Navigate): void {
+  if (isTVApp()) {
+    void import("@capacitor/app").then(({ App }) => App.exitApp()).catch(() => navigate("/tv"));
+    return;
+  }
+  if (detectTVUserAgent()) {
+    window.close(); // a TV browser can't always close itself, so it stays on the TV home screen
+    navigate("/tv");
+    return;
+  }
+  setTVModePreference(false);
+  navigate("/");
+  window.location.reload();
+}
 
 /** Leave the player's full-screen view (the CSS one used in TV mode, or the browser's). */
 export function exitPlayerFullscreen(): boolean {

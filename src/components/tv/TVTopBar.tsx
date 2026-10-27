@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { setTVModePreference } from "@/hooks/use-device";
+import { leaveTV } from "@/lib/tvNavigation";
 import { useAuth } from "@/hooks/useAuth";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
@@ -70,9 +70,7 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
         <button
           type="button"
           onClick={() => {
-            setTVModePreference(false);
-            navigate("/");
-            window.location.reload();
+            leaveTV(navigate);
           }}
           className={cn(pill, "text-[1.1rem] text-[color:var(--tv-subtext)] hover:text-[color:var(--tv-text)]")}
         >

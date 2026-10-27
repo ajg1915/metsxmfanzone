@@ -36,7 +36,7 @@ const TV_USER_AGENTS = [
   'VIDAA',
 ];
 
-function detectTVUserAgent(): boolean {
+export function detectTVUserAgent(): boolean {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return false;
   }
