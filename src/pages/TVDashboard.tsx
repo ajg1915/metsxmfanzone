@@ -422,21 +422,23 @@ const TVDashboard = () => {
               {/* Gamecast Banner */}
               {SHOW_METS_GAME_CENTER && <GamecastBanner />}
 
+              {/* Live Now, above stories */}
+              <div ref={liveRef}>
+                {liveNowItems.length > 0 && (
+                  <TVContentRail title="Live Now" items={liveNowItems} accent onItemClick={openLive} />
+                )}
+              </div>
+
               {/* Stories */}
               <div ref={storiesRef}>
                 {storyItems.length > 0 && <TVContentRail title="Stories" items={storyItems} onItemClick={handleStoryClick} />}
               </div>
 
-              {/* NY team scores, before the live section */}
+              {/* NY team scores */}
               <TVNYScores />
 
-              {/* Live section */}
-              <div ref={liveRef}>
-                {liveNowItems.length > 0 && (
-                  <TVContentRail title="Live Now" items={liveNowItems} accent onItemClick={openLive} />
-                )}
-                <TVContentRail title="Included Premium Services" note="All Game events are on these live Streams" items={networkItems} onItemClick={openLive} />
-              </div>
+              {/* Premium services */}
+              <TVContentRail title="Included Premium Services" note="All Game events are on these live Streams" items={networkItems} onItemClick={openLive} />
 
               {/* News */}
               {articleItems.length > 0 && (
