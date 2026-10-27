@@ -18,12 +18,16 @@ export function exitPlayerFullscreen(): boolean {
 }
 
 /**
- * The TV Back button. Leaves full screen first, then closes a dialog, then returns to the
- * TV home screen from any other page. Returns false when already on the TV home (nothing to do,
+ * The TV Back button. Leaves full screen (and goes straight to the TV home screen from a live page),
+ * otherwise closes a dialog, otherwise returns to the TV home screen from any other page. Returns false when already on the TV home (nothing to do,
  * so the TV app can close itself).
  */
 export function handleTVBack(pathname: string, navigate: Navigate): boolean {
-  if (exitPlayerFullscreen()) return true;
+  // Expanded live view: one press closes full screen AND returns to the TV home screen.
+  if (exitPlayerFullscreen()) {
+    if (pathname !== "/tv") navigate("/tv");
+    return true;
+  }
   if (document.querySelector('[role="dialog"]')) {
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     return true;
