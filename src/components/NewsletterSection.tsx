@@ -58,13 +58,13 @@ const NewsletterSection = () => {
 
   return (
     <section aria-labelledby="newsletter-title" className="border-y border-white/10 border-t-[3px] border-t-[#ff4500] bg-gradient-to-r from-[#0b3e75] via-[#0c1c2c] to-[#0c1c2c]">
-      <div className="mx-auto flex max-w-[1240px] flex-col gap-6 px-5 py-7 md:flex-row md:items-center md:justify-between md:gap-12 md:px-8 md:py-9">
+      <div className="mx-auto flex max-w-[1240px] flex-col gap-6 px-5 py-7 md:px-8 md:py-9 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
         {/* Left: the logo and the message */}
-        <div className="flex min-w-0 items-center gap-4 md:flex-1 md:gap-6">
+        <div className="flex min-w-0 items-center gap-4 md:gap-6 lg:flex-1">
           <img src={logo} alt="MetsXMFanZone" className="h-14 w-auto shrink-0 drop-shadow-[0_0_20px_rgba(255,69,0,0.45)] md:h-[84px]" />
           <div className="min-w-0">
             <p className="text-xs font-bold tracking-[0.14em] text-[#ff8a57] md:text-[13px]">THE NEWSLETTER</p>
-            <h2 id="newsletter-title" className="font-display text-4xl uppercase leading-none text-white md:text-[54px]">
+            <h2 id="newsletter-title" className="font-display text-4xl uppercase leading-none text-white md:text-5xl lg:text-[40px] xl:text-[54px]">
               Get MetsXMFanZone News
             </h2>
             <p className="mt-2 hidden max-w-[460px] text-base leading-snug text-[#c3cfdb] md:block">
@@ -77,7 +77,7 @@ const NewsletterSection = () => {
         </p>
 
         {/* Right: the signup */}
-        <form onSubmit={handleSubmit} className="relative flex w-full flex-col gap-2.5 md:w-[540px] md:shrink-0">
+        <form onSubmit={handleSubmit} className="relative flex w-full flex-col gap-2.5 md:max-w-[640px] lg:w-[480px] lg:max-w-none lg:shrink-0 xl:w-[540px]">
           <input {...honeypotProps} />
           <div className="flex flex-col gap-2.5 md:flex-row">
             <div className="md:flex-1">
