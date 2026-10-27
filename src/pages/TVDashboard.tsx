@@ -415,9 +415,7 @@ const TVDashboard = () => {
           </div>
         ) : (
           <>
-            <div className="px-[2.4vw] pt-[3vh]">
-              <TVHeroCarousel slides={heroSlides} />
-            </div>
+            <TVHeroCarousel slides={heroSlides} />
             <div className="px-[2.4vw] pb-[6vh]">
               {/* Gamecast Banner */}
               {SHOW_METS_GAME_CENTER && <GamecastBanner />}

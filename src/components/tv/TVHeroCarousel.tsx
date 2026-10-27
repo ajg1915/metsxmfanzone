@@ -38,6 +38,10 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
   if (slides.length === 0) return null;
   const slide = slides[Math.min(index, slides.length - 1)];
 
+  const live = slide.kind === "live";
+
+  // Google TV style: edge-to-edge hero, artwork on the right fading into the page background,
+  // text and the action button on the left.
   return (
     <div
       ref={ref}
@@ -45,61 +49,67 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
       onBlur={(e) => {
         if (!ref.current?.contains(e.relatedTarget as Node | null)) setPaused(false);
       }}
-      className="relative w-full overflow-hidden rounded-[1.4rem] min-h-[34vh] max-h-[46vh] aspect-[21/8] bg-[color:var(--tv-hero)]"
+      className="relative w-full overflow-hidden h-[54vh] min-h-[340px] bg-[color:var(--tv-bg)]"
       aria-roledescription="carousel"
     >
+      <div
+        className={
+          live
+            ? "absolute inset-0 bg-[radial-gradient(70%_90%_at_80%_20%,rgba(255,89,16,0.32),transparent_65%),radial-gradient(60%_80%_at_70%_80%,rgba(13,42,92,0.9),transparent_70%)]"
+            : "absolute inset-0 bg-[radial-gradient(70%_90%_at_80%_20%,rgba(255,89,16,0.22),transparent_65%),radial-gradient(60%_80%_at_70%_80%,rgba(13,42,92,0.8),transparent_70%)]"
+        }
+      />
       {slide.image && (
         <img
           key={slide.id}
           src={slide.image}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-50 animate-in fade-in duration-700"
+          className="absolute right-0 top-0 h-full w-[68%] object-cover animate-in fade-in duration-700 [mask-image:linear-gradient(to_right,transparent_0%,#000_38%),linear-gradient(to_bottom,#000_70%,transparent_100%)] [mask-composite:intersect] [-webkit-mask-composite:source-in]"
         />
       )}
-      <div
-        className={
-          slide.kind === "live"
-            ? "absolute inset-0 bg-[radial-gradient(90%_120%_at_85%_10%,rgba(255,89,16,0.35),transparent_60%),linear-gradient(120deg,rgba(13,42,92,0.85)_0%,rgba(10,29,61,0.8)_60%,var(--tv-bg)_100%)]"
-            : "absolute inset-0 bg-[radial-gradient(90%_120%_at_15%_10%,rgba(255,89,16,0.3),transparent_60%),linear-gradient(120deg,rgba(42,22,8,0.8)_0%,rgba(10,29,61,0.85)_70%,var(--tv-bg)_100%)]"
-        }
-      />
+      {/* Fade to the page colour on the left and bottom so the text always reads */}
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--tv-bg)_0%,rgba(0,0,0,0)_55%),linear-gradient(0deg,var(--tv-bg)_0%,rgba(0,0,0,0)_28%)]" />
 
-      <div className="absolute inset-0 flex flex-col justify-end items-start gap-[1.4vh] p-[3vw] pb-[4vh]">
+      <div className="absolute inset-y-0 left-0 flex w-[52%] flex-col justify-end items-start gap-[1.2vh] px-[3.2vw] pb-[6vh]">
         <span
           className={
-            slide.kind === "live"
-              ? "inline-flex items-center gap-2 rounded-full bg-[#e11d48] px-4 py-1 text-[1rem] font-bold uppercase tracking-wider text-white"
-              : "inline-flex items-center rounded-full bg-[color:var(--tv-surface)] px-4 py-1 text-[1rem] font-bold uppercase tracking-wider text-[color:var(--tv-subtext)]"
+            "inline-flex items-center gap-2 text-[1.1rem] font-semibold uppercase tracking-[0.18em] " +
+            (live ? "text-[#fb7185]" : "text-[color:var(--tv-accent)]")
           }
         >
-          {slide.kind === "live" && <span className="h-2 w-2 rounded-full bg-white animate-pulse" />}
+          {live && <span className="h-2.5 w-2.5 rounded-full bg-[#e11d48] animate-pulse" />}
           {slide.badge}
         </span>
-        <h1 className="max-w-[60rem] text-[2.8rem] font-bold leading-[1.05] text-white">{slide.title}</h1>
+        <h1 className="text-[3.4rem] font-semibold leading-[1.05] text-white line-clamp-2">{slide.title}</h1>
         {slide.description && (
-          <p className="max-w-[44rem] text-[1.3rem] text-[color:var(--tv-subtext)] line-clamp-2">{slide.description}</p>
+          <p className="max-w-[40rem] text-[1.35rem] leading-snug text-[color:var(--tv-text)]/85 line-clamp-3">
+            {slide.description}
+          </p>
         )}
-        <div className="mt-[0.8vh] flex gap-[1vw]">
+        <div className="mt-[1vh] flex items-center gap-[2vw]">
           <button
             type="button"
             onClick={() => navigate(slide.to)}
-            className="rounded-full bg-white px-[2vw] py-[1.4vh] text-[1.35rem] font-bold text-[color:var(--tv-bg)]"
+            className="rounded-full bg-white px-[2.2vw] py-[1.5vh] text-[1.35rem] font-bold text-[color:var(--tv-bg)]"
           >
             {slide.primaryLabel}
           </button>
+          {slides.length > 1 && (
+            <div className="flex gap-[0.5vw]" aria-hidden="true">
+              {slides.map((s, i) => (
+                <span
+                  key={s.id}
+                  className={
+                    i === index
+                      ? "h-[0.55rem] w-[2.2rem] rounded-full bg-white transition-all"
+                      : "h-[0.55rem] w-[0.55rem] rounded-full bg-white/35 transition-all"
+                  }
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      {slides.length > 1 && (
-        <div className="absolute right-[3vw] bottom-[3vh] flex gap-[0.6vw]" aria-hidden="true">
-          {slides.map((s, i) => (
-            <span
-              key={s.id}
-              className={i === index ? "h-3 w-3 rounded-full bg-white" : "h-3 w-3 rounded-full bg-white/30"}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
