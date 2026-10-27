@@ -83,6 +83,26 @@ function move(dir: "up" | "down" | "left" | "right") {
     }
   }
 
+  // Up/Down walk the page one row (rail) at a time: take the nearest row in that direction, then the
+  // card in it that lines up best. Without this, Up from a rail could skip the rail above it and land
+  // on the menu bar because a menu button sat closer sideways.
+  if (dir === "up" || dir === "down") {
+    const rows: { el: HTMLElement; dx: number; dy: number }[] = [];
+    for (const el of items) {
+      if (el === current) continue;
+      const b = el.getBoundingClientRect();
+      const dx = b.left + b.width / 2 - ax;
+      const dy = b.top + b.height / 2 - ay;
+      if (dir === "down" ? dy > 4 : dy < -4) rows.push({ el, dx, dy });
+    }
+    if (rows.length > 0) {
+      const nearest = Math.min(...rows.map((r) => Math.abs(r.dy)));
+      const tol = Math.max(40, a.height * 0.4);
+      const inRow = rows.filter((r) => Math.abs(Math.abs(r.dy) - nearest) <= tol);
+      best = inRow.reduce((m, r) => (Math.abs(r.dx) < Math.abs(m.dx) ? r : m)).el;
+    }
+  }
+
   // Reading long pages (articles): when the next thing to focus is further down than the screen
   // shows, scroll the page a step instead of jumping straight to it, so the text can be read.
   if (!scope && (dir === "down" || dir === "up")) {
