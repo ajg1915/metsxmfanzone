@@ -22,6 +22,7 @@ const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/Regu
 const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section-v2");
 const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedStreamsSection"), "home-related-streams-section");
 
+const HomeHighlightsSection = lazyWithRetry(() => import("@/components/HomeHighlightsSection"), "home-highlights-section");
 const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerOfTheMonthSection"), "home-player-of-the-month-section");
 
 const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
@@ -239,6 +240,13 @@ const Index = () => {
           </Suspense>
         </LazySection>
 
+        {/* MetsXMFanZone Highlights, right under Included Premium Services */}
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <HomeHighlightsSection />
+          </Suspense>
+        </LazySection>
+
         <div className="section-divider my-1" />
 
         {/* Latest articles */}
@@ -285,9 +293,12 @@ const Index = () => {
         </LazySection>
       </div>
       {/* How to get the app (a strip, never a popup) */}
-      <Suspense fallback={null}>
-        <GetTheAppStrip />
-      </Suspense>
+      {/* Members find the app in their Member Center, so the strip is for visitors only */}
+      {!user && (
+        <Suspense fallback={null}>
+          <GetTheAppStrip />
+        </Suspense>
+      )}
       <Footer />
       
       
