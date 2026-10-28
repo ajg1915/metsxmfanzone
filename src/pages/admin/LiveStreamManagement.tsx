@@ -933,7 +933,7 @@ export default function LiveStreamManagement() {
                 Add Live Stream
               </Button>
             </DialogTrigger>
-          <DialogContent className="min-w-0 max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl overflow-x-hidden overflow-y-auto p-4 sm:max-h-[90dvh] sm:p-6">
+          <DialogContent onCloseAutoFocus={(e) => e.preventDefault()} className="min-w-0 max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl overflow-x-hidden overflow-y-auto p-4 sm:max-h-[90dvh] sm:p-6">
             <DialogHeader className="min-w-0 pr-7 text-left">
               <DialogTitle>{editingStream ? "Edit Live Stream" : "Add New Live Stream"}</DialogTitle>
               <DialogDescription>
@@ -1102,7 +1102,7 @@ export default function LiveStreamManagement() {
 
                   {/* Media Library Picker Dialog */}
                   <Dialog open={mediaPickerOpen} onOpenChange={setMediaPickerOpen}>
-                    <DialogContent className="max-w-3xl max-h-[80vh]">
+                    <DialogContent onCloseAutoFocus={(e) => e.preventDefault()} className="max-w-3xl max-h-[80vh]">
                       <DialogHeader>
                         <DialogTitle>Select from Media Library</DialogTitle>
                         <DialogDescription>Choose an image to use as the thumbnail</DialogDescription>
@@ -1417,7 +1417,7 @@ export default function LiveStreamManagement() {
 
       {/* Bulk Edit Dialog */}
       <Dialog open={bulkEditOpen} onOpenChange={setBulkEditOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent onCloseAutoFocus={(e) => e.preventDefault()} className="max-w-md">
           <DialogHeader>
             <DialogTitle>Bulk Edit {selectedIds.size} Streams</DialogTitle>
             <DialogDescription>Only filled fields will be updated</DialogDescription>
@@ -1523,7 +1523,7 @@ export default function LiveStreamManagement() {
 
       {/* Bulk Media Library Picker */}
       <Dialog open={bulkMediaPickerOpen} onOpenChange={setBulkMediaPickerOpen}>
-        <DialogContent className="max-w-3xl max-h-[80vh]">
+        <DialogContent onCloseAutoFocus={(e) => e.preventDefault()} className="max-w-3xl max-h-[80vh]">
           <DialogHeader>
             <DialogTitle>Select Thumbnail for Bulk Edit</DialogTitle>
             <DialogDescription>Choose an image to apply to all selected streams</DialogDescription>
