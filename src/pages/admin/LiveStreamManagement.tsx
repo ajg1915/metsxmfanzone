@@ -8,7 +8,7 @@ import StreamTester from "@/pages/admin/StreamTester";
 import { supabase } from "@/integrations/supabase/client";
 import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
 import { NY_TEAM_PAGES } from "@/lib/nyTeamStreamCheck";
-import MetsSeriesList from "@/components/admin/MetsSeriesList";
+import MetsSeriesList, { groupMetsStreams } from "@/components/admin/MetsSeriesList";
 import MetsScheduleImport from "@/components/admin/MetsScheduleImport";
 import { TikTokLiveToggle } from "@/components/admin/TikTokLiveToggle";
 
@@ -676,9 +676,26 @@ export default function LiveStreamManagement() {
           await sendLiveNotification(formData.title, editingStream.id);
         }
 
+        // A new photo on one Mets game goes to every other game in the same series.
+        let sharedCount = 0;
+        const newPhoto = (formData.thumbnail_url || "").trim();
+        if (newPhoto && newPhoto !== (editingStream.thumbnail_url || "")) {
+          const run = groupMetsStreams(streams.filter((st) => isAutoStartMetsGame(st))).find((g) =>
+            g.games.some((game) => game.id === editingStream.id),
+          );
+          const siblingIds = (run?.games ?? []).map((game) => game.id).filter((id) => id !== editingStream.id);
+          if (siblingIds.length > 0) {
+            const { error: shareError } = await supabase
+              .from("live_streams")
+              .update({ thumbnail_url: newPhoto })
+              .in("id", siblingIds);
+            if (!shareError) sharedCount = siblingIds.length;
+          }
+        }
+
         toast({
           title: "Success",
-          description: `Live stream updated successfully${!wasLive && nowLive ? " — Push notification sent to all subscribers!" : ""}`,
+          description: `Live stream updated successfully${!wasLive && nowLive ? " — Push notification sent to all subscribers!" : ""}${sharedCount ? ` — photo also added to the other ${sharedCount} game${sharedCount > 1 ? "s" : ""} in this series` : ""}`,
         });
       } else {
         const { data: inserted, error } = await supabase
