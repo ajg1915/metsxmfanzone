@@ -116,6 +116,7 @@ const SocialMediaHub = lazyWithRetry(() => import("./pages/SocialMediaHub"), "pa
 const NLScores = lazyWithRetry(() => import("./pages/NLScores"), "page-nl-scores");
 const Events = lazyWithRetry(() => import("./pages/Events"), "page-events");
 const MetsRoster = lazyWithRetry(() => import("./pages/MetsRoster"), "page-mets-roster");
+const Picks = lazyWithRetry(() => import("./pages/Picks"), "page-picks");
 const PlayerStats = lazyWithRetry(() => import("./pages/PlayerStats"), "page-player-stats");
 const MetsHistory = lazyWithRetry(() => import("./pages/MetsHistory"), "page-mets-history");
 const UserManagement = lazyWithRetry(() => import("./pages/admin/UserManagement"), "page-admin-user-management");
@@ -457,6 +458,7 @@ const AppContent = () => {
             <Route path="/mets-scores" element={<MetsScores />} />
             <Route path="/mets-gamecast" element={<MetsGamecast />} />
             <Route path="/game-center" element={<GameCenter />} />
+            <Route path="/picks" element={<Picks />} />
             <Route path="/video-gallery" element={<VideoGallery />} />
             <Route path="/social" element={<SocialMediaHub />} />
             <Route path="/nl-scores" element={<NLScores />} />

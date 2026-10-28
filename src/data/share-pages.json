@@ -189,6 +189,13 @@
     "image": "/share/gameday-live.jpg"
   },
   {
+    "path": "/picks",
+    "label": "Picks",
+    "title": "Mets Picks & Predictions | MetsXMFanZone",
+    "description": "Anthony's Mets picks and predictions before every game, with the lineup, the matchup and the podcast review.",
+    "image": "/share/gameday-live.jpg"
+  },
+  {
     "path": "/mets-history",
     "label": "Mets History",
     "title": "New York Mets History | MetsXMFanZone",

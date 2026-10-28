@@ -23,6 +23,7 @@ const Sitemap = () => {
         { url: '/gallery', changefreq: 'weekly', priority: '0.7' },
         { url: '/plans', changefreq: 'monthly', priority: '0.8' },
         { url: '/blog', changefreq: 'daily', priority: '0.8' },
+        { url: '/picks', changefreq: 'daily', priority: '0.8' },
         { url: '/podcast', changefreq: 'weekly', priority: '0.8' },
         { url: '/help-center', changefreq: 'monthly', priority: '0.6' },
         { url: '/contact', changefreq: 'monthly', priority: '0.7' },

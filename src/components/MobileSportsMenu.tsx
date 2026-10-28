@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import {
-  X, Play, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard,
+  X, Play, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard, Target,
   PenLine, Shield, Sparkles, LogOut, Tv,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -38,6 +38,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
     { label: "Schedule", icon: CalendarDays, onClick: run(() => goProtected("/mets-schedule-2027")) },
     { label: "Scores", icon: Trophy, onClick: run(() => go("/mets-scores")) },
     { label: "Game Center", icon: LayoutDashboard, onClick: run(() => go("/game-center")) },
+    { label: "Picks", icon: Target, onClick: run(() => go("/picks")) },
     { label: "Blog", icon: Newspaper, onClick: run(() => go("/blog")) },
     { label: "Podcast", icon: Mic, onClick: run(() => go("/podcast")) },
     { label: "Community", icon: Users, onClick: run(() => goProtected("/community")) },
