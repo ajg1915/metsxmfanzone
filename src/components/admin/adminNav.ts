@@ -160,6 +160,7 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Predictions", url: "/admin/predictions", icon: Star },
           { title: "Events", url: "/admin/events", icon: Calendar },
           { title: "Player of Month", url: "/admin/player-of-the-month", icon: Trophy },
+          { title: "Roster Details", url: "/admin/roster-details", icon: Users },
         ],
       },
       { title: "Chat", items: [{ title: "Chat", url: "/admin/chat", icon: MessageSquare }] },

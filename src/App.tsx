@@ -160,6 +160,7 @@ const PodcasterApplicationsManagement = lazyWithRetry(() => import("./pages/admi
 const DailyReports = lazyWithRetry(() => import("./pages/admin/DailyReports"), "page-admin-daily-reports");
 const PredictionsManagement = lazyWithRetry(() => import("./pages/admin/PredictionsManagement"), "page-admin-predictions-management");
 const PollManagement = lazyWithRetry(() => import("./pages/admin/PollManagement"), "page-admin-poll-management");
+const RosterDetailsManagement = lazyWithRetry(() => import("./pages/admin/RosterDetailsManagement"), "page-admin-roster-details");
 const PlayerOfTheMonthManagement = lazyWithRetry(() => import("./pages/admin/PlayerOfTheMonthManagement"), "page-admin-player-of-the-month-management");
 const SocialMediaSettings = lazyWithRetry(() => import("./pages/admin/SocialMediaSettings"), "page-admin-social-media-settings");
 const MediaLibrary = lazyWithRetry(() => import("./pages/admin/MediaLibrary"), "page-admin-media-library");
@@ -434,6 +435,7 @@ const AppContent = () => {
               <Route path="popup-notifications" element={<PopupNotificationsManagement />} />
               
               <Route path="player-of-the-month" element={<PlayerOfTheMonthManagement />} />
+              <Route path="roster-details" element={<RosterDetailsManagement />} />
               <Route path="sweepstakes" element={<SweepstakesManagement />} />
               <Route path="gameday-live" element={<GameDayLiveAdmin />} />
               <Route path="game-recaps" element={<GameRecapsManagement />} />

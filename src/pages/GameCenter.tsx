@@ -11,6 +11,7 @@ import { SHOW_METS_GAME_CENTER } from "@/config/season";
 // Sections that used to sit on the home page. They live here now.
 const HomeLineupCard = lazyWithRetry(() => import("@/components/HomeLineupCard"), "game-center-lineup-card");
 const PlayersToWatch = lazyWithRetry(() => import("@/components/PlayersToWatch"), "game-center-players-to-watch");
+const MetsRoster = lazyWithRetry(() => import("@/components/MetsRoster"), "game-center-mets-roster");
 const MetsStatsSection = lazyWithRetry(() => import("@/components/MetsStatsSection"), "game-center-mets-stats-section");
 const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/RegularSeasonSeriesSection"), "game-center-regular-season-series");
 const SpringTrainingGamesSection = lazyWithRetry(() => import("@/components/SpringTrainingGamesSection"), "game-center-spring-training-games");
@@ -53,7 +54,7 @@ const GameCenter = () => {
             Game Center
           </h1>
           <p className="mt-2 max-w-2xl text-base text-muted-foreground">
-            Lineups, players to watch, stats, series and replays in one place.
+            Lineups, roster, players to watch, stats, series and replays in one place.
           </p>
         </div>
 
@@ -78,6 +79,12 @@ const GameCenter = () => {
             </Suspense>
           </LazySection>
         )}
+
+        <LazySection fallback={<SectionSkeleton height="h-96" />}>
+          <Suspense fallback={<SectionSkeleton height="h-96" />}>
+            <MetsRoster />
+          </Suspense>
+        </LazySection>
 
         {user && (
           <LazySection fallback={<SectionSkeleton />}>
