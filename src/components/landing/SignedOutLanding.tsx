@@ -114,7 +114,7 @@ export default function SignedOutLanding() {
       {/* Hero */}
       <Section
         bg={bgs.hero}
-        className="px-4 pb-16 pt-24 sm:px-6 sm:pt-32"
+        className="px-4 pt-24 sm:px-6 sm:pt-28"
         base={{
           background:
             "radial-gradient(60% 80% at 85% 20%, rgba(255,89,16,0.22), transparent 60%), radial-gradient(50% 70% at 0% 100%, rgba(30,80,160,0.35), transparent 60%), repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 44px), #07101f",
@@ -125,58 +125,53 @@ export default function SignedOutLanding() {
           <path d="M38 30 C70 70 70 130 38 170" fill="none" stroke="#e11d48" strokeWidth="4" strokeDasharray="7 6" />
           <path d="M162 30 C130 70 130 130 162 170" fill="none" stroke="#e11d48" strokeWidth="4" strokeDasharray="7 6" />
         </svg>
-        <div className="relative mx-auto flex max-w-[1240px] flex-wrap items-center gap-12">
-          <div className="flex min-w-0 flex-[1_1_440px] flex-col gap-5">
-            <span className="inline-flex items-center gap-2 self-start rounded-full bg-[#e11d48]/15 px-3.5 py-1.5 text-sm font-bold uppercase tracking-wider text-[#ff8fa3]">
-              <span className="h-2 w-2 rounded-full bg-[#e11d48]" /> Live every game day
-            </span>
-            <h1 className="font-display text-[clamp(44px,6vw,76px)] uppercase leading-[0.98] text-white">
-              Every Mets game. Every moment. With the fans.
-            </h1>
-            <p className="hero-description max-w-[560px] text-lg leading-relaxed text-[#c4cfdf] sm:text-[19px]">
-              Live games and our own MetsXMFanZone TV channel, full replays, highlights, the podcast and daily Mets news. On your phone, computer and TV.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link to="/auth?mode=signup" className="inline-flex min-h-[52px] items-center rounded-full bg-[#ff5910] px-7 text-[17px] font-bold text-white hover:opacity-90">
-                Join from $3.99 a week
-              </Link>
-              <a href="#what" className="inline-flex min-h-[52px] items-center rounded-full border border-white/25 px-6 text-[17px] font-semibold text-white hover:bg-white/5">
-                See what's included
-              </a>
-            </div>
-            <p className="text-base text-[#c4cfdf]">
-              Already a member?{" "}
-              <Link to="/auth?mode=login" className="font-bold text-[#ff7a3d] hover:underline">
-                Sign in
-              </Link>
-            </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#a9b7cb]">
-              <span>✓ Secure PayPal checkout</span>
-              <span>✓ Cancel anytime</span>
-              <span>✓ Phone, computer and TV</span>
-            </div>
+        {/* Netflix-style backdrop: the TV channel picture or video fills the hero, fading into the page */}
+        {(tvPicture || tvVideo) && (
+          <div className="absolute inset-0" style={tvPictureStyle}>
+            {tvVideo && <TvVideo src={tvVideo} />}
           </div>
-          <div className="min-w-0 flex-[1_1_400px]">
-            <div
-              className="relative aspect-video overflow-hidden rounded-[18px] border-[10px] border-[#151a22] bg-[radial-gradient(80%_90%_at_70%_30%,#1b3d6b_0%,#0a1d3d_60%,#050b16_100%)] shadow-2xl"
-              style={tvPictureStyle}
-            >
-              {tvVideo && <TvVideo src={tvVideo} />}
-              {(tvPicture || tvVideo) && <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/70" />}
-              <div className="absolute left-5 top-4 flex items-center gap-2.5">
-                <img src={metsLogo} alt="" className="h-11 w-auto" />
-                <div>
-                  <span className="inline-block rounded-full bg-[#e11d48] px-2.5 py-0.5 text-[11px] font-extrabold">LIVE</span>
-                  <div className="text-lg font-bold">MetsXMFanZone TV</div>
-                </div>
-              </div>
-              <div className="absolute inset-x-5 bottom-4 grid grid-cols-4 gap-2 text-center text-xs font-semibold">
-                {["MetsXMFanZone", "Apple TV", "Prime Video", "Peacock"].map((c, i) => (
-                  <div key={c} className={`rounded-lg bg-black/55 px-1 py-3 backdrop-blur-sm ${i === 0 ? "outline outline-2 outline-white" : ""}`}>{c}</div>
-                ))}
-              </div>
-            </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#07101f] via-[#07101f]/75 to-[#07101f]/10" />
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#07101f] to-transparent" />
+
+        <div className="relative mx-auto flex min-h-[clamp(520px,calc(100svh-9rem),820px)] max-w-[1400px] flex-col justify-center gap-5 pb-24">
+          <span className="inline-flex items-center gap-2 self-start rounded-full bg-[#e11d48]/20 px-3.5 py-1.5 text-sm font-bold uppercase tracking-wider text-[#ff8fa3]">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[#e11d48]" /> Live every game day
+          </span>
+          <h1 className="max-w-[min(56rem,90%)] text-balance font-display text-[clamp(2.75rem,6.4vw,6.5rem)] uppercase leading-[0.95] text-white drop-shadow-lg">
+            Every Mets game. Every moment. With the fans.
+          </h1>
+          <p className="hero-description max-w-[min(40rem,90%)] text-[clamp(1.05rem,1.4vw,1.4rem)] leading-relaxed text-[#dbe4f1] drop-shadow">
+            Live games and our own MetsXMFanZone TV channel, full replays, highlights, the podcast and daily Mets news. On your phone, computer and TV.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link to="/auth?mode=signup" className="inline-flex min-h-[56px] items-center rounded-md bg-[#ff5910] px-8 text-[18px] font-bold text-white hover:opacity-90">
+              Join from $3.99 a week
+            </Link>
+            <a href="#what" className="inline-flex min-h-[56px] items-center rounded-md bg-white/15 px-7 text-[18px] font-semibold text-white backdrop-blur-sm hover:bg-white/25">
+              See what's included
+            </a>
           </div>
+          <p className="text-base text-[#dbe4f1]">
+            Already a member?{" "}
+            <Link to="/auth?mode=login" className="font-bold text-[#ff7a3d] hover:underline">
+              Sign in
+            </Link>
+          </p>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-[#c4cfdf]">
+            <span>✓ Secure PayPal checkout</span>
+            <span>✓ Cancel anytime</span>
+            <span>✓ Phone, computer and TV</span>
+          </div>
+        </div>
+
+        {/* Channel row along the bottom of the hero */}
+        <div className="absolute inset-x-4 bottom-6 mx-auto flex max-w-[1400px] flex-wrap items-center gap-3 sm:inset-x-6">
+          <img src={metsLogo} alt="" className="h-9 w-auto" />
+          <span className="rounded-full bg-[#e11d48] px-2.5 py-0.5 text-[11px] font-extrabold">LIVE</span>
+          {["MetsXMFanZone", "Apple TV", "Prime Video", "Peacock"].map((c, i) => (
+            <span key={c} className={`rounded-md bg-black/55 px-3 py-1.5 text-sm font-semibold backdrop-blur-sm ${i === 0 ? "outline outline-2 outline-white" : ""}`}>{c}</span>
+          ))}
         </div>
       </Section>
 
