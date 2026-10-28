@@ -1536,3 +1536,48 @@ nav.glass-nav { top: env(safe-area-inset-top, 0px) !important; }
 /* TV rails: arrows at the row edges nudge sideways to show the row scrolls */
 @keyframes tv-nudge-left { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-6px); } }
 @keyframes tv-nudge-right { 0%,100% { transform: translateX(0); } 50% { transform: translateX(6px); } }
+
+/* ---------- Home page rows, streaming-service style ----------
+   Scoped to the signed-in home page only (.homepage-broadcast-feed), so every other page keeps its own look.
+   Full-width rows, bigger cards that grow on hover, and a soft fade where a row runs off the screen. */
+@media (min-width: 1024px) {
+  .homepage-broadcast-feed section:not(.home-hero-shell) {
+    padding-block: 0.9rem;
+  }
+  .homepage-broadcast-feed section > .container {
+    max-width: none;
+    padding-inline: 4vw;
+  }
+  .homepage-broadcast-feed section h2 {
+    font-size: clamp(1.5rem, 1.9vw, 2.1rem);
+    letter-spacing: 0.02em;
+  }
+  .homepage-broadcast-feed .section-divider {
+    display: none;
+  }
+  /* rows: edge to edge, room above and below so cards can grow without being clipped */
+  .homepage-broadcast-feed .overflow-x-auto.scrollbar-hide {
+    margin-inline: 0;
+    padding-inline: 4vw;
+    scroll-padding-inline: 4vw;
+    padding-block: 1.1rem;
+    margin-block: -0.6rem;
+    gap: 1rem;
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 5vw), transparent 100%);
+    mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 5vw), transparent 100%);
+  }
+  .homepage-broadcast-feed .overflow-x-auto.scrollbar-hide > .snap-start.flex-shrink-0,
+  .homepage-broadcast-feed .overflow-x-auto.scrollbar-hide > * > .snap-start.flex-shrink-0 {
+    width: clamp(300px, 20vw, 440px);
+  }
+}
+@media (min-width: 1024px) and (hover: hover) {
+  .homepage-broadcast-feed .overflow-x-auto.scrollbar-hide .snap-start {
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+  .homepage-broadcast-feed .overflow-x-auto.scrollbar-hide .snap-start:hover {
+    transform: scale(1.06);
+    z-index: 20;
+    box-shadow: 0 18px 40px -12px rgb(0 0 0 / 0.7);
+  }
+}
