@@ -8,6 +8,7 @@ import StreamTester from "@/pages/admin/StreamTester";
 import { supabase } from "@/integrations/supabase/client";
 import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
 import { NY_TEAM_PAGES } from "@/lib/nyTeamStreamCheck";
+import MetsSeriesList from "@/components/admin/MetsSeriesList";
 import MetsScheduleImport from "@/components/admin/MetsScheduleImport";
 import { TikTokLiveToggle } from "@/components/admin/TikTokLiveToggle";
 
@@ -411,6 +412,7 @@ export default function LiveStreamManagement() {
   });
   const [bulkMediaPickerOpen, setBulkMediaPickerOpen] = useState(false);
   const [activeTeam, setActiveTeam] = useState<TeamTabKey>("all");
+  const [seriesView, setSeriesView] = useState(false);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const rawTab = searchParams.get("tab");
@@ -1326,6 +1328,20 @@ export default function LiveStreamManagement() {
         <>
         {hubTab === "games" && <MetsScheduleImport onDone={fetchStreams} />}
         {hubTab === "games" && (
+          <div className="mb-3 inline-flex rounded-md border border-border p-0.5 text-sm" role="group" aria-label="Game view">
+            {([[false, "Cards"], [true, "By series"]] as const).map(([v, l]) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setSeriesView(v)}
+                className={`rounded px-3 py-1 ${seriesView === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        )}
+        {hubTab === "games" && (
         <div className="mb-4 flex min-w-0 gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Filter streams by team">
           {TEAM_TABS.map((tab) => {
             const active = activeTeam === tab.key;
@@ -1349,7 +1365,9 @@ export default function LiveStreamManagement() {
           })}
         </div>
         )}
-        {visibleStreams.length === 0 ? (
+        {hubTab === "games" && seriesView ? (
+          <MetsSeriesList streams={visibleStreams.filter((s) => isAutoStartMetsGame(s))} onEdit={handleEdit} onChanged={fetchStreams} />
+        ) : visibleStreams.length === 0 ? (
           <AdminEmpty message={hubTab === "now" ? "Nothing is live right now." : hubTab === "networks" ? "No sports network streams yet." : "No streams in this category yet."} />
         ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
