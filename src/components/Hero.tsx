@@ -140,8 +140,8 @@ const Hero = () => {
     return (
       <section className="home-hero-shell relative max-sm:!p-0 sm:pt-2" aria-busy="true" aria-label="Loading featured content">
         <div className="h-[calc(100svh-8.5rem)] min-h-[460px] max-h-[720px] bg-gradient-to-b from-[#0b3e75]/40 to-[#07111d] sm:hidden" />
-        <div className="home-feed-shell hidden overflow-hidden sm:block">
-          <div className="aspect-[16/8] rounded-md border border-border/40 bg-gradient-to-br from-[#0b3e75]/40 to-[#07111d] lg:aspect-[16/7]" />
+        <div className="hidden overflow-hidden sm:block">
+          <div className="h-[clamp(420px,min(50vw,76vh),800px)] bg-gradient-to-br from-[#0b3e75]/40 to-[#07111d]" />
         </div>
       </section>
     );
@@ -257,7 +257,7 @@ const Hero = () => {
       </div>
 
       <div
-        className="home-feed-shell hidden overflow-hidden sm:block"
+        className="hidden overflow-hidden sm:block"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         onFocus={() => setPaused(true)}
@@ -268,7 +268,7 @@ const Hero = () => {
             <div
               key={index}
               aria-hidden={current !== index}
-              className="relative col-start-1 row-start-1 min-w-0 h-[224px] sm:h-auto sm:aspect-[16/8] lg:aspect-[16/7] overflow-hidden rounded-xl sm:rounded-md border border-border/40 bg-card shadow-elevation-high transition-opacity duration-1000 ease-in-out motion-reduce:transition-none"
+              className="relative col-start-1 row-start-1 min-w-0 h-[clamp(420px,min(50vw,76vh),800px)] overflow-hidden bg-card transition-opacity duration-1000 ease-in-out motion-reduce:transition-none"
               style={{
                 opacity: current === index ? 1 : 0,
                 zIndex: current === index ? 10 : 0,
@@ -302,12 +302,12 @@ const Hero = () => {
                 );
               })()}
 
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/25 to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/25 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/45 to-transparent" />
 
               {/* Content overlay — bottom-left like Netflix */}
               <div
-                className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-8"
+                className="absolute bottom-0 left-0 right-0 px-6 pb-[7vh] md:px-[5vw] lg:pb-[9vh]"
               >
                 {/* Logo + tag (logo already in the mobile nav, so hidden on phones) */}
                 <div className="flex items-center gap-2 mb-1.5 sm:mb-3">
@@ -325,17 +325,17 @@ const Hero = () => {
 
                 {/* Title — broadcast wordmark on mobile */}
                 {index === 0 ? (
-                  <h1 className="mx-wordmark mb-1.5 max-w-xl font-display uppercase leading-[0.9] text-foreground drop-shadow-lg sm:mb-2">
+                  <h1 className="mx-wordmark mb-3 max-w-[min(52rem,90%)] text-balance font-display text-[clamp(2.25rem,5vw,5.25rem)] uppercase leading-[0.95] text-foreground drop-shadow-lg line-clamp-3">
                     {slide.title}
                   </h1>
                 ) : (
-                  <h2 className="mx-wordmark mb-1.5 max-w-xl font-display uppercase leading-[0.9] text-foreground drop-shadow-lg sm:mb-2">
+                  <h2 className="mx-wordmark mb-3 max-w-[min(52rem,90%)] text-balance font-display text-[clamp(2.25rem,5vw,5.25rem)] uppercase leading-[0.95] text-foreground drop-shadow-lg line-clamp-3">
                     {slide.title}
                   </h2>
                 )}
 
                 {/* Description */}
-                <p className="mb-3 max-w-md line-clamp-1 text-[13px] leading-snug text-foreground/80 sm:mb-4 sm:text-sm sm:line-clamp-3 sm:leading-relaxed">
+                <p className="mb-5 max-w-[min(40rem,90%)] line-clamp-3 text-[clamp(0.95rem,1.25vw,1.3rem)] leading-snug text-foreground/90 drop-shadow">
                   {slide.description}
                 </p>
 
@@ -346,7 +346,7 @@ const Hero = () => {
                       {isLiveNow && <div className="absolute -inset-1 rounded-lg bg-destructive/40 blur-lg" />}
                       <Button
                         onClick={() => handleNav("/metsxmfanzone")}
-                        className={`relative h-11 gap-2 rounded-lg px-6 text-[15px] font-bold sm:h-9 sm:gap-1.5 sm:rounded-sm sm:text-sm ${isLiveNow ? "ring-2 ring-destructive/50" : ""}`}
+                        className={`relative h-12 gap-2 rounded-md px-7 text-base font-bold ${isLiveNow ? "ring-2 ring-destructive/50" : ""}`}
                       >
                         <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current" />
                         {isLiveNow ? "Watch Live" : "Watch"}
@@ -357,7 +357,7 @@ const Hero = () => {
                     <Button
                       onClick={() => slide.link_url && handleNav(slide.link_url)}
                       variant="outline"
-                      className="h-11 gap-1.5 rounded-lg border-foreground/20 bg-foreground/10 px-4 text-sm text-foreground hover:bg-foreground/20 sm:h-9 sm:rounded-sm sm:px-5"
+                      className="h-12 gap-2 rounded-md border-foreground/20 bg-foreground/15 px-6 text-base text-foreground hover:bg-foreground/25"
                     >
                       <Info className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       {slide.link_text}
@@ -368,7 +368,7 @@ const Hero = () => {
                       onClick={handleSetReminder}
                       variant="outline"
                       aria-label={permission === "granted" && isSubscribed ? "Reminder on" : "Set reminder"}
-                      className={`gap-1.5 h-11 w-11 p-0 rounded-lg sm:h-9 sm:w-auto md:h-10 text-xs sm:text-sm sm:px-5 sm:rounded-sm ${
+                      className={`h-12 gap-2 rounded-md px-6 text-base ${
                         permission === "granted" && isSubscribed
                           ? "bg-primary/20 border-primary/40 text-primary hover:bg-primary/30"
                           : "bg-foreground/10 border-foreground/20 text-foreground hover:bg-foreground/20 hover:border-foreground/40"
