@@ -59,15 +59,14 @@ const TVDashboard = () => {
   const { data: liveStreams = [], isLoading: streamsLoading } = useQuery({
     queryKey: ["tv-live-streams"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("live_streams")
-        .select("*")
-        .eq("published", true)
-        .in("status", ["live", "scheduled"])
-        .order("created_at", { ascending: false })
-        .limit(24);
-      if (error) throw error;
-      return data;
+      // Fetch live streams separately so the many imported scheduled games can never crowd out
+      // the premium network streams (Apple TV, Prime Video, Peacock) or the main live stream.
+      const [liveRes, upcomingRes] = await Promise.all([
+        supabase.from("live_streams").select("*").eq("published", true).eq("status", "live").order("created_at", { ascending: false }).limit(50),
+        supabase.from("live_streams").select("*").eq("published", true).eq("status", "scheduled").order("scheduled_start", { ascending: true, nullsFirst: false }).limit(24),
+      ]);
+      if (liveRes.error) throw liveRes.error;
+      return [...(liveRes.data || []), ...(upcomingRes.data || [])];
     },
   });
 

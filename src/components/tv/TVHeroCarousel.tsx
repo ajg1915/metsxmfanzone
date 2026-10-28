@@ -65,7 +65,7 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
           key={slide.id}
           src={slide.image}
           alt=""
-          className="absolute right-0 top-0 h-full w-[68%] object-cover animate-in fade-in duration-700 [mask-image:linear-gradient(to_right,transparent_0%,#000_38%),linear-gradient(to_bottom,#000_70%,transparent_100%)] [mask-composite:intersect] [-webkit-mask-composite:source-in]"
+          className="absolute right-0 top-0 h-full w-[68%] object-cover animate-in fade-in duration-700"
         />
       )}
       {/* Fade to the page colour on the left and bottom so the text always reads */}

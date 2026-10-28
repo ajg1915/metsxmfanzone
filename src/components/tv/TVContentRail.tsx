@@ -58,7 +58,6 @@ export function TVContentRail({ title, note, items, accent, onItemClick }: TVCon
                 src={item.thumbnail}
                 alt=""
                 className="h-full w-full object-cover"
-                loading="lazy"
               />
               {item.badge && (
                 <span
