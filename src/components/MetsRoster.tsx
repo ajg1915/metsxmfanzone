@@ -122,11 +122,11 @@ function PlayerWatch({ onOpen, byName }: { onOpen: (id: number) => void; byName:
   });
   if (!data || data.length === 0) return null;
   return (
-    <div className="mb-8">
-      <h3 className="mb-3 flex items-center gap-2 font-display text-xl font-bold uppercase tracking-wide">
+    <div className="mb-7 sm:mb-8">
+      <h3 className="mb-3 flex items-center gap-2 font-display text-lg font-bold uppercase tracking-wide sm:text-xl">
         <Flame className="h-5 w-5 text-primary" /> Player Watch
       </h3>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
         {data.map((r) => {
           const hot = r.status === "hot";
           const id = r.player_id ?? byName.get(r.player_name.toLowerCase());
@@ -136,13 +136,13 @@ function PlayerWatch({ onOpen, byName }: { onOpen: (id: number) => void; byName:
               type="button"
               disabled={!id}
               onClick={() => id && onOpen(id)}
-              className="flex gap-3 rounded-xl border border-border bg-card p-3 text-left transition hover:border-primary/60 disabled:cursor-default"
+              className="flex w-[82%] shrink-0 snap-start gap-3 rounded-xl border border-border bg-card p-3 text-left transition hover:border-primary/60 disabled:cursor-default sm:w-auto"
             >
               <img
                 src={r.player_image_url || (id ? headshot(id, 120) : "")}
                 alt=""
                 loading="lazy"
-                className="h-16 w-16 shrink-0 rounded-full bg-muted object-cover"
+                className="h-14 w-14 shrink-0 rounded-full bg-muted object-cover sm:h-16 sm:w-16"
               />
               <span className="min-w-0">
                 <span className="flex items-center gap-2">
@@ -152,7 +152,7 @@ function PlayerWatch({ onOpen, byName }: { onOpen: (id: number) => void; byName:
                     {hot ? "Hot" : "Cold"}
                   </Badge>
                 </span>
-                <span className="mt-1 line-clamp-3 block text-sm text-muted-foreground">{r.description}</span>
+                <span className="mt-1 line-clamp-3 block text-[13px] leading-snug text-muted-foreground sm:text-sm">{r.description}</span>
               </span>
             </button>
           );
@@ -181,15 +181,15 @@ function Rumors({ onOpen, byName }: { onOpen: (id: number) => void; byName: Map<
   if (!data || data.length === 0) return null;
   const label = (t: string) => (t === "discussions" ? "Rumor" : t === "signing" ? "Signing" : t === "trade" ? "Trade" : t);
   return (
-    <div className="mb-8">
-      <h3 className="mb-3 flex items-center gap-2 font-display text-xl font-bold uppercase tracking-wide">
+    <div className="mb-7 sm:mb-8">
+      <h3 className="mb-3 flex items-center gap-2 font-display text-lg font-bold uppercase tracking-wide sm:text-xl">
         <Newspaper className="h-5 w-5 text-primary" /> Player Rumors &amp; Moves
       </h3>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] md:mx-0 md:grid md:grid-cols-2 md:overflow-visible md:px-0 [&::-webkit-scrollbar]:hidden">
         {data.map((n) => {
           const id = [n.title, n.player].map((x) => byName.get((x ?? "").trim().toLowerCase())).find(Boolean);
           return (
-            <div key={n.id} className="rounded-xl border border-border bg-card p-4">
+            <div key={n.id} className="w-[82%] shrink-0 snap-start rounded-xl border border-border bg-card p-3 sm:p-4 md:w-auto">
               <div className="mb-1 flex items-center justify-between gap-2">
                 <Badge variant={n.type === "discussions" ? "default" : "secondary"}>{label(n.type)}</Badge>
                 <span className="text-xs text-muted-foreground">{n.time_ago}</span>
@@ -216,11 +216,11 @@ function Rumors({ onOpen, byName }: { onOpen: (id: number) => void; byName: Map<
 // ---- One player's full card ----
 function StatGrid({ items }: { items: [string, any][] }) {
   return (
-    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+    <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
       {items.map(([k, v]) => (
-        <div key={k} className="rounded-lg bg-muted px-3 py-2 text-center">
-          <div className="text-lg font-bold">{v ?? "—"}</div>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">{k}</div>
+        <div key={k} className="rounded-lg bg-muted px-1 py-2 text-center">
+          <div className="text-[15px] font-bold sm:text-lg">{v ?? "—"}</div>
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground sm:text-xs">{k}</div>
         </div>
       ))}
     </div>
@@ -296,12 +296,12 @@ function PlayerDialog({ player, onClose }: { player: RosterPlayer | null; onClos
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[88vh] w-[calc(100vw-1.5rem)] max-w-2xl overflow-y-auto rounded-xl p-4 sm:p-6">
         <DialogHeader>
-          <div className="flex items-center gap-4">
-            <img src={headshot(player.id, 240)} alt="" className="h-24 w-24 rounded-full bg-muted object-cover" />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <img src={headshot(player.id, 240)} alt="" className="h-16 w-16 shrink-0 rounded-full bg-muted object-cover sm:h-24 sm:w-24" />
             <div className="min-w-0 text-left">
-              <DialogTitle className="text-2xl">{player.name}</DialogTitle>
+              <DialogTitle className="text-xl leading-tight sm:text-2xl">{player.name}</DialogTitle>
               <DialogDescription>
                 {[player.number && `#${player.number}`, player.pos, player.age && `Age ${player.age}`, player.bats && player.throws && `B/T ${player.bats}/${player.throws}`, player.height, player.weight && `${player.weight} lb`]
                   .filter(Boolean)
@@ -321,14 +321,14 @@ function PlayerDialog({ player, onClose }: { player: RosterPlayer | null; onClos
         )}
 
         <Tabs defaultValue="stats">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="stats">Stats</TabsTrigger>
-            <TabsTrigger value="awards">Awards</TabsTrigger>
-            <TabsTrigger value="contract">Contract</TabsTrigger>
-            <TabsTrigger value="news">Rumors</TabsTrigger>
+          <TabsList className="grid h-auto w-full grid-cols-4 p-1">
+            <TabsTrigger value="stats" className="px-1 text-xs sm:text-sm">Stats</TabsTrigger>
+            <TabsTrigger value="awards" className="px-1 text-xs sm:text-sm">Awards</TabsTrigger>
+            <TabsTrigger value="contract" className="px-1 text-xs sm:text-sm">Contract</TabsTrigger>
+            <TabsTrigger value="news" className="px-1 text-xs sm:text-sm">Rumors</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="stats" className="space-y-4">
+          <TabsContent value="stats" className="mt-3 space-y-4">
             <div>
               <p className="mb-2 text-sm font-semibold">{SEASON} season</p>
               {player.season ? <StatGrid items={items(player.season)} /> : <p className="text-sm text-muted-foreground">No {SEASON} stats yet.</p>}
@@ -344,7 +344,7 @@ function PlayerDialog({ player, onClose }: { player: RosterPlayer | null; onClos
             </Link>
           </TabsContent>
 
-          <TabsContent value="awards">
+          <TabsContent value="awards" className="mt-3">
             {awardsLoading ? (
               <Skeleton className="h-24 w-full" />
             ) : awards && awards.length > 0 ? (
@@ -365,7 +365,7 @@ function PlayerDialog({ player, onClose }: { player: RosterPlayer | null; onClos
             )}
           </TabsContent>
 
-          <TabsContent value="contract">
+          <TabsContent value="contract" className="mt-3">
             {hasContract ? (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -392,7 +392,7 @@ function PlayerDialog({ player, onClose }: { player: RosterPlayer | null; onClos
             )}
           </TabsContent>
 
-          <TabsContent value="news" className="space-y-2">
+          <TabsContent value="news" className="mt-3 space-y-2">
             {rumors && rumors.length > 0 ? (
               rumors.map((n) => (
                 <div key={n.id} className="rounded-lg border border-border p-3">
@@ -436,8 +436,8 @@ const MetsRoster = () => {
   const selected = roster?.find((p) => p.id === openId) ?? null;
 
   return (
-    <section className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8" aria-label="Mets roster">
-      <h2 className="mb-1 flex items-center gap-2 font-display text-3xl font-bold uppercase tracking-wide">
+    <section className="container mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8" aria-label="Mets roster">
+      <h2 className="mb-1 flex items-center gap-2 font-display text-2xl font-bold uppercase tracking-wide sm:text-3xl">
         <Users className="h-7 w-7 text-primary" /> Mets Roster
       </h2>
       <p className="mb-6 text-sm text-muted-foreground">
@@ -447,38 +447,43 @@ const MetsRoster = () => {
       <PlayerWatch onOpen={setOpenId} byName={byName} />
       <Rumors onOpen={setOpenId} byName={byName} />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        {(["All", ...GROUPS] as const).map((g) => (
-          <button
-            key={g}
-            type="button"
-            onClick={() => setGroup(g)}
-            className={`rounded-full border px-3 py-1 text-sm transition ${group === g ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/60"}`}
-          >
-            {g}
-          </button>
-        ))}
-        <span className="mx-1 hidden h-5 w-px bg-border sm:block" />
-        {([["40Man", "40-man"], ["active", "Active"]] as const).map(([v, l]) => (
-          <button
-            key={v}
-            type="button"
-            onClick={() => setType(v)}
-            className={`rounded-full border px-3 py-1 text-sm transition ${type === v ? "border-primary bg-primary/15 text-primary" : "border-border hover:border-primary/60"}`}
-          >
-            {l}
-          </button>
-        ))}
-        <div className="relative ml-auto w-full sm:w-56">
-          <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Find a player" className="pl-8" />
+      <div className="mb-4 space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1 sm:max-w-xs">
+            <Search className="pointer-events-none absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Find a player" className="h-10 pl-9" />
+          </div>
+          <div className="flex shrink-0 rounded-full border border-border p-0.5 text-sm">
+            {([["40Man", "40-man"], ["active", "Active"]] as const).map(([v, l]) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setType(v)}
+                className={`rounded-full px-3 py-1.5 transition ${type === v ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+          {(["All", ...GROUPS] as const).map((g) => (
+            <button
+              key={g}
+              type="button"
+              onClick={() => setGroup(g)}
+              className={`shrink-0 rounded-full border px-4 py-1.5 text-sm transition ${group === g ? "border-primary bg-primary text-primary-foreground" : "border-border hover:border-primary/60"}`}
+            >
+              {g}
+            </button>
+          ))}
         </div>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-xl" />
+            <Skeleton key={i} className="h-20 rounded-xl sm:h-40" />
           ))}
         </div>
       ) : isError ? (
@@ -488,23 +493,25 @@ const MetsRoster = () => {
           {type === "active" && !roster?.length ? "The active roster is empty in the off-season. Switch to the 40-man." : "No players match."}
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
           {shown.map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => setOpenId(p.id)}
-              className="group flex flex-col items-center rounded-xl border border-border bg-card p-3 text-center transition hover:border-primary/60 hover:shadow-md"
+              className="group flex items-center gap-3 rounded-xl border border-border bg-card p-2.5 text-left transition hover:border-primary/60 hover:shadow-md sm:flex-col sm:p-3 sm:text-center"
             >
-              <img src={headshot(p.id)} alt="" loading="lazy" className="h-24 w-24 rounded-full bg-muted object-cover" />
-              <span className="mt-2 w-full truncate font-semibold">{p.name}</span>
-              <span className="text-xs text-muted-foreground">
-                {p.number && `#${p.number} · `}
-                {p.pos}
+              <img src={headshot(p.id)} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-full bg-muted object-cover sm:h-24 sm:w-24" />
+              <span className="min-w-0 flex-1 sm:mt-2 sm:w-full sm:flex-none">
+                <span className="block truncate font-semibold">{p.name}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {p.number && `#${p.number} · `}
+                  {p.pos}
+                </span>
+                {statLine(p).length > 0 && (
+                  <span className="mt-0.5 block truncate text-xs text-muted-foreground">{statLine(p).slice(0, 3).join(" · ")}</span>
+                )}
               </span>
-              {statLine(p).length > 0 && (
-                <span className="mt-1 text-xs text-muted-foreground">{statLine(p).slice(0, 3).join(" · ")}</span>
-              )}
             </button>
           ))}
         </div>
