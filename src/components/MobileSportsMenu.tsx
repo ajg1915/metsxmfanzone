@@ -41,7 +41,6 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
     { label: "Picks", icon: Target, onClick: run(() => go("/picks")) },
     { label: "Blog", icon: Newspaper, onClick: run(() => go("/blog")) },
     { label: "Podcast", icon: Mic, onClick: run(() => go("/podcast")) },
-    { label: "Community", icon: Users, onClick: run(() => goProtected("/community")) },
   ];
 
   const initial = profile.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "M";
@@ -86,7 +85,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
           </span>
         </button>
 
-        <Label>Mets</Label>
+        <Label>MetsXMFanZone</Label>
         <div className="grid grid-cols-2 gap-2">
           {tiles.map(({ label, icon: Icon, onClick }) => (
             <button
@@ -110,6 +109,9 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
                   <span className="flex items-center gap-3"><Tv className="h-[18px] w-[18px] text-primary" />TV Mode</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
                 </button>
               )}
+              <button type="button" onClick={run(() => goProtected("/community"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+                <span className="flex items-center gap-3"><Users className="h-[18px] w-[18px] text-primary" />Community</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+              </button>
               <button type="button" onClick={run(() => go("/dashboard"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                 <span className="flex items-center gap-3"><LayoutDashboard className="h-[18px] w-[18px] text-primary" />Dashboard</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
