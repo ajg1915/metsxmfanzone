@@ -49,9 +49,10 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
       onBlur={(e) => {
         if (!ref.current?.contains(e.relatedTarget as Node | null)) setPaused(false);
       }}
-      className="relative w-full overflow-hidden h-[54vh] min-h-[340px] bg-[color:var(--tv-bg)]"
+      className="relative w-full min-h-[54vh] bg-[color:var(--tv-bg)]"
       aria-roledescription="carousel"
     >
+      <div className="absolute inset-0 overflow-hidden">
       <div
         className={
           live
@@ -69,8 +70,9 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
       )}
       {/* Fade to the page colour on the left and bottom so the text always reads */}
       <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--tv-bg)_0%,rgba(0,0,0,0)_55%),linear-gradient(0deg,var(--tv-bg)_0%,rgba(0,0,0,0)_28%)]" />
+      </div>
 
-      <div className="absolute inset-y-0 left-0 flex w-[52%] flex-col justify-end items-start gap-[1.2vh] px-[3.2vw] pb-[6vh]">
+      <div className="relative flex min-h-[54vh] w-[56%] flex-col justify-end items-start gap-[1.2vh] px-[3.2vw] pt-[8vh] pb-[5vh]">
         <span
           className={
             "inline-flex items-center gap-2 text-[1.1rem] font-semibold uppercase tracking-[0.18em] " +
@@ -80,9 +82,9 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
           {live && <span className="h-2.5 w-2.5 rounded-full bg-[#e11d48] animate-pulse" />}
           {slide.badge}
         </span>
-        <h1 className="text-[3.4rem] font-semibold leading-[1.05] text-white line-clamp-2">{slide.title}</h1>
+        <h1 className="text-[clamp(2rem,3.2vw,3.4rem)] font-semibold leading-[1.1] text-white line-clamp-2 pb-[0.1em]">{slide.title}</h1>
         {slide.description && (
-          <p className="max-w-[40rem] text-[1.35rem] leading-snug text-[color:var(--tv-text)]/85 line-clamp-3">
+          <p className="max-w-[40rem] text-[clamp(1.05rem,1.6vw,1.35rem)] leading-snug text-[color:var(--tv-text)]/85 line-clamp-3">
             {slide.description}
           </p>
         )}
