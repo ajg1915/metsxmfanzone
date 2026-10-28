@@ -1606,3 +1606,14 @@ nav.glass-nav { top: env(safe-area-inset-top, 0px) !important; }
 @media (min-width: 1920px) {
   .homepage-broadcast-feed { --home-zoom: 1.55; }
 }
+
+/* Home rows: no dead space. The old wide-screen spacer blocks at each end of a row are gone, and a row
+   ends right after its last card instead of running far past it. */
+.homepage-broadcast-feed .overflow-x-auto.scrollbar-hide > .hidden.flex-shrink-0 {
+  display: none !important;
+}
+@media (min-width: 1024px) {
+  .homepage-broadcast-feed .overflow-x-auto.scrollbar-hide {
+    padding-right: 1rem;
+  }
+}
