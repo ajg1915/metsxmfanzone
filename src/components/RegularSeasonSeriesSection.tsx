@@ -24,6 +24,8 @@ interface LiveStream {
 }
 
 interface SeriesGroup {
+  key: string;
+  away: boolean;
   opponent: string;
   streams: LiveStream[];
   hasLive: boolean;
@@ -40,7 +42,11 @@ const extractOpponent = (title: string): string | null => {
   return matchup ? matchup[1].trim() : null;
 };
 
-const RegularSeasonSeriesSection = () => {
+const isAwayTitle = (title: string) => /(?:mets|nym)\s*(?:@|at)\s+/i.test(title);
+// More than 2.5 days between two games against the same team = a different series.
+const SERIES_GAP_MS = 60 * 60 * 60 * 1000;
+
+const RegularSeasonSeriesSection = ({ title = "Regular Season Series" }: { title?: string }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { tier, isAdmin } = useSubscription();
@@ -72,23 +78,26 @@ const RegularSeasonSeriesSection = () => {
         return isRegularSeasonAssigned || hasMatchupTitle;
       });
 
-      const groupMap = new Map<string, LiveStream[]>();
-
-      for (const game of games) {
-        const opponent = extractOpponent(game.title);
-        if (!opponent) continue;
-
-        if (!groupMap.has(opponent)) {
-          groupMap.set(opponent, []);
-        }
-
-        groupMap.get(opponent)!.push(game);
+      // One group per series: the same opponent, games close together, in date order.
+      const dated = games
+        .map((game) => ({ game, opponent: extractOpponent(game.title) }))
+        .filter((x): x is { game: LiveStream; opponent: string } => !!x.opponent)
+        .sort((x, y) => (new Date(x.game.scheduled_start || 8.64e15).getTime()) - (new Date(y.game.scheduled_start || 8.64e15).getTime()));
+      const runs: { opponent: string; away: boolean; streams: LiveStream[] }[] = [];
+      for (const { game, opponent } of dated) {
+        const last = runs[runs.length - 1];
+        const prev = last?.streams[last.streams.length - 1];
+        const gap = prev?.scheduled_start && game.scheduled_start
+          ? new Date(game.scheduled_start).getTime() - new Date(prev.scheduled_start).getTime()
+          : 0;
+        if (last && last.opponent === opponent && last.away === isAwayTitle(game.title) && gap <= SERIES_GAP_MS) last.streams.push(game);
+        else runs.push({ opponent, away: isAwayTitle(game.title), streams: [game] });
       }
 
       const nowMs = Date.now();
       const ONE_DAY = 24 * 60 * 60 * 1000;
 
-      const groups: (SeriesGroup & { isActive: boolean })[] = Array.from(groupMap.entries()).map(([opponent, streams]) => {
+      const groups: (SeriesGroup & { isActive: boolean })[] = runs.map(({ opponent, away, streams }) => {
         const sorted = [...streams].sort((a, b) => {
           const aD = a.scheduled_start ? new Date(a.scheduled_start).getTime() : Infinity;
           const bD = b.scheduled_start ? new Date(b.scheduled_start).getTime() : Infinity;
@@ -103,6 +112,8 @@ const RegularSeasonSeriesSection = () => {
         const isActive = hasLive || (firstMs !== null && lastMs !== null && nowMs >= firstMs - ONE_DAY && nowMs <= lastMs + ONE_DAY);
 
         return {
+          key: `${opponent}-${sorted[0]?.id}`,
+          away,
           opponent,
           streams: sorted,
           hasLive,
@@ -205,7 +216,7 @@ const RegularSeasonSeriesSection = () => {
           <div className="flex items-center gap-1.5 sm:gap-2">
             <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             <h2 className="text-[25px] leading-none tracking-wide sm:text-2xl md:text-3xl font-bold uppercase text-foreground">
-              Regular Season Series
+              {title}
             </h2>
           </div>
           <a
@@ -238,7 +249,7 @@ const RegularSeasonSeriesSection = () => {
 
           {seriesGroups.map((group) => (
             <div
-              key={group.opponent}
+              key={group.key}
               onClick={() => handleSeriesClick(group)}
               className="flex-shrink-0 snap-start w-[calc(100vw-4.5rem)] max-w-[340px] md:w-[320px] md:max-w-none lg:w-[380px] cursor-pointer group/card relative"
             >
@@ -252,7 +263,7 @@ const RegularSeasonSeriesSection = () => {
                   {group.streams[0]?.thumbnail_url ? (
                     <img
                       src={group.streams[0].thumbnail_url}
-                      alt={`Mets vs ${group.opponent}`}
+                      alt={`Mets ${group.away ? "@" : "vs"} ${group.opponent}`}
                       className="w-full h-full object-cover"
                       onError={(e) => { if (e.currentTarget.src !== fanartGeneral) e.currentTarget.src = fanartGeneral; }}
                     />
@@ -301,7 +312,7 @@ const RegularSeasonSeriesSection = () => {
 
                 <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-background to-transparent">
                   <p className="text-foreground text-[15px] sm:text-sm font-bold line-clamp-1">
-                    Mets vs {group.opponent}
+                    Mets {group.away ? "@" : "vs"} {group.opponent}
                   </p>
                   <p className="text-muted-foreground text-[12.5px] sm:text-xs mt-0.5">
                     {formatDateRange(group.streams)}

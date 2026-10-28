@@ -8,6 +8,7 @@ import StreamTester from "@/pages/admin/StreamTester";
 import { supabase } from "@/integrations/supabase/client";
 import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
 import { NY_TEAM_PAGES } from "@/lib/nyTeamStreamCheck";
+import MetsScheduleImport from "@/components/admin/MetsScheduleImport";
 import { TikTokLiveToggle } from "@/components/admin/TikTokLiveToggle";
 
 // Team matchup preset images
@@ -1323,6 +1324,7 @@ export default function LiveStreamManagement() {
         <AdminEmpty message='No live streams yet. Click "Add Live Stream" to schedule your first stream.' />
       ) : (
         <>
+        {hubTab === "games" && <MetsScheduleImport onDone={fetchStreams} />}
         {hubTab === "games" && (
         <div className="mb-4 flex min-w-0 gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Filter streams by team">
           {TEAM_TABS.map((tab) => {

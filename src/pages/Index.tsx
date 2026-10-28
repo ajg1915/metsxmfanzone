@@ -18,6 +18,7 @@ import { SHOW_METS_GAME_CENTER } from "@/config/season";
 // Lazy load heavy components that are below the fold
 const ImmersiveBackground = lazyWithRetry(() => import("@/components/ImmersiveBackground"), "home-immersive-background");
 const FreeTrialExpiryBanner = lazyWithRetry(() => import("@/components/FreeTrialExpiryBanner"), "home-free-trial-expiry-banner");
+const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/RegularSeasonSeriesSection"), "home-game-series-section");
 const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section-v2");
 const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedStreamsSection"), "home-related-streams-section");
 
@@ -217,6 +218,13 @@ const Index = () => {
         <Suspense fallback={<SectionSkeleton />}>
           <LiveStreamsSection />
         </Suspense>
+
+        {/* Game series: every Mets series, one card each */}
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <RegularSeasonSeriesSection title="Game Series" />
+          </Suspense>
+        </LazySection>
 
         {/* Phone visitors who aren't signed in see the plans right on the home page */}
         {phoneVisitor && (
