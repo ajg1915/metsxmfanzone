@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, ImagePlus, CheckCircle2 } from "lucide-react";
+import { Loader2, ImagePlus, CheckCircle2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { uploadToR2Key } from "@/lib/r2Upload";
@@ -10,7 +10,7 @@ import { artKey, artUrl, fmtShowWhen, type LenoreEpisode } from "@/lib/lenore";
 const ART_SIZE = 1080;
 
 /** Crops the picture to a centered square, shrinks it to 1080px and saves it as a JPEG. */
-async function toSquareJpeg(file: File): Promise<Blob> {
+export async function toSquareJpeg(file: File): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
   const side = Math.min(bitmap.width, bitmap.height);
   const out = Math.min(side, ART_SIZE);
@@ -30,10 +30,11 @@ type Props = {
   selected: boolean;
   hasAudio: boolean;
   onSelect: () => void;
+  onEdit?: () => void;
 };
 
-/** One of Lenore's shows: tap to pick it for recording, and add or replace its fan art. */
-export default function StudioShowCard({ show, selected, hasAudio, onSelect }: Props) {
+/** One podcast show: tap to pick it for recording, and add or replace its fan art. */
+export default function StudioShowCard({ show, selected, hasAudio, onSelect, onEdit }: Props) {
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [hasArt, setHasArt] = useState<boolean | null>(null);
@@ -104,7 +105,7 @@ export default function StudioShowCard({ show, selected, hasAudio, onSelect }: P
         </div>
       </button>
 
-      <div className="mt-3">
+      <div className="mt-3 grid grid-cols-2 gap-2">
         <input
           ref={inputRef}
           type="file"
@@ -113,9 +114,12 @@ export default function StudioShowCard({ show, selected, hasAudio, onSelect }: P
           aria-label={`Choose fan art for ${show.title}`}
           onChange={(e) => pick(e.target.files?.[0])}
         />
-        <Button type="button" variant="outline" className="h-11 w-full" disabled={busy} onClick={() => inputRef.current?.click()}>
+        <Button type="button" variant="outline" className="h-11" disabled={busy} onClick={() => inputRef.current?.click()}>
           {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImagePlus className="mr-2 h-4 w-4" />}
-          {busy ? `Saving ${percent}%` : hasArt ? "Replace fan art" : "Add fan art"}
+          {busy ? `Saving ${percent}%` : hasArt ? "Replace art" : "Add art"}
+        </Button>
+        <Button type="button" variant="outline" className="h-11" onClick={onEdit} disabled={!onEdit}>
+          <Pencil className="mr-2 h-4 w-4" /> Edit show
         </Button>
       </div>
     </div>

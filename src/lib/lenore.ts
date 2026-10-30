@@ -1,5 +1,8 @@
-// Lenore, the podcast producer, is a Cloudflare Worker that keeps the Mon/Wed/Fri
-// show schedule in R2. This file reads that schedule and builds fan-art addresses.
+import { uploadToR2Key } from "@/lib/r2Upload";
+
+// The podcast show schedule lives in one small file in R2 (podcast/schedule.json).
+// Anthony creates and edits shows in the admin Show editor; this file reads and saves that
+// schedule and builds fan-art addresses. (The old Lenore worker URL is only a read fallback.)
 
 export const LENORE_URL = "https://lenore.metsxmfan.workers.dev";
 const MEDIA_BASE = "https://media.metsxmfanzone.com";
@@ -12,6 +15,7 @@ export type LenoreEpisode = {
   status: "scheduled" | "available";
   title: string;
   description: string;
+  alerted?: boolean;
 };
 
 /** The show's calendar date in New York, like "2026-10-16". Names the fan-art file. */
@@ -38,26 +42,94 @@ export const fmtCountdown = (iso: string, now = Date.now()) => {
   return hrs >= 1 ? `Starts in ${hrs} hrs ${mins} min` : `Starts in ${mins} min`;
 };
 
+const SCHEDULE_KEY = "podcast/schedule.json";
+const SCHEDULE_URL = `${MEDIA_BASE}/${SCHEDULE_KEY}`;
+const SHOW_NAME = "MetsXMFanZone Podcast";
+
+const withStatus = (e: LenoreEpisode): LenoreEpisode => ({
+  ...e,
+  status: new Date(e.available).getTime() <= Date.now() ? "available" : "scheduled",
+});
+
+const toList = (d: unknown): LenoreEpisode[] => {
+  const raw = Array.isArray(d) ? d : Array.isArray((d as { episodes?: unknown })?.episodes) ? (d as { episodes: LenoreEpisode[] }).episodes : [];
+  return raw.filter((e) => e && e.id && e.available && e.title).map(withStatus);
+};
+
+/** Reads the show schedule from R2 (falls back to the old worker address if the file cannot be read directly). */
+async function readSchedule(): Promise<LenoreEpisode[]> {
+  try {
+    const r = await fetch(`${SCHEDULE_URL}?v=${Date.now()}`, { cache: "no-store" });
+    if (r.ok) return toList(await r.json());
+    if (r.status === 404) return [];
+  } catch {
+    /* try the fallback below */
+  }
+  const r2 = await fetch(LENORE_URL, { cache: "no-store" });
+  if (!r2.ok) throw new Error("Could not load the shows");
+  return toList(await r2.json());
+}
+
+const byTime = (a: LenoreEpisode, b: LenoreEpisode) => new Date(a.available).getTime() - new Date(b.available).getTime();
+
 /** Upcoming shows, soonest first. Shows that already opened are left to the normal episode list. */
 export async function fetchComingSoon(): Promise<LenoreEpisode[]> {
   try {
-    const res = await fetch(LENORE_URL, { cache: "no-store" });
-    if (!res.ok) return [];
-    const all = (await res.json()) as LenoreEpisode[];
-    return (Array.isArray(all) ? all : [])
+    return (await readSchedule())
       .filter((e) => e.status === "scheduled" && new Date(e.available).getTime() > Date.now())
-      .sort((a, b) => new Date(a.available).getTime() - new Date(b.available).getTime());
+      .sort(byTime);
   } catch {
     return [];
   }
 }
 
-/** Every show Lenore knows about, soonest first, for the admin tab. */
+/** Every show, soonest first, for the admin Show editor. */
 export async function fetchAllShows(): Promise<LenoreEpisode[]> {
-  const res = await fetch(LENORE_URL, { cache: "no-store" });
-  if (!res.ok) throw new Error("Could not reach Lenore");
-  const all = (await res.json()) as LenoreEpisode[];
-  return (Array.isArray(all) ? all : []).sort(
-    (a, b) => new Date(a.available).getTime() - new Date(b.available).getTime(),
-  );
+  return (await readSchedule()).sort(byTime);
 }
+
+/** Saves the whole schedule to R2. Reads the latest copy first so nothing is overwritten by a stale page. */
+export async function saveShow(show: LenoreEpisode, mode: "upsert" | "delete" = "upsert"): Promise<void> {
+  const list = await readSchedule();
+  const rest = list.filter((e) => e.id !== show.id);
+  const next = mode === "delete" ? rest : [...rest, show];
+  const body = JSON.stringify({ episodes: next.sort(byTime) });
+  await uploadToR2Key(new Blob([body], { type: "application/json" }), SCHEDULE_KEY);
+}
+
+export const newShowId = () => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `show-${Date.now()}`);
+
+export const buildShow = (id: string, title: string, description: string, available: string): LenoreEpisode => ({
+  id,
+  show: SHOW_NAME,
+  day: new Date(available).toLocaleDateString("en-US", { weekday: "long", timeZone: "America/New_York" }),
+  available,
+  status: new Date(available).getTime() <= Date.now() ? "available" : "scheduled",
+  alerted: true,
+  title,
+  description,
+});
+
+const etParts = (t: number) => {
+  const f = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" });
+  const o: Record<string, number> = {};
+  f.formatToParts(new Date(t)).forEach((p) => { if (p.type !== "literal") o[p.type] = Number(p.value); });
+  return o;
+};
+
+/** New York date ("2026-11-02") and time ("06:00") to a UTC ISO string. */
+export function etToIso(date: string, time: string): string {
+  const [y, m, d] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  const target = Date.UTC(y, m - 1, d, hh, mm);
+  let t = target;
+  for (let i = 0; i < 3; i++) {
+    const p = etParts(t);
+    t -= Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute) - target;
+  }
+  return new Date(t).toISOString();
+}
+
+/** A show's New York time as "06:00". */
+export const showTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" });

@@ -1,21 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
-import { Mic, Video } from "lucide-react";
+import { Mic, Plus, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllShows, type LenoreEpisode } from "@/lib/lenore";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminUI";
 import PodcastAudioRecorder from "@/components/PodcastAudioRecorder";
 import StudioShowCard from "@/components/admin/studio/StudioShowCard";
+import ShowEditorDialog from "@/components/admin/studio/ShowEditorDialog";
+import { Button } from "@/components/ui/button";
 import StudioEpisodes from "@/components/admin/studio/StudioEpisodes";
 import TurboUploadTab from "@/components/admin/studio/TurboUploadTab";
 
-/** One page for Lenore's shows, recording or uploading audio, fan art, and the episode list. */
+/** One page for the show editor, recording or uploading audio, fan art, and the episode list. */
 export default function PodcastStudio() {
   const [shows, setShows] = useState<LenoreEpisode[] | null>(null);
   const [error, setError] = useState(false);
   const [haveAudio, setHaveAudio] = useState<number[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [episodesKey, setEpisodesKey] = useState(0);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editing, setEditing] = useState<LenoreEpisode | null>(null);
 
   const hasAudio = useCallback(
     (s: LenoreEpisode) => haveAudio.includes(new Date(s.available).getTime()),
@@ -49,22 +53,27 @@ export default function PodcastStudio() {
       <AdminPageHeader
         icon={Mic}
         title="Podcast Studio"
-        description="Lenore's shows, recording, fan art and episodes in one place"
+        description="Create shows, add fan art, record or upload audio and manage episodes"
       />
 
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="min-w-0 space-y-4">
           <section className="space-y-2" aria-labelledby="studio-shows">
-            <div>
-              <h2 id="studio-shows" className="text-base font-extrabold uppercase tracking-wide">Lenore's shows</h2>
-              <p className="text-sm text-muted-foreground">
-                Monday, Wednesday and Friday. Pick a show to record or upload it. Each goes live on its own at the time shown.
-              </p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 id="studio-shows" className="text-base font-extrabold uppercase tracking-wide">Shows</h2>
+                <p className="text-sm text-muted-foreground">
+                  Add a show with a title, date and fan art. Pick one to record or upload it. Each goes live on its own at the time shown.
+                </p>
+              </div>
+              <Button type="button" className="h-11 shrink-0" onClick={() => { setEditing(null); setEditorOpen(true); }}>
+                <Plus className="mr-1.5 h-4 w-4" /> New show
+              </Button>
             </div>
-            {error && <p role="alert" className="text-sm text-destructive">Could not reach Lenore. Try again in a minute.</p>}
+            {error && <p role="alert" className="text-sm text-destructive">Could not load the shows. Try again in a minute.</p>}
             {!shows && !error && <p className="text-sm text-muted-foreground">Loading shows...</p>}
             {shows && shows.length === 0 && (
-              <p className="text-sm text-muted-foreground">No shows yet. Lenore adds the next three every Sunday morning.</p>
+              <p className="text-sm text-muted-foreground">No shows yet. Tap New show to add your first one.</p>
             )}
             {shows?.map((s) => (
               <StudioShowCard
@@ -73,6 +82,7 @@ export default function PodcastStudio() {
                 selected={s.id === selectedId}
                 hasAudio={hasAudio(s)}
                 onSelect={() => setSelectedId(s.id)}
+                onEdit={() => { setEditing(s); setEditorOpen(true); }}
               />
             ))}
           </section>
@@ -106,6 +116,7 @@ export default function PodcastStudio() {
           <StudioEpisodes key={episodesKey} />
         </div>
       </div>
+      <ShowEditorDialog open={editorOpen} onOpenChange={setEditorOpen} show={editing} onSaved={() => { setSelectedId(""); load(); }} />
     </AdminPage>
   );
 }

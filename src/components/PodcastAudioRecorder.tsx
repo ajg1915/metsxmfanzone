@@ -12,9 +12,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { holdAdminSession } from "@/lib/adminActivity";
 import { fetchAllShows, fmtShowWhen, type LenoreEpisode } from "@/lib/lenore";
 
-// lenoreMode is for the admin Podcasts page: pick Lenore's show, title and description fill in
+// lenoreMode is for the admin Podcasts page: pick a show, title and description fill in
 // and lock, and the episode goes live at the show's scheduled time.
-// Pass `show` (a Lenore show, or null for none picked yet) to control the picked show from outside,
+// Pass `show` (a show, or null for none picked yet) to control the picked show from outside,
 // as the Podcast Studio page does. Without it, the recorder shows its own show dropdown.
 const PodcastAudioRecorder = ({
   lenoreMode = false,
@@ -220,7 +220,7 @@ const PodcastAudioRecorder = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {needsShow && (
-          <p className="text-sm text-muted-foreground">Pick one of Lenore's shows above to start.</p>
+          <p className="text-sm text-muted-foreground">Pick one of the shows above to start.</p>
         )}
         {!user && (
           <p className="text-sm text-destructive font-medium">You must be logged in to submit a recording.</p>
@@ -235,7 +235,7 @@ const PodcastAudioRecorder = ({
               onChange={(e) => chooseShow(e.target.value)}
               className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="">Pick Lenore's show</option>
+              <option value="">Pick a show</option>
               {shows.map((x) => {
                 const done = haveAudio.includes(new Date(x.available).getTime());
                 return (
@@ -247,7 +247,7 @@ const PodcastAudioRecorder = ({
               })}
             </select>
             <p className="text-xs text-muted-foreground">
-              Record ahead of time. The title and description come from Lenore, and the show goes live at its scheduled time.
+              Record ahead of time. The title and description come from the show, and the show goes live at its scheduled time.
             </p>
           </div>
         )}
