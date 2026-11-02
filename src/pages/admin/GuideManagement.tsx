@@ -107,7 +107,7 @@ export default function GuideManagement() {
           <AdminListCard key={it.id} highlight={it.highlight_new}>
             <AdminRow
               title={it.title}
-              meta={[it.where_label, it.section && `jumps to: ${GUIDE_SECTIONS.find((s) => s.key === it.section)?.label || it.section}`, it.path, (it.platforms || []).map((p) => PLATFORMS.find((x) => x.key === p)?.label || p).join("/")].filter(Boolean).join("  ·  ")}
+              meta={[it.body, it.where_label, it.section && `jumps to: ${GUIDE_SECTIONS.find((s) => s.key === it.section)?.label || it.section}`, it.path, (it.platforms || []).map((p) => PLATFORMS.find((x) => x.key === p)?.label || p).join("/")].filter(Boolean).join("  ·  ")}
               badges={<>
                 {it.suggested && <Badge className="h-4 px-1 text-[9px]">Suggested</Badge>}
                 {it.highlight_new && <Badge variant="outline" className="h-4 px-1 text-[9px] border-primary text-primary">NEW glow</Badge>}
@@ -148,6 +148,8 @@ export default function GuideManagement() {
               </>
             ) : (
               <>
+                <div><Label>Description (optional, shown under the title)</Label>
+                  <Textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={2} placeholder="A short line that explains it" /></div>
                 <div><Label>Where it lives (shown as a pill)</Label>
                   <Input value={form.where_label} onChange={(e) => setForm({ ...form, where_label: e.target.value })} placeholder="Menu › Picks" /></div>
                 <div><Label>Page or link it opens (a /page or a full https:// link)</Label>

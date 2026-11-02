@@ -263,6 +263,7 @@ export default function MobileGuide() {
         <button type="button" onClick={() => open(it)} className="flex min-h-[52px] w-full items-center gap-3 text-left">
           <span className="flex-1 text-[15px] font-bold text-foreground">
             {it.title}
+            {it.body && <span className="mt-0.5 block text-[13px] font-normal leading-snug text-muted-foreground">{it.body}</span>}
             {isNew && <span className="ml-2 rounded bg-primary px-1.5 py-0.5 font-display text-[12px] tracking-wider text-primary-foreground">NEW</span>}
           </span>
           {it.where_label && <span className="rounded-full bg-secondary px-3 py-1 font-display text-[13px] tracking-[0.08em] text-white">{it.where_label}</span>}

@@ -194,7 +194,7 @@ const Index = () => {
         </Suspense>
 
         {/* Sports networks: shown in TV mode only (see .sports-networks in index.css) */}
-        <SportsNetworksStrip />
+        <div data-guide="sports-networks"><SportsNetworksStrip /></div>
 
         {/* Live & upcoming */}
         {SHOW_METS_GAME_CENTER && (
