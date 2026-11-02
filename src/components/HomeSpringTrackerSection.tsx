@@ -67,7 +67,25 @@ async function fetchMlbTransactions(): Promise<Tx[]> {
   return (json.transactions ?? []).map((x: any): Tx => ({ id: x.id, date: x.effectiveDate || x.date, typeCode: x.typeCode ?? "", typeDesc: x.typeDesc ?? "", playerId: x.person?.id, player: x.person?.fullName ?? "", fromId: x.fromTeam?.id, toId: x.toTeam?.id, description: x.description ?? "" }));
 }
 
-/** ESPN's public MLB transactions feed, filtered down to the Mets. Its shape is loose, so read it defensively. */
+/** ESPN's feed is one text blurb per team per day ("Recalled X from Y. Placed Z on the 15-day IL."), with no player or
+ *  move type fields. Split each blurb into single moves and work out the player and kind from the wording. */
+const POS = "(?:RHP|LHP|C|1B|2B|3B|SS|LF|CF|RF|OF|DH|INF|P|UT)";
+const NAME = "([A-Z][A-Za-zÀ-ÿ.'’-]+(?:\\s+(?:Jr\\.|Sr\\.|II|III|[A-Z][A-Za-zÀ-ÿ.'’-]+)){1,2})";
+function moveKind(sentence: string): string {
+  if (/\btraded\b|\bacquired\b/i.test(sentence)) return "Trade";
+  if (/claimed/i.test(sentence)) return "Claimed Off Waivers";
+  if (/designated .* for assignment/i.test(sentence)) return "Designated for Assignment";
+  if (/outright/i.test(sentence)) return "Outrighted";
+  if (/released/i.test(sentence)) return "Released";
+  if (/\bwaive/i.test(sentence)) return "Waived";
+  if (/agreed to|signed|re-signed|extension/i.test(sentence)) return /extension/i.test(sentence) ? "Extension" : "Signed";
+  if (/optioned/i.test(sentence)) return "Optioned";
+  if (/recalled/i.test(sentence)) return "Recalled";
+  if (/selected/i.test(sentence)) return "Selected";
+  if (/injured list|\bIL\b|reinstated/i.test(sentence)) return /reinstated/i.test(sentence) ? "Reinstated" : "Injured List";
+  return "Roster Move";
+}
+
 async function fetchEspnTransactions(): Promise<Tx[]> {
   const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/transactions?limit=300`);
   if (!res.ok) throw new Error("espn transactions");
@@ -75,22 +93,23 @@ async function fetchEspnTransactions(): Promise<Tx[]> {
   const list: any[] = json.transactions ?? json.items ?? [];
   const out: Tx[] = [];
   for (const x of list) {
-    const ids = [x.team?.id, x.fromTeam?.id, x.toTeam?.id].map((v) => (v == null ? "" : String(v)));
-    const text = `${x.description ?? ""} ${x.team?.displayName ?? ""} ${x.team?.name ?? ""}`;
-    if (!ids.includes(ESPN_METS) && !/\bmets\b/i.test(text)) continue;
-    const athlete = x.athlete ?? x.player ?? {};
-    const typeDesc = typeof x.type === "string" ? x.type : x.type?.text ?? x.type?.description ?? x.type?.name ?? "Transaction";
-    out.push({
-      id: Number(x.id) || Math.abs(hashStr(`${x.date}${athlete.displayName}${typeDesc}`)),
-      date: x.date ?? x.timestamp ?? "",
-      typeCode: /trade/i.test(typeDesc) ? "TR" : "",
-      typeDesc,
-      player: athlete.displayName ?? athlete.fullName ?? "",
-      description: x.description ?? "",
-      photoUrl: athlete.id ? `https://a.espncdn.com/i/headshots/mlb/players/full/${athlete.id}.png` : undefined,
+    if (String(x.team?.id ?? "") !== ESPN_METS || !x.date) continue;
+    const sentences = String(x.description ?? "").split(/\.\s+(?=[A-Z])/).map((t) => t.trim().replace(/\.$/, "")).filter(Boolean);
+    sentences.forEach((sentence, i) => {
+      const m = sentence.match(new RegExp(`\\b${POS}\\s+${NAME}`));
+      if (!m) return;
+      const typeDesc = moveKind(sentence);
+      out.push({
+        id: Math.abs(hashStr(`${x.date}|${i}|${sentence}`)),
+        date: x.date,
+        typeCode: typeDesc === "Trade" ? "TR" : "",
+        typeDesc,
+        player: m[1],
+        description: `${sentence}.`,
+      });
     });
   }
-  return out.filter((t) => t.date);
+  return out;
 }
 
 function hashStr(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
@@ -109,7 +128,7 @@ function useTransactions() {
       const b = espn.status === "fulfilled" ? espn.value : [];
       // Same player, same kind of move, within a day or two = the same move. Keep the MLB copy (it has MLB photos and team logos).
       const kind = (t: Tx) => (isTrade(t) ? "t" : isWaiver(t) ? "w" : isSigning(t) ? "s" : "o");
-      const dupe = (t: Tx) => a.some((m) => norm(m.player) === norm(t.player) && kind(m) === kind(t) && Math.abs(+new Date(m.date) - +new Date(t.date)) < 3 * 86_400_000);
+      const dupe = (t: Tx) => a.some((m) => norm(m.player) === norm(t.player) && kind(m) === kind(t) && (kind(m) !== "o" || m.typeDesc.toLowerCase() === t.typeDesc.toLowerCase()) && Math.abs(+new Date(m.date) - +new Date(t.date)) < 3 * 86_400_000);
       const cutoff = Date.now() - 270 * 86_400_000;
       return [...a, ...b.filter((t) => t.player && !dupe(t) && +new Date(t.date) > cutoff)]
         .sort((x, y) => +new Date(y.date) - +new Date(x.date));
@@ -187,13 +206,13 @@ export function SpringTrainingSection() {
 }
 
 export function MetsTrackerSection() {
-  const [tab, setTab] = useState<"trades" | "signings" | "waivers" | "moves" | "radar">("trades");
+  const [tab, setTab] = useState<"trades" | "signings" | "waivers" | "moves" | "radar">("moves");
   const { data: txs = [], isLoading, isError } = useTransactions();
-  const items = tab === "trades" ? txs.filter(isTrade).slice(0, 12) : tab === "signings" ? txs.filter(isSigning).slice(0, 12) : tab === "waivers" ? txs.filter(isWaiver).slice(0, 12) : tab === "moves" ? txs.slice(0, 20) : [];
+  const items = tab === "trades" ? txs.filter(isTrade).slice(0, 12) : tab === "signings" ? txs.filter(isSigning).slice(0, 12) : tab === "waivers" ? txs.filter(isWaiver).slice(0, 12) : tab === "moves" ? txs.slice(0, 25) : [];
 
   const tabs = (
     <div data-guide="fa-tabs" className="scrollbar-hide flex gap-1.5 overflow-x-auto px-4 pb-3 sm:px-6 lg:px-8" role="tablist" aria-label="Free Agency" style={{ scrollbarWidth: "none" }}>
-      {([["trades", "Trades"], ["signings", "Signings"], ["waivers", "Waivers"], ["moves", "All Moves"], ["radar", "Radar"]] as const).map(([v, l]) => (
+      {([["moves", "All Moves"], ["trades", "Trades"], ["signings", "Signings"], ["waivers", "Waivers"], ["radar", "Radar"]] as const).map(([v, l]) => (
         <button key={v} type="button" role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
           className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-lg border border-[#ff5a1f] px-3.5 font-display text-sm font-bold uppercase tracking-wider transition-colors sm:px-4 sm:text-base ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>
       ))}
