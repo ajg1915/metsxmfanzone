@@ -25,7 +25,8 @@ const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedSt
 const HomeHighlightsSection = lazyWithRetry(() => import("@/components/HomeHighlightsSection"), "home-highlights-section");
 const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerOfTheMonthSection"), "home-player-of-the-month-section");
 
-const HomeSpringTrackerSection = lazyWithRetry(() => import("@/components/HomeSpringTrackerSection"), "home-spring-tracker-section");
+const MetsTrackerSection = lazyWithRetry(() => import("@/components/HomeSpringTrackerSection").then((m) => ({ default: m.MetsTrackerSection })), "home-mets-tracker-section");
+const SpringTrainingSection = lazyWithRetry(() => import("@/components/HomeSpringTrackerSection").then((m) => ({ default: m.SpringTrainingSection })), "home-spring-training-section");
 const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
 const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadioSection"), "home-podcast-radio-section");
 
@@ -195,7 +196,19 @@ const Index = () => {
         <div className="hidden sm:block sm:h-[72px]" aria-hidden="true" />
         <Hero />
 
-        {/* Scores right under the hero */}
+        {/* Mets Tracker FA (trades, signings, radar), first section under the hero */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <MetsTrackerSection />
+        </Suspense>
+
+        <div className="section-divider my-1" />
+
+        {/* Spring Training */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <SpringTrainingSection />
+        </Suspense>
+
+        {/* Scores, under Spring Training */}
         <NYScoresStrip />
 
         {/* Sports networks: shown in TV mode only (see .sports-networks in index.css) */}
@@ -220,13 +233,6 @@ const Index = () => {
         <Suspense fallback={<SectionSkeleton />}>
           <LiveStreamsSection />
         </Suspense>
-
-        {/* Spring Training + Mets Tracker (trades, signings, radar) */}
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <HomeSpringTrackerSection />
-          </Suspense>
-        </LazySection>
 
         {/* Game series: every Mets series, one card each */}
         <LazySection fallback={<SectionSkeleton />}>

@@ -92,7 +92,7 @@ const Title = ({ children, right }: { children: React.ReactNode; right?: React.R
   </div>
 );
 
-function SpringTraining() {
+export function SpringTrainingSection() {
   const { data: games = [] } = useSpringGames();
   const now = Date.now();
   const upcoming = games.filter((g) => +new Date(g.date) > now - 6 * 3_600_000);
@@ -140,13 +140,13 @@ function SpringTraining() {
   );
 }
 
-function Tracker() {
+export function MetsTrackerSection() {
   const [tab, setTab] = useState<"trades" | "signings" | "radar">("trades");
   const { data: txs = [], isLoading, isError } = useTransactions();
   const items = tab === "trades" ? txs.filter(isTrade).slice(0, 10) : tab === "signings" ? txs.filter(isSigning).slice(0, 10) : [];
 
   const tabs = (
-    <div className="flex gap-1.5" role="tablist" aria-label="Mets Tracker">
+    <div className="flex gap-1.5" role="tablist" aria-label="Mets Tracker FA">
       {([["trades", "Trades"], ["signings", "Signings"], ["radar", "Radar"]] as const).map(([v, l]) => (
         <button key={v} type="button" role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
           className={`min-h-[40px] rounded-lg border border-[#ff5a1f] px-3.5 font-display text-sm font-bold uppercase tracking-wider transition-colors sm:px-4 sm:text-base ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>
@@ -162,7 +162,7 @@ function Tracker() {
 
   return (
     <section className="relative py-6 sm:py-8" aria-label="Mets Tracker">
-      <Title right={tabs}>Mets Tracker</Title>
+      <Title right={tabs}>Mets Tracker FA</Title>
       <div className={rowCls} style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {tab !== "radar" && isLoading && [0, 1, 2].map((i) => <div key={i} className={`${cardW} h-[250px] animate-pulse rounded-lg bg-card/70`} />)}
         {tab !== "radar" && isError && <div className={`${cardW} rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>MLB's transactions feed is not answering right now.</div>}
@@ -210,9 +210,9 @@ function Tracker() {
 export default function HomeSpringTrackerSection() {
   return (
     <>
-      <SpringTraining />
+      <MetsTrackerSection />
       <div className="section-divider my-1" />
-      <Tracker />
+      <SpringTrainingSection />
     </>
   );
 }
