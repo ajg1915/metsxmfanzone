@@ -1,33 +1,36 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, MapPin, Play, Radar as RadarIcon, Sun } from "lucide-react";
+import { ChevronRight, Play } from "lucide-react";
+import logo from "@/assets/metsxmfanzone-logo.png";
 import { METS_RADAR, type RadarStatus } from "@/data/metsRadar";
 
-// Home page: Spring Training (countdown + next games) next to the Mets Tracker
-// (trades, signings, radar). All data comes from MLB's public feeds or src/data/metsRadar.ts,
-// nothing here reads or writes Supabase.
+// Home page: Spring Training and Mets Tracker, built like the other home rows
+// (title row + side-scrolling cards). Data: MLB's public feeds + src/data/metsRadar.ts.
+// Nothing here reads or writes Supabase.
 
-const METS_TEAM_ID = 121;
+const METS = 121;
 const SEASON = 2027;
 const ET = "America/New_York";
 const FALLBACK_OPENER = "2027-02-19T18:10:00Z"; // Fri Feb 19, 2027 vs Marlins (Mets announcement)
 
-const fmt = (iso: string, o: Intl.DateTimeFormatOptions) =>
-  new Intl.DateTimeFormat("en-US", { timeZone: ET, ...o }).format(new Date(iso));
+const teamLogo = (id: number) => `https://www.mlbstatic.com/team-logos/${id}.svg`;
+const headshot = (id: number) =>
+  `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_360,q_auto:best/v1/people/${id}/headshot/67/current`;
+const fmt = (iso: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-US", { timeZone: ET, ...o }).format(new Date(iso));
 const dayLabel = (iso: string) => fmt(`${iso.slice(0, 10)}T12:00:00Z`, { month: "short", day: "numeric" });
 const ymd = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: ET }).format(d);
 
-type Game = { id: number; date: string; isHome: boolean; opponent: string; timeTBD: boolean };
-type Tx = { id: number; date: string; typeCode: string; typeDesc: string; player: string; description: string };
+type Game = { id: number; date: string; isHome: boolean; opponent: string; oppId: number; timeTBD: boolean };
+type Tx = { id: number; date: string; typeCode: string; typeDesc: string; playerId?: number; player: string; fromId?: number; toId?: number; description: string };
 
 const isTrade = (t: Tx) => t.typeCode === "TR" || /trade/i.test(t.typeDesc);
 const isSigning = (t: Tx) => !isTrade(t) && (/signed|extension/i.test(t.typeDesc) || ["SGN", "SFA", "SE"].includes(t.typeCode));
 
 const STATUS: Record<RadarStatus, { text: string; cls: string }> = {
-  in_talks: { text: "In talks", cls: "bg-red-600 text-white" },
-  linked: { text: "Linked", cls: "bg-amber-600 text-white" },
-  long_shot: { text: "Long shot", cls: "bg-slate-600 text-white" },
+  in_talks: { text: "In talks", cls: "bg-red-600" },
+  linked: { text: "Linked", cls: "bg-amber-600" },
+  long_shot: { text: "Long shot", cls: "bg-slate-600" },
 };
 
 function useSpringGames() {
@@ -35,16 +38,15 @@ function useSpringGames() {
     queryKey: ["home-spring-games", SEASON],
     staleTime: 30 * 60_000,
     queryFn: async (): Promise<Game[]> => {
-      const res = await fetch(
-        `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${METS_TEAM_ID}&season=${SEASON}&gameType=S&startDate=${SEASON}-02-01&endDate=${SEASON}-04-05&hydrate=team`
-      );
+      const res = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${METS}&season=${SEASON}&gameType=S&startDate=${SEASON}-02-01&endDate=${SEASON}-04-05&hydrate=team`);
       if (!res.ok) throw new Error("schedule");
       const json = await res.json();
       const out: Game[] = [];
       for (const day of json.dates ?? []) {
         for (const g of day.games ?? []) {
-          const isHome = g.teams.home.team.id === METS_TEAM_ID;
-          out.push({ id: g.gamePk, date: g.gameDate, isHome, opponent: (isHome ? g.teams.away : g.teams.home).team.name, timeTBD: g.status?.startTimeTBD === true });
+          const isHome = g.teams.home.team.id === METS;
+          const opp = (isHome ? g.teams.away : g.teams.home).team;
+          out.push({ id: g.gamePk, date: g.gameDate, isHome, opponent: opp.name, oppId: opp.id, timeTBD: g.status?.startTimeTBD === true });
         }
       }
       return out.sort((a, b) => +new Date(a.date) - +new Date(b.date));
@@ -59,128 +61,158 @@ function useTransactions() {
     queryFn: async (): Promise<Tx[]> => {
       const end = new Date();
       const start = new Date(end.getTime() - 150 * 86_400_000);
-      const res = await fetch(`https://statsapi.mlb.com/api/v1/transactions?teamId=${METS_TEAM_ID}&startDate=${ymd(start)}&endDate=${ymd(end)}`);
+      const res = await fetch(`https://statsapi.mlb.com/api/v1/transactions?teamId=${METS}&startDate=${ymd(start)}&endDate=${ymd(end)}`);
       if (!res.ok) throw new Error("transactions");
       const json = await res.json();
       return (json.transactions ?? [])
-        .map((x: any): Tx => ({ id: x.id, date: x.effectiveDate || x.date, typeCode: x.typeCode ?? "", typeDesc: x.typeDesc ?? "", player: x.person?.fullName ?? "", description: x.description ?? "" }))
+        .map((x: any): Tx => ({ id: x.id, date: x.effectiveDate || x.date, typeCode: x.typeCode ?? "", typeDesc: x.typeDesc ?? "", playerId: x.person?.id, player: x.person?.fullName ?? "", fromId: x.fromTeam?.id, toId: x.toTeam?.id, description: x.description ?? "" }))
         .sort((a: Tx, b: Tx) => +new Date(b.date) - +new Date(a.date));
     },
   });
 }
 
-const Header = ({ icon: Icon, title, to }: { icon: typeof Sun; title: string; to: string }) => (
-  <div className="mb-4 flex items-center justify-between">
-    <div className="flex items-center gap-2">
-      <Icon className="h-5 w-5 text-primary sm:h-6 sm:w-6" />
-      <h2 className="text-[25px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-2xl md:text-3xl">{title}</h2>
+const rowCls = "scrollbar-hide flex gap-3 overflow-x-auto px-4 pb-4 sm:px-6 md:gap-4 lg:px-8 max-md:snap-x max-md:snap-mandatory max-md:scroll-px-4";
+const cardW = "w-[calc(100vw-4.5rem)] max-w-[340px] flex-shrink-0 snap-start md:w-[320px] md:max-w-none lg:w-[340px]";
+
+const Logo = ({ id, className = "h-14 w-14" }: { id: number; className?: string }) => (
+  <span className={`flex items-center justify-center rounded-full bg-white/10 p-2 ${className}`}>
+    <img src={teamLogo(id)} alt="" loading="lazy" className="h-full w-full object-contain" onError={(e) => { e.currentTarget.style.visibility = "hidden"; }} />
+  </span>
+);
+
+const Title = ({ children, right }: { children: React.ReactNode; right?: React.ReactNode }) => (
+  <div className="container mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <img src={logo} alt="MetsXMFanZone" className="h-9 w-9 object-contain sm:h-10 sm:w-10" />
+        <h2 className="text-[25px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-2xl md:text-3xl">{children}</h2>
+      </div>
+      {right}
     </div>
-    <Link to={to} className="flex min-h-[44px] items-center gap-1 text-sm font-semibold text-primary transition-colors hover:text-primary/80">
-      See all <ChevronRight className="h-4 w-4" />
-    </Link>
   </div>
 );
 
-function SpringCard() {
+function SpringTraining() {
   const { data: games = [] } = useSpringGames();
   const now = Date.now();
   const upcoming = games.filter((g) => +new Date(g.date) > now - 6 * 3_600_000);
   const first = games[0];
-  const target = +new Date(first?.date ?? FALLBACK_OPENER);
-  const days = Math.max(0, Math.ceil((target - now) / 86_400_000));
-  const next = upcoming.slice(0, 3);
+  const days = Math.max(0, Math.ceil((+new Date(first?.date ?? FALLBACK_OPENER) - now) / 86_400_000));
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-card/80">
-      <div className="p-5 sm:p-6" style={{ backgroundImage: "linear-gradient(135deg, rgba(11,62,117,0.6), rgba(7,17,29,0) 75%)" }}>
-        <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff5a1f]"><Sun className="h-3.5 w-3.5" /> Grapefruit League</p>
-        <div className="mt-2 flex items-end gap-3" role="timer" aria-label={`${days} days until the first Spring Training game`}>
-          <span className="font-display text-6xl font-bold leading-none text-foreground sm:text-7xl">{days}</span>
-          <span className="pb-1.5 text-sm font-semibold uppercase tracking-wider text-muted-foreground">{days === 1 ? "day" : "days"} until<br />the first game</span>
+    <section className="relative py-6 sm:py-8" aria-label="Spring Training">
+      <Title right={<Link to="/spring-training-live" className="flex min-h-[44px] items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80">Watch live <ChevronRight className="h-4 w-4" /></Link>}>Spring Training</Title>
+      <div className={rowCls} style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        {/* Countdown card */}
+        <div className={`${cardW} relative flex aspect-video min-h-[190px] flex-col justify-between overflow-hidden rounded-lg border border-border/50 p-4`} style={{ backgroundImage: "linear-gradient(135deg,#0b3e75,#07111d 85%)" }}>
+          <img src={logo} alt="" aria-hidden className="absolute -right-6 -top-6 h-40 w-40 object-contain opacity-20" />
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff5a1f]">Grapefruit League · Port St. Lucie</p>
+          <div role="timer" aria-label={`${days} days until the first Spring Training game`}>
+            <span className="font-display text-7xl font-bold leading-none text-white">{days}</span>
+            <span className="ml-2 text-sm font-semibold uppercase tracking-wider text-white/70">{days === 1 ? "day" : "days"} to the first game</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm font-semibold text-white">
+            <Logo id={METS} className="h-9 w-9" /> <span className="text-white/60">{first?.isHome === false ? "at" : "vs"}</span> <Logo id={first?.oppId ?? 146} className="h-9 w-9" />
+            <span className="ml-1 truncate">{first ? fmt(first.date, { month: "short", day: "numeric" }) : "Feb 19"}</span>
+          </div>
         </div>
-        <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-          <MapPin className="h-4 w-4 shrink-0" />
-          {first ? `${fmt(first.date, { weekday: "short", month: "short", day: "numeric" })} ${first.isHome ? "vs" : "at"} ${first.opponent}` : "Fri, Feb 19 vs Miami Marlins"} · Clover Park
-        </p>
-      </div>
-      <ul className="flex-1 divide-y divide-border/40 border-t border-border/40">
-        {next.length === 0 && <li className="px-5 py-4 text-sm text-muted-foreground sm:px-6">The full schedule shows here as soon as MLB posts it.</li>}
-        {next.map((g) => (
-          <li key={g.id} className="flex items-center gap-3 px-5 py-3 sm:px-6">
-            <span className="w-14 shrink-0 font-display text-lg font-bold uppercase leading-none text-foreground">{fmt(g.date, { month: "short", day: "numeric" })}</span>
-            <span className="min-w-0 flex-1 truncate text-[15px] font-semibold text-foreground">{g.isHome ? "vs" : "at"} {g.opponent}</span>
-            <span className="shrink-0 text-xs text-muted-foreground">{g.timeTBD ? "Time TBA" : `${fmt(g.date, { hour: "numeric", minute: "2-digit" })} ET`}</span>
-          </li>
+        {upcoming.map((g) => (
+          <Link key={g.id} to="/spring-training-live" className={`${cardW} group relative flex aspect-video min-h-[190px] flex-col justify-between overflow-hidden rounded-lg border border-border/50 p-4 transition-colors hover:border-primary/60`} style={{ backgroundImage: "linear-gradient(160deg,#0f2a4d,#07111d 90%)" }}>
+            <img src={logo} alt="" aria-hidden className="absolute -bottom-8 -right-8 h-32 w-32 object-contain opacity-10" />
+            <div className="flex items-center justify-between text-[11px] font-extrabold uppercase tracking-[0.16em] text-white/70">
+              <span>{fmt(g.date, { weekday: "short" })} · {fmt(g.date, { month: "short", day: "numeric" })}</span>
+              <span>{g.timeTBD ? "Time TBA" : `${fmt(g.date, { hour: "numeric", minute: "2-digit" })} ET`}</span>
+            </div>
+            <div className="flex items-center justify-center gap-4">
+              <Logo id={g.isHome ? METS : g.oppId} className="h-16 w-16" />
+              <span className="font-display text-2xl font-bold text-white/60">VS</span>
+              <Logo id={g.isHome ? g.oppId : METS} className="h-16 w-16" />
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="truncate font-display text-lg font-bold uppercase tracking-wide text-white">{g.isHome ? "vs" : "at"} {g.opponent}</p>
+              <span className="flex shrink-0 items-center gap-1 rounded-md bg-[#ff5a1f] px-3 py-1.5 font-display text-sm font-bold uppercase tracking-wider text-white"><Play className="h-3 w-3 fill-white" /> Watch</span>
+            </div>
+          </Link>
         ))}
-      </ul>
-      <div className="grid grid-cols-2 gap-2 border-t border-border/40 p-4 sm:p-5">
-        <Link to="/spring-training-live" className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#ff5a1f] font-display text-base font-bold uppercase tracking-wider text-white hover:opacity-90"><Play className="h-4 w-4 fill-white" /> Watch live</Link>
-        <Link to="/spring-training" className="flex h-11 items-center justify-center rounded-xl border border-border/60 font-display text-base font-bold uppercase tracking-wider text-foreground hover:border-[#ff5a1f]/60">Schedule</Link>
+        {upcoming.length === 0 && <div className={`${cardW} flex min-h-[190px] items-center rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>The full schedule appears here as soon as MLB posts it.</div>}
       </div>
-    </div>
+    </section>
   );
 }
 
-function TrackerCard() {
+function Tracker() {
   const [tab, setTab] = useState<"trades" | "signings" | "radar">("trades");
   const { data: txs = [], isLoading, isError } = useTransactions();
-  const trades = txs.filter(isTrade).slice(0, 4);
-  const signings = txs.filter(isSigning).slice(0, 4);
-  const radar = METS_RADAR.slice(0, 4);
+  const items = tab === "trades" ? txs.filter(isTrade).slice(0, 10) : tab === "signings" ? txs.filter(isSigning).slice(0, 10) : [];
 
-  const Row = ({ t }: { t: Tx }) => (
-    <li className="flex gap-3 px-5 py-3 sm:px-6">
-      <span className="w-14 shrink-0 text-xs font-bold uppercase leading-5 tracking-wider text-muted-foreground">{dayLabel(t.date)}</span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-display text-lg font-bold uppercase leading-tight tracking-wide text-foreground">{t.player || t.typeDesc}</p>
-        <p className="line-clamp-2 text-[13px] leading-snug text-muted-foreground">{t.description}</p>
-      </div>
-    </li>
+  const tabs = (
+    <div className="flex gap-1.5" role="tablist" aria-label="Mets Tracker">
+      {([["trades", "Trades"], ["signings", "Signings"], ["radar", "Radar"]] as const).map(([v, l]) => (
+        <button key={v} type="button" role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
+          className={`min-h-[40px] rounded-lg border border-[#ff5a1f] px-3.5 font-display text-sm font-bold uppercase tracking-wider transition-colors sm:px-4 sm:text-base ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>
+      ))}
+    </div>
   );
-  const empty = (msg: string) => <li className="px-5 py-5 text-sm text-muted-foreground sm:px-6">{msg}</li>;
-  const feedMsg = isLoading ? "Loading…" : isError ? "MLB's transactions feed is not answering right now." : null;
+
+  const Photo = ({ id, name }: { id?: number; name: string }) => (
+    <span className="relative flex h-28 w-28 items-end justify-center overflow-hidden rounded-full border-2 border-white/20 bg-[#0b3e75]">
+      {id ? <img src={headshot(id)} alt={name} loading="lazy" className="h-full w-full object-cover" /> : <img src={logo} alt="" className="m-auto h-16 w-16 object-contain" />}
+    </span>
+  );
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border/50 bg-card/80">
-      <div className="p-5 pb-3 sm:p-6 sm:pb-3" style={{ backgroundImage: "linear-gradient(135deg, rgba(255,90,31,0.18), rgba(7,17,29,0) 70%)" }}>
-        <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff5a1f]"><RadarIcon className="h-3.5 w-3.5" /> New</p>
-        <p className="mt-1 font-display text-3xl font-bold uppercase leading-none tracking-wide text-foreground sm:text-4xl">Every move, one place</p>
-        <div className="mt-4 flex gap-1.5" role="tablist" aria-label="Mets Tracker">
-          {([["trades", "Trades"], ["signings", "Signings"], ["radar", "Radar"]] as const).map(([v, l]) => (
-            <button key={v} type="button" role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
-              className={`min-h-[40px] rounded-lg border border-[#ff5a1f] px-4 font-display text-base font-bold uppercase tracking-wider transition-colors ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>
-          ))}
-        </div>
-      </div>
-      <ul className="flex-1 divide-y divide-border/40 border-t border-border/40">
-        {tab === "trades" && (feedMsg ? empty(feedMsg) : trades.length ? trades.map((t) => <Row key={t.id} t={t} />) : empty("No Mets trades in the last five months."))}
-        {tab === "signings" && (feedMsg ? empty(feedMsg) : signings.length ? signings.map((t) => <Row key={t.id} t={t} />) : empty("No Mets signings in the last five months."))}
-        {tab === "radar" && (radar.length ? radar.map((r) => (
-          <li key={r.player} className="flex items-center gap-3 px-5 py-3 sm:px-6">
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-display text-lg font-bold uppercase leading-tight tracking-wide text-foreground">{r.player} <span className="text-xs font-semibold text-muted-foreground">· {r.position}</span></p>
-              <p className="line-clamp-1 text-[13px] text-muted-foreground">{r.why}</p>
+    <section className="relative py-6 sm:py-8" aria-label="Mets Tracker">
+      <Title right={tabs}>Mets Tracker</Title>
+      <div className={rowCls} style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        {tab !== "radar" && isLoading && [0, 1, 2].map((i) => <div key={i} className={`${cardW} h-[250px] animate-pulse rounded-lg bg-card/70`} />)}
+        {tab !== "radar" && isError && <div className={`${cardW} rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>MLB's transactions feed is not answering right now.</div>}
+        {tab !== "radar" && !isLoading && !isError && items.length === 0 && <div className={`${cardW} rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>No Mets {tab} in the last five months.</div>}
+        {items.map((t) => (
+          <article key={t.id} className={`${cardW} relative overflow-hidden rounded-lg border border-border/50`} style={{ backgroundImage: "linear-gradient(160deg,#0f2a4d,#07111d 90%)" }}>
+            <img src={logo} alt="" aria-hidden className="absolute -right-6 -top-6 h-32 w-32 object-contain opacity-10" />
+            <div className="relative flex flex-col items-center gap-3 px-4 pb-3 pt-4">
+              <div className="flex w-full items-center justify-between">
+                <span className="rounded-full bg-[#ff5a1f] px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white">{t.typeDesc}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-white/70">{dayLabel(t.date)}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {t.fromId && isTrade(t) ? <Logo id={t.fromId} className="h-10 w-10" /> : null}
+                <Photo id={t.playerId} name={t.player} />
+                {t.toId ? <Logo id={t.toId} className="h-10 w-10" /> : null}
+              </div>
+              <p className="text-center font-display text-xl font-bold uppercase leading-tight tracking-wide text-white">{t.player || t.typeDesc}</p>
+              <p className="line-clamp-3 min-h-[3.4rem] text-center text-[13px] leading-snug text-white/70">{t.description}</p>
             </div>
-            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider ${STATUS[r.status].cls}`}>{STATUS[r.status].text}</span>
-          </li>
-        )) : empty("No active rumors on the Radar right now."))}
-      </ul>
-      <div className="border-t border-border/40 p-4 sm:p-5">
-        <Link to="/mets-tracker" className="flex h-11 items-center justify-center rounded-xl border border-border/60 font-display text-base font-bold uppercase tracking-wider text-foreground hover:border-[#ff5a1f]/60">Open the full tracker</Link>
+          </article>
+        ))}
+        {tab === "radar" && METS_RADAR.length === 0 && <div className={`${cardW} rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>No active rumors on the Radar right now. Check back as the offseason heats up.</div>}
+        {tab === "radar" && METS_RADAR.map((r) => (
+          <article key={r.player} className={`${cardW} relative overflow-hidden rounded-lg border border-border/50`} style={{ backgroundImage: "linear-gradient(160deg,#3a1a0a,#07111d 90%)" }}>
+            <img src={logo} alt="" aria-hidden className="absolute -right-6 -top-6 h-32 w-32 object-contain opacity-10" />
+            <div className="relative flex flex-col items-center gap-3 px-4 pb-4 pt-4">
+              <div className="flex w-full items-center justify-between">
+                <span className={`rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white ${STATUS[r.status].cls}`}>{STATUS[r.status].text}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-white/70">{r.position}</span>
+              </div>
+              <div className="flex items-center gap-3"><Photo id={r.mlbId} name={r.player} />{r.teamId ? <Logo id={r.teamId} className="h-10 w-10" /> : null}</div>
+              <p className="text-center font-display text-xl font-bold uppercase leading-tight tracking-wide text-white">{r.player}</p>
+              <p className="line-clamp-2 text-center text-[13px] text-white/70">{r.why}</p>
+              <div className="h-2 w-full rounded-full bg-white/15" role="img" aria-label={`Rumor heat ${r.heat} of 5`}><div className="h-2 rounded-full bg-[#ff5a1f]" style={{ width: `${r.heat * 20}%` }} /></div>
+              <p className="text-[11px] text-white/50">Source: {r.source}</p>
+            </div>
+          </article>
+        ))}
       </div>
-    </div>
+    </section>
   );
 }
 
 export default function HomeSpringTrackerSection() {
   return (
-    <section className="relative py-6 sm:py-8" aria-label="Spring Training and Mets Tracker">
-      <div className="container mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="flex flex-col"><Header icon={Sun} title="Spring Training" to="/spring-training" /><div className="flex-1"><SpringCard /></div></div>
-          <div className="flex flex-col"><Header icon={RadarIcon} title="Mets Tracker" to="/mets-tracker" /><div className="flex-1"><TrackerCard /></div></div>
-        </div>
-      </div>
-    </section>
+    <>
+      <SpringTraining />
+      <div className="section-divider my-1" />
+      <Tracker />
+    </>
   );
 }
