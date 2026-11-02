@@ -30,8 +30,8 @@ export const GUIDE_SECTIONS: { key: string; label: string; path: string }[] = [
   { key: "top-nav", label: "Top bar (PC / tablet)", path: "/" },
   { key: "guide-button", label: "Guide button (PC / tablet)", path: "/" },
   { key: "tv-sidebar", label: "TV left bar", path: "/" },
-  { key: "install-android", label: "Install page · Android app card", path: "/install" },
-  { key: "install-tv", label: "Install page · TV app card", path: "/install" },
+  { key: "install-android", label: "Install page · Android app button", path: "/install" },
+  { key: "install-tv", label: "Install page · TV app button", path: "/install" },
 ];
 
 export const PLATFORMS: { key: string; label: string }[] = [
