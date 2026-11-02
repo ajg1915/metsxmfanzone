@@ -161,7 +161,7 @@ export function MetsTrackerSection() {
   );
 
   return (
-    <section className="relative py-6 sm:py-8" aria-label="Mets Tracker">
+    <section data-guide="fa-row" className="relative py-6 sm:py-8" aria-label="Free Agency">
       <Title right={tabs}><abbr title="Free Agency" className="no-underline sm:hidden">FA</abbr><span className="hidden sm:inline">Free Agency</span></Title>
       <div className={rowCls} style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {tab !== "radar" && isLoading && [0, 1, 2].map((i) => <div key={i} className={`${cardW} h-[250px] animate-pulse rounded-lg bg-card/70`} />)}

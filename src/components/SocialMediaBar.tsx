@@ -72,7 +72,7 @@ const SocialMediaBar = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      <div className="flex items-stretch border-t border-primary/40 bg-card/95 px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 shadow-elevation-high backdrop-blur-xl">
+      <div data-guide="bottom-nav" className="flex items-stretch border-t border-primary/40 bg-card/95 px-1 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 shadow-elevation-high backdrop-blur-xl">
         {navItems.map((item) => {
           const showProLock = item.requiresPremium && !isPremium && !isAdmin;
           const active = isActive(item);

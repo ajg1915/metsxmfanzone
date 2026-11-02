@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import {
   X, Play, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard, Target,
-  PenLine, Shield, Sparkles, LogOut, Tv,
+  PenLine, Shield, Sparkles, LogOut, Tv, Film, HelpCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -41,6 +41,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
     { label: "Picks", icon: Target, onClick: run(() => go("/picks")) },
     { label: "Blog", icon: Newspaper, onClick: run(() => go("/blog")) },
     { label: "Podcast", icon: Mic, onClick: run(() => go("/podcast")) },
+    { label: "Highlights", icon: Film, onClick: run(() => go("/video-gallery")) },
   ];
 
   const initial = profile.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "M";
@@ -83,6 +84,19 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
           <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-black/20">
             <Play className="ml-1 h-7 w-7 fill-current" />
           </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={run(() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" })))}
+          className="flex w-full items-center gap-3 rounded-2xl border-2 border-primary bg-[#1a1410] px-4 py-3 text-left active:bg-[#241a12]"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary"><HelpCircle className="h-6 w-6 text-primary-foreground" /></span>
+          <span className="min-w-0 flex-1">
+            <span className="block font-display text-[22px] uppercase leading-none tracking-[0.04em]">How to get around</span>
+            <span className="mt-0.5 block text-[13px] text-[#b9cbe0]">Find anything in 2 taps</span>
+          </span>
+          <span className="font-display text-[20px] text-primary">NEW</span>
         </button>
 
         <Label>MetsXMFanZone</Label>

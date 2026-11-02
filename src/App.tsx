@@ -16,6 +16,7 @@ import { usePresenceTracking } from "@/hooks/usePresenceTracking";
 import { StreamExitDialog } from "@/components/StreamExitDialog";
 import { LiveStreamToast } from "@/components/LiveStreamToast";
 import SocialMediaBar from "@/components/SocialMediaBar";
+import MobileGuide from "@/components/MobileGuide";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
 
@@ -311,6 +312,7 @@ const AppContent = () => {
         <StreamExitDialog />
         <LiveEventBanner />
         <SocialMediaBar />
+        <MobileGuide />
         <SweepstakesWheel />
         <RouteShareMetadata />
         

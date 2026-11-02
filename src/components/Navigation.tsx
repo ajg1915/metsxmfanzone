@@ -532,7 +532,7 @@ const Navigation = () => {
             {/* Mobile menu */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Open menu" className={`h-9 w-9 rounded-sm border border-border/40 bg-card/70 transition-colors hover:bg-muted md:hidden ${isHomePage ? "max-md:h-11 max-md:w-11 max-md:rounded-full max-md:border-0 max-md:bg-transparent" : ""}`}>
+                <Button data-guide="menu-button" variant="ghost" size="icon" aria-label="Open menu" className={`h-9 w-9 rounded-sm border border-border/40 bg-card/70 transition-colors hover:bg-muted md:hidden ${isHomePage ? "max-md:h-11 max-md:w-11 max-md:rounded-full max-md:border-0 max-md:bg-transparent" : ""}`}>
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
