@@ -22,10 +22,10 @@ const dayLabel = (iso: string) => fmt(`${iso.slice(0, 10)}T12:00:00Z`, { month: 
 const ymd = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: ET }).format(d);
 
 type Game = { id: number; date: string; isHome: boolean; opponent: string; oppId: number; timeTBD: boolean };
-type Tx = { id: number; date: string; typeCode: string; typeDesc: string; playerId?: number; player: string; fromId?: number; toId?: number; description: string };
+type Tx = { id: number; date: string; typeCode: string; typeDesc: string; playerId?: number; player: string; fromId?: number; toId?: number; description: string; photoUrl?: string };
 
 const isTrade = (t: Tx) => t.typeCode === "TR" || /trade/i.test(t.typeDesc);
-const isWaiver = (t: Tx) => !isTrade(t) && (/waiver|designated for assignment|outright|release/i.test(t.typeDesc) || ["DFA", "CLW", "OUT", "OR", "REL", "RL"].includes(t.typeCode));
+const isWaiver = (t: Tx) => !isTrade(t) && (/waiv|designated for assignment|outright|release|cut\b/i.test(t.typeDesc) || ["DFA", "CLW", "OUT", "OR", "REL", "RL"].includes(t.typeCode));
 const isSigning = (t: Tx) => !isTrade(t) && !isWaiver(t) && (/signed|extension|re-signed/i.test(t.typeDesc) || ["SGN", "SFA", "SE"].includes(t.typeCode));
 
 const STATUS: Record<RadarStatus, { text: string; cls: string }> = {
@@ -55,6 +55,46 @@ function useSpringGames() {
   });
 }
 
+const ESPN_METS = "21";
+const norm = (n: string) => n.toLowerCase().replace(/[^a-z]/g, "");
+
+async function fetchMlbTransactions(): Promise<Tx[]> {
+  const end = new Date(Date.now() + 86_400_000);
+  const start = new Date(end.getTime() - 270 * 86_400_000);
+  const res = await fetch(`https://statsapi.mlb.com/api/v1/transactions?teamId=${METS}&startDate=${ymd(start)}&endDate=${ymd(end)}`);
+  if (!res.ok) throw new Error("mlb transactions");
+  const json = await res.json();
+  return (json.transactions ?? []).map((x: any): Tx => ({ id: x.id, date: x.effectiveDate || x.date, typeCode: x.typeCode ?? "", typeDesc: x.typeDesc ?? "", playerId: x.person?.id, player: x.person?.fullName ?? "", fromId: x.fromTeam?.id, toId: x.toTeam?.id, description: x.description ?? "" }));
+}
+
+/** ESPN's public MLB transactions feed, filtered down to the Mets. Its shape is loose, so read it defensively. */
+async function fetchEspnTransactions(): Promise<Tx[]> {
+  const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/transactions?limit=300`);
+  if (!res.ok) throw new Error("espn transactions");
+  const json = await res.json();
+  const list: any[] = json.transactions ?? json.items ?? [];
+  const out: Tx[] = [];
+  for (const x of list) {
+    const ids = [x.team?.id, x.fromTeam?.id, x.toTeam?.id].map((v) => (v == null ? "" : String(v)));
+    const text = `${x.description ?? ""} ${x.team?.displayName ?? ""} ${x.team?.name ?? ""}`;
+    if (!ids.includes(ESPN_METS) && !/\bmets\b/i.test(text)) continue;
+    const athlete = x.athlete ?? x.player ?? {};
+    const typeDesc = typeof x.type === "string" ? x.type : x.type?.text ?? x.type?.description ?? x.type?.name ?? "Transaction";
+    out.push({
+      id: Number(x.id) || Math.abs(hashStr(`${x.date}${athlete.displayName}${typeDesc}`)),
+      date: x.date ?? x.timestamp ?? "",
+      typeCode: /trade/i.test(typeDesc) ? "TR" : "",
+      typeDesc,
+      player: athlete.displayName ?? athlete.fullName ?? "",
+      description: x.description ?? "",
+      photoUrl: athlete.id ? `https://a.espncdn.com/i/headshots/mlb/players/full/${athlete.id}.png` : undefined,
+    });
+  }
+  return out.filter((t) => t.date);
+}
+
+function hashStr(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
+
 function useTransactions() {
   return useQuery({
     queryKey: ["home-mets-transactions"],
@@ -62,14 +102,17 @@ function useTransactions() {
     refetchInterval: 10 * 60_000, // keep the tracker fresh while the page stays open
     refetchOnWindowFocus: true,
     queryFn: async (): Promise<Tx[]> => {
-      const end = new Date(Date.now() + 86_400_000);
-      const start = new Date(end.getTime() - 270 * 86_400_000);
-      const res = await fetch(`https://statsapi.mlb.com/api/v1/transactions?teamId=${METS}&startDate=${ymd(start)}&endDate=${ymd(end)}`);
-      if (!res.ok) throw new Error("transactions");
-      const json = await res.json();
-      return (json.transactions ?? [])
-        .map((x: any): Tx => ({ id: x.id, date: x.effectiveDate || x.date, typeCode: x.typeCode ?? "", typeDesc: x.typeDesc ?? "", playerId: x.person?.id, player: x.person?.fullName ?? "", fromId: x.fromTeam?.id, toId: x.toTeam?.id, description: x.description ?? "" }))
-        .sort((a: Tx, b: Tx) => +new Date(b.date) - +new Date(a.date));
+      // Both feeds at once. If one is down or slow to post a move, the other still fills the tracker.
+      const [mlb, espn] = await Promise.allSettled([fetchMlbTransactions(), fetchEspnTransactions()]);
+      if (mlb.status === "rejected" && espn.status === "rejected") throw new Error("transactions");
+      const a = mlb.status === "fulfilled" ? mlb.value : [];
+      const b = espn.status === "fulfilled" ? espn.value : [];
+      // Same player, same kind of move, within a day or two = the same move. Keep the MLB copy (it has MLB photos and team logos).
+      const kind = (t: Tx) => (isTrade(t) ? "t" : isWaiver(t) ? "w" : isSigning(t) ? "s" : "o");
+      const dupe = (t: Tx) => a.some((m) => norm(m.player) === norm(t.player) && kind(m) === kind(t) && Math.abs(+new Date(m.date) - +new Date(t.date)) < 3 * 86_400_000);
+      const cutoff = Date.now() - 270 * 86_400_000;
+      return [...a, ...b.filter((t) => t.player && !dupe(t) && +new Date(t.date) > cutoff)]
+        .sort((x, y) => +new Date(y.date) - +new Date(x.date));
     },
   });
 }
@@ -157,9 +200,9 @@ export function MetsTrackerSection() {
     </div>
   );
 
-  const Photo = ({ id, name }: { id?: number; name: string }) => (
+  const Photo = ({ id, name, url }: { id?: number; name: string; url?: string }) => (
     <span className="relative flex h-28 w-28 items-end justify-center overflow-hidden rounded-full border-2 border-white/20 bg-[#0b3e75]">
-      {id ? <img src={headshot(id)} alt={name} loading="lazy" className="h-full w-full object-cover" /> : <img src={logo} alt="" className="m-auto h-16 w-16 object-contain" />}
+      {id || url ? <img src={url || headshot(id!)} alt={name} loading="lazy" className="h-full w-full object-cover" /> : <img src={logo} alt="" className="m-auto h-16 w-16 object-contain" />}
     </span>
   );
 
@@ -181,7 +224,7 @@ export function MetsTrackerSection() {
               </div>
               <div className="flex items-center gap-3">
                 {t.fromId && isTrade(t) ? <Logo id={t.fromId} className="h-10 w-10" /> : null}
-                <Photo id={t.playerId} name={t.player} />
+                <Photo id={t.playerId} name={t.player} url={t.photoUrl} />
                 {t.toId ? <Logo id={t.toId} className="h-10 w-10" /> : null}
               </div>
               <p className="text-center font-display text-xl font-bold uppercase leading-tight tracking-wide text-white">{t.player || t.typeDesc}</p>
