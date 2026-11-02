@@ -1617,3 +1617,12 @@ nav.glass-nav { top: env(safe-area-inset-top, 0px) !important; }
     padding-right: 1rem;
   }
 }
+
+/* Mobile guide: glow on sections the admin flagged as new, and a short pulse when jumping to one */
+@keyframes guide-glow { 0%,100% { box-shadow: 0 0 0 2px hsl(16 100% 50% / .9), 0 0 0 0 hsl(16 100% 50% / .5); } 50% { box-shadow: 0 0 0 2px hsl(16 100% 50% / .9), 0 0 18px 6px hsl(16 100% 50% / .45); } }
+[data-guide-new], [data-guide-pulse] { animation: guide-glow 1.4s ease-in-out infinite; border-radius: 14px; position: relative; }
+[data-guide-new]:not([data-guide="menu-button"]):not([data-guide="bottom-nav"])::before {
+  content: "NEW"; position: absolute; top: 6px; right: 12px; z-index: 5; pointer-events: none;
+  background: hsl(16 100% 50%); color: #fff; font-family: "Bebas Neue", sans-serif; letter-spacing: .12em; font-size: 14px; padding: 1px 8px; border-radius: 6px;
+}
+@media (prefers-reduced-motion: reduce) { [data-guide-new], [data-guide-pulse] { animation: none; box-shadow: 0 0 0 2px hsl(16 100% 50% / .9); } }

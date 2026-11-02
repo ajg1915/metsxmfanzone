@@ -296,7 +296,7 @@ export default function AdminDashboard() {
     { title: "Stories", description: "Short posts on the home page", icon: Sparkles, url: "/admin/stories", tag: `${stats.totalStories} live` },
     { title: "Members", description: "Accounts, roles and access", icon: Users, url: "/admin/user-management", tag: `${stats.activeUsers} active` },
     { title: "Subscriptions", description: "Plans, payments, renewals", icon: CreditCard, url: "/admin/subscriptions", tag: "Billing" },
-    { title: "Polls", description: "Create polls and see results", icon: BarChart3, url: "/admin/polls", tag: "Fans" },
+    { title: "Mobile Guide", description: "Edit the help guide for phones", icon: BarChart3, url: "/admin/guide", tag: "Guide" },
     { title: "Business", description: "Review and create business ads", icon: Briefcase, url: "/admin/business-ads", tag: "Ads" },
     { title: "Newsletter", description: "Write and send emails", icon: Mail, url: "/admin/newsletter", tag: "Send" },
     { title: "Alerts & popups", description: "Push alerts and banners", icon: Megaphone, url: "/admin/popup-notifications", tag: "Notify" },

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useUnseenGuideItems } from "@/components/MobileGuide";
 import {
   X, Play, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard, Target,
   PenLine, Shield, Sparkles, LogOut, Tv, Film, HelpCircle,
@@ -34,6 +35,7 @@ const Label = ({ children }: { children: React.ReactNode }) => (
 export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, close, go, goProtected, goPro, onSignOut, onTVMode }: Props) {
   const run = (fn: () => void) => () => { close(); fn(); };
 
+  const unseenCount = useUnseenGuideItems().length;
   const tiles: { label: string; icon: LucideIcon; onClick: () => void }[] = [
     { label: "Schedule", icon: CalendarDays, onClick: run(() => goProtected("/mets-schedule-2027")) },
     { label: "Scores", icon: Trophy, onClick: run(() => go("/mets-scores")) },
@@ -96,7 +98,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
             <span className="block font-display text-[22px] uppercase leading-none tracking-[0.04em]">How to get around</span>
             <span className="mt-0.5 block text-[13px] text-[#b9cbe0]">Find anything in 2 taps</span>
           </span>
-          <span className="font-display text-[20px] text-primary">NEW</span>
+          {unseenCount > 0 && <span className="rounded bg-primary px-2 py-0.5 font-display text-[18px] text-primary-foreground">{unseenCount} NEW</span>}
         </button>
 
         <Label>MetsXMFanZone</Label>

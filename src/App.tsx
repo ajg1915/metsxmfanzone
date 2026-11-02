@@ -161,7 +161,7 @@ const PodcasterApplication = lazyWithRetry(() => import("./pages/PodcasterApplic
 const PodcasterApplicationsManagement = lazyWithRetry(() => import("./pages/admin/PodcasterApplicationsManagement"), "page-admin-podcaster-applications-management");
 const DailyReports = lazyWithRetry(() => import("./pages/admin/DailyReports"), "page-admin-daily-reports");
 const PredictionsManagement = lazyWithRetry(() => import("./pages/admin/PredictionsManagement"), "page-admin-predictions-management");
-const PollManagement = lazyWithRetry(() => import("./pages/admin/PollManagement"), "page-admin-poll-management");
+const GuideManagement = lazyWithRetry(() => import("./pages/admin/GuideManagement"), "page-admin-guide-management");
 const RosterDetailsManagement = lazyWithRetry(() => import("./pages/admin/RosterDetailsManagement"), "page-admin-roster-details");
 const PlayerOfTheMonthManagement = lazyWithRetry(() => import("./pages/admin/PlayerOfTheMonthManagement"), "page-admin-player-of-the-month-management");
 const SocialMediaSettings = lazyWithRetry(() => import("./pages/admin/SocialMediaSettings"), "page-admin-social-media-settings");
@@ -428,7 +428,8 @@ const AppContent = () => {
               <Route path="podcaster-applications" element={<PodcasterApplicationsManagement />} />
               <Route path="daily-reports" element={<DailyReports />} />
               <Route path="predictions" element={<PredictionsManagement />} />
-              <Route path="polls" element={<PollManagement />} />
+              <Route path="guide" element={<GuideManagement />} />
+              <Route path="polls" element={<Navigate to="/admin/guide" replace />} />
               <Route path="settings" element={<AdminSettings />} />
               <Route path="welcome-screen" element={<WelcomeScreenManagement />} />
               <Route path="private-player" element={<PrivatePlayer />} />

@@ -39,7 +39,6 @@ const SignedOutLanding = lazyWithRetry(() => import("@/components/landing/Signed
 const GetTheAppStrip = lazyWithRetry(() => import("@/components/GetTheAppStrip"), "home-get-the-app-strip");
 const OnboardingWalkthrough = lazyWithRetry(() => import("@/components/OnboardingWalkthrough"), "home-onboarding-walkthrough");
 const NotificationPrompt = lazyWithRetry(() => import("@/components/NotificationPrompt"), "home-notification-prompt");
-const ToastPoll = lazyWithRetry(() => import("@/components/ToastPoll"), "home-toast-poll");
 
 
 // Section loading skeleton
@@ -157,11 +156,6 @@ const Index = () => {
       <Suspense fallback={null}>
       </Suspense>
 
-      {/* Poll Toast notification */}
-      <Suspense fallback={null}>
-        <ToastPoll />
-      </Suspense>
-
       {/* Immersive animated background - lazy loaded */}
       <Suspense fallback={null}>
         <ImmersiveBackground />
@@ -209,16 +203,20 @@ const Index = () => {
           </Suspense>
         )}
 
-        <Suspense fallback={<SectionSkeleton />}>
-          <LiveStreamsSection />
-        </Suspense>
+        <div data-guide="live-streams">
+          <Suspense fallback={<SectionSkeleton />}>
+            <LiveStreamsSection />
+          </Suspense>
+        </div>
 
         {/* Spring Training, right under Live Streams, then the scores */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <SpringTrainingSection />
-        </Suspense>
+        <div data-guide="spring-training">
+          <Suspense fallback={<SectionSkeleton />}>
+            <SpringTrainingSection />
+          </Suspense>
+        </div>
 
-        <NYScoresStrip />
+        <div data-guide="scores"><NYScoresStrip /></div>
 
         {/* Game series: every Mets series, one card each */}
         <LazySection fallback={<SectionSkeleton />}>

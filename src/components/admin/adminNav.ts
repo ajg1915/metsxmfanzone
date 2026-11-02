@@ -151,12 +151,11 @@ export const ADMIN_HUBS: AdminHub[] = [
     key: "engage",
     title: "Engage",
     icon: Bell,
-    hint: "Polls, chat, alerts",
+    hint: "Chat, alerts",
     groups: [
       {
         title: "Fan Features",
         items: [
-          { title: "Polls", url: "/admin/polls", icon: BarChart3 },
           { title: "Predictions", url: "/admin/predictions", icon: Star },
           { title: "Events", url: "/admin/events", icon: Calendar },
           { title: "Player of Month", url: "/admin/player-of-the-month", icon: Trophy },
