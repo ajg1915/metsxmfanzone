@@ -25,7 +25,8 @@ type Game = { id: number; date: string; isHome: boolean; opponent: string; oppId
 type Tx = { id: number; date: string; typeCode: string; typeDesc: string; playerId?: number; player: string; fromId?: number; toId?: number; description: string };
 
 const isTrade = (t: Tx) => t.typeCode === "TR" || /trade/i.test(t.typeDesc);
-const isSigning = (t: Tx) => !isTrade(t) && (/signed|extension/i.test(t.typeDesc) || ["SGN", "SFA", "SE"].includes(t.typeCode));
+const isWaiver = (t: Tx) => !isTrade(t) && (/waiver|designated for assignment|outright|release/i.test(t.typeDesc) || ["DFA", "CLW", "OUT", "OR", "REL", "RL"].includes(t.typeCode));
+const isSigning = (t: Tx) => !isTrade(t) && !isWaiver(t) && (/signed|extension|re-signed/i.test(t.typeDesc) || ["SGN", "SFA", "SE"].includes(t.typeCode));
 
 const STATUS: Record<RadarStatus, { text: string; cls: string }> = {
   in_talks: { text: "In talks", cls: "bg-red-600" },
@@ -57,10 +58,12 @@ function useSpringGames() {
 function useTransactions() {
   return useQuery({
     queryKey: ["home-mets-transactions"],
-    staleTime: 15 * 60_000,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000, // keep the tracker fresh while the page stays open
+    refetchOnWindowFocus: true,
     queryFn: async (): Promise<Tx[]> => {
-      const end = new Date();
-      const start = new Date(end.getTime() - 150 * 86_400_000);
+      const end = new Date(Date.now() + 86_400_000);
+      const start = new Date(end.getTime() - 270 * 86_400_000);
       const res = await fetch(`https://statsapi.mlb.com/api/v1/transactions?teamId=${METS}&startDate=${ymd(start)}&endDate=${ymd(end)}`);
       if (!res.ok) throw new Error("transactions");
       const json = await res.json();
@@ -141,15 +144,15 @@ export function SpringTrainingSection() {
 }
 
 export function MetsTrackerSection() {
-  const [tab, setTab] = useState<"trades" | "signings" | "radar">("trades");
+  const [tab, setTab] = useState<"trades" | "signings" | "waivers" | "moves" | "radar">("trades");
   const { data: txs = [], isLoading, isError } = useTransactions();
-  const items = tab === "trades" ? txs.filter(isTrade).slice(0, 10) : tab === "signings" ? txs.filter(isSigning).slice(0, 10) : [];
+  const items = tab === "trades" ? txs.filter(isTrade).slice(0, 12) : tab === "signings" ? txs.filter(isSigning).slice(0, 12) : tab === "waivers" ? txs.filter(isWaiver).slice(0, 12) : tab === "moves" ? txs.slice(0, 20) : [];
 
   const tabs = (
-    <div data-guide="fa-tabs" className="flex gap-1.5" role="tablist" aria-label="Free Agency">
-      {([["trades", "Trades"], ["signings", "Signings"], ["radar", "Radar"]] as const).map(([v, l]) => (
+    <div data-guide="fa-tabs" className="scrollbar-hide flex gap-1.5 overflow-x-auto px-4 pb-3 sm:px-6 lg:px-8" role="tablist" aria-label="Free Agency" style={{ scrollbarWidth: "none" }}>
+      {([["trades", "Trades"], ["signings", "Signings"], ["waivers", "Waivers"], ["moves", "All Moves"], ["radar", "Radar"]] as const).map(([v, l]) => (
         <button key={v} type="button" role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
-          className={`min-h-[40px] rounded-lg border border-[#ff5a1f] px-3.5 font-display text-sm font-bold uppercase tracking-wider transition-colors sm:px-4 sm:text-base ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>
+          className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-lg border border-[#ff5a1f] px-3.5 font-display text-sm font-bold uppercase tracking-wider transition-colors sm:px-4 sm:text-base ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>
       ))}
     </div>
   );
@@ -162,11 +165,12 @@ export function MetsTrackerSection() {
 
   return (
     <section data-guide="fa-row" className="relative py-6 sm:py-8" aria-label="Free Agency">
-      <Title right={tabs}><abbr title="Free Agency" className="no-underline sm:hidden">FA</abbr><span className="hidden sm:inline">Free Agency</span></Title>
+      <Title><abbr title="Free Agency" className="no-underline sm:hidden">FA</abbr><span className="hidden sm:inline">Free Agency</span></Title>
+      {tabs}
       <div className={rowCls} style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {tab !== "radar" && isLoading && [0, 1, 2].map((i) => <div key={i} className={`${cardW} h-[250px] animate-pulse rounded-lg bg-card/70`} />)}
         {tab !== "radar" && isError && <div className={`${cardW} rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>MLB's transactions feed is not answering right now.</div>}
-        {tab !== "radar" && !isLoading && !isError && items.length === 0 && <div className={`${cardW} rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>No Mets {tab} in the last five months.</div>}
+        {tab !== "radar" && !isLoading && !isError && items.length === 0 && <div className={`${cardW} rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>No Mets {tab} in the last nine months.</div>}
         {items.map((t) => (
           <article key={t.id} className={`${cardW} relative overflow-hidden rounded-lg border border-border/50`} style={{ backgroundImage: "linear-gradient(160deg,#0f2a4d,#07111d 90%)" }}>
             <img src={logo} alt="" aria-hidden className="absolute -right-6 -top-6 h-32 w-32 object-contain opacity-10" />
