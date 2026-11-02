@@ -114,6 +114,23 @@ async function fetchEspnTransactions(): Promise<Tx[]> {
 
 function hashStr(s: string) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
 
+/** The live 40-man roster, so every move on the tracker can say whether the player is on the team today. */
+function useRoster40() {
+  return useQuery({
+    queryKey: ["home-mets-40man"],
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
+    queryFn: async () => {
+      const res = await fetch(`https://statsapi.mlb.com/api/v1/teams/${METS}/roster?rosterType=40Man`);
+      if (!res.ok) throw new Error("roster");
+      const json = await res.json();
+      const ids = new Set<number>(); const names = new Set<string>();
+      for (const r of json.roster ?? []) { ids.add(r.person?.id); names.add(norm(r.person?.fullName ?? "")); }
+      return { ids, names };
+    },
+  });
+}
+
 function useTransactions() {
   return useQuery({
     queryKey: ["home-mets-transactions"],
@@ -208,6 +225,8 @@ export function SpringTrainingSection() {
 export function MetsTrackerSection() {
   const [tab, setTab] = useState<"trades" | "signings" | "waivers" | "moves" | "radar">("moves");
   const { data: txs = [], isLoading, isError } = useTransactions();
+  const { data: roster } = useRoster40();
+  const onRoster = (t: Tx) => (roster ? (t.playerId ? roster.ids.has(t.playerId) : roster.names.has(norm(t.player))) : undefined);
   const items = tab === "trades" ? txs.filter(isTrade).slice(0, 12) : tab === "signings" ? txs.filter(isSigning).slice(0, 12) : tab === "waivers" ? txs.filter(isWaiver).slice(0, 12) : tab === "moves" ? txs.slice(0, 25) : [];
 
   const tabs = (
@@ -216,6 +235,9 @@ export function MetsTrackerSection() {
         <button key={v} type="button" role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
           className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-lg border border-[#ff5a1f] px-3.5 font-display text-sm font-bold uppercase tracking-wider transition-colors sm:px-4 sm:text-base ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>
       ))}
+      <Link to="/mets-roster" className="flex min-h-[40px] shrink-0 items-center gap-1 whitespace-nowrap px-2 font-display text-sm font-bold uppercase tracking-wider text-primary hover:text-primary/80 sm:text-base">
+        40-man roster <ChevronRight className="h-4 w-4" />
+      </Link>
     </div>
   );
 
@@ -248,6 +270,11 @@ export function MetsTrackerSection() {
               </div>
               <p className="text-center font-display text-xl font-bold uppercase leading-tight tracking-wide text-white">{t.player || t.typeDesc}</p>
               <p className="line-clamp-3 min-h-[3.4rem] text-center text-[13px] leading-snug text-white/70">{t.description}</p>
+              {onRoster(t) !== undefined && (
+                <span className={`rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider ${onRoster(t) ? "bg-emerald-600 text-white" : "bg-white/15 text-white/70"}`}>
+                  {onRoster(t) ? "On the 40-man today" : "Not on the 40-man"}
+                </span>
+              )}
             </div>
           </article>
         ))}
