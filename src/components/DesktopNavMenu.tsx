@@ -1,5 +1,6 @@
 import * as NavMenu from "@radix-ui/react-navigation-menu";
 import { Link, useLocation } from "react-router-dom";
+import { useUnseenGuideItems } from "@/components/MobileGuide";
 import {
   ChevronDown,
   Tv,
@@ -117,6 +118,7 @@ export default function DesktopNavMenu({
   /** Provided only for signed-in paid members who aren't already in TV mode. */
   onTVMode?: () => void;
 }) {
+  const unseenCount = useUnseenGuideItems().length; // the nav button only exists while something new is waiting
   const { pathname } = useLocation();
   const on = (paths: string[]) => paths.some((p) => pathname.startsWith(p));
   const metsActive = on(METS_PATHS);
@@ -146,14 +148,14 @@ export default function DesktopNavMenu({
         </NavMenu.Item>
 
         {!isLoggedIn && <TopLink to="/pricing">Pricing</TopLink>}
-        <NavMenu.Item>
+        {unseenCount > 0 && <NavMenu.Item>
           <NavMenu.Link asChild>
             <button type="button" data-guide="guide-button" onClick={() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" }))} className={pill}>
               <HelpCircle className="h-4 w-4" aria-hidden />
-              Guide
+              What's new
             </button>
           </NavMenu.Link>
-        </NavMenu.Item>
+        </NavMenu.Item>}
         {onTVMode && (
           <NavMenu.Item>
             <NavMenu.Link asChild>

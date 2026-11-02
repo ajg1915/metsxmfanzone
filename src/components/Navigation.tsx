@@ -3,7 +3,7 @@ import { NavLink } from "@/components/NavLink";
 import DesktopNavMenu from "@/components/DesktopNavMenu";
 import MobileSportsMenu from "@/components/MobileSportsMenu";
 import { Button } from "@/components/ui/button";
-import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, ChevronRight, PenLine, ShoppingBag, Bell, Newspaper, Trophy, Loader2, X, Download } from "lucide-react";
+import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, ChevronRight, PenLine, ShoppingBag, Bell, Newspaper, Trophy, Loader2, X, Download, HelpCircle } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import liveStreamIcon from "@/assets/live-streaming-icon.png";
 import podcastIcon from "@/assets/podcast-icon.png";
@@ -490,6 +490,13 @@ const Navigation = () => {
                     <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent my-1" />
 
                     <div className="p-1.5 pb-2">
+                      <DropdownMenuItem
+                        onClick={() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" }))}
+                        className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
+                      >
+                        <HelpCircle className="w-4 h-4 mr-2.5 text-muted-foreground" />
+                        <span className="text-sm">How to get around</span>
+                      </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => navigate("/help-center")}
                         className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"

@@ -87,7 +87,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
           </span>
         </button>
 
-        <button
+        {unseenCount > 0 && <button
           type="button"
           onClick={run(() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" })))}
           className="flex w-full items-center gap-3 rounded-2xl border-2 border-primary bg-[#1a1410] px-4 py-3 text-left active:bg-[#241a12]"
@@ -97,8 +97,8 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
             <span className="block font-display text-[22px] uppercase leading-none tracking-[0.04em]">How to get around</span>
             <span className="mt-0.5 block text-[13px] text-[#b9cbe0]">Find anything in 2 taps</span>
           </span>
-          {unseenCount > 0 && <span className="rounded bg-primary px-2 py-0.5 font-display text-[18px] text-primary-foreground">{unseenCount} NEW</span>}
-        </button>
+          <span className="rounded bg-primary px-2 py-0.5 font-display text-[18px] text-primary-foreground">{unseenCount} NEW</span>
+        </button>}
 
         <Label>MetsXMFanZone</Label>
         <div className="grid grid-cols-2 gap-2">
@@ -129,6 +129,9 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
               </button>
               <button type="button" onClick={run(() => go("/dashboard"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                 <span className="flex items-center gap-3"><LayoutDashboard className="h-[18px] w-[18px] text-primary" />Dashboard</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+              </button>
+              <button type="button" onClick={run(() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" })))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+                <span className="flex items-center gap-3"><HelpCircle className="h-[18px] w-[18px] text-primary" />How to get around</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
               <button type="button" onClick={run(() => go("/install"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                 <span className="flex items-center gap-3"><Download className="h-[18px] w-[18px] text-primary" />Get the app</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
