@@ -162,7 +162,7 @@ export function MetsTrackerSection() {
 
   return (
     <section className="relative py-6 sm:py-8" aria-label="Mets Tracker">
-      <Title right={tabs}>Free Agency</Title>
+      <Title right={tabs}><abbr title="Free Agency" className="no-underline sm:hidden">FA</abbr><span className="hidden sm:inline">Free Agency</span></Title>
       <div className={rowCls} style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {tab !== "radar" && isLoading && [0, 1, 2].map((i) => <div key={i} className={`${cardW} h-[250px] animate-pulse rounded-lg bg-card/70`} />)}
         {tab !== "radar" && isError && <div className={`${cardW} rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>MLB's transactions feed is not answering right now.</div>}
