@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight, Play } from "lucide-react";
@@ -231,7 +231,19 @@ export function MetsTrackerSection() {
   const [tab, setTab] = useState<"trades" | "signings" | "waivers" | "moves">("moves");
   const { data: txs = [], isLoading, isError } = useTransactions();
   const { data: roster } = useRoster40();
-  const onRoster = (t: Tx) => (roster ? (t.playerId ? roster.ids.has(t.playerId) : roster.names.has(norm(t.player))) : undefined);
+  // MLB's roster list can trail the moves by hours, so a player's newest move decides first (claimed away, outrighted,
+  // released = off; claimed by the Mets = on). Anything else falls back to the live roster list.
+  const latest = useMemo(() => { const m = new Map<string, Tx>(); for (const t of txs) { const k = norm(t.player); if (k && !m.has(k)) m.set(k, t); } return m; }, [txs]);
+  const onRoster = (t: Tx): boolean | undefined => {
+    const last = latest.get(norm(t.player));
+    const d = last?.description ?? "";
+    if (last) {
+      if (/outright|released|waived/i.test(d) && /New York Mets (sent|released|placed)/i.test(d)) return false;
+      if (/claimed .* off waivers from New York Mets/i.test(d) && !/^New York Mets/i.test(d)) return false;
+      if (/^New York Mets (claimed|selected|purchased|acquired)/i.test(d) || /traded .* to New York Mets/i.test(d)) return true;
+    }
+    return roster ? (t.playerId ? roster.ids.has(t.playerId) : roster.names.has(norm(t.player))) : undefined;
+  };
   const items = tab === "trades" ? txs.filter(isTrade).slice(0, 12) : tab === "signings" ? txs.filter(isSigning).slice(0, 12) : tab === "waivers" ? txs.filter(isWaiver).slice(0, 12) : tab === "moves" ? txs.slice(0, 25) : [];
 
   const tabs = (
