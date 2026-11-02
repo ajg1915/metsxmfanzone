@@ -51,13 +51,25 @@ function useSpringGames() {
 const ESPN_METS = "21";
 const norm = (n: string) => n.toLowerCase().replace(/[^a-z]/g, "");
 
+const toTx = (x: any): Tx => ({ id: x.id, date: x.effectiveDate || x.date, typeCode: x.typeCode ?? "", typeDesc: x.typeDesc ?? "", playerId: x.person?.id, player: x.person?.fullName ?? "", fromId: x.fromTeam?.id, toId: x.toTeam?.id, description: x.description ?? "" });
+
 async function fetchMlbTransactions(): Promise<Tx[]> {
   const end = new Date(Date.now() + 86_400_000);
   const start = new Date(end.getTime() - 270 * 86_400_000);
-  const res = await fetch(`https://statsapi.mlb.com/api/v1/transactions?teamId=${METS}&startDate=${ymd(start)}&endDate=${ymd(end)}`);
-  if (!res.ok) throw new Error("mlb transactions");
-  const json = await res.json();
-  return (json.transactions ?? []).map((x: any): Tx => ({ id: x.id, date: x.effectiveDate || x.date, typeCode: x.typeCode ?? "", typeDesc: x.typeDesc ?? "", playerId: x.person?.id, player: x.person?.fullName ?? "", fromId: x.fromTeam?.id, toId: x.toTeam?.id, description: x.description ?? "" }));
+  const recentStart = new Date(end.getTime() - 21 * 86_400_000);
+  // MLB's "teamId" filter leaves out many Mets moves (waiver claims, outrights, IL activations), so for the last
+  // three weeks read the league-wide list and keep every move that names the Mets. The team list covers the older months.
+  const [team, recent] = await Promise.allSettled([
+    fetch(`https://statsapi.mlb.com/api/v1/transactions?teamId=${METS}&startDate=${ymd(start)}&endDate=${ymd(end)}`).then((r) => { if (!r.ok) throw new Error("mlb team"); return r.json(); }),
+    fetch(`https://statsapi.mlb.com/api/v1/transactions?startDate=${ymd(recentStart)}&endDate=${ymd(end)}`).then((r) => { if (!r.ok) throw new Error("mlb league"); return r.json(); }),
+  ]);
+  if (team.status === "rejected" && recent.status === "rejected") throw new Error("mlb transactions");
+  const rows: any[] = [
+    ...(team.status === "fulfilled" ? team.value.transactions ?? [] : []),
+    ...(recent.status === "fulfilled" ? (recent.value.transactions ?? []).filter((x: any) => /New York Mets/.test(x.description ?? "") || x.fromTeam?.id === METS || x.toTeam?.id === METS || x.team?.id === METS) : []),
+  ];
+  const seen = new Set<number>();
+  return rows.filter((x) => (seen.has(x.id) ? false : (seen.add(x.id), true))).map(toTx);
 }
 
 /** ESPN's feed is one text blurb per team per day ("Recalled X from Y. Placed Z on the 15-day IL."), with no player or
