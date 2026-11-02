@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ChevronRight, HelpCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -46,24 +46,37 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
   useEffect(() => () => { window.dispatchEvent(new CustomEvent("mxfz:menu", { detail: false })); }, []);
   useEffect(() => { if (step.path && step.path !== pathname) navigate(step.path); }, [step.path]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const measure = useCallback(() => {
-    const el = findSpot(step.section);
-    if (!el) { setRect(null); return; }
-    if (!el.closest("nav, aside, [data-guide=\"bottom-nav\"]")) el.scrollIntoView({ block: "center" });
-    setRect(el.getBoundingClientRect());
-  }, [step.section]);
-
+  // Find the spot, scroll it to the middle of the screen, and keep the glow stuck to it even while
+  // lazy sections load and change the page height (that is what made some sections glow in the wrong place).
   useLayoutEffect(() => {
-    measure();
-    // Pages load lazily after a step switches route, so keep looking for the spot for a few seconds.
+    let scrolls = 0;
+    let observed: HTMLElement | null = null;
+    let ro: ResizeObserver | null = null;
+    const measure = (allowScroll: boolean) => {
+      const el = findSpot(step.section);
+      const r = el?.getBoundingClientRect();
+      if (!el || !r || r.width < 8 || r.height < 8) { setRect(null); return; }
+      if (observed !== el) {
+        ro?.disconnect();
+        observed = el;
+        ro = new ResizeObserver(() => measure(true));
+        ro.observe(el);
+      }
+      if (allowScroll && scrolls < 4 && !el.closest('nav, aside, [data-guide="bottom-nav"]')) {
+        const mid = r.top + r.height / 2;
+        if (Math.abs(mid - window.innerHeight / 2) > 40) { scrolls++; el.scrollIntoView({ block: "center" }); }
+      }
+      setRect(el.getBoundingClientRect());
+    };
+    measure(true);
+    // Pages and lazy sections load after a step switches route, so keep looking for several seconds.
     let tries = 0;
-    const poll = setInterval(() => {
-      measure();
-      if ((findSpot(step.section) && tries > 3) || ++tries > 24) clearInterval(poll);
-    }, 250);
-    window.addEventListener("resize", measure);
-    return () => { clearInterval(poll); window.removeEventListener("resize", measure); };
-  }, [measure]);
+    const poll = setInterval(() => { measure(true); if (++tries > 48) clearInterval(poll); }, 250);
+    const onMove = () => measure(false);
+    window.addEventListener("resize", onMove);
+    window.addEventListener("scroll", onMove, true);
+    return () => { clearInterval(poll); ro?.disconnect(); window.removeEventListener("resize", onMove); window.removeEventListener("scroll", onMove, true); };
+  }, [step.section]);
 
   const last = i === STEPS.length - 1;
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
