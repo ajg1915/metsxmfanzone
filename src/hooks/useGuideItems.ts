@@ -26,7 +26,7 @@ export const GUIDE_SECTIONS: { key: string; label: string; path: string; group: 
   { group: "Home sections", key: "hero-reminder", label: "Hero · Reminder bell (signed in)", path: "/" },
   { group: "Home sections", key: "trial-banner", label: "Free trial banner", path: "/" },
   { group: "Home sections", key: "fa-row", label: "FA (Free Agency)", path: "/" },
-  { group: "Home sections", key: "fa-tabs", label: "FA · Trades / Signings / Radar tabs", path: "/" },
+  { group: "Home sections", key: "fa-tabs", label: "FA · Moves / Trades / Signings / Waivers tabs", path: "/" },
   { group: "Home sections", key: "gamecast", label: "Game Center banner", path: "/" },
   { group: "Home sections", key: "live-streams", label: "Live Streams", path: "/" },
   { group: "Home sections", key: "spring-training", label: "Spring Training", path: "/" },
@@ -122,7 +122,7 @@ export function useDevice() {
 const FALLBACK: GuideItem[] = [
   { id: "t1", kind: "tour", title: "Your 5 main tabs", body: "Home, Watch Live, Blog, Games and Feed are always at the bottom. Tap one from any page.", where_label: null, path: null, section: "bottom-nav", place: "above", enabled: true, suggested: false, highlight_new: false, platforms: ["mobile","tablet","desktop","tv","app"], sort_order: 1, updated_at: "" },
   { id: "t2", kind: "tour", title: "Everything else is in the menu", body: "Tap the three lines for Schedule, Scores, Picks, Podcast, Highlights and your account.", where_label: null, path: null, section: "menu-button", place: "below", enabled: true, suggested: false, highlight_new: false, platforms: ["mobile","tablet","desktop","tv","app"], sort_order: 2, updated_at: "" },
-  { id: "t3", kind: "tour", title: "Swipe each row sideways", body: "Tap Trades, Signings or Radar, then swipe the cards. Every row on Home works the same way.", where_label: null, path: null, section: "fa-row", place: "below", enabled: true, suggested: false, highlight_new: false, platforms: ["mobile","tablet","desktop","tv","app"], sort_order: 3, updated_at: "" },
+  { id: "t3", kind: "tour", title: "Swipe each row sideways", body: "Tap Trades, Signings or Waivers, then swipe the cards. Every row on Home works the same way.", where_label: null, path: null, section: "fa-row", place: "below", enabled: true, suggested: false, highlight_new: false, platforms: ["mobile","tablet","desktop","tv","app"], sort_order: 3, updated_at: "" },
 ];
 
 export function useGuideItems() {
