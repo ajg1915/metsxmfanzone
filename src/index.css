@@ -1626,3 +1626,8 @@ nav.glass-nav { top: env(safe-area-inset-top, 0px) !important; }
   background: hsl(16 100% 50%); color: #fff; font-family: "Bebas Neue", sans-serif; letter-spacing: .12em; font-size: 14px; padding: 1px 8px; border-radius: 6px;
 }
 @media (prefers-reduced-motion: reduce) { [data-guide-new], [data-guide-pulse] { animation: none; box-shadow: 0 0 0 2px hsl(16 100% 50% / .9); } }
+
+/* Pulsing glow drawn over the spot a guide step is pointing at */
+@keyframes guide-glow-strong { 0%,100% { box-shadow: 0 0 6px 2px hsl(16 100% 55% / .7), 0 0 14px 4px hsl(16 100% 50% / .35); } 50% { box-shadow: 0 0 22px 10px hsl(16 100% 60% / .95), 0 0 46px 20px hsl(16 100% 50% / .55); } }
+.guide-glow-ring { animation: guide-glow-strong 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .guide-glow-ring { animation: none; box-shadow: 0 0 18px 6px hsl(16 100% 55% / .9); } }

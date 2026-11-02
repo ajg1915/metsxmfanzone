@@ -72,8 +72,12 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-label={`Guide, step ${i + 1} of ${STEPS.length}`}>
       {rect ? (
-        <div className="pointer-events-none fixed rounded-xl border-[3px] border-primary shadow-[0_0_0_2000px_rgba(3,10,20,0.82)]"
-          style={{ left: rect.left - 4, top: rect.top - 4, width: rect.width + 8, height: rect.height + 8 }} />
+        <>
+          <div className="pointer-events-none fixed rounded-xl border-[3px] border-primary shadow-[0_0_0_2000px_rgba(3,10,20,0.82)]"
+            style={{ left: rect.left - 4, top: rect.top - 4, width: rect.width + 8, height: rect.height + 8 }} />
+          <div className="guide-glow-ring pointer-events-none fixed rounded-xl"
+            style={{ left: rect.left - 4, top: rect.top - 4, width: rect.width + 8, height: rect.height + 8 }} />
+        </>
       ) : (
         <div className="fixed inset-0 bg-[rgba(3,10,20,0.82)]" />
       )}
