@@ -109,6 +109,7 @@ const SocialMediaBar = () => {
           return (
             <Button
               key={item.label}
+              data-guide={`tab-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
               variant="ghost"
               onClick={() => handleClick(item)}
               aria-current={active ? "page" : undefined}

@@ -157,7 +157,9 @@ export default function GuideManagement() {
             <div><Label>{form.kind === "tour" ? "Spot to highlight" : "Section to jump to (optional)"}</Label>
               <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={known ? form.section : "__custom"} onChange={(e) => setForm({ ...form, section: e.target.value === "__custom" ? "." : e.target.value })}>
                 <option value="">{form.kind === "tour" ? "None (centered card)" : "None, just open the page"}</option>
-                {GUIDE_SECTIONS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+                {Array.from(new Set(GUIDE_SECTIONS.map((g) => g.group))).map((grp) => (
+                  <optgroup key={grp} label={grp}>{GUIDE_SECTIONS.filter((g) => g.group === grp).map((g) => <option key={g.key} value={g.key}>{g.label}</option>)}</optgroup>
+                ))}
                 <option value="__custom">Custom (CSS selector)…</option>
               </select>
               {!known && <Input className="mt-1.5" value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} placeholder="#my-section or .some-class or [data-guide=&quot;x&quot;]" />}

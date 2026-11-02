@@ -93,11 +93,11 @@ function TopLink({ to, children, onClick }: { to: string; children: React.ReactN
     <NavMenu.Item>
       <NavMenu.Link asChild active={active}>
         {onClick ? (
-          <button type="button" onClick={onClick} className={cn(pill, active && activePill)}>
+          <button type="button" data-guide={`nav-${to.replace("/", "") || "home"}`} onClick={onClick} className={cn(pill, active && activePill)}>
             {children}
           </button>
         ) : (
-          <Link to={to} className={cn(pill, active && activePill)}>
+          <Link to={to} data-guide={`nav-${to.replace("/", "") || "home"}`} className={cn(pill, active && activePill)}>
             {children}
           </Link>
         )}
@@ -136,7 +136,7 @@ export default function DesktopNavMenu({
         <TopLink to="/blog">Blog</TopLink>
 
         <NavMenu.Item className="relative">
-          <NavMenu.Trigger className={cn(pill, metsActive && activePill)}>
+          <NavMenu.Trigger data-guide="nav-mets" className={cn(pill, metsActive && activePill)}>
             Mets
             <ChevronDown className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 [[data-state=open]>&]:rotate-180" aria-hidden />
           </NavMenu.Trigger>
@@ -159,7 +159,7 @@ export default function DesktopNavMenu({
         {onTVMode && (
           <NavMenu.Item>
             <NavMenu.Link asChild>
-              <button type="button" onClick={onTVMode} className={pill}>
+              <button type="button" data-guide="nav-tv-mode" onClick={onTVMode} className={pill}>
                 <Tv className="h-4 w-4" aria-hidden />
                 TV Mode
               </button>

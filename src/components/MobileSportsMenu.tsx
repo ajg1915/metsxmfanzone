@@ -73,6 +73,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
         <button
           type="button"
           onClick={run(() => goPro("/metsxmfanzone"))}
+          data-guide="menu-watch-live"
           className="mt-4 flex w-full items-center justify-between gap-3 rounded-2xl bg-primary px-4 py-4 text-left text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-[0.98]"
         >
           <span className="min-w-0">
@@ -107,6 +108,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
               key={label}
               type="button"
               onClick={onClick}
+              data-guide={`menu-${label.toLowerCase().replace(/\s+/g, "-")}`}
               className="flex min-h-[84px] flex-col justify-between rounded-xl border border-[#24365a] bg-[#12203a] p-3 text-left transition-colors active:bg-[#1a2c4d] hover:border-primary/50"
             >
               <Icon className="h-6 w-6 text-primary" />
@@ -120,20 +122,20 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
             <Label>Your account</Label>
             <div className="divide-y divide-[#1d2c48]">
               {onTVMode && (
-                <button type="button" onClick={run(onTVMode)} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+                <button type="button" data-guide="menu-tv-mode" onClick={run(onTVMode)} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                   <span className="flex items-center gap-3"><Tv className="h-[18px] w-[18px] text-primary" />TV Mode</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
                 </button>
               )}
-              <button type="button" onClick={run(() => goProtected("/community"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+              <button type="button" data-guide="menu-community" onClick={run(() => goProtected("/community"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                 <span className="flex items-center gap-3"><Users className="h-[18px] w-[18px] text-primary" />Community</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
-              <button type="button" onClick={run(() => go("/dashboard"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+              <button type="button" data-guide="menu-dashboard" onClick={run(() => go("/dashboard"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                 <span className="flex items-center gap-3"><LayoutDashboard className="h-[18px] w-[18px] text-primary" />Dashboard</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
-              <button type="button" onClick={run(() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" })))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+              <button type="button" data-guide="menu-how-to-get-around" onClick={run(() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" })))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                 <span className="flex items-center gap-3"><HelpCircle className="h-[18px] w-[18px] text-primary" />How to get around</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
-              <button type="button" onClick={run(() => go("/install"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+              <button type="button" data-guide="menu-get-the-app" onClick={run(() => go("/install"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                 <span className="flex items-center gap-3"><Download className="h-[18px] w-[18px] text-primary" />Get the app</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
               {isWriter && (

@@ -41,6 +41,9 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
   const [i, setI] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = STEPS[i];
+  const menuStep = !!step.section?.startsWith("menu-") && step.section !== "menu-button";
+  useEffect(() => { window.dispatchEvent(new CustomEvent("mxfz:menu", { detail: menuStep })); }, [menuStep]);
+  useEffect(() => () => { window.dispatchEvent(new CustomEvent("mxfz:menu", { detail: false })); }, []);
   useEffect(() => { if (step.path && step.path !== pathname) navigate(step.path); }, [step.path]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const measure = useCallback(() => {
@@ -78,7 +81,7 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
   else { cardStyle.top = "50%"; cardStyle.transform = "translateY(-50%)"; }
 
   return (
-    <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-label={`Guide, step ${i + 1} of ${STEPS.length}`}>
+    <div className="fixed inset-0 z-[100]" style={{ pointerEvents: "auto" }} role="dialog" aria-modal="true" aria-label={`Guide, step ${i + 1} of ${STEPS.length}`}>
       {rect ? (
         <>
           <div className="pointer-events-none fixed rounded-xl border-[3px] border-primary shadow-[0_0_0_2000px_rgba(3,10,20,0.82)]"
@@ -246,6 +249,7 @@ export default function MobileGuide() {
   const open = (it: GuideItem) => {
     markSeen(it);
     setList(false);
+    if (it.section?.startsWith("menu-") && it.section !== "menu-button") window.dispatchEvent(new CustomEvent("mxfz:menu", { detail: true }));
     const path = it.path || "/";
     if (/^https?:\/\//i.test(path)) { window.open(path, "_blank", "noopener,noreferrer"); return; }
     if (location.pathname !== path) navigate(path);

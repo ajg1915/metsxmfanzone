@@ -49,6 +49,12 @@ const Navigation = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isWriter, setIsWriter] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // The guide opens and closes the phone menu so it can point at things inside it.
+  useEffect(() => {
+    const h = (e: Event) => setMobileMenuOpen((e as CustomEvent<boolean>).detail === true);
+    window.addEventListener("mxfz:menu", h);
+    return () => window.removeEventListener("mxfz:menu", h);
+  }, []);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [userProfile, setUserProfile] = useState<{ full_name: string | null; avatar_url: string | null }>({ full_name: null, avatar_url: null });
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -312,7 +318,7 @@ const Navigation = () => {
               <>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="hidden md:flex h-10 gap-2 rounded-full px-2.5 text-sm font-semibold hover:bg-white/[0.07]">
+                    <Button data-guide="nav-account" variant="ghost" size="sm" className="hidden md:flex h-10 gap-2 rounded-full px-2.5 text-sm font-semibold hover:bg-white/[0.07]">
                       <Avatar className="h-7 w-7 ring-1 ring-white/15">
                         <AvatarImage src={userProfile.avatar_url || undefined} alt="Profile" />
                         <AvatarFallback className="text-[10px]">
