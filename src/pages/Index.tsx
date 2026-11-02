@@ -186,7 +186,7 @@ const Index = () => {
       ) : (
       <main className="relative z-10 homepage-broadcast-feed">
         <div className="hidden sm:block sm:h-[72px]" aria-hidden="true" />
-        <Hero />
+        <div data-guide="home-hero"><Hero /></div>
 
         {/* Mets Tracker FA (trades, signings, radar), first section under the hero */}
         <Suspense fallback={<SectionSkeleton />}>
@@ -198,9 +198,11 @@ const Index = () => {
 
         {/* Live & upcoming */}
         {SHOW_METS_GAME_CENTER && (
-          <Suspense fallback={<SectionSkeleton height="h-16" />}>
-            <GamecastBanner />
-          </Suspense>
+          <div data-guide="gamecast">
+            <Suspense fallback={<SectionSkeleton height="h-16" />}>
+              <GamecastBanner />
+            </Suspense>
+          </div>
         )}
 
         <div data-guide="live-streams">
@@ -219,69 +221,85 @@ const Index = () => {
         <div data-guide="scores"><NYScoresStrip /></div>
 
         {/* Game series: every Mets series, one card each */}
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <RegularSeasonSeriesSection title="Game Series" />
-          </Suspense>
-        </LazySection>
+        <div data-guide="game-series">
+          <LazySection fallback={<SectionSkeleton />}>
+            <Suspense fallback={<SectionSkeleton />}>
+              <RegularSeasonSeriesSection title="Game Series" />
+            </Suspense>
+          </LazySection>
+        </div>
 
         {/* Phone visitors who aren't signed in see the plans right on the home page */}
         {phoneVisitor && (
-          <Suspense fallback={<SectionSkeleton />}>
-            <PlansSection />
-          </Suspense>
+          <div data-guide="plans">
+            <Suspense fallback={<SectionSkeleton />}>
+              <PlansSection />
+            </Suspense>
+          </div>
         )}
 
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <RelatedStreamsSection />
-          </Suspense>
-        </LazySection>
+        <div data-guide="related-streams">
+          <LazySection fallback={<SectionSkeleton />}>
+            <Suspense fallback={<SectionSkeleton />}>
+              <RelatedStreamsSection />
+            </Suspense>
+          </LazySection>
+        </div>
 
         <div className="section-divider my-1" />
 
         {/* Latest articles */}
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <BlogSection />
-          </Suspense>
-        </LazySection>
+        <div data-guide="blog">
+          <LazySection fallback={<SectionSkeleton />}>
+            <Suspense fallback={<SectionSkeleton />}>
+              <BlogSection />
+            </Suspense>
+          </LazySection>
+        </div>
 
         <div className="section-divider my-1" />
 
         {/* Podcasts */}
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <PodcastRadioSection />
-          </Suspense>
-        </LazySection>
+        <div data-guide="podcast">
+          <LazySection fallback={<SectionSkeleton />}>
+            <Suspense fallback={<SectionSkeleton />}>
+              <PodcastRadioSection />
+            </Suspense>
+          </LazySection>
+        </div>
 
         <div className="section-divider my-1" />
 
         {/* Join or install, with the follow links */}
         {/* Phone visitors already see the plans above; they get the fan / podcast / join card instead */}
         {phoneVisitor && (
-          <Suspense fallback={null}>
-            <PhoneJoinSection />
-          </Suspense>
+          <div data-guide="app-install">
+            <Suspense fallback={null}>
+              <PhoneJoinSection />
+            </Suspense>
+          </div>
         )}
         {!phoneVisitor && (
-          <LazySection fallback={<SectionSkeleton height="h-48" />}>
-            <Suspense fallback={<SectionSkeleton height="h-48" />}>
-              <AppInstallSection />
-            </Suspense>
-          </LazySection>
+          <div data-guide="app-install">
+            <LazySection fallback={<SectionSkeleton height="h-48" />}>
+              <Suspense fallback={<SectionSkeleton height="h-48" />}>
+                <AppInstallSection />
+              </Suspense>
+            </LazySection>
+          </div>
         )}
 
       </main>
       )}
       {/* Newsletter signup, above the footer for everyone */}
       <div className="relative z-10">
-        <LazySection fallback={<SectionSkeleton height="h-48" />}>
-          <Suspense fallback={<SectionSkeleton height="h-48" />}>
-            <NewsletterSection />
-          </Suspense>
-        </LazySection>
+        <div data-guide="newsletter">
+          <LazySection fallback={<SectionSkeleton height="h-48" />}>
+            <Suspense fallback={<SectionSkeleton height="h-48" />}>
+              <NewsletterSection />
+            </Suspense>
+          </LazySection>
+        </div>
       </div>
       {/* How to get the app (a strip, never a popup) */}
       {/* Members find the app in their Member Center, so the strip is for visitors only */}
