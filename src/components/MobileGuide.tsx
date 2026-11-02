@@ -65,9 +65,17 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
   const last = i === STEPS.length - 1;
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
   const cardStyle: React.CSSProperties = { left: 16, right: 16, maxWidth: 440, marginInline: "auto" };
-  if (rect && step.place === "above") cardStyle.bottom = Math.max(16, vh - rect.top + 16);
-  else if (rect && step.place === "below") cardStyle.top = Math.min(vh - 240, rect.bottom + 16);
-  else cardStyle.top = "30%";
+  const CARD_H = 230;
+  // "Above"/"below" follow the spot but flip if there is no room; top/middle/bottom stay put on screen.
+  let place = step.place;
+  if (rect && place === "below" && rect.bottom + 16 + CARD_H > vh) place = "above";
+  else if (rect && place === "above" && rect.top - 16 - CARD_H < 0) place = "below";
+  if (place === "top") cardStyle.top = 76;
+  else if (place === "bottom") cardStyle.bottom = 84;
+  else if (place === "center") { cardStyle.top = "50%"; cardStyle.transform = "translateY(-50%)"; }
+  else if (rect && place === "above") cardStyle.bottom = Math.max(16, vh - rect.top + 16);
+  else if (rect && place === "below") cardStyle.top = Math.min(vh - CARD_H, rect.bottom + 16);
+  else { cardStyle.top = "50%"; cardStyle.transform = "translateY(-50%)"; }
 
   return (
     <div className="fixed inset-0 z-[100]" role="dialog" aria-modal="true" aria-label={`Guide, step ${i + 1} of ${STEPS.length}`}>

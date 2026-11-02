@@ -10,7 +10,7 @@ export type GuideItem = {
   where_label: string | null;
   path: string | null;
   section: string | null; // matches a data-guide="..." spot on the page
-  place: "above" | "below" | "center";
+  place: "above" | "below" | "center" | "top" | "bottom";
   enabled: boolean;
   suggested: boolean;
   highlight_new: boolean;

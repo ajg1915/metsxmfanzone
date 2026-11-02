@@ -137,9 +137,13 @@ export default function GuideManagement() {
                   <Textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={3} /></div>
                 <div><Label>Page to show it on (optional)</Label>
                   <Input value={form.path} onChange={(e) => setForm({ ...form, path: e.target.value })} placeholder="/ (leave blank to stay on the current page)" /></div>
-                <div><Label>Card position</Label>
+                <div><Label>Where the guide card sits (phone and tablet)</Label>
                   <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })}>
-                    <option value="above">Above the highlighted spot</option><option value="below">Below the highlighted spot</option><option value="center">Centered</option>
+                    <option value="below">Just below the glow</option>
+                    <option value="above">Just above the glow</option>
+                    <option value="top">Top of the screen</option>
+                    <option value="center">Middle of the screen</option>
+                    <option value="bottom">Bottom of the screen</option>
                   </select></div>
               </>
             ) : (
