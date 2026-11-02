@@ -76,7 +76,7 @@ const Install = () => {
 
           <div className="grid gap-5">
             {/* Android: the APK we built */}
-            <Card className={`flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center ${isApple ? "order-2" : ""}`}>
+            <Card data-guide="install-android" className={`flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center ${isApple ? "order-2" : ""}`}>
               <div className="flex items-center gap-4 flex-1">
                 <div className="rounded-xl bg-[#3ddc84]/15 p-3">
                   <AndroidIcon className="h-7 w-7 text-[#3ddc84]" />
@@ -139,7 +139,7 @@ const Install = () => {
 
             {/* MetsXMFanZone TV: only shown to signed-in members, the code is never public */}
             {user && (
-              <Card className="order-3 flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center">
+              <Card data-guide="install-tv" className="order-3 flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center">
                 <div className="flex flex-1 items-center gap-4">
                   <div className="rounded-xl bg-primary/15 p-3">
                     <Tv className="h-7 w-7 text-primary" />
