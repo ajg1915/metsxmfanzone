@@ -101,7 +101,7 @@ export function SpringTrainingSection() {
 
   return (
     <section className="relative py-6 sm:py-8" aria-label="Spring Training">
-      <Title right={<Link to="/spring-training-live" className="flex min-h-[44px] items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80">Watch live <ChevronRight className="h-4 w-4" /></Link>}>Spring Training</Title>
+      <Title right={<Link to="/spring-training-live" data-guide="spring-watch-live" className="flex min-h-[44px] items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80">Watch live <ChevronRight className="h-4 w-4" /></Link>}>Spring Training</Title>
       <div className={rowCls} style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {/* Countdown card */}
         <div className={`${cardW} relative flex aspect-video min-h-[190px] flex-col justify-between overflow-hidden rounded-lg border border-border/50 p-4`} style={{ backgroundImage: "linear-gradient(135deg,#0b3e75,#07111d 85%)" }}>
@@ -146,7 +146,7 @@ export function MetsTrackerSection() {
   const items = tab === "trades" ? txs.filter(isTrade).slice(0, 10) : tab === "signings" ? txs.filter(isSigning).slice(0, 10) : [];
 
   const tabs = (
-    <div className="flex gap-1.5" role="tablist" aria-label="Free Agency">
+    <div data-guide="fa-tabs" className="flex gap-1.5" role="tablist" aria-label="Free Agency">
       {([["trades", "Trades"], ["signings", "Signings"], ["radar", "Radar"]] as const).map(([v, l]) => (
         <button key={v} type="button" role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
           className={`min-h-[40px] rounded-lg border border-[#ff5a1f] px-3.5 font-display text-sm font-bold uppercase tracking-wider transition-colors sm:px-4 sm:text-base ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>

@@ -175,7 +175,7 @@ const Index = () => {
       />
       <Navigation />
       <Suspense fallback={null}>
-          <FreeTrialExpiryBanner />
+          <div data-guide="trial-banner"><FreeTrialExpiryBanner /></div>
         </Suspense>
       {signedOut ? (
         <main className="relative z-10">
@@ -273,7 +273,7 @@ const Index = () => {
         {/* Join or install, with the follow links */}
         {/* Phone visitors already see the plans above; they get the fan / podcast / join card instead */}
         {phoneVisitor && (
-          <div data-guide="app-install">
+          <div data-guide="phone-join">
             <Suspense fallback={null}>
               <PhoneJoinSection />
             </Suspense>
@@ -305,10 +305,10 @@ const Index = () => {
       {/* Members find the app in their Member Center, so the strip is for visitors only */}
       {!user && (
         <Suspense fallback={null}>
-          <GetTheAppStrip />
+          <div data-guide="app-strip"><GetTheAppStrip /></div>
         </Suspense>
       )}
-      <Footer />
+      <div data-guide="footer"><Footer /></div>
       
       
     </div>

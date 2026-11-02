@@ -204,6 +204,7 @@ const Hero = () => {
             <>
               <div className="mt-4 flex gap-2.5">
                 <Button
+                  data-guide="hero-watch"
                   onClick={() => handleNav("/metsxmfanzone")}
                   className="h-[52px] flex-1 gap-2 rounded-xl bg-[#d43700] text-base font-bold text-white hover:bg-[#d43700]/90"
                 >
@@ -211,6 +212,7 @@ const Hero = () => {
                   {isLiveNow ? "Watch Live" : "Watch"}
                 </Button>
                 <Button
+                  data-guide="hero-reminder"
                   onClick={handleSetReminder}
                   variant="outline"
                   aria-label={reminderOn ? "Reminder on" : "Remind me when games go live"}
