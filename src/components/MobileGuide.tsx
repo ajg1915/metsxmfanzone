@@ -52,9 +52,14 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
 
   useLayoutEffect(() => {
     measure();
-    const t = setTimeout(measure, 600); // after any page change or scroll settles
+    // Pages load lazily after a step switches route, so keep looking for the spot for a few seconds.
+    let tries = 0;
+    const poll = setInterval(() => {
+      measure();
+      if ((findSpot(step.section) && tries > 3) || ++tries > 24) clearInterval(poll);
+    }, 250);
     window.addEventListener("resize", measure);
-    return () => { clearTimeout(t); window.removeEventListener("resize", measure); };
+    return () => { clearInterval(poll); window.removeEventListener("resize", measure); };
   }, [measure]);
 
   const last = i === STEPS.length - 1;
@@ -87,6 +92,58 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
   );
 }
 
+function selectorFor(el: HTMLElement): string {
+  if (el.id) return `#${CSS.escape(el.id)}`;
+  const g = el.closest<HTMLElement>("[data-guide]");
+  if (g === el) return `[data-guide="${el.getAttribute("data-guide")}"]`;
+  const label = el.getAttribute("aria-label");
+  if (label) return `${el.tagName.toLowerCase()}[aria-label="${label.replace(/"/g, '\\"')}"]`;
+  const parts: string[] = [];
+  let cur: HTMLElement | null = el;
+  while (cur && cur !== document.body && parts.length < 5) {
+    if (cur.id) { parts.unshift(`#${CSS.escape(cur.id)}`); break; }
+    const parent: HTMLElement | null = cur.parentElement;
+    const tag = cur.tagName.toLowerCase();
+    const same = parent ? Array.from(parent.children).filter((c) => c.tagName === cur!.tagName) : [];
+    parts.unshift(same.length > 1 ? `${tag}:nth-of-type(${same.indexOf(cur) + 1})` : tag);
+    cur = parent;
+  }
+  return parts.join(" > ");
+}
+
+/** Admin helper: open any page with ?guidepick=1, tap a button or section, copy its selector. */
+function Picker() {
+  const [sel, setSel] = useState("");
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    let last: HTMLElement | null = null;
+    const clearOutline = () => { if (last) last.style.outline = ""; };
+    const over = (e: Event) => { const t = e.target as HTMLElement; if (t.closest("[data-guide-picker]")) return; clearOutline(); last = t; t.style.outline = "3px solid #ff4400"; };
+    const click = (e: Event) => {
+      const t = e.target as HTMLElement;
+      if (t.closest("[data-guide-picker]")) return;
+      e.preventDefault(); e.stopPropagation();
+      setSel(selectorFor(t)); setCopied(false);
+    };
+    document.addEventListener("pointerover", over, true);
+    document.addEventListener("click", click, true);
+    return () => { clearOutline(); document.removeEventListener("pointerover", over, true); document.removeEventListener("click", click, true); };
+  }, []);
+  return (
+    <div data-guide-picker className="fixed inset-x-3 bottom-3 z-[200] rounded-xl border-2 border-primary bg-secondary p-3 text-white shadow-2xl">
+      <p className="font-display text-[15px] uppercase tracking-[0.12em] text-[#ffa57a]">Guide picker</p>
+      <p className="text-sm">{sel ? "Selected. Copy it, then paste it in Admin → Mobile Guide → Spot → Custom." : "Tap the button or section you want to highlight."}</p>
+      {sel && (
+        <div className="mt-2 flex items-center gap-2">
+          <code className="min-w-0 flex-1 truncate rounded bg-black/30 px-2 py-1 text-xs">{sel}</code>
+          <button type="button" className="rounded-lg bg-primary px-3 py-2 font-display text-base uppercase text-primary-foreground"
+            onClick={() => { navigator.clipboard?.writeText(sel).then(() => setCopied(true)).catch(() => {}); }}>{copied ? "Copied" : "Copy"}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function jumpTo(section: string) {
   let tries = 0;
   const go = () => {
@@ -106,6 +163,8 @@ export default function MobileGuide() {
   const { pathname } = useLocation();
   const { data: items = [], device } = useGuideItems();
   const unseen = useUnseenGuideItems();
+  const { search } = useLocation();
+  const picking = new URLSearchParams(search).get("guidepick") === "1";
   const [tour, setTour] = useState(false);
   const [list, setList] = useState(false);
 
@@ -199,6 +258,7 @@ export default function MobileGuide() {
 
   return (
     <>
+      {picking && <Picker />}
       {tour && steps.length > 0 && <Tour steps={steps} onClose={closeTour} />}
       <Dialog open={list} onOpenChange={setList}>
         <DialogContent className="max-h-[92vh] w-[calc(100vw-1.5rem)] max-w-md gap-0 overflow-y-auto rounded-2xl border-primary/50 bg-background p-0">

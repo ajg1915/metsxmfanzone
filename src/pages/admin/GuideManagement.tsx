@@ -157,6 +157,10 @@ export default function GuideManagement() {
                 <option value="__custom">Custom (CSS selector)…</option>
               </select>
               {!known && <Input className="mt-1.5" value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} placeholder="#my-section or .some-class or [data-guide=&quot;x&quot;]" />}
+              <Button type="button" variant="outline" size="sm" className="mt-1.5 h-8 text-xs" onClick={() => window.open(`${(form.path && form.path.startsWith("/") ? form.path : "/")}${(form.path || "/").includes("?") ? "&" : "?"}guidepick=1`, "_blank")}>
+                Pick a button on the page…
+              </Button>
+              <p className="mt-1 text-[11px] text-muted-foreground">Opens that page. Tap the button you want, press Copy, then choose Custom above and paste.</p>
               <p className="mt-1 text-[11px] text-muted-foreground">A new home section just needs data-guide="name" on it, then type that name above as a custom spot.</p></div>
             <div><Label>Show on</Label>
               <div className="mt-1 flex flex-wrap gap-1.5">
