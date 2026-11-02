@@ -8,7 +8,6 @@ import {
   Trophy,
   Target,
   Users,
-  Film,
   Newspaper,
   Landmark,
   MonitorPlay,
@@ -40,7 +39,6 @@ const METS: Entry[] = [
   { label: "Game Center", hint: "Lineups, players to watch, stats, replays", icon: LayoutGrid, to: "/game-center" },
   { label: "Picks", hint: "Anthony's predictions, lineup and podcast review", icon: Target, to: "/picks" },
   { label: "Roster", hint: "Players and stats", icon: Users, to: "/mets-roster", membersOnly: true },
-  { label: "Highlights", hint: "Video clips and top plays", icon: Film, to: "/video-gallery", gate: "pro" },
   { label: "Game Recaps", hint: "Breakdowns of every game", icon: Newspaper, to: "/mets-game-recaps" },
   { label: "Mets History", hint: "Moments and legends", icon: Landmark, to: "/mets-history" },
 ];

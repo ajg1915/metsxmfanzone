@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useUnseenGuideItems } from "@/components/MobileGuide";
 import {
   X, Play, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard, Target,
-  PenLine, Shield, Sparkles, LogOut, Tv, Film, HelpCircle,
+  PenLine, Shield, Sparkles, LogOut, Tv, HelpCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -43,7 +43,6 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
     { label: "Picks", icon: Target, onClick: run(() => go("/picks")) },
     { label: "Blog", icon: Newspaper, onClick: run(() => go("/blog")) },
     { label: "Podcast", icon: Mic, onClick: run(() => go("/podcast")) },
-    { label: "Highlights", icon: Film, onClick: run(() => go("/video-gallery")) },
   ];
 
   const initial = profile.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "M";
