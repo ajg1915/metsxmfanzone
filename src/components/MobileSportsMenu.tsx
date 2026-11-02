@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import {
   X, Play, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard, Target,
-  PenLine, Shield, Sparkles, LogOut, Tv,
+  PenLine, Shield, Sparkles, LogOut, Tv, Sun, Radar,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -39,6 +39,8 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
     { label: "Scores", icon: Trophy, onClick: run(() => go("/mets-scores")) },
     { label: "Game Center", icon: LayoutDashboard, onClick: run(() => go("/game-center")) },
     { label: "Picks", icon: Target, onClick: run(() => go("/picks")) },
+    { label: "Spring Training", icon: Sun, onClick: run(() => go("/spring-training")) },
+    { label: "Mets Tracker", icon: Radar, onClick: run(() => go("/mets-tracker")) },
     { label: "Blog", icon: Newspaper, onClick: run(() => go("/blog")) },
     { label: "Podcast", icon: Mic, onClick: run(() => go("/podcast")) },
   ];

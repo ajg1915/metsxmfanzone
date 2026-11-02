@@ -102,6 +102,8 @@ const Sitemap = lazyWithRetry(() => import("./pages/SitemapRedirect"), "page-sit
 const DynamicMatchup = lazyWithRetry(() => import("./pages/matchups/DynamicMatchup"), "page-dynamic-matchup");
 const PayPalSuccess = lazyWithRetry(() => import("./pages/PayPalSuccess"), "page-paypal-success");
 
+const SpringTraining = lazyWithRetry(() => import("./pages/SpringTraining"), "page-spring-training");
+const MetsTracker = lazyWithRetry(() => import("./pages/MetsTracker"), "page-mets-tracker");
 const SpringTrainingLive = lazyWithRetry(() => import("./pages/SpringTrainingLive"), "page-spring-training-live");
 const ReplayGames = lazyWithRetry(() => import("./pages/ReplayGames"), "page-replay-games");
 const MetsSchedule2027 = lazyWithRetry(() => import("./pages/MetsSchedule2027"), "page-mets-schedule-2027");
@@ -448,6 +450,8 @@ const AppContent = () => {
             <Route path="/writer" element={<WriterDashboard />} />
             <Route path="/writer/new-article" element={<WriterArticleEditor />} />
             <Route path="/writer/edit/:id" element={<WriterArticleEditor />} />
+            <Route path="/spring-training" element={<SpringTraining />} />
+            <Route path="/mets-tracker" element={<MetsTracker />} />
             <Route path="/spring-training-live" element={<SpringTrainingLive />} />
             <Route path="/replay-games" element={<ReplayGames />} />
             <Route path="/mets-schedule-2027" element={<MetsSchedule2027 />} />
