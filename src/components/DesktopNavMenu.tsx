@@ -13,6 +13,7 @@ import {
   MonitorPlay,
   ArrowRight,
   LayoutGrid,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
@@ -124,7 +125,7 @@ export default function DesktopNavMenu({
   const mets = METS.filter((e) => !e.membersOnly || isLoggedIn);
 
   return (
-    <NavMenu.Root delayDuration={60} skipDelayDuration={250} className="relative hidden md:block" aria-label="Main">
+    <NavMenu.Root data-guide="top-nav" delayDuration={60} skipDelayDuration={250} className="relative hidden md:block" aria-label="Main">
       <NavMenu.List className="flex items-center gap-0.5 xl:gap-1">
         <TopLink to="/">Home</TopLink>
         <TopLink to="/community" onClick={() => goProtected("/community")}>Community</TopLink>
@@ -145,6 +146,14 @@ export default function DesktopNavMenu({
         </NavMenu.Item>
 
         {!isLoggedIn && <TopLink to="/pricing">Pricing</TopLink>}
+        <NavMenu.Item>
+          <NavMenu.Link asChild>
+            <button type="button" data-guide="guide-button" onClick={() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" }))} className={pill}>
+              <HelpCircle className="h-4 w-4" aria-hidden />
+              Guide
+            </button>
+          </NavMenu.Link>
+        </NavMenu.Item>
         {onTVMode && (
           <NavMenu.Item>
             <NavMenu.Link asChild>

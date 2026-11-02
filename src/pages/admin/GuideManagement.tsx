@@ -10,13 +10,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "@/hooks/use-toast";
 import { Plus, Trash2, Edit, ArrowUp, ArrowDown, HelpCircle } from "lucide-react";
 import { AdminPage, AdminPageHeader, AdminList, AdminListCard, AdminRow, AdminEmpty, AdminLoading, AdminIconButton, AdminFilterChips } from "@/components/admin/AdminUI";
-import { GUIDE_SECTIONS, type GuideItem } from "@/hooks/useGuideItems";
+import { GUIDE_SECTIONS, PLATFORMS, type GuideItem } from "@/hooks/useGuideItems";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Table is new, so it isn't in the generated Supabase types yet.
 const table = () => supabase.from("guide_items" as never) as any;
 
-const BLANK = { kind: "find", title: "", body: "", where_label: "", path: "/", section: "", place: "below", enabled: true, suggested: false, highlight_new: false };
+const BLANK = { kind: "find", title: "", body: "", where_label: "", path: "/", section: "", place: "below", enabled: true, suggested: false, highlight_new: false, platforms: ["mobile", "tablet", "desktop", "tv", "app"] as string[] };
 type Form = typeof BLANK;
 
 export default function GuideManagement() {
@@ -37,18 +37,20 @@ export default function GuideManagement() {
   useEffect(() => { load(); }, []);
   const refresh = async () => { await load(); qc.invalidateQueries({ queryKey: ["guide-items"] }); };
 
+  const known = !form.section || GUIDE_SECTIONS.some((g) => g.key === form.section);
   const shown = useMemo(() => items.filter((i) => i.kind === tab), [items, tab]);
 
-  const startNew = () => { setEditing(null); setForm({ ...BLANK, kind: tab }); setOpen(true); };
+  const startNew = () => { setEditing(null); setForm({ ...BLANK, kind: tab, path: tab === "tour" ? "" : "/" }); setOpen(true); };
   const startEdit = (it: GuideItem) => {
     setEditing(it);
-    setForm({ kind: it.kind, title: it.title, body: it.body || "", where_label: it.where_label || "", path: it.path || "/", section: it.section || "", place: it.place, enabled: it.enabled, suggested: it.suggested, highlight_new: it.highlight_new });
+    setForm({ kind: it.kind, title: it.title, body: it.body || "", where_label: it.where_label || "", path: it.path || "/", section: it.section || "", place: it.place, enabled: it.enabled, suggested: it.suggested, highlight_new: it.highlight_new, platforms: it.platforms || BLANK.platforms });
     setOpen(true);
   };
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
+    if (!form.platforms.length) return toast({ title: "Pick at least one device", variant: "destructive" });
     const row = { ...form, title: form.title.trim(), body: form.body.trim() || null, where_label: form.where_label.trim() || null, path: form.path.trim() || null, section: form.section || null };
     const { error } = editing
       ? await table().update(row).eq("id", editing.id)
@@ -105,7 +107,7 @@ export default function GuideManagement() {
           <AdminListCard key={it.id} highlight={it.highlight_new}>
             <AdminRow
               title={it.title}
-              meta={[it.where_label, it.section && `jumps to: ${GUIDE_SECTIONS.find((s) => s.key === it.section)?.label || it.section}`, it.path].filter(Boolean).join("  ·  ")}
+              meta={[it.where_label, it.section && `jumps to: ${GUIDE_SECTIONS.find((s) => s.key === it.section)?.label || it.section}`, it.path, (it.platforms || []).map((p) => PLATFORMS.find((x) => x.key === p)?.label || p).join("/")].filter(Boolean).join("  ·  ")}
               badges={<>
                 {it.suggested && <Badge className="h-4 px-1 text-[9px]">Suggested</Badge>}
                 {it.highlight_new && <Badge variant="outline" className="h-4 px-1 text-[9px] border-primary text-primary">NEW glow</Badge>}
@@ -133,6 +135,8 @@ export default function GuideManagement() {
               <>
                 <div><Label>Explanation</Label>
                   <Textarea value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={3} /></div>
+                <div><Label>Page to show it on (optional)</Label>
+                  <Input value={form.path} onChange={(e) => setForm({ ...form, path: e.target.value })} placeholder="/ (leave blank to stay on the current page)" /></div>
                 <div><Label>Card position</Label>
                   <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })}>
                     <option value="above">Above the highlighted spot</option><option value="below">Below the highlighted spot</option><option value="center">Centered</option>
@@ -142,15 +146,26 @@ export default function GuideManagement() {
               <>
                 <div><Label>Where it lives (shown as a pill)</Label>
                   <Input value={form.where_label} onChange={(e) => setForm({ ...form, where_label: e.target.value })} placeholder="Menu › Picks" /></div>
-                <div><Label>Page it opens</Label>
+                <div><Label>Page or link it opens (a /page or a full https:// link)</Label>
                   <Input value={form.path} onChange={(e) => setForm({ ...form, path: e.target.value })} placeholder="/picks" /></div>
               </>
             )}
             <div><Label>{form.kind === "tour" ? "Spot to highlight" : "Section to jump to (optional)"}</Label>
-              <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })}>
+              <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm" value={known ? form.section : "__custom"} onChange={(e) => setForm({ ...form, section: e.target.value === "__custom" ? "." : e.target.value })}>
                 <option value="">{form.kind === "tour" ? "None (centered card)" : "None, just open the page"}</option>
                 {GUIDE_SECTIONS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
-              </select></div>
+                <option value="__custom">Custom (CSS selector)…</option>
+              </select>
+              {!known && <Input className="mt-1.5" value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} placeholder="#my-section or .some-class or [data-guide=&quot;x&quot;]" />}
+              <p className="mt-1 text-[11px] text-muted-foreground">A new home section just needs data-guide="name" on it, then type that name above as a custom spot.</p></div>
+            <div><Label>Show on</Label>
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {PLATFORMS.map((p) => {
+                  const on = form.platforms.includes(p.key);
+                  return <button key={p.key} type="button" onClick={() => setForm({ ...form, platforms: on ? form.platforms.filter((x) => x !== p.key) : [...form.platforms, p.key] })}
+                    className={`h-8 rounded-full border px-3 text-xs font-semibold ${on ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>{p.label}</button>;
+                })}
+              </div></div>
             <div className="flex items-center justify-between"><Label>Show in guide</Label><Switch checked={form.enabled} onCheckedChange={(v) => setForm({ ...form, enabled: v })} /></div>
             {form.kind === "find" && <div className="flex items-center justify-between"><Label>Suggested (pinned at the top)</Label><Switch checked={form.suggested} onCheckedChange={(v) => setForm({ ...form, suggested: v })} /></div>}
             <div className="flex items-center justify-between"><div><Label>Highlight as NEW</Label><p className="text-[11px] text-muted-foreground">Glow on that section for every phone user until they tap it. Changing the text or turning this on again makes it glow again.</p></div>

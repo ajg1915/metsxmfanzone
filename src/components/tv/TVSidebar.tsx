@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Tv, Radio, Film, RotateCcw, Home } from "lucide-react";
+import { Tv, Radio, Film, RotateCcw, Home, HelpCircle } from "lucide-react";
 import type { TVCategory } from "@/pages/TVDashboard";
 
 interface TVSidebarProps {
@@ -16,7 +16,7 @@ const categories: { key: TVCategory; label: string; icon: React.ElementType }[] 
 
 export function TVSidebar({ activeCategory, onCategoryChange }: TVSidebarProps) {
   return (
-    <aside className="w-14 shrink-0 bg-card/80 backdrop-blur border-r border-border/40 flex flex-col items-center py-3 gap-0.5">
+    <aside data-guide="tv-sidebar" className="w-14 shrink-0 bg-card/80 backdrop-blur border-r border-border/40 flex flex-col items-center py-3 gap-0.5">
       {/* Logo / brand mark */}
       <div className="mb-3 flex items-center justify-center">
         <Tv className="w-5 h-5 text-primary" />
@@ -47,6 +47,16 @@ export function TVSidebar({ activeCategory, onCategoryChange }: TVSidebarProps) 
           </button>
         );
       })}
+      <button
+        type="button"
+        data-guide="guide-button"
+        onClick={() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" }))}
+        className="mt-auto w-10 h-10 rounded-md flex flex-col items-center justify-center gap-0.5 text-[9px] font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary"
+        title="Guide"
+      >
+        <HelpCircle className="w-3.5 h-3.5" />
+        <span className="leading-none">Guide</span>
+      </button>
     </aside>
   );
 }

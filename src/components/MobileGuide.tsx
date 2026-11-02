@@ -4,7 +4,7 @@ import { ChevronRight, HelpCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/metsxmfanzone-logo.png";
-import { useGuideItems, type GuideItem } from "@/hooks/useGuideItems";
+import { useGuideItems, findSpot, type GuideItem } from "@/hooks/useGuideItems";
 
 // Phone guide: a 3-step tour shown once to new accounts right after sign-up, plus a
 // "Where do I find…?" list. Both can be opened again from the menu ("How to get around").
@@ -33,31 +33,33 @@ export function useUnseenGuideItems(): GuideItem[] {
   return (data || []).filter((i) => i.highlight_new && seen[i.id] !== i.updated_at);
 }
 
-const isPhone = () => typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches;
 
 function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
   const STEPS = steps;
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [i, setI] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = STEPS[i];
+  useEffect(() => { if (step.path && step.path !== pathname) navigate(step.path); }, [step.path]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const measure = useCallback(() => {
-    const el = document.querySelector<HTMLElement>(`[data-guide="${step.section}"]`);
+    const el = findSpot(step.section);
     if (!el) { setRect(null); return; }
-    if (step.section !== "bottom-nav" && step.section !== "menu-button") el.scrollIntoView({ block: "center" });
+    if (!el.closest("nav, aside, [data-guide=\"bottom-nav\"]")) el.scrollIntoView({ block: "center" });
     setRect(el.getBoundingClientRect());
   }, [step.section]);
 
   useLayoutEffect(() => {
     measure();
-    const t = setTimeout(measure, 350); // after any scroll settles
+    const t = setTimeout(measure, 600); // after any page change or scroll settles
     window.addEventListener("resize", measure);
     return () => { clearTimeout(t); window.removeEventListener("resize", measure); };
   }, [measure]);
 
   const last = i === STEPS.length - 1;
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
-  const cardStyle: React.CSSProperties = { left: 16, right: 16 };
+  const cardStyle: React.CSSProperties = { left: 16, right: 16, maxWidth: 440, marginInline: "auto" };
   if (rect && step.place === "above") cardStyle.bottom = Math.max(16, vh - rect.top + 16);
   else if (rect && step.place === "below") cardStyle.top = Math.min(vh - 240, rect.bottom + 16);
   else cardStyle.top = "30%";
@@ -88,7 +90,7 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
 function jumpTo(section: string) {
   let tries = 0;
   const go = () => {
-    const el = document.querySelector<HTMLElement>(`[data-guide="${section}"]`);
+    const el = findSpot(section);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
       el.setAttribute("data-guide-pulse", "1");
@@ -102,7 +104,7 @@ export default function MobileGuide() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { data: items = [] } = useGuideItems();
+  const { data: items = [], device } = useGuideItems();
   const unseen = useUnseenGuideItems();
   const [tour, setTour] = useState(false);
   const [list, setList] = useState(false);
@@ -115,13 +117,13 @@ export default function MobileGuide() {
   // Auto tour: phones only, new account (created in the last few days), once per user on this device.
   useEffect(() => {
     if (!user?.id || !user.created_at || !steps.length) return;
-    if (!isPhone() || pathname !== "/") return;
+    if (device === "tv" || pathname !== "/") return;
     const age = Date.now() - new Date(user.created_at).getTime();
     if (age > NEW_ACCOUNT_DAYS * 86_400_000) return;
     try { if (localStorage.getItem(doneKey(user.id))) return; } catch { return; }
     const t = setTimeout(() => setTour(true), 1200);
     return () => clearTimeout(t);
-  }, [user?.id, user?.created_at, pathname, steps.length]);
+  }, [user?.id, user?.created_at, pathname, steps.length, device]);
 
   // Open from the menu.
   useEffect(() => {
@@ -137,14 +139,14 @@ export default function MobileGuide() {
   // Glow on anything new, even for people who already know the site. Clears when they tap it.
   const unseenKey = unseen.map((u) => u.id + u.updated_at).join("|");
   useEffect(() => {
-    if (!isPhone() || !unseen.length) return;
+    if (!unseen.length) return;
     const cleanups: (() => void)[] = [];
     const marked = new Set<Element>();
     let tries = 0;
     const attach = () => {
       unseen.forEach((it) => {
         if (!it.section) return;
-        const el = document.querySelector<HTMLElement>(`[data-guide="${it.section}"]`);
+        const el = findSpot(it.section);
         if (!el || marked.has(el)) return;
         marked.add(el);
         el.setAttribute("data-guide-new", "1");
@@ -161,10 +163,9 @@ export default function MobileGuide() {
 
   // The menu button glows while anything new is waiting.
   useEffect(() => {
-    const el = document.querySelector<HTMLElement>('[data-guide="menu-button"]');
-    if (!el) return;
-    if (unseen.length) el.setAttribute("data-guide-new", "1"); else el.removeAttribute("data-guide-new");
-  }, [unseen.length, pathname]);
+    const els = ['menu-button', 'guide-button'].map((k) => findSpot(k)).filter(Boolean) as HTMLElement[];
+    els.forEach((el) => { if (unseen.length) el.setAttribute("data-guide-new", "1"); else el.removeAttribute("data-guide-new"); });
+  }, [unseen.length, pathname, device]);
 
   const closeTour = () => {
     setTour(false);
@@ -175,6 +176,7 @@ export default function MobileGuide() {
     markSeen(it);
     setList(false);
     const path = it.path || "/";
+    if (/^https?:\/\//i.test(path)) { window.open(path, "_blank", "noopener,noreferrer"); return; }
     if (location.pathname !== path) navigate(path);
     if (it.section) jumpTo(it.section);
   };
