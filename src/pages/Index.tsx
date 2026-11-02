@@ -22,7 +22,6 @@ const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/Regu
 const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section-v2");
 const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedStreamsSection"), "home-related-streams-section");
 
-const HomeHighlightsSection = lazyWithRetry(() => import("@/components/HomeHighlightsSection"), "home-highlights-section");
 const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerOfTheMonthSection"), "home-player-of-the-month-section");
 
 const MetsTrackerSection = lazyWithRetry(() => import("@/components/HomeSpringTrackerSection").then((m) => ({ default: m.MetsTrackerSection })), "home-mets-tracker-section");
@@ -33,7 +32,6 @@ const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadi
 
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
 const AppInstallSection = lazyWithRetry(() => import("@/components/AppInstallSection"), "home-app-install-section");
-const CommunityPreviewSection = lazyWithRetry(() => import("@/components/CommunityPreviewSection"), "home-community-preview-section");
 const PhoneJoinSection = lazyWithRetry(() => import("@/components/landing/PhoneJoinSection"), "home-phone-join-section");
 const PlansSection = lazyWithRetry(() => import("@/components/landing/PlansSection"), "home-plans-section");
 const NewsletterSection = lazyWithRetry(() => import("@/components/NewsletterSection"), "home-newsletter-section");
@@ -201,27 +199,8 @@ const Index = () => {
           <MetsTrackerSection />
         </Suspense>
 
-        <div className="section-divider my-1" />
-
-        {/* Spring Training */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <SpringTrainingSection />
-        </Suspense>
-
-        {/* Scores, under Spring Training */}
-        <NYScoresStrip />
-
         {/* Sports networks: shown in TV mode only (see .sports-networks in index.css) */}
         <SportsNetworksStrip />
-
-        {/* The wall: MetsXMFanZone Feed, only for signed-in members */}
-        {canSeeWall && (
-          <LazySection fallback={<SectionSkeleton height="h-48" />}>
-            <Suspense fallback={<SectionSkeleton height="h-48" />}>
-              <CommunityPreviewSection />
-            </Suspense>
-          </LazySection>
-        )}
 
         {/* Live & upcoming */}
         {SHOW_METS_GAME_CENTER && (
@@ -233,6 +212,13 @@ const Index = () => {
         <Suspense fallback={<SectionSkeleton />}>
           <LiveStreamsSection />
         </Suspense>
+
+        {/* Spring Training, right under Live Streams, then the scores */}
+        <Suspense fallback={<SectionSkeleton />}>
+          <SpringTrainingSection />
+        </Suspense>
+
+        <NYScoresStrip />
 
         {/* Game series: every Mets series, one card each */}
         <LazySection fallback={<SectionSkeleton />}>
@@ -251,13 +237,6 @@ const Index = () => {
         <LazySection fallback={<SectionSkeleton />}>
           <Suspense fallback={<SectionSkeleton />}>
             <RelatedStreamsSection />
-          </Suspense>
-        </LazySection>
-
-        {/* MetsXMFanZone Highlights, right under Included Premium Services */}
-        <LazySection fallback={<SectionSkeleton />}>
-          <Suspense fallback={<SectionSkeleton />}>
-            <HomeHighlightsSection />
           </Suspense>
         </LazySection>
 

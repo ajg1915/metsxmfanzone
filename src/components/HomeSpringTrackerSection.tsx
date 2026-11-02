@@ -146,7 +146,7 @@ export function MetsTrackerSection() {
   const items = tab === "trades" ? txs.filter(isTrade).slice(0, 10) : tab === "signings" ? txs.filter(isSigning).slice(0, 10) : [];
 
   const tabs = (
-    <div className="flex gap-1.5" role="tablist" aria-label="FA">
+    <div className="flex gap-1.5" role="tablist" aria-label="Free Agency">
       {([["trades", "Trades"], ["signings", "Signings"], ["radar", "Radar"]] as const).map(([v, l]) => (
         <button key={v} type="button" role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
           className={`min-h-[40px] rounded-lg border border-[#ff5a1f] px-3.5 font-display text-sm font-bold uppercase tracking-wider transition-colors sm:px-4 sm:text-base ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>
@@ -162,7 +162,7 @@ export function MetsTrackerSection() {
 
   return (
     <section className="relative py-6 sm:py-8" aria-label="Mets Tracker">
-      <Title right={tabs}>FA</Title>
+      <Title right={tabs}>Free Agency</Title>
       <div className={rowCls} style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {tab !== "radar" && isLoading && [0, 1, 2].map((i) => <div key={i} className={`${cardW} h-[250px] animate-pulse rounded-lg bg-card/70`} />)}
         {tab !== "radar" && isError && <div className={`${cardW} rounded-lg border border-border/50 bg-card/70 p-4 text-sm text-muted-foreground`}>MLB's transactions feed is not answering right now.</div>}
