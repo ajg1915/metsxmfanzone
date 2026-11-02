@@ -169,7 +169,7 @@ const Hero = () => {
             ) : /\.(mp4|webm|mov|m4v)(\?|$)/i.test(sl.image) ? (
               <video src={sl.image} autoPlay muted loop playsInline preload={i === current ? "auto" : "metadata"} className="absolute inset-0 h-full w-full object-cover" />
             ) : (
-              <img src={sl.image} alt="" loading={i === 0 ? "eager" : "lazy"} className={`absolute inset-0 h-full w-full object-cover object-[48%_40%] ${i === current ? "mx-hero-zoom" : ""}`} />
+              <img src={sl.image} alt="" loading={i === 0 ? "eager" : "lazy"} className={`absolute inset-0 h-full w-full object-cover object-[50%_8%] origin-top ${i === current ? "mx-hero-zoom" : ""}`} />
             )}
           </div>
         ))}
@@ -294,7 +294,7 @@ const Hero = () => {
                 }
                 return url ? (
                   <div
-                    className={`absolute inset-0 bg-cover bg-center bg-no-repeat ${current === index ? "mx-hero-zoom" : ""}`}
+                    className={`absolute inset-0 bg-cover bg-[center_top] bg-no-repeat origin-top ${current === index ? "mx-hero-zoom" : ""}`}
                     style={{ backgroundImage: `url(${url})` }}
                   />
                 ) : (
