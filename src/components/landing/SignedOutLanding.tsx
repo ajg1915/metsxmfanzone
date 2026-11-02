@@ -6,6 +6,7 @@ import { sectionStyle, useFrontPageStyles, type SectionStyle } from "@/lib/front
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 import PlansSection from "@/components/landing/PlansSection";
 import LatestPostsSection from "@/components/landing/LatestPostsSection";
+import HomeSpringTrackerSection from "@/components/HomeSpringTrackerSection";
 
 // Front page for visitors who are not signed in: what members get, the plans, and why to trust us.
 
@@ -296,6 +297,9 @@ export default function SignedOutLanding() {
           </div>
         </div>
       </Section>
+
+      {/* Spring Training + Mets Tracker */}
+      <HomeSpringTrackerSection />
 
       {/* Latest blog posts */}
       <LatestPostsSection />

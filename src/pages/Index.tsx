@@ -25,6 +25,7 @@ const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedSt
 const HomeHighlightsSection = lazyWithRetry(() => import("@/components/HomeHighlightsSection"), "home-highlights-section");
 const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerOfTheMonthSection"), "home-player-of-the-month-section");
 
+const HomeSpringTrackerSection = lazyWithRetry(() => import("@/components/HomeSpringTrackerSection"), "home-spring-tracker-section");
 const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
 const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadioSection"), "home-podcast-radio-section");
 
@@ -219,6 +220,13 @@ const Index = () => {
         <Suspense fallback={<SectionSkeleton />}>
           <LiveStreamsSection />
         </Suspense>
+
+        {/* Spring Training + Mets Tracker (trades, signings, radar) */}
+        <LazySection fallback={<SectionSkeleton />}>
+          <Suspense fallback={<SectionSkeleton />}>
+            <HomeSpringTrackerSection />
+          </Suspense>
+        </LazySection>
 
         {/* Game series: every Mets series, one card each */}
         <LazySection fallback={<SectionSkeleton />}>
