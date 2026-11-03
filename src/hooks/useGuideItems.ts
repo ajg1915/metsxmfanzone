@@ -58,6 +58,7 @@ export const GUIDE_SECTIONS: { key: string; label: string; path: string; group: 
   { group: "Phone menu (opens by itself)", key: "menu-picks", label: "Picks", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-blog", label: "Blog", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-podcast", label: "Podcast", path: "/" },
+  { group: "Phone menu (opens by itself)", key: "menu-live-alerts", label: "Live game alerts", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-community", label: "Community (signed in)", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-dashboard", label: "Dashboard (signed in)", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-get-the-app", label: "Get the app (signed in)", path: "/" },
