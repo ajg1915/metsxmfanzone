@@ -193,7 +193,8 @@ export default function MobileGuide() {
   const unseen = useUnseenGuideItems();
   const { search } = useLocation();
   const picking = new URLSearchParams(search).get("guidepick") === "1";
-  const [tour, setTour] = useState(false);
+  // "full" = the whole tour (new sign-ups, or replayed from the menu); "new" = only what the admin just flagged as NEW.
+  const [tour, setTour] = useState<{ steps: GuideItem[]; mode: "full" | "new" } | null>(null);
   const [list, setList] = useState(false);
 
   const steps = items.filter((i) => i.kind === "tour");
@@ -208,7 +209,7 @@ export default function MobileGuide() {
     const age = Date.now() - new Date(user.created_at).getTime();
     if (age > NEW_ACCOUNT_DAYS * 86_400_000) return;
     try { if (localStorage.getItem(doneKey(user.id))) return; } catch { return; }
-    const t = setTimeout(() => setTour(true), 1200);
+    const t = setTimeout(() => setTour((cur) => cur ?? { steps, mode: "full" }), 1200);
     return () => clearTimeout(t);
   }, [user?.id, user?.created_at, pathname, steps.length, device]);
 
@@ -216,12 +217,24 @@ export default function MobileGuide() {
   useEffect(() => {
     const h = (e: Event) => {
       const mode = (e as CustomEvent<string>).detail;
-      if (mode === "tour") { if (location.pathname !== "/") navigate("/"); setTimeout(() => setTour(true), 400); }
+      if (mode === "tour") { if (location.pathname !== "/") navigate("/"); setTimeout(() => setTour({ steps, mode: "full" }), 400); }
       else setList(true);
     };
     window.addEventListener(OPEN_GUIDE_EVENT, h);
     return () => window.removeEventListener(OPEN_GUIDE_EVENT, h);
-  }, [navigate]);
+  }, [navigate, steps]);
+
+  // When something new is flagged, start a short tour of just those items on the person's next visit (once per item per device).
+  const unseenSig = unseen.map((u) => u.id + u.updated_at).join("|");
+  useEffect(() => {
+    if (!unseen.length || tour || picking || device === "tv" || pathname !== "/") return;
+    const t = setTimeout(() => setTour((cur) => cur ?? {
+      mode: "new",
+      steps: unseen.map((u) => ({ ...u, kind: "tour" as const, body: u.body || u.where_label || "This is new. Take a look.", path: u.kind === "tour" ? u.path : null })),
+    }), 1800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unseenSig, tour, pathname, device, picking]);
 
   // Glow on anything new, even for people who already know the site. Clears when they tap it.
   const unseenKey = unseen.map((u) => u.id + u.updated_at).join("|");
@@ -255,8 +268,10 @@ export default function MobileGuide() {
   }, [unseen.length, pathname, device]);
 
   const closeTour = () => {
-    setTour(false);
-    if (user?.id) { try { localStorage.setItem(doneKey(user.id), "1"); } catch { /* storage blocked */ } }
+    // Showing people the new things counts as seeing them, so the tour doesn't start again and the glow clears.
+    tour?.steps.forEach((u) => markSeen(u));
+    setTour(null);
+    if (tour?.mode === "full" && user?.id) { try { localStorage.setItem(doneKey(user.id), "1"); } catch { /* storage blocked */ } }
   };
 
   const open = (it: GuideItem) => {
@@ -289,7 +304,7 @@ export default function MobileGuide() {
   return (
     <>
       {picking && <Picker />}
-      {tour && steps.length > 0 && <Tour steps={steps} onClose={closeTour} />}
+      {tour && tour.steps.length > 0 && <Tour steps={tour.steps} onClose={closeTour} />}
       <Dialog open={list} onOpenChange={setList}>
         <DialogContent className="max-h-[92vh] w-[calc(100vw-1.5rem)] max-w-md gap-0 overflow-y-auto rounded-2xl border-primary/50 bg-background p-0">
           <div className="flex items-center gap-3 border-b border-primary/40 px-4 py-3">
