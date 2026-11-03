@@ -17,6 +17,7 @@ import { StreamExitDialog } from "@/components/StreamExitDialog";
 import { LiveStreamToast } from "@/components/LiveStreamToast";
 import SocialMediaBar from "@/components/SocialMediaBar";
 import MobileGuide from "@/components/MobileGuide";
+import LiveEventPopup from "@/components/LiveEventPopup";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
 
@@ -315,6 +316,7 @@ const AppContent = () => {
         <LiveEventBanner />
         <SocialMediaBar />
         <MobileGuide />
+        <LiveEventPopup />
         <SweepstakesWheel />
         <RouteShareMetadata />
         

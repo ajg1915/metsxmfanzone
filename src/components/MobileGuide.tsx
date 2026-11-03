@@ -42,6 +42,7 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
   const [i, setI] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
   const step = STEPS[i];
+  useEffect(() => { document.body.setAttribute("data-guide-tour", "1"); return () => document.body.removeAttribute("data-guide-tour"); }, []);
   const menuStep = !!step.section?.startsWith("menu-") && step.section !== "menu-button";
   useEffect(() => { window.dispatchEvent(new CustomEvent("mxfz:menu", { detail: menuStep })); }, [menuStep]);
   useEffect(() => () => { window.dispatchEvent(new CustomEvent("mxfz:menu", { detail: false })); }, []);
@@ -281,6 +282,10 @@ export default function MobileGuide() {
     // Showing people the new things counts as seeing them, so the tour doesn't start again and the glow clears.
     tour?.steps.forEach((u) => markSeen(u));
     setTour(null);
+    // Always finish back on the home screen (a step may have opened another page, like Install).
+    window.dispatchEvent(new CustomEvent("mxfz:menu", { detail: false }));
+    if (location.pathname !== "/") navigate("/");
+    window.scrollTo({ top: 0, behavior: "smooth" });
     if (tour?.mode === "full") { try { localStorage.setItem(user?.id ? doneKey(user.id) : GUEST_KEY, "1"); } catch { /* storage blocked */ } }
   };
 

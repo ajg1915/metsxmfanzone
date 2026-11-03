@@ -51,6 +51,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { fetchLivePingEnabled, saveLivePingEnabled } from "@/lib/liveEventPing";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useFreeStreams } from "@/hooks/useFreeStreams";
@@ -123,6 +124,27 @@ const TEAM_TABS = [
 type TeamTabKey = (typeof TEAM_TABS)[number]["key"];
 
 // Top-level sections of the Live Streams area. Each tab has one job.
+function LivePingSwitch() {
+  const { toast } = useToast();
+  const [on, setOn] = useState<boolean | null>(null);
+  useEffect(() => { fetchLivePingEnabled().then(setOn); }, []);
+  const flip = async (v: boolean) => {
+    setOn(v);
+    const { error } = await saveLivePingEnabled(v);
+    if (error) { setOn(!v); toast({ title: "Couldn't save", description: error.message, variant: "destructive" }); }
+    else toast({ title: v ? "Live game events will ping all devices" : "Live game pings are off" });
+  };
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-3">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold">Ping live game events to all devices</p>
+        <p className="text-xs text-muted-foreground">When a stream goes live: push alert to subscribers, and a Watch now popup on phones, tablets and the app.</p>
+      </div>
+      <Switch checked={on ?? true} disabled={on === null} onCheckedChange={flip} aria-label="Ping live game events to all devices" />
+    </div>
+  );
+}
+
 const HUB_TABS = [
   { key: "now", label: "Live Now" },
   { key: "networks", label: "Sports Networks" },
@@ -624,6 +646,7 @@ export default function LiveStreamManagement() {
 
   const sendLiveNotification = async (title: string, streamId: string) => {
     try {
+      if (!(await fetchLivePingEnabled())) return; // admin switch is off
       await supabase.functions.invoke("send-push-notification", {
         body: {
           title: "🔴 LIVE NOW on MetsXMFanZone!",
@@ -1306,6 +1329,8 @@ export default function LiveStreamManagement() {
         </div>
         }
       />
+
+      <LivePingSwitch />
 
       <div className="flex min-w-0 gap-1 overflow-x-auto border-b border-border" role="tablist" aria-label="Live streams sections">
         {HUB_TABS.map((tab) => {

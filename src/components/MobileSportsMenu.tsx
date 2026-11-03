@@ -1,8 +1,10 @@
+import { toast } from "sonner";
+import { enablePush, GLOBAL_INTEREST } from "@/lib/pusherBeams";
 import BrandIcon from "@/components/brand/BrandIcon";
 import { Link } from "react-router-dom";
 import { useUnseenGuideItems } from "@/components/MobileGuide";
 import {
-  X, Play, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard, Target,
+  X, Play, Bell, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard, Target,
   PenLine, Shield, Sparkles, LogOut, Tv, HelpCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -117,6 +119,25 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
             </button>
           ))}
         </div>
+
+        <button
+          type="button"
+          data-guide="menu-live-alerts"
+          onClick={run(async () => {
+            const r = await enablePush([GLOBAL_INTEREST]);
+            if (r.status === "registered") toast.success("Live game alerts are on for this device.");
+            else if (r.status === "denied") toast.error("Alerts are blocked. Turn notifications on for this site in your phone settings.");
+            else toast.message("Alerts aren't available here. Open metsxmfanzone.com in your phone's browser to turn them on. You'll still get a Watch now popup when a game goes live while the app is open.");
+          })}
+          className="mt-3 flex min-h-[64px] w-full items-center gap-3 rounded-xl border border-[#24365a] bg-[#12203a] px-3 text-left transition-colors active:bg-[#1a2c4d] hover:border-primary/50"
+        >
+          <BrandIcon icon={Bell} size={40} tone="red" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-[15px] font-bold">Live game alerts</span>
+            <span className="block text-[13px] text-[#b9cbe0]">Get a ping when a game goes live</span>
+          </span>
+          <ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+        </button>
 
         {user && (
           <>
