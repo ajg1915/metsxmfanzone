@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "@/hooks/use-toast";
 import { Plus, Trash2, Edit, ArrowUp, ArrowDown, HelpCircle } from "lucide-react";
 import { AdminPage, AdminPageHeader, AdminList, AdminListCard, AdminRow, AdminEmpty, AdminLoading, AdminIconButton, AdminFilterChips } from "@/components/admin/AdminUI";
-import { GUIDE_SECTIONS, PLATFORMS, type GuideItem } from "@/hooks/useGuideItems";
+import { GUIDE_SECTIONS, PLATFORMS, AUDIENCE_IN, AUDIENCE_OUT, audienceOf, type GuideItem } from "@/hooks/useGuideItems";
 import { useQueryClient } from "@tanstack/react-query";
 
 // Table is new, so it isn't in the generated Supabase types yet.
@@ -50,7 +50,7 @@ export default function GuideManagement() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title.trim()) return;
-    if (!form.platforms.length) return toast({ title: "Pick at least one device", variant: "destructive" });
+    if (!form.platforms.filter((x) => x !== AUDIENCE_IN && x !== AUDIENCE_OUT).length) return toast({ title: "Pick at least one device", variant: "destructive" });
     const row = { ...form, title: form.title.trim(), body: form.body.trim() || null, where_label: form.where_label.trim() || null, path: form.path.trim() || null, section: form.section || null };
     const { error } = editing
       ? await table().update(row).eq("id", editing.id)
@@ -107,11 +107,12 @@ export default function GuideManagement() {
           <AdminListCard key={it.id} highlight={it.highlight_new}>
             <AdminRow
               title={it.title}
-              meta={[it.body, it.where_label, it.section && `jumps to: ${GUIDE_SECTIONS.find((s) => s.key === it.section)?.label || it.section}`, it.path, (it.platforms || []).map((p) => PLATFORMS.find((x) => x.key === p)?.label || p).join("/")].filter(Boolean).join("  ·  ")}
+              meta={[it.body, it.where_label, it.section && `jumps to: ${GUIDE_SECTIONS.find((s) => s.key === it.section)?.label || it.section}`, it.path, (it.platforms || []).filter((p) => p !== AUDIENCE_IN && p !== AUDIENCE_OUT).map((p) => PLATFORMS.find((x) => x.key === p)?.label || p).join("/")].filter(Boolean).join("  ·  ")}
               badges={<>
                 {it.suggested && <Badge className="h-4 px-1 text-[9px]">Suggested</Badge>}
                 {it.highlight_new && <Badge variant="outline" className="h-4 px-1 text-[9px] border-primary text-primary">NEW glow</Badge>}
                 {!it.enabled && <Badge variant="secondary" className="h-4 px-1 text-[9px]">Off</Badge>}
+                {(() => { const a = audienceOf(it.platforms); return !a.signedIn ? <Badge variant="outline" className="h-4 px-1 text-[9px]">Visitors only</Badge> : !a.visitors ? <Badge variant="outline" className="h-4 px-1 text-[9px]">Signed-in only</Badge> : null; })()}
               </>}
               actions={<>
                 <Switch checked={it.enabled} onCheckedChange={(v) => patch(it, { enabled: v })} aria-label="Show in guide" />
@@ -178,6 +179,20 @@ export default function GuideManagement() {
                     className={`h-8 rounded-full border px-3 text-xs font-semibold ${on ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"}`}>{p.label}</button>;
                 })}
               </div></div>
+            <div className="rounded-lg border border-border p-3 space-y-2">
+              <Label>Who sees this</Label>
+              {([[AUDIENCE_IN, "Signed-in users"], [AUDIENCE_OUT, "Visitors (not logged in)"]] as const).map(([tok, label]) => {
+                const a = audienceOf(form.platforms);
+                const on = tok === AUDIENCE_IN ? a.signedIn : a.visitors;
+                const flip = (v: boolean) => {
+                  const next = { signedIn: tok === AUDIENCE_IN ? v : a.signedIn, visitors: tok === AUDIENCE_OUT ? v : a.visitors };
+                  if (!next.signedIn && !next.visitors) return toast({ title: "Pick at least one audience", variant: "destructive" });
+                  const base = form.platforms.filter((x) => x !== AUDIENCE_IN && x !== AUDIENCE_OUT);
+                  setForm({ ...form, platforms: [...base, ...(next.signedIn ? [AUDIENCE_IN] : []), ...(next.visitors ? [AUDIENCE_OUT] : [])] });
+                };
+                return <div key={tok} className="flex items-center justify-between"><span className="text-sm">{label}</span><Switch checked={on} onCheckedChange={flip} /></div>;
+              })}
+            </div>
             <div className="flex items-center justify-between"><Label>Show in guide</Label><Switch checked={form.enabled} onCheckedChange={(v) => setForm({ ...form, enabled: v })} /></div>
             {form.kind === "find" && <div className="flex items-center justify-between"><Label>Suggested (pinned at the top)</Label><Switch checked={form.suggested} onCheckedChange={(v) => setForm({ ...form, suggested: v })} /></div>}
             <div className="flex items-center justify-between"><div><Label>Highlight as NEW</Label><p className="text-[11px] text-muted-foreground">Glow on that section for every phone user until they tap it. Changing the text or turning this on again makes it glow again.</p></div>

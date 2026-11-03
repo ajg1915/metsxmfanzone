@@ -15,6 +15,7 @@ export const OPEN_GUIDE_EVENT = "mxfz:open-guide";
 const SEEN_KEY = "mxfz_guide_seen";
 const NEW_ACCOUNT_DAYS = 3;
 const doneKey = (id: string) => `mxfz_guide_done_${id}`;
+const GUEST_KEY = "mxfz_guide_done_guest";
 
 type Seen = Record<string, string>;
 const readSeen = (): Seen => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || "{}"); } catch { return {}; } };
@@ -186,7 +187,7 @@ function jumpTo(section: string) {
 }
 
 export default function MobileGuide() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { data: items = [], device } = useGuideItems();
@@ -212,6 +213,15 @@ export default function MobileGuide() {
     const t = setTimeout(() => setTour((cur) => cur ?? { steps, mode: "full" }), 1200);
     return () => clearTimeout(t);
   }, [user?.id, user?.created_at, pathname, steps.length, device]);
+
+  // Visitors who aren't signed in get the tour once per device when they land on the home page.
+  useEffect(() => {
+    if (authLoading || user || !steps.length || picking) return;
+    if (device === "tv" || pathname !== "/") return;
+    try { if (localStorage.getItem(GUEST_KEY)) return; } catch { return; }
+    const t = setTimeout(() => setTour((cur) => cur ?? { steps, mode: "full" }), 2500);
+    return () => clearTimeout(t);
+  }, [authLoading, user, pathname, steps.length, device, picking]);
 
   // Open from the menu.
   useEffect(() => {
@@ -271,7 +281,7 @@ export default function MobileGuide() {
     // Showing people the new things counts as seeing them, so the tour doesn't start again and the glow clears.
     tour?.steps.forEach((u) => markSeen(u));
     setTour(null);
-    if (tour?.mode === "full" && user?.id) { try { localStorage.setItem(doneKey(user.id), "1"); } catch { /* storage blocked */ } }
+    if (tour?.mode === "full") { try { localStorage.setItem(user?.id ? doneKey(user.id) : GUEST_KEY, "1"); } catch { /* storage blocked */ } }
   };
 
   const open = (it: GuideItem) => {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export type GuideItem = {
   id: string;
@@ -85,6 +86,17 @@ export const PLATFORMS: { key: string; label: string }[] = [
   { key: "app", label: "Installed app" },
 ];
 
+/** Who sees an item. Stored as extra tokens in `platforms` ("signed-in" / "signed-out"), so no database change is needed.
+ *  An item with neither token shows to everyone. */
+export const AUDIENCE_IN = "signed-in";
+export const AUDIENCE_OUT = "signed-out";
+export function audienceOf(platforms: string[] | null | undefined) {
+  const p = platforms || [];
+  const hasIn = p.includes(AUDIENCE_IN), hasOut = p.includes(AUDIENCE_OUT);
+  if (!hasIn && !hasOut) return { signedIn: true, visitors: true };
+  return { signedIn: hasIn, visitors: hasOut };
+}
+
 /** A spot is either a data-guide key (like "fa-row") or any CSS selector (starts with . # or [). */
 export function findSpot(spot: string | null | undefined): HTMLElement | null {
   if (!spot) return null;
@@ -128,6 +140,8 @@ const FALLBACK: GuideItem[] = [
 
 export function useGuideItems() {
   const { device, app } = useDevice();
+  const { user } = useAuth();
+  const loggedIn = !!user;
   const q = useQuery({
     queryKey: ["guide-items"],
     staleTime: 5 * 60_000,
@@ -141,7 +155,9 @@ export function useGuideItems() {
       return data as unknown as GuideItem[];
     },
   });
-  const data = (q.data || []).filter((i) => !i.platforms || i.platforms.includes(device) || (app && i.platforms.includes("app")));
+  const data = (q.data || [])
+    .filter((i) => !i.platforms || i.platforms.includes(device) || (app && i.platforms.includes("app")))
+    .filter((i) => { const a = audienceOf(i.platforms); return loggedIn ? a.signedIn : a.visitors; });
   return { ...q, data, device, app };
 }
 
