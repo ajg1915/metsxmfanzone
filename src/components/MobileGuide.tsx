@@ -65,7 +65,7 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
         ro = new ResizeObserver(() => measure(true));
         ro.observe(el);
       }
-      if (allowScroll && scrolls < 4 && !el.closest('nav, aside, [data-guide="bottom-nav"]')) {
+      if (allowScroll && scrolls < 4 && !el.closest('nav:not([aria-label="Mobile navigation"]), aside, [data-guide="bottom-nav"]')) {
         const mid = r.top + r.height / 2;
         if (Math.abs(mid - window.innerHeight / 2) > 40) { scrolls++; el.scrollIntoView({ block: "center" }); }
       }
