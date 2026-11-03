@@ -215,8 +215,8 @@ export function SpringTrainingSection() {
           <img src={logo} alt="" aria-hidden className="absolute -right-6 -top-6 h-40 w-40 object-contain opacity-20" />
           <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#ff5a1f]">Grapefruit League · Port St. Lucie</p>
           <div role="timer" aria-label={`${days} days until the first Spring Training game`}>
-            <span className="font-display text-7xl font-bold leading-none text-white">{days}</span>
-            <span className="ml-2 text-sm font-semibold uppercase tracking-wider text-white/70">{days === 1 ? "day" : "days"} to the first game</span>
+            <span className="font-display text-7xl font-extrabold leading-none text-white">{days}</span>
+            <span className="ml-2 text-sm font-bold uppercase tracking-wider text-white/85">{days === 1 ? "day" : "days"} to the first game</span>
           </div>
           <div className="flex items-center gap-2 text-sm font-semibold text-white">
             <Logo id={METS} className="h-9 w-9" /> <span className="text-white/60">{first?.isHome === false ? "at" : "vs"}</span> <Logo id={first?.oppId ?? 146} className="h-9 w-9" />
@@ -302,8 +302,8 @@ export function MetsTrackerSection() {
             <img src={logo} alt="" aria-hidden className="absolute -right-6 -top-6 h-32 w-32 object-contain opacity-10" />
             <div className="relative flex flex-col items-center gap-3 px-4 pb-3 pt-4">
               <div className="flex w-full items-center justify-between">
-                <span className="rounded-full bg-[#ff5a1f] px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white">{t.typeDesc}</span>
-                <span className="text-xs font-bold uppercase tracking-wider text-white/70">{dayLabel(t.date)}</span>
+                <span className="rounded-full bg-[#ff5a1f] px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-white">{t.typeDesc}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-white/85">{dayLabel(t.date)}</span>
               </div>
               <div className="flex items-center gap-3">
                 {t.fromId && isTrade(t) ? <Logo id={t.fromId} className="h-10 w-10" /> : null}
@@ -311,7 +311,7 @@ export function MetsTrackerSection() {
                 {t.toId ? <Logo id={t.toId} className="h-10 w-10" /> : null}
               </div>
               <p className="text-center font-display text-xl font-bold uppercase leading-tight tracking-wide text-white">{t.player || t.typeDesc}</p>
-              <p className="line-clamp-3 min-h-[3.4rem] text-center text-[13px] leading-snug text-white/70">{t.description}</p>
+              <p className="line-clamp-3 min-h-[3.4rem] text-center text-[14px] font-medium leading-snug text-white/85">{t.description}</p>
               {onRoster(t) !== undefined && (
                 <span className={`rounded-full px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider ${onRoster(t) ? "bg-emerald-600 text-white" : "bg-white/15 text-white/70"}`}>
                   {onRoster(t) ? "On the 40-man today" : "Not on the 40-man"}

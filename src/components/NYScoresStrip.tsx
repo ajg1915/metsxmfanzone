@@ -104,7 +104,7 @@ function Badge({ game }: { game: Game }) {
         {game.result}
       </span>
     );
-  return <span className="text-[11px] font-medium text-muted-foreground">{game.state === "post" ? "Final" : "Next"}</span>;
+  return <span className="text-[12px] font-bold text-muted-foreground">{game.state === "post" ? "Final" : "Next"}</span>;
 }
 
 function ScoreCard({ t }: { t: TeamScores }) {

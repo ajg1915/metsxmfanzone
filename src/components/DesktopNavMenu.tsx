@@ -50,7 +50,7 @@ const METS: Entry[] = [
 const METS_PATHS = ["/mets-schedule-2027", "/mets-scores", "/game-center", "/picks", "/mets-roster", "/video-gallery", "/mets-game-recaps", "/mets-history", "/player/"];
 
 const pill =
-  "inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[14px] 2xl:px-3.5 font-semibold text-foreground/85 outline-none transition-colors hover:bg-white/[0.07] hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70 data-[state=open]:bg-white/[0.07] data-[state=open]:text-foreground";
+  "inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[14px] 2xl:px-3.5 font-bold text-foreground/85 outline-none transition-colors hover:bg-white/[0.07] hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70 data-[state=open]:bg-white/[0.07] data-[state=open]:text-foreground";
 const activePill = "text-primary hover:text-primary data-[state=open]:text-primary";
 
 const panel =
