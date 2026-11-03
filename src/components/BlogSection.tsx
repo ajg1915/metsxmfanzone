@@ -109,7 +109,6 @@ const BlogSection = () => {
               <h2 className="text-[25px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-2xl md:text-3xl">
                 Mets News
               </h2>
-              <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">From the MetsXMFanZone blog</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
