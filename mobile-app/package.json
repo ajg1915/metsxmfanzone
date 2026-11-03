@@ -1,0 +1,12 @@
+{
+  "name": "metsxmfanzone-mobile-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Android phone and tablet app for MetsXMFanZone. Opens metsxmfanzone.com in a WebView.",
+  "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/app": "^7",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4"
+  }
+}

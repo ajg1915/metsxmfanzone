@@ -1,0 +1,75 @@
+name: Build mobile app
+
+# Builds the Android phone and tablet app (mobile-app/) and publishes it to the public "android-app" release.
+# Run it by hand from the Actions tab, or it runs when files in mobile-app/ change.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/build-mobile-app.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile-app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Version, permissions and branded icons
+        run: |
+          node scripts/patch-android.mjs
+          pip install --quiet pillow
+          python3 scripts/make_icons.py ../src/assets/metsxmfanzone-logo.png
+          npx cap sync android
+
+      - name: Build APK
+        working-directory: mobile-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk MetsXMFanZone.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MetsXMFanZone
+          path: mobile-app/MetsXMFanZone.apk
+
+      - name: Publish to the android-app release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-app --cleanup-tag --yes || true
+          gh release create android-app MetsXMFanZone.apk \
+            --target "$GITHUB_SHA" \
+            --title "MetsXMFanZone Android app" \
+            --notes "Android phone and tablet app. Install from metsxmfanzone.com/android-app. Built from $GITHUB_SHA."
