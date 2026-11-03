@@ -1,3 +1,4 @@
+import BrandIcon from "@/components/brand/BrandIcon";
 import { cn } from "@/lib/utils";
 import { Tv, Radio, Film, RotateCcw, Home, HelpCircle } from "lucide-react";
 import type { TVCategory } from "@/pages/TVDashboard";
@@ -7,7 +8,7 @@ interface TVSidebarProps {
   onCategoryChange: (cat: TVCategory) => void;
 }
 
-const categories: { key: TVCategory; label: string; icon: React.ElementType }[] = [
+const categories: { key: TVCategory; label: string; icon: import("lucide-react").LucideIcon }[] = [
   { key: "home", label: "Home", icon: Home },
   { key: "live", label: "Live", icon: Radio },
   { key: "highlights", label: "Highlights", icon: Film },
@@ -19,7 +20,7 @@ export function TVSidebar({ activeCategory, onCategoryChange }: TVSidebarProps) 
     <aside data-guide="tv-sidebar" className="w-14 shrink-0 bg-card/80 backdrop-blur border-r border-border/40 flex flex-col items-center py-3 gap-0.5">
       {/* Logo / brand mark */}
       <div className="mb-3 flex items-center justify-center">
-        <Tv className="w-5 h-5 text-primary" />
+        <BrandIcon icon={Tv} size={30} tone="red" />
       </div>
 
       {categories.map(({ key, label, icon: Icon }) => {
@@ -38,7 +39,7 @@ export function TVSidebar({ activeCategory, onCategoryChange }: TVSidebarProps) 
             title={label}
           >
             <div className="relative">
-              <Icon className="w-3.5 h-3.5" />
+              <BrandIcon icon={Icon} size={22} tone={isLive ? "red" : "orange"} />
               {isLive && (
                 <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
               )}

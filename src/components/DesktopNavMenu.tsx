@@ -17,6 +17,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import BrandIcon from "@/components/brand/BrandIcon";
 import podcastLogo from "@/assets/podcast-logo.png";
 import { usePodcastLive } from "@/components/podcast/PodcastLivePlayer";
 import type { LucideIcon } from "lucide-react";
@@ -62,9 +63,7 @@ function Row({ e, onGo }: { e: Entry; onGo: (e: Entry) => void }) {
   const Icon = e.icon;
   const body = (
     <>
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-primary/20 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-        <Icon className="h-[18px] w-[18px]" />
-      </span>
+      <BrandIcon icon={Icon} size={38} className="transition-transform group-hover:scale-105" />
       <span className="min-w-0 text-left">
         <span className="block text-[14px] font-semibold leading-tight text-foreground">{e.label}</span>
         <span className="block truncate text-[12px] leading-snug text-muted-foreground">{e.hint}</span>

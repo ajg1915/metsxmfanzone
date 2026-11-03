@@ -1,3 +1,4 @@
+import BrandIcon from "@/components/brand/BrandIcon";
 import { Link } from "react-router-dom";
 import { useUnseenGuideItems } from "@/components/MobileGuide";
 import {
@@ -111,7 +112,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
               data-guide={`menu-${label.toLowerCase().replace(/\s+/g, "-")}`}
               className="flex min-h-[84px] flex-col justify-between rounded-xl border border-[#24365a] bg-[#12203a] p-3 text-left transition-colors active:bg-[#1a2c4d] hover:border-primary/50"
             >
-              <Icon className="h-6 w-6 text-primary" />
+              <BrandIcon icon={Icon} size={40} />
               <span className="text-[15px] font-bold">{label}</span>
             </button>
           ))}
@@ -123,33 +124,33 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
             <div className="divide-y divide-[#1d2c48]">
               {onTVMode && (
                 <button type="button" data-guide="menu-tv-mode" onClick={run(onTVMode)} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
-                  <span className="flex items-center gap-3"><Tv className="h-[18px] w-[18px] text-primary" />TV Mode</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+                  <span className="flex items-center gap-3"><BrandIcon icon={Tv} size={30} />TV Mode</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
                 </button>
               )}
               <button type="button" data-guide="menu-community" onClick={run(() => goProtected("/community"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
-                <span className="flex items-center gap-3"><Users className="h-[18px] w-[18px] text-primary" />Community</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+                <span className="flex items-center gap-3"><BrandIcon icon={Users} size={30} />Community</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
               <button type="button" data-guide="menu-dashboard" onClick={run(() => go("/dashboard"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
-                <span className="flex items-center gap-3"><LayoutDashboard className="h-[18px] w-[18px] text-primary" />Dashboard</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+                <span className="flex items-center gap-3"><BrandIcon icon={LayoutDashboard} size={30} />Dashboard</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
               <button type="button" data-guide="menu-how-to-get-around" onClick={run(() => window.dispatchEvent(new CustomEvent("mxfz:open-guide", { detail: "list" })))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
-                <span className="flex items-center gap-3"><HelpCircle className="h-[18px] w-[18px] text-primary" />How to get around</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+                <span className="flex items-center gap-3"><BrandIcon icon={HelpCircle} size={30} />How to get around</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
               <button type="button" data-guide="menu-get-the-app" onClick={run(() => go("/install"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
-                <span className="flex items-center gap-3"><Download className="h-[18px] w-[18px] text-primary" />Get the app</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+                <span className="flex items-center gap-3"><BrandIcon icon={Download} size={30} />Get the app</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
               {isWriter && (
                 <button type="button" onClick={run(() => go("/writer"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
-                  <span className="flex items-center gap-3"><PenLine className="h-[18px] w-[18px] text-primary" />Writers Portal</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+                  <span className="flex items-center gap-3"><BrandIcon icon={PenLine} size={30} />Writers Portal</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
                 </button>
               )}
               {isAdmin && (
                 <>
                   <button type="button" onClick={run(() => go("/admin/stories"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
-                    <span className="flex items-center gap-3"><Sparkles className="h-[18px] w-[18px] text-primary" />Admin Stories</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+                    <span className="flex items-center gap-3"><BrandIcon icon={Sparkles} size={30} />Admin Stories</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
                   </button>
                   <button type="button" onClick={run(() => go("/admin"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
-                    <span className="flex items-center gap-3"><Shield className="h-[18px] w-[18px] text-primary" />Admin Portal</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
+                    <span className="flex items-center gap-3"><BrandIcon icon={Shield} size={30} />Admin Portal</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
                   </button>
                 </>
               )}

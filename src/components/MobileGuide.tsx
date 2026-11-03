@@ -114,7 +114,7 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
         <p className="mt-2 text-[15px] leading-snug text-white">{step.body}</p>
         <div className="mt-3 flex items-center justify-between">
           <button type="button" onClick={i === 0 ? onClose : () => setI(i - 1)} className="min-h-[44px] px-1 text-sm font-semibold text-[#d6e4f7]">{i === 0 ? "Skip" : "Back"}</button>
-          <button type="button" onClick={last ? onClose : () => setI(i + 1)} className="min-h-[44px] rounded-lg bg-primary px-7 font-display text-lg uppercase tracking-[0.1em] text-primary-foreground">{last ? "Got it" : "Next"}</button>
+          <button type="button" onClick={last ? onClose : () => setI(i + 1)} className="min-h-[44px] rounded-lg bg-primary px-7 font-display text-lg uppercase tracking-[0.1em] text-primary-foreground">{last ? "End tour" : "Next"}</button>
         </div>
       </div>
     </div>
