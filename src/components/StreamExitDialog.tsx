@@ -1,104 +1,65 @@
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Home } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { X } from "lucide-react";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
-const compassionateMessages = [
-  "Thank you for watching with us today! Your support means the world to the MetsXM community. 💙🧡",
-  "We appreciate you being part of our fan family! Can't wait to see you at the next stream! ⚾",
-  "Thanks for tuning in! You make our community stronger with every view. Let's Go Mets! 🎉",
-  "Your time with us matters! We hope you enjoyed the stream. See you next time, fan! 💪",
-  "Thank you for being an amazing viewer! The Mets family appreciates your loyalty. 🏆",
+const MESSAGES = [
+  "Thanks for watching with us! Let's Go Mets!",
+  "Appreciate you tuning in. See you at the next stream!",
+  "Thanks for being part of the MetsXMFanZone family.",
 ];
 
-interface StreamExitDialogProps {
-  streamPagePaths?: string[];
-}
+const STREAM_PATHS = ["/live", "/metsxmfanzone", "/mlb-network", "/espn-network", "/apple-tv", "/prime-video", "/peacock", "/pix11-network", "/spring-training-live", "/community-podcast"];
+const NEVER_ON = ["/admin", "/tv", "/auth", "/writer", "/dashboard"];
+const MIN_WATCH_MS = 60_000;       // only thank people who actually watched
+const COOLDOWN_MS = 30 * 60_000;   // at most once every 30 minutes on a device
+const SHOW_MS = 8_000;             // goes away by itself
+const COOLDOWN_KEY = "mxfz_stream_thanks_at";
 
-export function StreamExitDialog({ 
-  streamPagePaths = ['/live', '/metsxmfanzone', '/mlb-network', '/espn-network', '/apple-tv', '/prime-video', '/peacock', '/pix11-network', '/spring-training-live', '/community-podcast']
-}: StreamExitDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [wasOnStreamPage, setWasOnStreamPage] = useState(false);
+const onStream = (p: string) => STREAM_PATHS.some((s) => p === s || p.startsWith(s + "/"));
+
+/** A small thank-you card (not a blocking pop-up) after someone leaves a stream they watched for a minute or more. */
+export function StreamExitDialog() {
+  const { pathname } = useLocation();
   const navigate = useNavigate();
-  const location = useLocation();
+  const enteredAt = useRef<number | null>(null);
+  const lastStream = useRef<string>("/metsxmfanzone");
+  const [msg, setMsg] = useState<string | null>(null);
 
-  const isStreamPage = streamPagePaths.some(path => location.pathname === path || location.pathname.startsWith(path + '/'));
-
-  // Track when user is on stream page
   useEffect(() => {
-    if (isStreamPage) {
-      setWasOnStreamPage(true);
-      sessionStorage.setItem('was_on_stream_page', 'true');
+    if (onStream(pathname)) {
+      if (enteredAt.current === null) enteredAt.current = Date.now();
+      lastStream.current = pathname;
+      setMsg(null);
+      return;
     }
-  }, [isStreamPage]);
+    // Left a stream page.
+    const started = enteredAt.current;
+    enteredAt.current = null;
+    if (started === null || Date.now() - started < MIN_WATCH_MS) return;
+    if (NEVER_ON.some((p) => pathname.startsWith(p))) return;
+    if (document.body.hasAttribute("data-guide-tour")) return;
+    try {
+      const last = Number(localStorage.getItem(COOLDOWN_KEY) || 0);
+      if (Date.now() - last < COOLDOWN_MS) return;
+      localStorage.setItem(COOLDOWN_KEY, String(Date.now()));
+    } catch { /* storage blocked: still show it this once */ }
+    setMsg(MESSAGES[Math.floor(Math.random() * MESSAGES.length)]);
+  }, [pathname]);
 
-  // Show dialog when navigating away from stream page
   useEffect(() => {
-    const wasViewing = sessionStorage.getItem('was_on_stream_page') === 'true';
-    const hasShownMessage = sessionStorage.getItem('stream_exit_shown') === 'true';
-    
-    if (wasViewing && !isStreamPage && !hasShownMessage) {
-      // User just left a stream page
-      const randomMessage = compassionateMessages[Math.floor(Math.random() * compassionateMessages.length)];
-      setMessage(randomMessage);
-      setIsOpen(true);
-      sessionStorage.setItem('stream_exit_shown', 'true');
-      sessionStorage.removeItem('was_on_stream_page');
-    }
-  }, [location.pathname, isStreamPage]);
+    if (!msg) return;
+    const t = setTimeout(() => setMsg(null), SHOW_MS);
+    return () => clearTimeout(t);
+  }, [msg]);
 
-  const handleClose = () => {
-    setIsOpen(false);
-  };
-
-  const handleBackToStreams = () => {
-    setIsOpen(false);
-    sessionStorage.removeItem('stream_exit_shown');
-    navigate('/metsxmfanzone');
-  };
-
+  if (!msg) return null;
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="sm:max-w-md border-primary/30 bg-gradient-to-br from-background to-muted/30">
-        <DialogHeader className="text-center space-y-4">
-          <div className="mx-auto flex items-center justify-center gap-2">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center animate-bounce">
-              <img src={metsLogo} alt="MetsXM" className="h-10 w-10 object-contain" />
-            </div>
-            <div className="w-14 h-14 rounded-full flex items-center justify-center animate-bounce" style={{ animationDelay: '0.1s' }}>
-              <img src={metsLogo} alt="MetsXM" className="h-12 w-12 object-contain" />
-            </div>
-            <div className="w-12 h-12 rounded-full flex items-center justify-center animate-bounce" style={{ animationDelay: '0.2s' }}>
-              <img src={metsLogo} alt="MetsXM" className="h-10 w-10 object-contain" />
-            </div>
-          </div>
-          <DialogTitle className="text-xl text-center">Thanks for Watching!</DialogTitle>
-          <DialogDescription className="text-center text-sm leading-relaxed px-2">
-            {message}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
-          <Button 
-            variant="outline" 
-            onClick={handleClose}
-            className="w-full sm:w-auto"
-          >
-            <Home className="h-4 w-4 mr-2" />
-            Continue Browsing
-          </Button>
-          <Button 
-            onClick={handleBackToStreams}
-            className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600"
-          >
-            <img src={metsLogo} alt="MetsXM" className="h-4 w-4 mr-2" />
-            Back to Streams
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <div role="status" className="fixed inset-x-3 bottom-[88px] z-[60] mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-primary/50 bg-card/95 p-3 shadow-2xl backdrop-blur md:bottom-6 md:left-auto md:right-6 md:mx-0">
+      <img src={metsLogo} alt="" className="h-10 w-10 shrink-0 object-contain" />
+      <p className="min-w-0 flex-1 text-sm font-semibold text-foreground">{msg}</p>
+      <button type="button" onClick={() => { setMsg(null); navigate(lastStream.current); }} className="shrink-0 rounded-lg bg-primary px-3 py-2 text-sm font-bold text-primary-foreground">Back to stream</button>
+      <button type="button" onClick={() => setMsg(null)} aria-label="Close" className="shrink-0 p-1 text-muted-foreground"><X className="h-4 w-4" /></button>
+    </div>
   );
 }
