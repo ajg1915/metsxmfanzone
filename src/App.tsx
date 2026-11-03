@@ -150,6 +150,8 @@ const UpdateProfile = lazyWithRetry(() => import("./pages/help/UpdateProfile"), 
 const SubscriptionPlans = lazyWithRetry(() => import("./pages/help/SubscriptionPlans"), "page-help-subscription-plans");
 const PaymentMethods = lazyWithRetry(() => import("./pages/help/PaymentMethods"), "page-help-payment-methods");
 const CancelSubscription = lazyWithRetry(() => import("./pages/help/CancelSubscription"), "page-help-cancel-subscription");
+const CookiesData = lazyWithRetry(() => import("./pages/help/CookiesData"), "page-help-cookies-data");
+const VpnUse = lazyWithRetry(() => import("./pages/help/VpnUse"), "page-help-vpn");
 const ReturnPolicy = lazyWithRetry(() => import("./pages/help/ReturnPolicy"), "page-help-return-policy");
 const Logout = lazyWithRetry(() => import("./pages/Logout"), "page-logout");
 const WriterAuth = lazyWithRetry(() => import("./pages/WriterAuth"), "page-writer-auth");
@@ -361,6 +363,9 @@ const AppContent = () => {
             <Route path="/help/payment-methods" element={<PaymentMethods />} />
             <Route path="/help/cancel-subscription" element={<CancelSubscription />} />
             <Route path="/help/return-policy" element={<ReturnPolicy />} />
+            <Route path="/help/cookies-data" element={<CookiesData />} />
+            <Route path="/cookies" element={<CookiesData />} />
+            <Route path="/help/vpn" element={<VpnUse />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/rewards/claim" element={<RewardClaim />} />

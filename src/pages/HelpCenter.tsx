@@ -2,7 +2,7 @@ import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { HelpCircle, Book, Video, MessageCircle } from "lucide-react";
+import { HelpCircle, Book, Video, MessageCircle, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const HelpCenter = () => {
@@ -50,6 +50,16 @@ const HelpCenter = () => {
         { title: "Payment methods", path: "/help/payment-methods" },
         { title: "Cancel or change subscription", path: "/help/cancel-subscription" },
         { title: "Return policy", path: "/help/return-policy" },
+      ],
+    },
+    {
+      icon: ShieldCheck,
+      title: "Privacy & Data",
+      description: "We never sell your data",
+      articles: [
+        { title: "Cookies & your data", path: "/help/cookies-data" },
+        { title: "Using a VPN", path: "/help/vpn" },
+        { title: "Privacy policy", path: "/privacy" },
       ],
     },
   ];
