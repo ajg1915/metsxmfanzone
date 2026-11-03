@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Headphones, Square, Bell } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Headphones, Square, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import podcastLogo from "@/assets/podcast-logo.png";
 
@@ -70,7 +71,7 @@ const listenUrl = (url: string) => {
   return u;
 };
 
-const PodcastLivePlayer = () => {
+const PodcastLivePlayer = ({ showPageLink = false }: { showPageLink?: boolean }) => {
   const { live, loaded, isLive } = usePodcastLive();
   const [listening, setListening] = useState(false);
   const wasLive = useRef(false);
@@ -86,11 +87,18 @@ const PodcastLivePlayer = () => {
   return (
     <section aria-labelledby="podcast-live-title" className="py-6 sm:py-8">
       <style>{`@keyframes mxEqLive{from{height:20%}to{height:100%}}`}</style>
-      <div className="mb-4">
-        <p className="mx-eyebrow mb-1.5 !text-primary">MetsXMFanZone Podcast</p>
-        <h2 id="podcast-live-title" className="font-display text-[30px] uppercase leading-none tracking-wide text-foreground sm:text-4xl">
-          Live player
-        </h2>
+      <div className="mb-4 flex items-end justify-between gap-2">
+        <div>
+          <p className="mx-eyebrow mb-1.5 !text-primary">MetsXMFanZone Podcast</p>
+          <h2 id="podcast-live-title" className="font-display text-[30px] uppercase leading-none tracking-wide text-foreground sm:text-4xl">
+            Live player
+          </h2>
+        </div>
+        {showPageLink && (
+          <Link to="/podcast" className="flex min-h-[44px] shrink-0 items-center gap-1 whitespace-nowrap text-sm font-semibold text-primary hover:text-primary/80">
+            Podcast page <ArrowRight className="h-4 w-4" />
+          </Link>
+        )}
       </div>
 
       <div className={`relative overflow-hidden rounded-3xl border p-5 shadow-xl sm:p-8 ${isLive ? "border-red-500/50" : "border-white/15"} bg-[linear-gradient(135deg,#0a2a52_0%,#07182e_60%,#05101d_100%)]`}>

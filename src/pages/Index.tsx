@@ -27,7 +27,7 @@ const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerO
 const MetsTrackerSection = lazyWithRetry(() => import("@/components/HomeSpringTrackerSection").then((m) => ({ default: m.MetsTrackerSection })), "home-mets-tracker-section");
 const SpringTrainingSection = lazyWithRetry(() => import("@/components/HomeSpringTrackerSection").then((m) => ({ default: m.SpringTrainingSection })), "home-spring-training-section");
 const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
-const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadioSection"), "home-podcast-radio-section");
+const PodcastLivePlayer = lazyWithRetry(() => import("@/components/podcast/PodcastLivePlayer"), "home-podcast-live-player");
 
 
 const GamecastBanner = lazyWithRetry(() => import("@/components/GamecastBanner"), "home-gamecast-banner");
@@ -263,7 +263,9 @@ const Index = () => {
         <div data-guide="podcast">
           <LazySection fallback={<SectionSkeleton />}>
             <Suspense fallback={<SectionSkeleton />}>
-              <PodcastRadioSection />
+              <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <PodcastLivePlayer showPageLink />
+              </div>
             </Suspense>
           </LazySection>
         </div>
