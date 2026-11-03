@@ -121,7 +121,7 @@ const PodcastLivePlayer = ({ showPageLink = false }: { showPageLink?: boolean })
             <h3 className="mt-3 text-2xl font-extrabold leading-tight text-white sm:text-3xl">
               {isLive ? live?.title || "MetsXMFanZone Podcast live" : "We're offline right now"}
             </h3>
-            <p className="mt-1.5 text-[15px] leading-relaxed text-white/70">
+            <p className="mt-1.5 text-[13px] leading-snug text-white/75">
               {isLive
                 ? live?.description || "Tap listen to hear the show live."
                 : "This player lights up as soon as the show goes live. Keep alerts on so you don't miss it."}
