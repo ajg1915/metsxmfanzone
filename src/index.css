@@ -43,7 +43,7 @@ All colors MUST be HSL.
     --secondary-foreground: 0 0% 100%;
 
     --muted: 211 45% 18%;
-    --muted-foreground: 211 16% 67%;
+    --muted-foreground: 211 18% 76%;
 
     --accent: 211 83% 25%;
     --accent-foreground: 0 0% 100%;
@@ -126,7 +126,7 @@ All colors MUST be HSL.
     --secondary: 211 83% 25%;
     --secondary-foreground: 0 0% 100%;
     --muted: 211 45% 18%;
-    --muted-foreground: 211 16% 67%;
+    --muted-foreground: 211 18% 76%;
     --accent: 211 83% 25%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 62.8% 30.6%;
@@ -164,7 +164,7 @@ All colors MUST be HSL.
     width: 100%;
     max-width: 100vw;
     /* Fluid base font: smoothly scales between 320px–1920px viewports */
-    font-size: clamp(14px, 0.875rem + 0.25vw, 18px);
+    font-size: clamp(16px, 15px + 0.2vw, 18px);
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
@@ -181,6 +181,7 @@ All colors MUST be HSL.
     min-height: 100dvh;
     font-family: 'Barlow', system-ui, -apple-system, sans-serif;
     font-weight: 500;
+    line-height: 1.55;
     letter-spacing: 0;
     background-image: linear-gradient(180deg, hsl(var(--background)), hsl(211 63% 5%));
     -webkit-font-smoothing: antialiased;
@@ -1631,3 +1632,10 @@ nav.glass-nav { top: env(safe-area-inset-top, 0px) !important; }
 @keyframes guide-glow-strong { 0%,100% { box-shadow: 0 0 6px 2px hsl(16 100% 55% / .7), 0 0 14px 4px hsl(16 100% 50% / .35); } 50% { box-shadow: 0 0 22px 10px hsl(16 100% 60% / .95), 0 0 46px 20px hsl(16 100% 50% / .55); } }
 .guide-glow-ring { animation: guide-glow-strong 1.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .guide-glow-ring { animation: none; box-shadow: 0 0 18px 6px hsl(16 100% 55% / .9); } }
+
+
+/* Readability: bolder labels and key text, and no tiny text on small utility sizes */
+label, th, strong, b { font-weight: 700; }
+h1, h2, h3, h4 { font-weight: 800; }
+.text-xs { font-size: 0.8125rem; line-height: 1.25rem; }
+p, li { line-height: 1.6; }
