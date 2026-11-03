@@ -142,7 +142,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
         {user && (
           <>
             <Label>Your account</Label>
-            <div className="divide-y divide-[#1d2c48]">
+            <div data-guide="menu-account" className="divide-y divide-[#1d2c48]">
               {onTVMode && (
                 <button type="button" data-guide="menu-tv-mode" onClick={run(onTVMode)} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                   <span className="flex items-center gap-3"><BrandIcon icon={Tv} size={30} />TV Mode</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
@@ -161,16 +161,16 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
                 <span className="flex items-center gap-3"><BrandIcon icon={Download} size={30} />Get the app</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
               </button>
               {isWriter && (
-                <button type="button" onClick={run(() => go("/writer"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+                <button type="button" data-guide="menu-writers-portal" onClick={run(() => go("/writer"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                   <span className="flex items-center gap-3"><BrandIcon icon={PenLine} size={30} />Writers Portal</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
                 </button>
               )}
               {isAdmin && (
                 <>
-                  <button type="button" onClick={run(() => go("/admin/stories"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+                  <button type="button" data-guide="menu-admin-stories" onClick={run(() => go("/admin/stories"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                     <span className="flex items-center gap-3"><BrandIcon icon={Sparkles} size={30} />Admin Stories</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
                   </button>
-                  <button type="button" onClick={run(() => go("/admin"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
+                  <button type="button" data-guide="menu-admin-portal" onClick={run(() => go("/admin"))} className="flex min-h-[52px] w-full items-center justify-between px-1 text-[16px] font-semibold active:bg-white/5">
                     <span className="flex items-center gap-3"><BrandIcon icon={Shield} size={30} />Admin Portal</span><ChevronRight className="h-5 w-5 text-[#5b6f90]" />
                   </button>
                 </>
@@ -183,7 +183,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
       {/* Footer */}
       <div className="border-t border-white/10 bg-[#0b1426] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
         {user ? (
-          <div className="flex items-center gap-3">
+          <div data-guide="menu-account-bar" className="flex items-center gap-3">
             <Avatar className="h-11 w-11 border border-white/20">
               <AvatarImage src={profile.avatar_url || undefined} alt="" />
               <AvatarFallback className="bg-[#12203a] text-sm font-bold text-primary">{initial}</AvatarFallback>
@@ -192,16 +192,16 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
               <p className="truncate text-sm font-bold">{profile.full_name || "Member"}</p>
               <p className="truncate text-[11px] text-[#9fb0c8]">{user.email}</p>
             </div>
-            <button type="button" onClick={onSignOut} className="flex h-11 items-center gap-2 rounded-xl border border-[#3a4e72] px-3.5 text-sm font-bold active:bg-white/5">
+            <button type="button" data-guide="menu-sign-out" onClick={onSignOut} className="flex h-11 items-center gap-2 rounded-xl border border-[#3a4e72] px-3.5 text-sm font-bold active:bg-white/5">
               <LogOut className="h-4 w-4" /> Sign out
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2">
-            <button type="button" onClick={run(() => go("/auth?mode=login"))} className="h-12 rounded-xl border border-[#3a4e72] text-[15px] font-bold active:bg-white/5">
+            <button type="button" data-guide="menu-log-in" onClick={run(() => go("/auth?mode=login"))} className="h-12 rounded-xl border border-[#3a4e72] text-[15px] font-bold active:bg-white/5">
               Log in
             </button>
-            <button type="button" onClick={run(() => go("/auth?mode=signup"))} className="h-12 rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98]">
+            <button type="button" data-guide="menu-join-now" onClick={run(() => go("/auth?mode=signup"))} className="h-12 rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-lg shadow-primary/25 active:scale-[0.98]">
               Join now
             </button>
           </div>
