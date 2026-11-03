@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Bell, ExternalLink, Gift, Headphones, Instagram, Music2, Facebook, Twitter, Youtube, Shirt, Store } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -6,18 +5,10 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import BlogSection from "@/components/BlogSection";
-import PodcastRadioSection from "@/components/PodcastRadioSection";
+import PodcastLivePlayer, { usePodcastLive } from "@/components/podcast/PodcastLivePlayer";
 import PodcastShop from "@/components/podcast/PodcastShop";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import podcastLogo from "@/assets/podcast-logo.png";
-
-interface PodcastLiveStream {
-  id: string;
-  title: string;
-  description: string | null;
-  is_live: boolean;
-}
 
 type Social = { name: string; handle: string; icon: LucideIcon; url: string; bg: string };
 
@@ -43,24 +34,7 @@ const SectionTitle = ({ id, children }: { id: string; children: React.ReactNode 
 
 const Podcast = () => {
   const { user } = useAuth();
-  const [liveStream, setLiveStream] = useState<PodcastLiveStream | null>(null);
-
-  useEffect(() => {
-    const load = async () => {
-      const { data } = await supabase.from("podcast_live_stream").select("*").order("updated_at", { ascending: false }).limit(1).maybeSingle();
-      setLiveStream((data as PodcastLiveStream) ?? null);
-    };
-    load();
-    const channel = supabase
-      .channel("podcast-live-stream")
-      .on("postgres_changes", { event: "*", schema: "public", table: "podcast_live_stream" }, (payload) => {
-        if (payload.new) setLiveStream(payload.new as PodcastLiveStream);
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, []);
-
-  const isLive = !!liveStream?.is_live;
+  const { live: liveStream, isLive } = usePodcastLive();
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,7 +76,7 @@ const Podcast = () => {
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">
                 <a href="#episodes" className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#d43700] px-6 text-base font-bold text-white shadow-lg shadow-black/30 transition-colors hover:bg-[#e04000]">
-                  <Headphones className="h-5 w-5" /> Listen now
+                  <Headphones className="h-5 w-5" /> {isLive ? "Listen live" : "Live player"}
                 </a>
                 <a href="#follow" className="inline-flex h-12 items-center gap-2 rounded-xl border border-white/30 px-6 text-base font-bold text-white transition-colors hover:bg-white/10">
                   Follow us <ArrowRight className="h-4 w-4" />
@@ -120,9 +94,9 @@ const Podcast = () => {
         </section>
 
         <div className="container mx-auto max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
-          {/* ---------- Radio + latest episodes ---------- */}
-          <div id="episodes" className="-mx-4 scroll-mt-24 sm:-mx-6 lg:-mx-8">
-            <PodcastRadioSection showAllLink={false} />
+          {/* ---------- Live player ---------- */}
+          <div id="episodes" className="scroll-mt-24">
+            <PodcastLivePlayer />
           </div>
 
           {/* ---------- Socials ---------- */}

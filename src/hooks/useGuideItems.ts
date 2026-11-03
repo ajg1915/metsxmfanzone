@@ -47,7 +47,7 @@ export const GUIDE_SECTIONS: { key: string; label: string; path: string; group: 
   { group: "Phone bottom tabs", key: "tab-home", label: "Home tab", path: "/" },
   { group: "Phone bottom tabs", key: "tab-watch-live", label: "Watch Live tab", path: "/" },
   { group: "Phone bottom tabs", key: "tab-blog", label: "Blog tab", path: "/" },
-  { group: "Phone bottom tabs", key: "tab-games", label: "Games tab", path: "/" },
+  { group: "Phone bottom tabs", key: "tab-podcast", label: "Podcast tab", path: "/" },
   { group: "Phone bottom tabs", key: "tab-feed", label: "Feed tab", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-button", label: "Menu button (three lines)", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-watch-live", label: "Watch Live button", path: "/" },
@@ -88,6 +88,7 @@ export const PLATFORMS: { key: string; label: string }[] = [
 /** A spot is either a data-guide key (like "fa-row") or any CSS selector (starts with . # or [). */
 export function findSpot(spot: string | null | undefined): HTMLElement | null {
   if (!spot) return null;
+  if (spot === "tab-games") spot = "tab-podcast"; // the Games tab became the Podcast tab
   try {
     return document.querySelector<HTMLElement>(/^[.#\[]/.test(spot) ? spot : `[data-guide="${spot}"]`);
   } catch { return null; }

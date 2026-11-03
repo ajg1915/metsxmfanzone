@@ -1,4 +1,4 @@
-import { Tv, BookOpen, Lock, CalendarDays, MessageSquare } from "lucide-react";
+import { Tv, BookOpen, Lock, MessageSquare } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
@@ -6,6 +6,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
+import podcastLogo from "@/assets/podcast-logo.png";
 import { Button } from "@/components/ui/button";
 
 type NavItem = {
@@ -19,7 +20,7 @@ const navItems: NavItem[] = [
   { label: "Home", path: "/", requiresPremium: false },
   { label: "Watch Live", path: "/metsxmfanzone", requiresPremium: true },
   { label: "Blog", path: "/blog", requiresPremium: false },
-  { label: "Games", path: "/mets-schedule-2027", requiresPremium: false },
+  { label: "Podcast", path: "/podcast", requiresPremium: false },
   { label: "Feed", path: "/community", requiresPremium: false },
 ];
 
@@ -89,8 +90,8 @@ const SocialMediaBar = () => {
                   <Tv className="h-6 w-6" />
                 ) : item.label === "Blog" ? (
                   <BookOpen className="h-6 w-6" />
-                ) : item.label === "Games" ? (
-                  <CalendarDays className="h-6 w-6" />
+                ) : item.label === "Podcast" ? (
+                  <img src={podcastLogo} alt="" className={`h-7 w-auto object-contain ${active ? "" : "opacity-75"}`} />
                 ) : item.label === "Feed" ? (
                   <MessageSquare className="h-6 w-6" />
                 ) : (
