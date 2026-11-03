@@ -58,12 +58,12 @@ const Footer = () => {
 
         {/* Legal */}
         <div className="mt-3 flex flex-col items-center gap-1.5 text-xs md:mt-5 md:gap-2 text-muted-foreground">
-          <div className="flex items-center gap-4">
+          <div className="flex w-full flex-nowrap items-center justify-between gap-2 whitespace-nowrap text-[11px] sm:w-auto sm:justify-center sm:gap-4 sm:text-xs">
             <Link to="/privacy" className="transition-colors hover:text-primary">Privacy</Link>
             <Link to="/terms" className="transition-colors hover:text-primary">Terms</Link>
             <Link to="/help/cookies-data" className="transition-colors hover:text-primary">Cookies &amp; Data</Link>
             <Link to="/help/vpn" className="transition-colors hover:text-primary">VPN</Link>
-            <Link to="/responsible-gambling" className="transition-colors hover:text-primary">Gambling Disclosure</Link>
+            <Link to="/responsible-gambling" className="transition-colors hover:text-primary">Gambling<span className="hidden sm:inline"> Disclosure</span></Link>
             <Link to="/contact" className="transition-colors hover:text-primary">Contact</Link>
           </div>
           <p
