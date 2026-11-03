@@ -178,7 +178,7 @@ const Dashboard = () => {
     { label: "Watch Live", description: "Live games and events", icon: Tv, href: "/metsxmfanzone", locked: !accessActive },
     { label: "Community", description: "Talk with Mets fans", icon: MessageSquarePlus, href: "/community", locked: false },
     { label: "Articles", description: "Latest stories", icon: BookOpen, href: "/blog", locked: false },
-    { label: "Podcasts", description: "Listen to new shows", icon: Mic, href: "/podcast", locked: !accessActive },
+    { label: "Podcast", description: "Listen live when we're on air", icon: Mic, href: "/podcast", locked: !accessActive },
   ];
 
   return (

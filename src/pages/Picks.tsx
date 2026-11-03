@@ -12,7 +12,7 @@ import { SHOW_METS_GAME_CENTER } from "@/config/season";
 // Everything here is reused from the Game Center, so a change there shows up here too.
 const HomeLineupCard = lazyWithRetry(() => import("@/components/HomeLineupCard"), "picks-lineup-card");
 const PlayersToWatch = lazyWithRetry(() => import("@/components/PlayersToWatch"), "picks-players-to-watch");
-const PodcastRadioSection = lazyWithRetry(() => import("@/components/PodcastRadioSection"), "picks-podcast");
+const PodcastLivePlayer = lazyWithRetry(() => import("@/components/podcast/PodcastLivePlayer"), "picks-podcast-live");
 
 const SectionSkeleton = ({ height = "h-64" }: { height?: string }) => (
   <div className={`w-full ${height} px-4`}>
@@ -95,7 +95,7 @@ const Picks = () => {
         </div>
         <LazySection fallback={<SectionSkeleton height="h-80" />}>
           <Suspense fallback={<SectionSkeleton height="h-80" />}>
-            <PodcastRadioSection />
+            <PodcastLivePlayer showPageLink />
           </Suspense>
         </LazySection>
       </main>
