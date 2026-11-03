@@ -77,19 +77,19 @@ const NewsletterSection = () => {
         </p>
 
         {/* Right: the signup */}
-        <form onSubmit={handleSubmit} className="relative flex w-full flex-col gap-2.5 md:max-w-[640px] lg:w-[480px] lg:max-w-none lg:shrink-0 xl:w-[540px]">
+        <form data-guide="newsletter-form" onSubmit={handleSubmit} className="relative flex w-full flex-col gap-2.5 md:max-w-[640px] lg:w-[480px] lg:max-w-none lg:shrink-0 xl:w-[540px]">
           <input {...honeypotProps} />
           <div className="flex flex-col gap-2.5 md:flex-row">
             <div className="md:flex-1">
               <label htmlFor="newsletter-name" className={label}>Your name</label>
               <Input id="newsletter-name" type="text" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" className={field} />
             </div>
-            <div className="md:flex-[1.3]">
+            <div data-guide="newsletter-email" className="md:flex-[1.3]">
               <label htmlFor="newsletter-email" className={label}>Email</label>
               <Input id="newsletter-email" type="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={field} />
             </div>
           </div>
-          <Button type="submit" disabled={isLoading} className="mt-1 h-[50px] rounded-full bg-[#ff4500] text-base font-bold text-[#06101c] hover:bg-[#ff5910]">
+          <Button type="submit" data-guide="newsletter-subscribe" disabled={isLoading} className="mt-1 h-[50px] rounded-full bg-[#ff4500] text-base font-bold text-[#06101c] hover:bg-[#ff5910]">
             {isLoading ? "Subscribing..." : "Subscribe"}
           </Button>
           <p className="text-center text-xs text-[#9fb0c2]">We respect your privacy. Unsubscribe at any time.</p>
