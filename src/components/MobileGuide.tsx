@@ -14,6 +14,7 @@ import { useGuideItems, findSpot, type GuideItem } from "@/hooks/useGuideItems";
 export const OPEN_GUIDE_EVENT = "mxfz:open-guide";
 const SEEN_KEY = "mxfz_guide_seen";
 const NEW_ACCOUNT_DAYS = 3;
+const STEP_SECONDS = 5;
 const doneKey = (id: string) => `mxfz_guide_done_${id}`;
 const GUEST_KEY = "mxfz_guide_done_guest";
 
@@ -81,6 +82,12 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
   }, [step.section]);
 
   const last = i === STEPS.length - 1;
+  // Each step moves on by itself after 5 seconds. The last one stays until the person taps End tour.
+  useEffect(() => {
+    if (last) return;
+    const t = setTimeout(() => setI((n) => Math.min(n + 1, STEPS.length - 1)), STEP_SECONDS * 1000);
+    return () => clearTimeout(t);
+  }, [i, last, STEPS.length]);
   const vh = typeof window !== "undefined" ? window.innerHeight : 800;
   const cardStyle: React.CSSProperties = { left: 16, right: 16, maxWidth: 440, marginInline: "auto" };
   const CARD_H = 230;
@@ -113,9 +120,9 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
         </p>
         <h2 className="mt-1 font-display text-[30px] uppercase leading-none tracking-wide text-white">{step.title}</h2>
         <p className="mt-2 text-[15px] leading-snug text-white">{step.body}</p>
-        <div className="mt-3 flex items-center justify-between">
-          <button type="button" onClick={i === 0 ? onClose : () => setI(i - 1)} className="min-h-[44px] px-1 text-sm font-semibold text-[#d6e4f7]">{i === 0 ? "Skip" : "Back"}</button>
-          <button type="button" onClick={last ? onClose : () => setI(i + 1)} className="min-h-[44px] rounded-lg bg-primary px-7 font-display text-lg uppercase tracking-[0.1em] text-primary-foreground">{last ? "End tour" : "Next"}</button>
+        {!last && <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/20" aria-hidden="true"><div key={i} className="h-full rounded-full bg-primary" style={{ animation: `guideTimer ${STEP_SECONDS}s linear forwards` }} /></div>}
+        <div className="mt-3 flex justify-end">
+          <button type="button" onClick={onClose} className="min-h-[44px] rounded-lg bg-primary px-7 font-display text-lg uppercase tracking-[0.1em] text-primary-foreground">End tour</button>
         </div>
       </div>
     </div>

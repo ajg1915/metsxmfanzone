@@ -1639,3 +1639,5 @@ label, th, strong, b { font-weight: 700; }
 h1, h2, h3, h4 { font-weight: 800; }
 .text-xs { font-size: 0.8125rem; line-height: 1.25rem; }
 p, li { line-height: 1.6; }
+
+@keyframes guideTimer { from { width: 0%; } to { width: 100%; } }
