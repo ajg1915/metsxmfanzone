@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, Play } from "lucide-react";
+import { ChevronRight, Play, RefreshCw } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
 
 // Home page: Spring Training and Mets Tracker, built like the other home rows
@@ -179,12 +179,32 @@ const Title = ({ children, right }: { children: React.ReactNode; right?: React.R
   </div>
 );
 
+/** Current time that re-renders every minute and when the person returns to the tab, so the countdown keeps moving. */
+function useNow() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const tick = () => setNow(Date.now());
+    const id = setInterval(tick, 60_000);
+    document.addEventListener("visibilitychange", tick);
+    window.addEventListener("focus", tick);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", tick); window.removeEventListener("focus", tick); };
+  }, []);
+  return now;
+}
+
+/** Whole calendar days (New York time) from today to the given date. */
+function daysUntil(iso: string, now: number) {
+  const [y1, m1, d1] = ymd(new Date(now)).split("-").map(Number);
+  const [y2, m2, d2] = ymd(new Date(iso)).split("-").map(Number);
+  return Math.max(0, Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 86_400_000));
+}
+
 export function SpringTrainingSection() {
   const { data: games = [] } = useSpringGames();
-  const now = Date.now();
+  const now = useNow();
   const upcoming = games.filter((g) => +new Date(g.date) > now - 6 * 3_600_000);
   const first = games[0];
-  const days = Math.max(0, Math.ceil((+new Date(first?.date ?? FALLBACK_OPENER) - now) / 86_400_000));
+  const days = daysUntil(first?.date ?? FALLBACK_OPENER, now);
 
   return (
     <section className="relative py-6 sm:py-8" aria-label="Spring Training">
@@ -229,8 +249,8 @@ export function SpringTrainingSection() {
 
 export function MetsTrackerSection() {
   const [tab, setTab] = useState<"trades" | "signings" | "waivers" | "moves">("moves");
-  const { data: txs = [], isLoading, isError } = useTransactions();
-  const { data: roster } = useRoster40();
+  const { data: txs = [], isLoading, isError, isFetching, refetch, dataUpdatedAt } = useTransactions();
+  const { data: roster, refetch: refetchRoster } = useRoster40();
   // MLB's roster list can trail the moves by hours, so a player's newest move decides first (claimed away, outrighted,
   // released = off; claimed by the Mets = on). Anything else falls back to the live roster list.
   const latest = useMemo(() => { const m = new Map<string, Tx>(); for (const t of txs) { const k = norm(t.player); if (k && !m.has(k)) m.set(k, t); } return m; }, [txs]);
@@ -252,6 +272,11 @@ export function MetsTrackerSection() {
         <button key={v} type="button" role="tab" aria-selected={tab === v} onClick={() => setTab(v)}
           className={`min-h-[40px] shrink-0 whitespace-nowrap rounded-lg border border-[#ff5a1f] px-3.5 font-display text-sm font-bold uppercase tracking-wider transition-colors sm:px-4 sm:text-base ${tab === v ? "bg-[#ff5a1f] text-white" : "text-foreground hover:bg-[#ff5a1f]/15"}`}>{l}</button>
       ))}
+      <button type="button" onClick={() => { refetch(); refetchRoster(); }} disabled={isFetching}
+        aria-label="Refresh Mets moves" title={dataUpdatedAt ? `Updated ${new Date(dataUpdatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}` : "Refresh"}
+        className="ml-auto flex h-8 w-8 shrink-0 items-center justify-center self-center rounded-full border border-white/20 text-white/70 transition-colors hover:border-[#ff5a1f] hover:text-white disabled:opacity-60">
+        <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
+      </button>
       <Link to="/mets-roster" className="flex min-h-[40px] shrink-0 items-center gap-1 whitespace-nowrap px-2 font-display text-sm font-bold uppercase tracking-wider text-primary hover:text-primary/80 sm:text-base">
         40-man roster <ChevronRight className="h-4 w-4" />
       </Link>
