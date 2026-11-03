@@ -71,7 +71,7 @@ const Podcast = () => {
               </h1>
               <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-white/75 sm:text-lg lg:mx-0">
                 {isLive
-                  ? `${liveStream?.title || "We're live right now"}${liveStream?.description ? ` — ${liveStream.description}` : ""}. Tune in on our channels.`
+                  ? `${liveStream?.title || "We're live right now"}${liveStream?.description ? ` — ${liveStream.description}` : ""}. Press Listen live below.`
                   : "Join Anthony and the Mets Universe for game talk, news and fan reactions. Listen here or catch us live."}
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-3 lg:justify-start">

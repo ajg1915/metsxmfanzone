@@ -17,6 +17,8 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import podcastLogo from "@/assets/podcast-logo.png";
+import { usePodcastLive } from "@/components/podcast/PodcastLivePlayer";
 import type { LucideIcon } from "lucide-react";
 
 // Desktop (≥1024px) top navigation. Dropdowns open on hover, click or keyboard
@@ -124,6 +126,7 @@ export default function DesktopNavMenu({
   const metsActive = on(METS_PATHS);
 
   const go = (e: Entry) => (e.gate === "pro" ? goPro(e.to) : goProtected(e.to));
+  const { isLive: podcastLive } = usePodcastLive();
   const mets = METS.filter((e) => !e.membersOnly || isLoggedIn);
 
   return (
@@ -132,7 +135,11 @@ export default function DesktopNavMenu({
         <TopLink to="/">Home</TopLink>
         <TopLink to="/community" onClick={() => goProtected("/community")}>Community</TopLink>
 
-        <TopLink to="/podcast">Podcast</TopLink>
+        <TopLink to="/podcast">
+          <img src={podcastLogo} alt="" className="h-6 w-auto object-contain" />
+          Podcast
+          {podcastLive && <span className="inline-flex items-center gap-1 rounded bg-red-700 px-1.5 py-0.5 text-[10px] font-extrabold tracking-wider text-white" aria-label="Live now"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" /><span className="hidden lg:inline">LIVE</span></span>}
+        </TopLink>
         <TopLink to="/blog">Blog</TopLink>
 
         <NavMenu.Item className="relative">

@@ -121,7 +121,7 @@ export function useDevice() {
 
 // Used only if the list can't be loaded, so the guide never comes up empty.
 const FALLBACK: GuideItem[] = [
-  { id: "t1", kind: "tour", title: "Your 5 main tabs", body: "Home, Watch Live, Blog, Games and Feed are always at the bottom. Tap one from any page.", where_label: null, path: null, section: "bottom-nav", place: "above", enabled: true, suggested: false, highlight_new: false, platforms: ["mobile","tablet","desktop","tv","app"], sort_order: 1, updated_at: "" },
+  { id: "t1", kind: "tour", title: "Your 5 main tabs", body: "Home, Watch Live, Blog, Podcast and Feed are always at the bottom. Tap one from any page.", where_label: null, path: null, section: "bottom-nav", place: "above", enabled: true, suggested: false, highlight_new: false, platforms: ["mobile","tablet","desktop","tv","app"], sort_order: 1, updated_at: "" },
   { id: "t2", kind: "tour", title: "Everything else is in the menu", body: "Tap the three lines for Schedule, Scores, Picks, Podcast, Highlights and your account.", where_label: null, path: null, section: "menu-button", place: "below", enabled: true, suggested: false, highlight_new: false, platforms: ["mobile","tablet","desktop","tv","app"], sort_order: 2, updated_at: "" },
   { id: "t3", kind: "tour", title: "Swipe each row sideways", body: "Tap Trades, Signings or Waivers, then swipe the cards. Every row on Home works the same way.", where_label: null, path: null, section: "fa-row", place: "below", enabled: true, suggested: false, highlight_new: false, platforms: ["mobile","tablet","desktop","tv","app"], sort_order: 3, updated_at: "" },
 ];

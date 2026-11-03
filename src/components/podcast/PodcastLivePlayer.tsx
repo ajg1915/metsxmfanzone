@@ -32,7 +32,7 @@ export function usePodcastLive() {
     load();
     const poll = window.setInterval(load, 20_000);
     const channel = supabase
-      .channel("podcast-live-player")
+      .channel(`podcast-live-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "podcast_live_stream" }, (payload) => {
         if (payload.new && Object.keys(payload.new).length) setLive(payload.new as PodcastLive);
       })
