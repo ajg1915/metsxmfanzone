@@ -1,12 +1,17 @@
-import { Tv, BookOpen, Lock, MessageSquare } from "lucide-react";
+import { Lock } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import metsLogo from "@/assets/metsxmfanzone-logo.png";
-import podcastLogo from "@/assets/podcast-logo.png";
+import homeIcon from "@/assets/tabs/home.png";
+import watchIcon from "@/assets/tabs/watch.png";
+import blogIcon from "@/assets/tabs/blog.png";
+import podcastIcon from "@/assets/tabs/podcast.png";
+import feedIcon from "@/assets/tabs/feed.png";
+
+const TAB_ICONS: Record<string, string> = { Home: homeIcon, "Watch Live": watchIcon, Blog: blogIcon, Podcast: podcastIcon, Feed: feedIcon };
 import { Button } from "@/components/ui/button";
 
 type NavItem = {
@@ -83,20 +88,8 @@ const SocialMediaBar = () => {
               {active && (
                 <span className="absolute -top-1.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-b-full bg-primary" />
               )}
-              <span className="relative flex h-7 items-center justify-center">
-                {item.label === "Home" ? (
-                  <img src={metsLogo} alt="" className={`h-7 w-auto object-contain ${active ? "" : "opacity-75"}`} />
-                ) : item.label === "Watch Live" ? (
-                  <Tv className="h-6 w-6" />
-                ) : item.label === "Blog" ? (
-                  <BookOpen className="h-6 w-6" />
-                ) : item.label === "Podcast" ? (
-                  <img src={podcastLogo} alt="" className={`h-7 w-auto object-contain ${active ? "" : "opacity-75"}`} />
-                ) : item.label === "Feed" ? (
-                  <MessageSquare className="h-6 w-6" />
-                ) : (
-                  <img src={metsLogo} alt="" className="h-6 w-auto object-contain" />
-                )}
+              <span className="relative flex h-9 items-center justify-center">
+                <img src={TAB_ICONS[item.label]} alt="" width={36} height={36} className={`h-9 w-9 rounded-[10px] object-contain transition-opacity ${active ? "" : "opacity-80"}`} />
                 {showProLock && (
                   <span className="absolute -right-2 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary">
                     <Lock className="h-2 w-2 text-primary-foreground" />
@@ -114,7 +107,7 @@ const SocialMediaBar = () => {
               variant="ghost"
               onClick={() => handleClick(item)}
               aria-current={active ? "page" : undefined}
-              className={`relative h-auto min-h-[56px] min-w-0 flex-1 flex-col gap-1 rounded-sm px-0 py-1 hover:bg-secondary/20 ${
+              className={`relative h-auto min-h-[62px] min-w-0 flex-1 flex-col gap-1 rounded-sm px-0 py-1 hover:bg-secondary/20 ${
                 active ? "text-primary hover:text-primary" : "text-muted-foreground hover:text-foreground"
               }`}
             >
