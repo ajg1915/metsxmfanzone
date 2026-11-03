@@ -64,7 +64,7 @@ const NewsletterSection = () => {
           <img src={logo} alt="MetsXMFanZone" className="h-14 w-auto shrink-0 drop-shadow-[0_0_20px_rgba(255,69,0,0.45)] md:h-[84px]" />
           <div className="min-w-0">
             <p className="text-xs font-bold tracking-[0.14em] text-[#ff8a57] md:text-[13px]">THE NEWSLETTER</p>
-            <h2 id="newsletter-title" className="font-display text-4xl uppercase leading-none text-white md:text-5xl lg:text-[40px] xl:text-[54px]">
+            <h2 id="newsletter-title" className="whitespace-nowrap font-display text-[22px] min-[380px]:text-[24px] uppercase leading-none text-white md:whitespace-normal md:text-5xl lg:text-[40px] xl:text-[54px]">
               Get MetsXMFanZone News
             </h2>
             <p className="mt-2 hidden max-w-[460px] text-base leading-snug text-[#c3cfdb] md:block">

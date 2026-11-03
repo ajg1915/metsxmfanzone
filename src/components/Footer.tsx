@@ -68,7 +68,7 @@ const Footer = () => {
           </div>
           <p
             onClick={() => navigate("/admin-portal")}
-            className="cursor-pointer select-none text-center text-[11px] leading-relaxed opacity-70"
+            className="cursor-pointer select-none whitespace-nowrap text-center text-[10px] leading-relaxed opacity-70 sm:whitespace-normal sm:text-[11px]"
             aria-hidden="true"
           >
             &copy; {new Date().getFullYear()} MetsXMFanZone. Not affiliated with MLB or the New York Mets.
