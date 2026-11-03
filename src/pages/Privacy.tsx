@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { Link } from "react-router-dom";
 
 const Privacy = () => {
   return (
@@ -29,6 +30,19 @@ const Privacy = () => {
               <p className="text-muted-foreground">
                 Welcome to MetsXMFanZone. We respect your privacy and are committed to protecting your personal data. 
                 This privacy policy explains how we collect, use, and safeguard your information when you use our platform.
+              </p>
+            </section>
+
+            <section className="mb-8 rounded-lg border border-primary/30 bg-primary/5 p-4">
+              <h2 className="text-2xl font-semibold text-foreground mb-4">We Do Not Sell Your Data</h2>
+              <p className="text-muted-foreground">
+                We do not sell, rent or trade your personal information to anyone, and we do not share it with advertisers
+                or data brokers. The only outside services that receive information are those that help us run the site,
+                such as payments, analytics and hosting, and they may use it only to provide that service to us.
+              </p>
+              <p className="text-muted-foreground mt-4">
+                See <Link to="/help/cookies-data" className="text-primary hover:underline">Cookies &amp; Your Data</Link> for
+                a plain-language explanation of what we collect and how cookies are used.
               </p>
             </section>
 
@@ -81,7 +95,7 @@ const Privacy = () => {
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-foreground mb-4">Third-Party Services</h2>
               <p className="text-muted-foreground">
-                We may use third-party services for analytics, payment processing, and content delivery. 
+                We use third-party services for analytics (Google Analytics), payment processing (PayPal), push notifications, and hosting. 
                 These services have their own privacy policies and we encourage you to review them.
               </p>
               <p className="text-muted-foreground mt-4">
