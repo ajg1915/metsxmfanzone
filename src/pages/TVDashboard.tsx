@@ -415,21 +415,18 @@ const TVDashboard = () => {
         ) : (
           <>
             <TVHeroCarousel slides={heroSlides} />
-            <div className="px-[2.4vw] pb-[6vh]">
+            <div className="px-[2.4vw] pb-[5vh]">
               {/* Gamecast Banner */}
               {SHOW_METS_GAME_CENTER && <GamecastBanner />}
 
-              {/* Live Now, above stories */}
+              {/* Live Now */}
               <div ref={liveRef}>
                 {liveNowItems.length > 0 && (
                   <TVContentRail title="Live Now" items={liveNowItems} accent onItemClick={openLive} />
                 )}
               </div>
 
-              {/* Stories */}
-              <div ref={storiesRef}>
-                {storyItems.length > 0 && <TVContentRail title="Stories" items={storyItems} onItemClick={handleStoryClick} />}
-              </div>
+              <div ref={storiesRef} />
 
               {/* NY team scores */}
               <TVNYScores />

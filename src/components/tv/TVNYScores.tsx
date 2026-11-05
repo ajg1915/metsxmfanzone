@@ -60,7 +60,7 @@ function Row({ side, bold, showScore, prefix }: { side: Side; bold: boolean; sho
         )}
         <span
           className={cn(
-            "truncate text-[1.25rem]",
+            "truncate text-[1rem]",
             bold ? "font-bold text-[color:var(--tv-text)]" : "text-[color:var(--tv-subtext)]",
           )}
         >
@@ -71,7 +71,7 @@ function Row({ side, bold, showScore, prefix }: { side: Side; bold: boolean; sho
       {showScore && (
         <span
           className={cn(
-            "shrink-0 text-[1.9rem] leading-none tabular-nums",
+            "shrink-0 text-[1.5rem] leading-none tabular-nums",
             bold ? "font-extrabold text-[color:var(--tv-text)]" : "font-semibold text-[color:var(--tv-subtext)]",
           )}
         >
@@ -185,7 +185,7 @@ export default function TVNYScores() {
           className={cn("h-3 w-3 rounded-full", feed.anyLive ? "animate-pulse bg-[#e11d48]" : "bg-white/30")}
           aria-hidden="true"
         />
-        <h2 className="text-[1.7rem] font-medium text-[color:var(--tv-text)]">NY Scores</h2>
+        <h2 className="text-[1.35rem] font-bold text-[color:var(--tv-text)]">NY Scores</h2>
       </div>
       <div className="flex gap-[1.2vw] overflow-x-auto px-[0.6vw] py-[1.8vh] scrollbar-none">
         {feed.teams.map((t) => (

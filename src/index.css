@@ -1092,7 +1092,7 @@ All colors MUST be HSL.
 @media (min-width: 1024px) {
   .tv-mode {
     /* Override fluid base for TV: fixed comfortable size */
-    font-size: 18px;
+    font-size: 14px;
   }
 }
 

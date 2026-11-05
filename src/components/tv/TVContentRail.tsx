@@ -23,10 +23,10 @@ export function TVContentRail({ title, note, items, accent, onItemClick }: TVCon
   if (items.length === 0) return null;
 
   return (
-    <section className="group/rail relative mt-[4vh]" aria-label={title}>
+    <section className="group/rail relative mt-[2.4vh]" aria-label={title}>
       <div className="flex items-center gap-3 mb-[1.4vh] pl-[0.2vw]">
         {accent && <span className="h-3 w-3 rounded-full bg-[color:var(--tv-accent)] animate-pulse" />}
-        <h2 className={cn("text-[1.7rem] font-medium", accent ? "text-[color:var(--tv-accent)]" : "text-[color:var(--tv-text)]")}>{title}</h2>
+        <h2 className={cn("text-[1.35rem] font-bold", accent ? "text-[color:var(--tv-accent)]" : "text-[color:var(--tv-text)]")}>{title}</h2>
         {note && <span className="text-[1.05rem] text-[color:var(--tv-subtext)]">{note}</span>}
         {items.length > 1 && (
           <span className="ml-2 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[0.95rem] text-[color:var(--tv-subtext)] opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100">
@@ -37,8 +37,8 @@ export function TVContentRail({ title, note, items, accent, onItemClick }: TVCon
 
       {items.length > 1 && (
         <>
-          <span aria-hidden="true" className="pointer-events-none absolute left-0 top-[calc(1.7rem+3vh)] z-10 flex h-[calc(22vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-start bg-gradient-to-r from-[color:var(--tv-bg)] to-transparent pl-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-left_1.2s_ease-in-out_infinite]">‹</span>
-          <span aria-hidden="true" className="pointer-events-none absolute right-0 top-[calc(1.7rem+3vh)] z-10 flex h-[calc(22vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-end bg-gradient-to-l from-[color:var(--tv-bg)] to-transparent pr-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-right_1.2s_ease-in-out_infinite]">›</span>
+          <span aria-hidden="true" className="pointer-events-none absolute left-0 top-[calc(1.35rem+3vh)] z-10 flex h-[calc(15.5vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-start bg-gradient-to-r from-[color:var(--tv-bg)] to-transparent pl-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-left_1.2s_ease-in-out_infinite]">‹</span>
+          <span aria-hidden="true" className="pointer-events-none absolute right-0 top-[calc(1.35rem+3vh)] z-10 flex h-[calc(15.5vw*9/16)] min-h-[135px] w-[3.2vw] min-w-[44px] items-center justify-end bg-gradient-to-l from-[color:var(--tv-bg)] to-transparent pr-1 text-[2rem] text-white opacity-0 transition-opacity duration-200 group-focus-within/rail:opacity-100 group-hover/rail:opacity-100 animate-[tv-nudge-right_1.2s_ease-in-out_infinite]">›</span>
         </>
       )}
 
@@ -51,9 +51,9 @@ export function TVContentRail({ title, note, items, accent, onItemClick }: TVCon
             onFocus={(e) =>
               e.currentTarget.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" })
             }
-            className="group shrink-0 w-[22vw] min-w-[240px] rounded-[0.9rem] text-left focus:outline-none"
+            className="group shrink-0 w-[15.5vw] min-w-[200px] rounded-[0.6rem] text-left focus:outline-none"
           >
-            <div className="relative aspect-video w-full overflow-hidden rounded-[0.9rem] bg-[color:var(--tv-surface)] border border-white/5">
+            <div className="relative aspect-video w-full overflow-hidden rounded-[0.6rem] bg-[color:var(--tv-surface)] border border-white/5">
               <img
                 src={item.thumbnail}
                 alt=""
@@ -70,11 +70,11 @@ export function TVContentRail({ title, note, items, accent, onItemClick }: TVCon
                 </span>
               )}
             </div>
-            <p className="mt-[1vh] pl-[0.2vw] text-[1.25rem] font-medium leading-tight text-[color:var(--tv-text)] line-clamp-2">
+            <p className="mt-[1vh] pl-[0.2vw] text-[1.05rem] font-medium leading-tight text-[color:var(--tv-text)] line-clamp-2">
               {item.title}
             </p>
             {item.subtitle && (
-              <p className="mt-[0.3vh] pl-[0.2vw] text-[1rem] leading-tight text-[color:var(--tv-subtext)] line-clamp-1">
+              <p className="mt-[0.3vh] pl-[0.2vw] text-[0.9rem] leading-tight text-[color:var(--tv-subtext)] line-clamp-1">
                 {item.subtitle}
               </p>
             )}

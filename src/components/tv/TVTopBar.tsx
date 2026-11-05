@@ -25,30 +25,31 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
   const sections: { label: string; go: () => void; active?: boolean }[] = [
     { label: "Home", go: onHome, active: true },
     { label: "Live", go: () => navigate("/metsxmfanzone") },
+    { label: "Highlights", go: () => navigate("/video-gallery") },
+    { label: "Replays", go: () => navigate("/replay-games") },
     { label: "News", go: () => navigate("/blog") },
     { label: "Podcast", go: () => navigate("/podcast") },
     { label: "Scores", go: () => navigate("/mets-scores") },
   ];
 
-  const pill =
-    "rounded-full px-[1.4vw] py-[1.2vh] text-[1.35rem] font-medium whitespace-nowrap transition-colors";
+  const link =
+    "relative px-[0.2vw] py-[1vh] text-[1.05rem] font-medium whitespace-nowrap transition-colors border-b-[3px]";
 
   return (
-    <header className="shrink-0 flex items-center gap-[1.2vw] bg-[color:var(--tv-card)] px-[2.4vw] py-[2vh] border-b border-white/5">
-      <div className="flex items-center gap-[0.9vw] mr-[1.2vw] shrink-0">
-        <img src={metsLogo} alt="MetsXMFanZone" className="h-[6.5vh] w-auto" />
-        <span className="text-[1.3rem] font-bold tracking-wider uppercase text-[color:var(--tv-accent)]">TV Mode</span>
-      </div>
+    <header className="shrink-0 flex items-center gap-[2.2vw] bg-[color:var(--tv-bg)] px-[2.4vw] pt-[1.6vh] pb-[0.4vh]">
+      <img src={metsLogo} alt="MetsXMFanZone" className="h-[5vh] w-auto shrink-0" />
 
-      <nav aria-label="Sections" className="flex items-center gap-[0.6vw] min-w-0">
+      <nav aria-label="Sections" className="flex items-center gap-[1.8vw] min-w-0">
         {sections.map((s) => (
           <button
             key={s.label}
             type="button"
             onClick={s.go}
             className={cn(
-              pill,
-              s.active ? "bg-[color:var(--tv-surface)] text-[color:var(--tv-text)]" : "text-[color:var(--tv-subtext)] hover:text-[color:var(--tv-text)]",
+              link,
+              s.active
+                ? "border-white text-white"
+                : "border-transparent text-[color:var(--tv-subtext)] hover:text-white",
             )}
           >
             {s.label}
@@ -56,15 +57,11 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
         ))}
       </nav>
 
-      <div className="ml-auto flex items-center gap-[0.8vw] shrink-0">
-        <span className="text-[1.2rem] text-[color:var(--tv-subtext)] tabular-nums mr-[0.6vw]">
+      <div className="ml-auto flex items-center gap-[1.4vw] shrink-0">
+        <span className="text-[0.95rem] text-[color:var(--tv-subtext)] tabular-nums">
           {now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
         </span>
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          className={cn(pill, "text-[1.1rem] text-[color:var(--tv-subtext)] hover:text-[color:var(--tv-text)]")}
-        >
+        <button type="button" onClick={() => void signOut()} className={cn(link, "border-transparent text-[0.9rem] text-[color:var(--tv-subtext)] hover:text-white")}>
           Sign out
         </button>
         <button
@@ -72,7 +69,7 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
           onClick={() => {
             leaveTV(navigate);
           }}
-          className={cn(pill, "text-[1.1rem] text-[color:var(--tv-subtext)] hover:text-[color:var(--tv-text)]")}
+          className={cn(link, "border-transparent text-[0.9rem] text-[color:var(--tv-subtext)] hover:text-white")}
         >
           Leave TV
         </button>
