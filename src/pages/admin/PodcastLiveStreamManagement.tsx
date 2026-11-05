@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Radio, Copy, ExternalLink, Video, Mic, RefreshCw } from "lucide-react";
+import RadioBroadcaster from "@/components/admin/RadioBroadcaster";
 
 interface PodcastLiveStream {
   id: string;
@@ -241,7 +242,10 @@ const PodcastLiveStreamManagement = () => {
         )}
       </div>
 
-      {/* Quick Go Live Section */}
+      {/* Go live from this device (microphone, no VDO.Ninja) */}
+      <RadioBroadcaster />
+
+      {/* Quick Go Live Section (VDO.Ninja, kept as a fallback) */}
       <Card className="border-primary/50">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-1.5">

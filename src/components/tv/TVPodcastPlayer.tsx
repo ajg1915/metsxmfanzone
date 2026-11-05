@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Headphones, Square, Bell } from "lucide-react";
 import { usePodcastLive } from "@/components/podcast/PodcastLivePlayer";
 import podcastLogo from "@/assets/podcast-logo.png";
+import RadioAudio from "@/components/podcast/RadioAudio";
+import { useRadioStatus } from "@/lib/podcastRadio";
 
 const listenUrl = (url: string) => {
   let u = url;
@@ -14,6 +16,7 @@ const listenUrl = (url: string) => {
 // MetsXMFanZone podcast radio for the TV: live or offline status and a remote-friendly Listen button.
 export function TVPodcastPlayer() {
   const { live, loaded, isLive } = usePodcastLive();
+  const radio = useRadioStatus();
   const [listening, setListening] = useState(false);
   const wasLive = useRef(false);
 
@@ -22,7 +25,7 @@ export function TVPodcastPlayer() {
     wasLive.current = isLive;
   }, [isLive]);
 
-  const canListen = isLive && !!live?.vdo_ninja_url;
+  const canListen = isLive && (radio.live || !!live?.vdo_ninja_url);
 
   return (
     <section id="tv-sec-podcast" aria-label="MetsXMFanZone Podcast" className="mt-[2.4vh]">
@@ -64,7 +67,8 @@ export function TVPodcastPlayer() {
             <Bell className="h-4 w-4" /> Not live yet
           </span>
         )}
-        {listening && canListen && (
+        {listening && canListen && radio.live && <RadioAudio onEnded={() => setListening(false)} />}
+        {listening && canListen && !radio.live && (
           <iframe
             title="MetsXMFanZone podcast live audio"
             src={listenUrl(live!.vdo_ninja_url!)}

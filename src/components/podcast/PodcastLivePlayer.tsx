@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Headphones, Square, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import podcastLogo from "@/assets/podcast-logo.png";
+import RadioAudio from "@/components/podcast/RadioAudio";
+import { useRadioStatus } from "@/lib/podcastRadio";
 
 export type PodcastLive = {
   id: string;
@@ -73,6 +75,7 @@ const listenUrl = (url: string) => {
 
 const PodcastLivePlayer = ({ showPageLink = false }: { showPageLink?: boolean }) => {
   const { live, loaded, isLive } = usePodcastLive();
+  const radio = useRadioStatus();
   const [listening, setListening] = useState(false);
   const wasLive = useRef(false);
 
@@ -82,7 +85,7 @@ const PodcastLivePlayer = ({ showPageLink = false }: { showPageLink?: boolean })
     wasLive.current = isLive;
   }, [isLive]);
 
-  const canListen = isLive && !!live?.vdo_ninja_url;
+  const canListen = isLive && (radio.live || !!live?.vdo_ninja_url);
 
   return (
     <section aria-labelledby="podcast-live-title" className="py-6 sm:py-8">
@@ -146,8 +149,9 @@ const PodcastLivePlayer = ({ showPageLink = false }: { showPageLink?: boolean })
           </div>
         </div>
 
-        {/* Audio-only: the stream plays here but is kept off-screen. */}
-        {listening && canListen && (
+        {/* Audio-only: the show plays here but nothing is shown. */}
+        {listening && canListen && radio.live && <RadioAudio onEnded={() => setListening(false)} />}
+        {listening && canListen && !radio.live && (
           <iframe
             title="MetsXMFanZone podcast live audio"
             src={listenUrl(live!.vdo_ninja_url!)}
