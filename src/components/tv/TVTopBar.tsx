@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { leaveTV } from "@/lib/tvNavigation";
-import { useAuth } from "@/hooks/useAuth";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 
 interface TVTopBarProps {
@@ -14,7 +12,6 @@ interface TVTopBarProps {
 // button, so the remote's arrows and OK work through useTVFocusNav.
 export function TVTopBar({ onHome }: TVTopBarProps) {
   const navigate = useNavigate();
-  const { signOut } = useAuth();
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -22,14 +19,19 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
     return () => clearInterval(id);
   }, []);
 
-  const sections: { label: string; go: () => void; active?: boolean }[] = [
-    { label: "Home", go: onHome, active: true },
-    { label: "Live", go: () => navigate("/metsxmfanzone") },
-    { label: "Highlights", go: () => navigate("/video-gallery") },
-    { label: "Replays", go: () => navigate("/replay-games") },
-    { label: "News", go: () => navigate("/blog") },
-    { label: "Podcast", go: () => navigate("/podcast") },
-    { label: "Scores", go: () => navigate("/mets-scores") },
+  const [active, setActive] = useState("Home");
+  const jump = (label: string, id: string) => () => {
+    setActive(label);
+    if (id === "top") onHome();
+    else document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+  const sections = [
+    { label: "Home", go: jump("Home", "top") },
+    { label: "Live", go: jump("Live", "tv-sec-live") },
+    { label: "Podcast", go: jump("Podcast", "tv-sec-podcast") },
+    { label: "Highlights", go: jump("Highlights", "tv-sec-highlights") },
+    { label: "Replays", go: jump("Replays", "tv-sec-replays") },
+    { label: "News", go: jump("News", "tv-sec-news") },
   ];
 
   const link =
@@ -47,7 +49,7 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
             onClick={s.go}
             className={cn(
               link,
-              s.active
+              s.label === active
                 ? "border-[#ff4400] text-white"
                 : "border-transparent text-[color:var(--tv-subtext)] hover:text-white",
             )}
@@ -61,18 +63,6 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
         <span className="text-[0.95rem] text-[color:var(--tv-subtext)] tabular-nums">
           {now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
         </span>
-        <button type="button" onClick={() => void signOut()} className={cn(link, "border-transparent text-[0.9rem] text-[color:var(--tv-subtext)] hover:text-white")}>
-          Sign out
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            leaveTV(navigate);
-          }}
-          className={cn(link, "border-transparent text-[0.9rem] text-[color:var(--tv-subtext)] hover:text-white")}
-        >
-          Leave TV
-        </button>
       </div>
     </header>
   );

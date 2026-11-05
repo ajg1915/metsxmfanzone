@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import { TVHeroCarousel, type TVHeroSlide } from "@/components/tv/TVHeroCarousel";
+import { TVPodcastPlayer } from "@/components/tv/TVPodcastPlayer";
 import { TVTopBar } from "@/components/tv/TVTopBar";
 import { TVSignIn } from "@/components/tv/TVSignIn";
 import { TVContentRail } from "@/components/tv/TVContentRail";
@@ -439,13 +440,16 @@ const TVDashboard = () => {
               {SHOW_METS_GAME_CENTER && <GamecastBanner />}
 
               {/* Live Now */}
-              <div ref={liveRef}>
+              <div ref={liveRef} id="tv-sec-live">
                 {liveNowItems.length > 0 && (
                   <TVContentRail title="Live Now" items={liveNowItems} accent onItemClick={openLive} />
                 )}
               </div>
 
               <div ref={storiesRef} />
+
+              {/* Podcast radio */}
+              <TVPodcastPlayer />
 
               {/* Upcoming Mets games */}
               {upcomingMetsItems.length > 0 && <TVContentRail title="Upcoming Mets Games" items={upcomingMetsItems} onItemClick={openLive} />}
@@ -457,6 +461,7 @@ const TVDashboard = () => {
               <TVContentRail title="Included Premium Services" note="All Game events are on these live Streams" items={networkItems} onItemClick={openLive} />
 
               {/* News */}
+              <div id="tv-sec-news" />
               {articleItems.length > 0 && (
                 <TVContentRail
                   title="From the news"
@@ -470,14 +475,30 @@ const TVDashboard = () => {
               {springItems.length > 0 && <TVContentRail title="Spring Training Results" items={springItems} onItemClick={goToSpring} />}
 
               {/* Highlights section */}
-              <div ref={highlightsRef}>
+              <div ref={highlightsRef} id="tv-sec-highlights">
                 {highlightItems.length > 0 && <TVContentRail title="Video Highlights" items={highlightItems} onItemClick={handleHighlightClick} />}
               </div>
 
               {/* Replays section */}
-              <div ref={replaysRef}>
+              <div ref={replaysRef} id="tv-sec-replays">
                 {replayItems.length > 0 && <TVContentRail title="Game Replays" items={replayItems} onItemClick={handleReplayClick} />}
               </div>
+
+              {/* Settings (last section) */}
+              <section aria-label="Settings" className="mt-[3vh]">
+                <div className="mb-[1vh] flex items-center gap-3 pl-[0.2vw]">
+                  <span aria-hidden="true" className="h-[1.2rem] w-[4px] rounded-full bg-[color:var(--tv-accent)]" />
+                  <h2 className="text-[1.35rem] font-bold text-[color:var(--tv-text)]">Settings</h2>
+                </div>
+                <div className="flex gap-[1.2vw]">
+                  <button type="button" onClick={() => void signOut()} className="rounded-[0.6rem] bg-[color:var(--tv-surface)] px-[2vw] py-[1.4vh] text-[1.05rem] font-medium text-[color:var(--tv-text)]">
+                    Sign out
+                  </button>
+                  <button type="button" onClick={() => leaveTV(navigate)} className="rounded-[0.6rem] bg-[color:var(--tv-surface)] px-[2vw] py-[1.4vh] text-[1.05rem] font-medium text-[color:var(--tv-text)]">
+                    Leave TV
+                  </button>
+                </div>
+              </section>
             </div>
           </>
         )}
