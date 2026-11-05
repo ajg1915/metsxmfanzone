@@ -19,8 +19,12 @@ interface TVContentRailProps {
 
 // Row of large cards for the couch: big type, wide cards, and a focus treatment
 // that comes from the global .tv-mode :focus-visible ring (white outline + lift).
-export function TVContentRail({ title, note, items, accent, onItemClick }: TVContentRailProps) {
-  if (items.length === 0) return null;
+export function TVContentRail({ title, note, items: rawItems, accent, onItemClick }: TVContentRailProps) {
+  if (rawItems.length === 0) return null;
+
+  // Anything live goes to the front of its row; the rest keep their order.
+  const isLiveItem = (i: TVRailItem) => !!i.isLive || i.badge === "LIVE";
+  const items = [...rawItems].sort((a, b) => Number(isLiveItem(b)) - Number(isLiveItem(a)));
 
   return (
     <section className="group/rail relative mt-[2.4vh]" aria-label={title}>
