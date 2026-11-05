@@ -99,15 +99,19 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Game Recaps", url: "/admin/game-recaps", icon: Trophy },
         ],
       },
-      {
-        title: "Podcasts",
-        items: [
-          { title: "Podcast Studio", url: "/admin/podcasts", icon: Mic },
-          { title: "Podcast Outlines", url: "/admin/podcast-outlines", icon: ClipboardList },
-        ],
-      },
       { title: "Community Posts", items: [{ title: "Community Posts", url: "/admin/posts", icon: FileText }] },
       { title: "Tutorials", items: [{ title: "Tutorials", url: "/admin/tutorials", icon: BookOpen }] },
+    ],
+  },
+  {
+    key: "podcast",
+    title: "Podcast",
+    icon: Mic,
+    hint: "Go live, studio, outlines",
+    groups: [
+      { title: "Podcast Live", items: [{ title: "Podcast Live", url: "/admin/podcast-live-stream", icon: Mic }] },
+      { title: "Podcast Studio", items: [{ title: "Podcast Studio", url: "/admin/podcasts", icon: Mic }] },
+      { title: "Podcast Outlines", items: [{ title: "Podcast Outlines", url: "/admin/podcast-outlines", icon: ClipboardList }] },
     ],
   },
   {
@@ -177,7 +181,7 @@ export const ADMIN_HUBS: AdminHub[] = [
     key: "marketing",
     title: "Marketing",
     icon: Mail,
-    hint: "Email, podcast live, ads, social, SEO",
+    hint: "Email, ads, social, SEO",
     groups: [
       {
         title: "Email",
@@ -187,7 +191,6 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Email Templates", url: "/admin/email-templates", icon: Palette },
         ],
       },
-      { title: "Podcast Live", items: [{ title: "Podcast Live", url: "/admin/podcast-live-stream", icon: Mic }] },
       { title: "Business Ads", items: [{ title: "Business Ads", url: "/admin/business-ads", icon: Megaphone }] },
       { title: "Social Media", items: [{ title: "Social Media", url: "/admin/social-media", icon: Share2 }] },
       { title: "SEO Settings", items: [{ title: "SEO Settings", url: "/admin/seo", icon: Search }] },
