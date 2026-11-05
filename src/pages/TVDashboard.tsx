@@ -476,6 +476,9 @@ const TVDashboard = () => {
               {/* Podcast radio */}
               <TVPodcastPlayer />
 
+              {/* Premium services */}
+              <TVContentRail title="Included Premium Services" note="All Game events are on these live Streams" items={networkItems} onItemClick={openLive} />
+
               {/* Live and upcoming games */}
               <TVGamesRail />
 
@@ -483,9 +486,6 @@ const TVDashboard = () => {
               <div id="tv-sec-series">
                 <TVContentRail title="Matchup Series" note="Mets vs the league" items={matchupItems} onItemClick={(item: any) => navigate(`/matchup/${item.id}`)} />
               </div>
-
-              {/* Premium services */}
-              <TVContentRail title="Included Premium Services" note="All Game events are on these live Streams" items={networkItems} onItemClick={openLive} />
 
               {/* NY team scores */}
               <TVNYScores />
