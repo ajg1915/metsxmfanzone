@@ -99,19 +99,24 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Game Recaps", url: "/admin/game-recaps", icon: Trophy },
         ],
       },
+      {
+        title: "Podcasts",
+        items: [
+          { title: "Podcast Studio", url: "/admin/podcasts", icon: Mic },
+          { title: "Podcast Outlines", url: "/admin/podcast-outlines", icon: ClipboardList },
+        ],
+      },
       { title: "Community Posts", items: [{ title: "Community Posts", url: "/admin/posts", icon: FileText }] },
       { title: "Tutorials", items: [{ title: "Tutorials", url: "/admin/tutorials", icon: BookOpen }] },
     ],
   },
   {
-    key: "podcast",
-    title: "Podcast",
-    icon: Mic,
-    hint: "Go live, studio, outlines",
+    key: "live-radio",
+    title: "Live Radio",
+    icon: Radio,
+    hint: "Go live with your mic",
     groups: [
-      { title: "Podcast Live", items: [{ title: "Podcast Live", url: "/admin/podcast-live-stream", icon: Mic }] },
-      { title: "Podcast Studio", items: [{ title: "Podcast Studio", url: "/admin/podcasts", icon: Mic }] },
-      { title: "Podcast Outlines", items: [{ title: "Podcast Outlines", url: "/admin/podcast-outlines", icon: ClipboardList }] },
+      { title: "Live Radio", items: [{ title: "Live Podcast Radio", url: "/admin/podcast-live-stream", icon: Mic }] },
     ],
   },
   {

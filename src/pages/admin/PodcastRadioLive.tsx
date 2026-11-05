@@ -4,15 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import RadioBroadcaster from "@/components/admin/RadioBroadcaster";
 import { useRadioStatus } from "@/lib/podcastRadio";
 
-// Admin › Marketing › Podcast Live: go live with the MetsXMFanZone podcast from this device's microphone.
+// Admin › Live Radio: go live with the MetsXMFanZone podcast from this device's microphone.
 export default function PodcastRadioLive() {
   const radio = useRadioStatus();
   return (
     <div className="max-w-2xl space-y-4 px-2 py-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Podcast</p>
-          <h1 className="text-2xl font-bold text-foreground">Podcast Live</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-primary">Live Radio</p>
+          <h1 className="text-2xl font-bold text-foreground">Live Podcast Radio</h1>
           <p className="text-sm text-muted-foreground">Go live with your microphone. Listeners hear it on the site, the app and the TV.</p>
         </div>
         {radio.live ? (
