@@ -11,7 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/hooks/useSubscription";
-import { useDevice, isPhoneUserAgent, enterTVMode } from "@/hooks/use-device";
+import { useDevice } from "@/hooks/use-device";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import {
   DropdownMenu,
@@ -216,8 +216,6 @@ const Navigation = () => {
 
   const isPremium = isAdmin || tier === "weekly" || tier === "premium" || tier === "annual";
 
-  // "TV Mode" in the menu: signed-in paid members on a PC or tablet who aren't already in TV mode
-  const showTVMode = !!user && isPaidMember && !isTVDevice && !isPhoneUserAgent();
 
   const handleProtectedNavigation = (path: string) => {
     if (!user) {
@@ -286,7 +284,6 @@ const Navigation = () => {
             isLoggedIn={!!user}
             goProtected={handleProtectedNavigation}
             goPro={handleProNavigation}
-            onTVMode={showTVMode ? enterTVMode : undefined}
           />
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -391,16 +388,6 @@ const Navigation = () => {
                           <span className="text-sm font-semibold">Choose a plan</span>
                         </DropdownMenuItem>
                       )}
-                      {showTVMode && (
-                        <DropdownMenuItem
-                          onClick={enterTVMode}
-                          className="rounded-lg cursor-pointer hover:bg-primary/10 focus:bg-primary/10 focus:text-primary transition-colors"
-                        >
-                          <Tv className="w-4 h-4 mr-2.5 text-primary" />
-                          <span className="text-sm">Switch to TV Mode</span>
-                        </DropdownMenuItem>
-                      )}
-
                       <Collapsible
                         open={notifOpen}
                         onOpenChange={(open) => {
@@ -563,8 +550,7 @@ const Navigation = () => {
                   goProtected={handleProtectedNavigation}
                   goPro={handleProNavigation}
                   onSignOut={async () => { await handleAuthClick(); }}
-                  onTVMode={showTVMode ? enterTVMode : undefined}
-                />
+                      />
               </SheetContent>
             </Sheet>
           </div>

@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useDevice, isPhoneUserAgent, enterTVMode } from "@/hooks/use-device";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToR2 } from "@/lib/r2Upload";
@@ -43,7 +44,9 @@ const PLAN_PRICES: Record<MemberPlan, string> = {
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
-  const { limitedAccess, hasNYSports } = useSubscription();
+  const { limitedAccess, hasNYSports, isPremium: isPaidMember } = useSubscription();
+  const { isTVDevice } = useDevice();
+  const showTVMode = !!user && isPaidMember && !isTVDevice && !isPhoneUserAgent();
   // Which membership the cancel dialog is for: the Mets plan or the NY Sports add-on.
   const [cancelTarget, setCancelTarget] = useState<"mets" | "ny_sports">("mets");
   const navigate = useNavigate();
@@ -279,6 +282,16 @@ const Dashboard = () => {
               ))}
             </div>
           </section>
+
+          {showTVMode && (
+            <section className="p-0">
+              <button type="button" onClick={enterTVMode} className="flex min-h-20 w-full items-center gap-3 rounded-lg border border-border/40 bg-card/70 p-3 text-left transition-colors hover:border-primary/60 hover:bg-card">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary/40"><Tv className="h-5 w-5 text-foreground" /></div>
+                <div className="min-w-0 flex-1"><p className="text-sm font-semibold">TV Mode</p><p className="text-xs text-muted-foreground">Big-screen layout for your PC or tablet</p></div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </section>
+          )}
 
           <MemberApps />
 
