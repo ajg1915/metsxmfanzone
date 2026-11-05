@@ -1,4 +1,4 @@
-// Run after `npx cap add android`. Sets the app version and lets the app ask for notification permission (Android 13+).
+// Run after `npx cap add android`. Sets the app version, and asks Android for notifications and microphone access.
 import fs from "node:fs";
 import path from "node:path";
 
@@ -10,8 +10,16 @@ fs.writeFileSync(gradlePath, gradle);
 
 const manifestPath = path.resolve("android/app/src/main/AndroidManifest.xml");
 let xml = fs.readFileSync(manifestPath, "utf8");
-if (!xml.includes("POST_NOTIFICATIONS")) {
-  xml = xml.replace("</manifest>", '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n</manifest>');
+// Notifications (Android 13+), and the microphone so the podcast can go live from the phone.
+const permissions = [
+  "android.permission.POST_NOTIFICATIONS",
+  "android.permission.RECORD_AUDIO",
+  "android.permission.MODIFY_AUDIO_SETTINGS",
+];
+for (const name of permissions) {
+  if (!xml.includes(name)) {
+    xml = xml.replace("</manifest>", `    <uses-permission android:name="${name}" />\n</manifest>`);
+  }
 }
 fs.writeFileSync(manifestPath, xml);
 
@@ -21,6 +29,10 @@ if (fs.existsSync(anydpi)) fs.rmSync(anydpi, { recursive: true, force: true });
 
 if (!fs.readFileSync(gradlePath, "utf8").includes(`versionName "2.0.${run}"`)) {
   console.error("Version patch failed");
+  process.exit(1);
+}
+if (!xml.includes("android.permission.RECORD_AUDIO")) {
+  console.error("Microphone permission patch failed");
   process.exit(1);
 }
 console.log(`Mobile app patched: version 2.0.${run}`);
