@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 // TV app colours. Admin › TV App Colours picks Day, Night or Automatic (by the TV's clock) and can
-// change each colour. Day = the normal MetsXMFanZone colours; Night = grey, blue and orange.
+// change each colour. Day = the normal MetsXMFanZone colours; Night = the same Mets blue and orange, just darker.
 export const TV_THEME_KEY = "tv_theme";
 
 export const TV_COLOR_FIELDS = [
@@ -29,23 +29,23 @@ export interface TVThemeSettings {
 }
 
 export const DEFAULT_DAY: TVPalette = {
-  bg: "#07101f",
-  card: "#0f1b30",
-  surface: "#17263f",
+  bg: "#07111d",
+  card: "#0c1b2c",
+  surface: "#0b3e75",
   text: "#f2f5fa",
-  subtext: "#9fb0c9",
-  accent: "#ff5910",
-  highlight: "#0b3b75",
+  subtext: "#b4c3d9",
+  accent: "#ff4400",
+  highlight: "#0b3e75",
 };
 
 export const DEFAULT_NIGHT: TVPalette = {
-  bg: "#16191f",
-  card: "#20252d",
-  surface: "#2c323c",
-  text: "#e9ecf1",
-  subtext: "#a3acb9",
-  accent: "#ff6a1f",
-  highlight: "#3568b8",
+  bg: "#050c15",
+  card: "#09151f",
+  surface: "#0a3463",
+  text: "#e9eef6",
+  subtext: "#a3b4cc",
+  accent: "#ff4400",
+  highlight: "#0b3e75",
 };
 
 export const DEFAULT_TV_THEME: TVThemeSettings = {

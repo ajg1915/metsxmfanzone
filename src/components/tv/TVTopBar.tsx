@@ -36,7 +36,7 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
     "relative px-[0.2vw] py-[1vh] text-[1.05rem] font-medium whitespace-nowrap transition-colors border-b-[3px]";
 
   return (
-    <header className="shrink-0 flex items-center gap-[2.2vw] bg-[color:var(--tv-bg)] px-[2.4vw] pt-[1.6vh] pb-[0.4vh]">
+    <header className="shrink-0 flex items-center gap-[2.2vw] bg-[#0b3e75] border-b-[3px] border-[#ff4400] px-[2.4vw] pt-[1.2vh] pb-0">
       <img src={metsLogo} alt="MetsXMFanZone" className="h-[5vh] w-auto shrink-0" />
 
       <nav aria-label="Sections" className="flex items-center gap-[1.8vw] min-w-0">
@@ -48,7 +48,7 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
             className={cn(
               link,
               s.active
-                ? "border-white text-white"
+                ? "border-[#ff4400] text-white"
                 : "border-transparent text-[color:var(--tv-subtext)] hover:text-white",
             )}
           >

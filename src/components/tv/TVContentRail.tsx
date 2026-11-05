@@ -26,6 +26,7 @@ export function TVContentRail({ title, note, items, accent, onItemClick }: TVCon
     <section className="group/rail relative mt-[2.4vh]" aria-label={title}>
       <div className="flex items-center gap-3 mb-[1.4vh] pl-[0.2vw]">
         {accent && <span className="h-3 w-3 rounded-full bg-[color:var(--tv-accent)] animate-pulse" />}
+        <span aria-hidden="true" className="h-[1.2rem] w-[4px] rounded-full bg-[color:var(--tv-accent)]" />
         <h2 className={cn("text-[1.35rem] font-bold", accent ? "text-[color:var(--tv-accent)]" : "text-[color:var(--tv-text)]")}>{title}</h2>
         {note && <span className="text-[1.05rem] text-[color:var(--tv-subtext)]">{note}</span>}
         {items.length > 1 && (

@@ -92,7 +92,7 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
           <button
             type="button"
             onClick={() => navigate(slide.to)}
-            className="rounded-full bg-white px-[1.8vw] py-[1.1vh] text-[1.05rem] font-bold text-[color:var(--tv-bg)]"
+            className="rounded-full bg-[#ff4400] px-[1.8vw] py-[1.1vh] text-[1.05rem] font-bold text-white"
           >
             {slide.primaryLabel}
           </button>
