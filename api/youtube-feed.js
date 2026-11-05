@@ -2,7 +2,7 @@
 // Finds the channel from its @handle, reads the channel's public video feed, and returns
 // a short JSON list. Cached for 30 minutes so it barely touches the server.
 
-const HANDLE = "metsxmfanzone";
+const HANDLE = "MetsXMFanZonePodcast";
 const UA = "Mozilla/5.0 (compatible; MetsXMFanZone/1.0)";
 
 const decode = (s) =>
