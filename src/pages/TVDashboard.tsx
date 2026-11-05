@@ -152,9 +152,28 @@ const TVDashboard = () => {
       streamUrl: s.stream_url,
       isLive: s.status === "live",
       offline: s.status === "live" && !!(s as any).offline_loop,
+      start: s.scheduled_start as string | null,
+      spring: ((s as any).assigned_pages || []).includes("spring-training-games") || /spring training/i.test(s.title),
     })),
     [liveStreams]
   );
+
+  // Upcoming schedule rails: scheduled games only, soonest first, split into regular season and spring training.
+  const gameRail = useCallback((spring: boolean) => {
+    const nowMs = Date.now() - 4 * 3600_000;
+    return liveItems
+      .filter((i) => i.badge === "Upcoming" && !NETWORK_STREAM.test(i.title) && i.spring === spring && (!i.start || new Date(i.start).getTime() >= nowMs))
+      .sort((a, b) => (a.start ? new Date(a.start).getTime() : 8.64e15) - (b.start ? new Date(b.start).getTime() : 8.64e15))
+      .slice(0, 12)
+      .map((i) => ({
+        ...i,
+        subtitle: i.start
+          ? new Date(i.start).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET"
+          : "Date TBD",
+      }));
+  }, [liveItems]);
+  const upcomingMetsItems = useMemo(() => gameRail(false), [gameRail]);
+  const springStreamItems = useMemo(() => gameRail(true), [gameRail]);
 
   // Live Now: only streams that are live right now (upcoming ones show on their own page/rail)
   const liveNowItems = useMemo(
@@ -428,6 +447,9 @@ const TVDashboard = () => {
 
               <div ref={storiesRef} />
 
+              {/* Upcoming Mets games */}
+              {upcomingMetsItems.length > 0 && <TVContentRail title="Upcoming Mets Games" items={upcomingMetsItems} onItemClick={openLive} />}
+
               {/* NY team scores */}
               <TVNYScores />
 
@@ -444,7 +466,8 @@ const TVDashboard = () => {
               )}
 
               {/* Spring Training */}
-              {springItems.length > 0 && <TVContentRail title="Spring Training" items={springItems} onItemClick={goToSpring} />}
+              {springStreamItems.length > 0 && <TVContentRail title="Spring Training Games" items={springStreamItems} onItemClick={openLive} />}
+              {springItems.length > 0 && <TVContentRail title="Spring Training Results" items={springItems} onItemClick={goToSpring} />}
 
               {/* Highlights section */}
               <div ref={highlightsRef}>
