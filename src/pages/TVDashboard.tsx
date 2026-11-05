@@ -143,17 +143,7 @@ const TVDashboard = () => {
     },
   });
 
-  // Mets 40-man roster (MLB Stats API) and the MetsXMFanZone YouTube channel (/api/youtube-feed).
-  const { data: rosterPlayers = [] } = useQuery({
-    queryKey: ["tv-roster"],
-    staleTime: 30 * 60_000,
-    queryFn: async () => {
-      const r = await fetch("https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=40Man");
-      if (!r.ok) throw new Error("roster");
-      const j = await r.json();
-      return (j.roster || []) as any[];
-    },
-  });
+  // MetsXMFanZone YouTube channel (/api/youtube-feed).
   const { data: ytVideos = [] } = useQuery({
     queryKey: ["tv-youtube"],
     staleTime: 30 * 60_000,
@@ -165,21 +155,6 @@ const TVDashboard = () => {
     },
   });
   const [ytPlaying, setYtPlaying] = useState<{ id: string; title: string } | null>(null);
-
-  const rosterItems = useMemo(
-    () =>
-      [...rosterPlayers]
-        .sort((a, b) => (parseInt(a.jerseyNumber, 10) || 999) - (parseInt(b.jerseyNumber, 10) || 999))
-        .map((p) => ({
-          id: String(p.person.id),
-          title: p.person.fullName,
-          subtitle: `${p.jerseyNumber ? `#${p.jerseyNumber} • ` : ""}${p.position?.abbreviation || ""}`,
-          thumbnail: `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_426,q_auto:best/v1/people/${p.person.id}/headshot/67/current`,
-          fit: "contain" as const,
-          bg: "linear-gradient(160deg,#0b3e75 0%,#07111d 100%)",
-        })),
-    [rosterPlayers]
-  );
 
   const nickname = (name: string) => {
     const w = name.split(" ");
@@ -565,13 +540,6 @@ const TVDashboard = () => {
               {/* Replays section */}
               <div ref={replaysRef} id="tv-sec-replays">
                 {replayItems.length > 0 && <TVContentRail title="Game Replays" items={replayItems} onItemClick={handleReplayClick} />}
-              </div>
-
-              {/* Mets roster */}
-              <div id="tv-sec-roster">
-                {rosterItems.length > 0 && (
-                  <TVContentRail title="Mets Roster" note="40-man roster" items={rosterItems} onItemClick={(item: any) => navigate(`/player/${item.id}`)} />
-                )}
               </div>
 
               {/* Settings (last section) */}
