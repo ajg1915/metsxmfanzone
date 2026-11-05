@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import { TVHeroCarousel, type TVHeroSlide } from "@/components/tv/TVHeroCarousel";
+import { TVSpringTraining } from "@/components/tv/TVSpringTraining";
 import { TVGamesRail } from "@/components/tv/TVGamesRail";
 import { OPPONENT_REGISTRY } from "@/pages/matchups/opponentRegistry";
 import { TVPodcastPlayer } from "@/components/tv/TVPodcastPlayer";
@@ -19,7 +20,6 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Crown } from "lucide-react";
-import fanartGeneral from "@/assets/fanart-mets-general.jpg";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 import channelMlb from "@/assets/channel-mlb.jpg";
 import channelEspn from "@/assets/channel-espn.jpg";
@@ -200,60 +200,6 @@ const TVDashboard = () => {
     })),
     [liveStreams]
   );
-
-  // The website's "Regular Season Live Games" row: streams assigned to the spring-training-games page,
-  // live or scheduled, soonest first (the same query the site runs).
-  const { data: siteGameStreams = [] } = useQuery({
-    queryKey: ["tv-site-game-streams"],
-    refetchInterval: 60_000,
-    queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("live_streams_public")
-        .select("*")
-        .eq("published", true)
-        .in("status", ["live", "scheduled"])
-        .contains("assigned_pages", ["spring-training-games"])
-        .order("scheduled_start", { ascending: true })
-        .limit(8);
-      if (error) throw error;
-      return (data || []) as any[];
-    },
-  });
-  const siteGameItems = useMemo(
-    () =>
-      siteGameStreams.map((s) => ({
-        id: s.id as string,
-        title: s.title as string,
-        thumbnail: (s.thumbnail_url as string) || fanartGeneral,
-        badge: s.status === "live" ? "LIVE" : "UPCOMING",
-        isLive: s.status === "live",
-        subtitle:
-          s.status === "live"
-            ? s.viewers_count > 0
-              ? `${s.viewers_count} watching`
-              : "Watch now"
-            : s.scheduled_start
-              ? new Date(s.scheduled_start).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET"
-              : "",
-      })),
-    [siteGameStreams]
-  );
-
-  // Upcoming schedule rails: scheduled games only, soonest first, split into regular season and spring training.
-  const gameRail = useCallback((spring: boolean) => {
-    const nowMs = Date.now() - 4 * 3600_000;
-    return liveItems
-      .filter((i) => i.badge === "Upcoming" && !NETWORK_STREAM.test(i.title) && i.spring === spring && (!i.start || new Date(i.start).getTime() >= nowMs))
-      .sort((a, b) => (a.start ? new Date(a.start).getTime() : 8.64e15) - (b.start ? new Date(b.start).getTime() : 8.64e15))
-      .slice(0, 12)
-      .map((i) => ({
-        ...i,
-        subtitle: i.start
-          ? new Date(i.start).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET"
-          : "Date TBD",
-      }));
-  }, [liveItems]);
-  const upcomingMetsItems = useMemo(() => gameRail(false), [gameRail]);
 
   // Live Now: only streams that are live right now (upcoming ones show on their own page/rail)
   const liveNowItems = useMemo(
@@ -522,10 +468,8 @@ const TVDashboard = () => {
                 )}
               </div>
 
-              {/* Regular Season Live Games: the same row as the website, right under Live Now */}
-              {siteGameItems.length > 0 && (
-                <TVContentRail title="Regular Season Live Games" note="FREE" items={siteGameItems} onItemClick={() => navigate("/metsxmfanzone")} />
-              )}
+              {/* Spring Training: countdown and games, always shown, right under Live Now */}
+              <TVSpringTraining />
 
               <div ref={storiesRef} />
 
@@ -535,19 +479,16 @@ const TVDashboard = () => {
               {/* Live and upcoming games */}
               <TVGamesRail />
 
-              {/* Upcoming Mets games */}
-              {upcomingMetsItems.length > 0 && <TVContentRail title="Upcoming Mets Games" items={upcomingMetsItems} onItemClick={openLive} />}
-
               {/* Matchup series */}
               <div id="tv-sec-series">
                 <TVContentRail title="Matchup Series" note="Mets vs the league" items={matchupItems} onItemClick={(item: any) => navigate(`/matchup/${item.id}`)} />
               </div>
 
-              {/* NY team scores */}
-              <TVNYScores />
-
               {/* Premium services */}
               <TVContentRail title="Included Premium Services" note="All Game events are on these live Streams" items={networkItems} onItemClick={openLive} />
+
+              {/* NY team scores */}
+              <TVNYScores />
 
               {/* News */}
               <div id="tv-sec-news" />
