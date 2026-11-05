@@ -292,6 +292,7 @@ export default function AdminDashboard() {
     { title: "Blog", description: "Write and publish articles", icon: FileText, url: "/admin/drafts", tag: `${stats.totalBlogs} posts` },
     { title: "Media library", description: "Images, video and audio", icon: ImageIcon, url: "/admin/media-library", tag: "Uploads" },
     { title: "Highlights", description: "Video gallery and clips", icon: Video, url: "/admin/video-gallery-management", tag: "Videos" },
+    { title: "Podcast live", description: "Go live with your mic or phone", icon: Mic, url: "/admin/podcast-live-stream", tag: "Go live" },
     { title: "Podcasts", description: "Episodes and shows", icon: Mic, url: "/admin/podcasts", tag: `${stats.totalPodcasts} episodes` },
     { title: "Stories", description: "Short posts on the home page", icon: Sparkles, url: "/admin/stories", tag: `${stats.totalStories} live` },
     { title: "Members", description: "Accounts, roles and access", icon: Users, url: "/admin/user-management", tag: `${stats.activeUsers} active` },

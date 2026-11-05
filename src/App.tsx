@@ -58,7 +58,7 @@ const DraftEditor = lazyWithRetry(() => import("./pages/admin/DraftEditor"), "pa
 const DraftsWorkspace = lazyWithRetry(() => import("./pages/admin/DraftsWorkspace"), "page-admin-drafts-workspace");
 const VideoGalleryManagement = lazyWithRetry(() => import("./pages/admin/VideoGalleryManagement"), "page-admin-video-gallery-management");
 const PodcastStudio = lazyWithRetry(() => import("./pages/admin/PodcastStudio"), "page-admin-podcast-studio");
-const PodcastLiveStreamManagement = lazyWithRetry(() => import("./pages/admin/PodcastLiveStreamManagement"), "page-admin-podcast-live-stream-management");
+const PodcastLiveStreamManagement = lazyWithRetry(() => import("./pages/admin/PodcastRadioLive"), "page-admin-podcast-radio-live");
 
 
 const LiveStreamManagement = lazyWithRetry(() => import("./pages/admin/LiveStreamManagement"), "page-admin-live-stream-management");

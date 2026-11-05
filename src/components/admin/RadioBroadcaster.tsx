@@ -23,6 +23,16 @@ export default function RadioBroadcaster() {
   const broadcast = useRef<Broadcast | null>(null);
   const meter = useRef<{ ctx: AudioContext; raf: number } | null>(null);
 
+  // The site's LIVE badge, "Podcast LIVE" push alerts and emails all key off this one row, so flip it with the show.
+  const setSiteLive = async (isLive: boolean) => {
+    const { data: row } = await supabase.from("podcast_live_stream").select("id").limit(1).maybeSingle();
+    if (!row) return;
+    const patch = isLive
+      ? { is_live: true, title: title.trim() || "MetsXMFanZone Podcast live", description: description.trim() || null }
+      : { is_live: false };
+    await supabase.from("podcast_live_stream").update(patch).eq("id", row.id);
+  };
+
   const loadDevices = async () => {
     const list = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "audioinput");
     setDevices(list);
@@ -82,11 +92,13 @@ export default function RadioBroadcaster() {
           setError("The connection dropped. Press Go live again to restart.");
           setOnAir(false);
           void stopMeter();
+          void setSiteLive(false);
         },
       });
       broadcast.current = b;
       startMeter(b.stream);
       setOnAir(true);
+      await setSiteLive(true);
       await loadDevices();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not go live");
@@ -100,6 +112,7 @@ export default function RadioBroadcaster() {
     await stopMeter();
     await broadcast.current?.stop();
     broadcast.current = null;
+    await setSiteLive(false);
     setOnAir(false);
     setBusy(false);
   };

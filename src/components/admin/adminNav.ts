@@ -65,7 +65,6 @@ export const ADMIN_HUBS: AdminHub[] = [
         title: "Players & Radio",
         items: [
           { title: "Radio Network", url: "/admin/gameday-live", icon: Radio },
-          { title: "Podcast Live", url: "/admin/podcast-live-stream", icon: Mic },
           { title: "Private Player", url: "/admin/private-player", icon: Monitor },
           { title: "MetsXM Player", url: "/metsxm-player", icon: Monitor },
         ],
@@ -178,7 +177,7 @@ export const ADMIN_HUBS: AdminHub[] = [
     key: "marketing",
     title: "Marketing",
     icon: Mail,
-    hint: "Email, ads, social, SEO",
+    hint: "Email, podcast live, ads, social, SEO",
     groups: [
       {
         title: "Email",
@@ -188,6 +187,7 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Email Templates", url: "/admin/email-templates", icon: Palette },
         ],
       },
+      { title: "Podcast Live", items: [{ title: "Podcast Live", url: "/admin/podcast-live-stream", icon: Mic }] },
       { title: "Business Ads", items: [{ title: "Business Ads", url: "/admin/business-ads", icon: Megaphone }] },
       { title: "Social Media", items: [{ title: "Social Media", url: "/admin/social-media", icon: Share2 }] },
       { title: "SEO Settings", items: [{ title: "SEO Settings", url: "/admin/seo", icon: Search }] },
