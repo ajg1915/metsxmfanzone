@@ -26,6 +26,7 @@ export interface TVThemeSettings {
   nightStart: string;
   day: TVPalette;
   night: TVPalette;
+  v?: number;
 }
 
 export const DEFAULT_DAY: TVPalette = {
@@ -56,7 +57,14 @@ export const DEFAULT_TV_THEME: TVThemeSettings = {
   night: DEFAULT_NIGHT,
 };
 
+/** Palettes saved before this version were the old grey/navy look; they reset to the Mets blue and orange. */
+export const TV_THEME_VERSION = 2;
+
 export function withDefaults(raw: Partial<TVThemeSettings> | null | undefined): TVThemeSettings {
+  if (raw && (raw as { v?: number }).v !== TV_THEME_VERSION) {
+    // Keep the day/night timing the owner chose, but drop the old colours.
+    raw = { mode: raw.mode, dayStart: raw.dayStart, nightStart: raw.nightStart };
+  }
   return {
     ...DEFAULT_TV_THEME,
     ...(raw ?? {}),

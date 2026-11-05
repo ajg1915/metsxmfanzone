@@ -12,6 +12,7 @@ import {
   DEFAULT_TV_THEME,
   TV_COLOR_FIELDS,
   TV_THEME_KEY,
+  TV_THEME_VERSION,
   currentTVLook,
   useTVThemeSettings,
   type TVPalette,
@@ -22,8 +23,36 @@ import {
 const MODES: { key: TVThemeMode; label: string; text: string; icon: typeof Sun }[] = [
   { key: "auto", label: "Automatic", text: "Day look in the daytime, night look at night", icon: Clock },
   { key: "day", label: "Always day", text: "The normal MetsXMFanZone colours", icon: Sun },
-  { key: "night", label: "Always night", text: "Grey, blue and orange", icon: Moon },
+  { key: "night", label: "Always night", text: "Darker Mets blue and orange", icon: Moon },
 ];
+
+/** A colour code box that always shows the # first, like #ff4400. Accepts typing or pasting with or without #. */
+function HexField({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
+  const [text, setText] = useState(value.toUpperCase());
+  useEffect(() => setText(value.toUpperCase()), [value]);
+  const commit = (raw: string) => {
+    const t = raw.trim().replace(/^#*/, "");
+    const full = t.length === 3 ? t.split("").map((c) => c + c).join("") : t;
+    if (/^[0-9a-fA-F]{6}$/.test(full)) onChange(`#${full.toLowerCase()}`);
+    else setText(value.toUpperCase());
+  };
+  return (
+    <input
+      id={id}
+      value={text}
+      maxLength={7}
+      spellCheck={false}
+      onChange={(e) => {
+        const t = "#" + e.target.value.replace(/[^0-9a-fA-F]/g, "").slice(0, 6);
+        setText(t.toUpperCase());
+        if (/^#[0-9a-fA-F]{6}$/.test(t)) onChange(t.toLowerCase());
+      }}
+      onBlur={(e) => commit(e.target.value)}
+      onKeyDown={(e) => e.key === "Enter" && commit((e.target as HTMLInputElement).value)}
+      className="h-9 w-[5.5rem] rounded border border-border bg-background px-2 font-mono text-sm uppercase text-foreground"
+    />
+  );
+}
 
 const to12h = (hhmm: string) => {
   const [h, m] = hhmm.split(":").map(Number);
@@ -90,7 +119,7 @@ export default function TVAppColors() {
   const save = async () => {
     setSaving(true);
     const { error } = await supabase.from("site_settings").upsert(
-      { setting_key: TV_THEME_KEY, setting_value: s as never, setting_type: "general", is_public: true },
+      { setting_key: TV_THEME_KEY, setting_value: { ...s, v: TV_THEME_VERSION } as never, setting_type: "general", is_public: true },
       { onConflict: "setting_key" },
     );
     setSaving(false);
@@ -128,13 +157,16 @@ export default function TVAppColors() {
           {TV_COLOR_FIELDS.map((f) => (
             <div key={f.key} className="flex items-center justify-between gap-3 rounded-lg border border-border/40 px-3 py-2">
               <Label htmlFor={`${look}-${f.key}`} className="text-sm">{f.label}</Label>
-              <input
-                id={`${look}-${f.key}`}
-                type="color"
-                value={p[f.key]}
-                onChange={(e) => setColor(look, f.key, e.target.value)}
-                className="h-9 w-12 cursor-pointer rounded border border-border bg-transparent p-0.5"
-              />
+              <div className="flex items-center gap-2">
+                <HexField id={`${look}-${f.key}`} value={p[f.key]} onChange={(v) => setColor(look, f.key, v)} />
+                <input
+                  type="color"
+                  aria-label={`${f.label} colour picker`}
+                  value={p[f.key]}
+                  onChange={(e) => setColor(look, f.key, e.target.value)}
+                  className="h-9 w-12 cursor-pointer rounded border border-border bg-transparent p-0.5"
+                />
+              </div>
             </div>
           ))}
         </div>

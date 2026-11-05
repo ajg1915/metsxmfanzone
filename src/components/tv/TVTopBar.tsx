@@ -28,21 +28,20 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
   const sections = [
     { label: "Home", go: jump("Home", "top") },
     { label: "Live", go: jump("Live", "tv-sec-live") },
-    { label: "Scores", go: jump("Scores", "tv-sec-scores") },
+    { label: "Games", go: jump("Games", "tv-sec-scores") },
     { label: "Podcast", go: jump("Podcast", "tv-sec-podcast") },
     { label: "Highlights", go: jump("Highlights", "tv-sec-highlights") },
     { label: "Replays", go: jump("Replays", "tv-sec-replays") },
     { label: "News", go: jump("News", "tv-sec-news") },
   ];
 
-  const link =
-    "relative px-[0.2vw] py-[1vh] text-[1.05rem] font-medium whitespace-nowrap transition-colors border-b-[3px]";
+  const link = "rounded-full px-[1.1vw] py-[0.9vh] text-[0.95rem] font-medium whitespace-nowrap transition-colors";
 
   return (
-    <header className="shrink-0 flex items-center gap-[2.2vw] bg-[#0b3e75] border-b-[3px] border-[#ff4400] px-[2.4vw] pt-[1.2vh] pb-0">
+    <header className="shrink-0 flex items-center gap-[2vw] bg-[color:var(--tv-bg)] px-[2.4vw] py-[1.4vh]">
       <img src={metsLogo} alt="MetsXMFanZone" className="h-[5vh] w-auto shrink-0" />
 
-      <nav aria-label="Sections" className="flex items-center gap-[1.8vw] min-w-0">
+      <nav aria-label="Sections" className="flex items-center gap-[0.4vw] min-w-0">
         {sections.map((s) => (
           <button
             key={s.label}
@@ -51,8 +50,8 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
             className={cn(
               link,
               s.label === active
-                ? "border-[#ff4400] text-white"
-                : "border-transparent text-[color:var(--tv-subtext)] hover:text-white",
+                ? "bg-[color:var(--tv-highlight)] text-white"
+                : "text-[color:var(--tv-subtext)] hover:text-white",
             )}
           >
             {s.label}
@@ -60,11 +59,9 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
         ))}
       </nav>
 
-      <div className="ml-auto flex items-center gap-[1.4vw] shrink-0">
-        <span className="text-[0.95rem] text-[color:var(--tv-subtext)] tabular-nums">
-          {now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
-        </span>
-      </div>
+      <span className="ml-auto text-[0.9rem] text-[color:var(--tv-subtext)] tabular-nums shrink-0">
+        {now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+      </span>
     </header>
   );
 }

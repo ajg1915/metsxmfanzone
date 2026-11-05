@@ -49,7 +49,7 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
       onBlur={(e) => {
         if (!ref.current?.contains(e.relatedTarget as Node | null)) setPaused(false);
       }}
-      className="relative w-full min-h-[44vh] bg-[color:var(--tv-bg)]"
+      className="relative w-full min-h-[50vh] bg-[color:var(--tv-bg)]"
       aria-roledescription="carousel"
     >
       <div className="absolute inset-0 overflow-hidden">
@@ -65,26 +65,26 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
           key={slide.id}
           src={slide.image}
           alt=""
-          className="absolute right-0 top-0 h-full w-[68%] object-cover animate-in fade-in duration-700"
+          className="absolute right-0 top-0 h-full w-[74%] object-cover animate-in fade-in duration-700"
         />
       )}
       {/* Fade to the page colour on the left and bottom so the text always reads */}
       <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--tv-bg)_0%,rgba(0,0,0,0)_55%),linear-gradient(0deg,var(--tv-bg)_0%,rgba(0,0,0,0)_28%)]" />
       </div>
 
-      <div className="relative flex min-h-[44vh] w-[56%] flex-col justify-end items-start gap-[1.2vh] px-[3.2vw] pt-[6vh] pb-[4vh]">
+      <div className="relative flex min-h-[50vh] w-[50%] flex-col justify-end items-start gap-[1.2vh] px-[3.2vw] pt-[6vh] pb-[4vh]">
         <span
           className={
-            "inline-flex items-center gap-2 text-[0.9rem] font-semibold uppercase tracking-[0.18em] " +
+            "inline-flex items-center gap-2 text-[0.75rem] font-semibold uppercase tracking-[0.18em] " +
             (live ? "text-[#fb7185]" : "text-[color:var(--tv-accent)]")
           }
         >
           {live && <span className="h-2.5 w-2.5 rounded-full bg-[#e11d48] animate-pulse" />}
           {slide.badge}
         </span>
-        <h1 className="text-[clamp(1.6rem,2.4vw,2.6rem)] font-semibold leading-[1.1] text-white line-clamp-2 pb-[0.1em]">{slide.title}</h1>
+        <h1 className="text-[clamp(1.3rem,1.9vw,2rem)] font-semibold leading-[1.1] text-white line-clamp-2 pb-[0.1em]">{slide.title}</h1>
         {slide.description && (
-          <p className="max-w-[40rem] text-[clamp(0.95rem,1.15vw,1.15rem)] leading-snug text-[color:var(--tv-text)]/85 line-clamp-3">
+          <p className="max-w-[30rem] text-[clamp(0.8rem,0.95vw,0.95rem)] leading-snug text-[color:var(--tv-text)]/85 line-clamp-3">
             {slide.description}
           </p>
         )}
@@ -92,7 +92,7 @@ export function TVHeroCarousel({ slides }: TVHeroCarouselProps) {
           <button
             type="button"
             onClick={() => navigate(slide.to)}
-            className="rounded-full bg-[#ff4400] px-[1.8vw] py-[1.1vh] text-[1.05rem] font-bold text-white"
+            className="rounded-full bg-[#ff4400] px-[1.6vw] py-[1vh] text-[0.9rem] font-bold text-white"
           >
             {slide.primaryLabel}
           </button>

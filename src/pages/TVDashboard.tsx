@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import { TVHeroCarousel, type TVHeroSlide } from "@/components/tv/TVHeroCarousel";
-import { TVMetsScores } from "@/components/tv/TVMetsScores";
+import { TVGamesRail } from "@/components/tv/TVGamesRail";
 import { OPPONENT_REGISTRY } from "@/pages/matchups/opponentRegistry";
 import { TVPodcastPlayer } from "@/components/tv/TVPodcastPlayer";
 import { TVTopBar } from "@/components/tv/TVTopBar";
@@ -14,8 +14,6 @@ import { TVSignIn } from "@/components/tv/TVSignIn";
 import { TVContentRail } from "@/components/tv/TVContentRail";
 import TVNYScores from "@/components/tv/TVNYScores";
 import { streamPath, NETWORK_STREAM, leaveTV } from "@/lib/tvNavigation";
-import GamecastBanner from "@/components/GamecastBanner";
-import { SHOW_METS_GAME_CENTER } from "@/config/season";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useAuth } from "@/hooks/useAuth";
@@ -479,9 +477,6 @@ const TVDashboard = () => {
           <>
             <TVHeroCarousel slides={heroSlides} />
             <div className="px-[2.4vw] pb-[5vh]">
-              {/* Gamecast Banner */}
-              {SHOW_METS_GAME_CENTER && <GamecastBanner />}
-
               {/* Live Now */}
               <div ref={liveRef} id="tv-sec-live">
                 {liveNowItems.length > 0 && (
@@ -494,8 +489,8 @@ const TVDashboard = () => {
               {/* Podcast radio */}
               <TVPodcastPlayer />
 
-              {/* Mets scores + Game Center */}
-              <TVMetsScores />
+              {/* Live and upcoming games */}
+              <TVGamesRail />
 
               {/* Upcoming Mets games */}
               {upcomingMetsItems.length > 0 && <TVContentRail title="Upcoming Mets Games" items={upcomingMetsItems} onItemClick={openLive} />}
