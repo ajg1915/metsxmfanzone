@@ -7,6 +7,9 @@ export interface TVRailItem {
   badge?: string;
   subtitle?: string;
   isLive?: boolean;
+  /** Logos and portraits: show the whole image on a coloured card instead of cropping it. */
+  fit?: "cover" | "contain";
+  bg?: string;
 }
 
 interface TVContentRailProps {
@@ -58,11 +61,15 @@ export function TVContentRail({ title, note, items: rawItems, accent, onItemClic
             }
             className="group shrink-0 w-[15.5vw] min-w-[200px] rounded-[0.6rem] text-left focus:outline-none"
           >
-            <div className="relative aspect-video w-full overflow-hidden rounded-[0.6rem] bg-[color:var(--tv-surface)] border border-white/5">
+            <div
+              className="relative aspect-video w-full overflow-hidden rounded-[0.6rem] bg-[color:var(--tv-surface)] border border-white/5"
+              style={item.bg ? { background: item.bg } : undefined}
+            >
               <img
                 src={item.thumbnail}
                 alt=""
-                className="h-full w-full object-cover"
+                loading="lazy"
+                className={item.fit === "contain" ? "h-full w-full object-contain p-[6%]" : "h-full w-full object-cover"}
               />
               {item.badge && (
                 <span

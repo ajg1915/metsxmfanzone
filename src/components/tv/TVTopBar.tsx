@@ -28,6 +28,7 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
   const sections = [
     { label: "Home", go: jump("Home", "top") },
     { label: "Live", go: jump("Live", "tv-sec-live") },
+    { label: "Scores", go: jump("Scores", "tv-sec-scores") },
     { label: "Podcast", go: jump("Podcast", "tv-sec-podcast") },
     { label: "Highlights", go: jump("Highlights", "tv-sec-highlights") },
     { label: "Replays", go: jump("Replays", "tv-sec-replays") },

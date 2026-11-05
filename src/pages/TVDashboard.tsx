@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import { TVHeroCarousel, type TVHeroSlide } from "@/components/tv/TVHeroCarousel";
+import { TVMetsScores } from "@/components/tv/TVMetsScores";
+import { OPPONENT_REGISTRY } from "@/pages/matchups/opponentRegistry";
 import { TVPodcastPlayer } from "@/components/tv/TVPodcastPlayer";
 import { TVTopBar } from "@/components/tv/TVTopBar";
 import { TVSignIn } from "@/components/tv/TVSignIn";
@@ -140,6 +142,72 @@ const TVDashboard = () => {
       return data;
     },
   });
+
+  // Mets 40-man roster (MLB Stats API) and the MetsXMFanZone YouTube channel (/api/youtube-feed).
+  const { data: rosterPlayers = [] } = useQuery({
+    queryKey: ["tv-roster"],
+    staleTime: 30 * 60_000,
+    queryFn: async () => {
+      const r = await fetch("https://statsapi.mlb.com/api/v1/teams/121/roster?rosterType=40Man");
+      if (!r.ok) throw new Error("roster");
+      const j = await r.json();
+      return (j.roster || []) as any[];
+    },
+  });
+  const { data: ytVideos = [] } = useQuery({
+    queryKey: ["tv-youtube"],
+    staleTime: 30 * 60_000,
+    queryFn: async () => {
+      const r = await fetch("/api/youtube-feed");
+      if (!r.ok) throw new Error("youtube");
+      const j = await r.json();
+      return (j.videos || []) as { id: string; title: string; published: string | null; thumbnail: string }[];
+    },
+  });
+  const [ytPlaying, setYtPlaying] = useState<{ id: string; title: string } | null>(null);
+
+  const rosterItems = useMemo(
+    () =>
+      [...rosterPlayers]
+        .sort((a, b) => (parseInt(a.jerseyNumber, 10) || 999) - (parseInt(b.jerseyNumber, 10) || 999))
+        .map((p) => ({
+          id: String(p.person.id),
+          title: p.person.fullName,
+          subtitle: `${p.jerseyNumber ? `#${p.jerseyNumber} • ` : ""}${p.position?.abbreviation || ""}`,
+          thumbnail: `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_426,q_auto:best/v1/people/${p.person.id}/headshot/67/current`,
+          fit: "contain" as const,
+          bg: "linear-gradient(160deg,#0b3e75 0%,#07111d 100%)",
+        })),
+    [rosterPlayers]
+  );
+
+  const nickname = (name: string) => {
+    const w = name.split(" ");
+    return ["Red", "White", "Blue"].includes(w[w.length - 2]) ? w.slice(-2).join(" ") : w[w.length - 1];
+  };
+  const matchupItems = useMemo(
+    () =>
+      Object.values(OPPONENT_REGISTRY).map((o) => ({
+        id: o.slug,
+        title: `Mets vs ${nickname(o.name)}`,
+        subtitle: o.rivalryNote,
+        thumbnail: `https://www.mlbstatic.com/team-logos/${o.teamId}.svg`,
+        fit: "contain" as const,
+        bg: `linear-gradient(135deg, ${o.primaryColor} 0%, #07111d 130%)`,
+      })),
+    []
+  );
+
+  const youtubeItems = useMemo(
+    () =>
+      ytVideos.map((v) => ({
+        id: v.id,
+        title: v.title,
+        thumbnail: v.thumbnail,
+        subtitle: v.published ? new Date(v.published).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "",
+      })),
+    [ytVideos]
+  );
 
   const isLoading = streamsLoading || highlightsLoading || replaysLoading || springLoading || storiesLoading || articlesLoading;
 
@@ -451,8 +519,16 @@ const TVDashboard = () => {
               {/* Podcast radio */}
               <TVPodcastPlayer />
 
+              {/* Mets scores + Game Center */}
+              <TVMetsScores />
+
               {/* Upcoming Mets games */}
               {upcomingMetsItems.length > 0 && <TVContentRail title="Upcoming Mets Games" items={upcomingMetsItems} onItemClick={openLive} />}
+
+              {/* Matchup series */}
+              <div id="tv-sec-series">
+                <TVContentRail title="Matchup Series" note="Mets vs the league" items={matchupItems} onItemClick={(item: any) => navigate(`/matchup/${item.id}`)} />
+              </div>
 
               {/* NY team scores */}
               <TVNYScores />
@@ -470,6 +546,13 @@ const TVDashboard = () => {
                 />
               )}
 
+              {/* MetsXMFanZone on YouTube */}
+              <div id="tv-sec-youtube">
+                {youtubeItems.length > 0 && (
+                  <TVContentRail title="MetsXMFanZone on YouTube" items={youtubeItems} onItemClick={(item: any) => setYtPlaying({ id: item.id, title: item.title })} />
+                )}
+              </div>
+
               {/* Spring Training */}
               {springStreamItems.length > 0 && <TVContentRail title="Spring Training Games" items={springStreamItems} onItemClick={openLive} />}
               {springItems.length > 0 && <TVContentRail title="Spring Training Results" items={springItems} onItemClick={goToSpring} />}
@@ -482,6 +565,13 @@ const TVDashboard = () => {
               {/* Replays section */}
               <div ref={replaysRef} id="tv-sec-replays">
                 {replayItems.length > 0 && <TVContentRail title="Game Replays" items={replayItems} onItemClick={handleReplayClick} />}
+              </div>
+
+              {/* Mets roster */}
+              <div id="tv-sec-roster">
+                {rosterItems.length > 0 && (
+                  <TVContentRail title="Mets Roster" note="40-man roster" items={rosterItems} onItemClick={(item: any) => navigate(`/player/${item.id}`)} />
+                )}
               </div>
 
               {/* Settings (last section) */}
@@ -503,6 +593,27 @@ const TVDashboard = () => {
           </>
         )}
       </main>
+
+      {/* YouTube player */}
+      <Dialog open={!!ytPlaying} onOpenChange={(open) => !open && setYtPlaying(null)}>
+        <DialogContent className="w-[min(92vw,1100px)] max-w-none p-0 bg-black border-border overflow-hidden">
+          {ytPlaying && (
+            <div className="flex flex-col">
+              <div className="relative aspect-video w-full bg-black">
+                <iframe
+                  key={ytPlaying.id}
+                  title={ytPlaying.title}
+                  src={`https://www.youtube-nocookie.com/embed/${ytPlaying.id}?autoplay=1&rel=0`}
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                  allowFullScreen
+                  className="absolute inset-0 h-full w-full"
+                />
+              </div>
+              <p className="px-6 py-3 text-[1.1rem] font-semibold text-white line-clamp-1">{ytPlaying.title}</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Story Viewer Dialog */}
       <Dialog open={!!selectedStory} onOpenChange={(open) => !open && setSelectedStory(null)}>
