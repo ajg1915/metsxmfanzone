@@ -302,6 +302,16 @@ const Auth = () => {
         return;
       }
       if (rememberMe) {
+        // Hand the login to the device's own password manager (Chrome, Safari, Android, iCloud Keychain).
+        // The password is never kept by the site itself.
+        try {
+          const PC = (window as any).PasswordCredential;
+          if (PC && navigator.credentials?.store) {
+            await navigator.credentials.store(new PC({ id: validated.email, password: validated.password, name: validated.email }));
+          }
+        } catch {
+          /* the browser's own save prompt still works */
+        }
         localStorage.setItem(REMEMBER_ME_KEY, JSON.stringify({ email: validated.email, expiresAt: Date.now() + REMEMBER_ME_EXPIRY_HOURS * 60 * 60 * 1000 }));
       } else {
         localStorage.removeItem(REMEMBER_ME_KEY);
@@ -437,11 +447,11 @@ const Auth = () => {
               )}
 
               {!isSignup && !isRecovery && (
-                <div className="space-y-1.5"><Label htmlFor="email">Email</Label><div className="relative"><Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 pl-10" autoComplete="email" /></div></div>
+                <div className="space-y-1.5"><Label htmlFor="email">Email</Label><div className="relative"><Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="email" name="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 pl-10" autoComplete="username" /></div></div>
               )}
 
               {!isSignup && !forgotPassword && !isRecovery && (
-                <div className="space-y-1.5"><div className="flex items-center justify-between"><Label htmlFor="password">Password</Label><Button type="button" variant="link" className="h-auto p-0 text-xs" onClick={() => setForgotPassword(true)}>Forgot password?</Button></div><div className="relative"><LockKeyhole className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 px-10" autoComplete="current-password" /><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff /> : <Eye />}</Button></div></div>
+                <div className="space-y-1.5"><div className="flex items-center justify-between"><Label htmlFor="password">Password</Label><Button type="button" variant="link" className="h-auto p-0 text-xs" onClick={() => setForgotPassword(true)}>Forgot password?</Button></div><div className="relative"><LockKeyhole className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 px-10" autoComplete="current-password" /><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff /> : <Eye />}</Button></div></div>
               )}
 
               {isRecovery && (
@@ -451,7 +461,7 @@ const Auth = () => {
               {!isSignup && !forgotPassword && !isRecovery && (
                 <>
                   <p className="text-xs leading-5 text-muted-foreground">By signing in you agree to the <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>.</p>
-                  <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground"><Checkbox checked={rememberMe} onCheckedChange={(value) => setRememberMe(value === true)} />Remember this email for 30 days</label>
+                  <label className="flex cursor-pointer items-start gap-2 text-sm text-muted-foreground"><Checkbox checked={rememberMe} onCheckedChange={(value) => setRememberMe(value === true)} className="mt-0.5" /><span>Save my login on this device<span className="block text-[11px] leading-4">Your device or browser keeps it, not us. Leave unchecked on shared devices.</span></span></label>
                 </>
               )}
 
