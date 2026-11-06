@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ChevronRight, HelpCircle } from "lucide-react";
+import { ChevronRight, HelpCircle, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/metsxmfanzone-logo.png";
@@ -115,6 +115,11 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
         <div className="fixed inset-0 bg-[rgba(3,10,20,0.82)]" />
       )}
       <div className="fixed rounded-2xl border-2 border-primary bg-secondary p-[18px] text-white shadow-2xl" style={cardStyle}>
+        {!last && (
+          <button type="button" onClick={onClose} aria-label="Close tour" className="absolute right-2 top-2 flex h-11 w-11 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white">
+            <X className="h-5 w-5" />
+          </button>
+        )}
         <p className="flex items-center gap-2 font-display text-[15px] tracking-[0.16em] text-[#ffa57a]">
           <img src={logo} alt="" className="h-6 w-6 object-contain" /> STEP {i + 1} OF {STEPS.length}
         </p>
