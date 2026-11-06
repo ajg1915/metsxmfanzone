@@ -121,9 +121,12 @@ function Tour({ steps, onClose }: { steps: GuideItem[]; onClose: () => void }) {
         <h2 className="mt-1 font-display text-[30px] uppercase leading-none tracking-wide text-white">{step.title}</h2>
         <p className="mt-2 text-[15px] leading-snug text-white">{step.body}</p>
         {!last && <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/20" aria-hidden="true"><div key={i} className="h-full rounded-full bg-primary" style={{ animation: `guideTimer ${STEP_SECONDS}s linear forwards` }} /></div>}
-        <div className="mt-3 flex justify-end">
-          <button type="button" onClick={onClose} className="min-h-[44px] rounded-lg bg-primary px-7 font-display text-lg uppercase tracking-[0.1em] text-primary-foreground">End tour</button>
-        </div>
+        {/* End tour only appears on the very last step. */}
+        {last && (
+          <div className="mt-3 flex justify-end">
+            <button type="button" onClick={onClose} className="min-h-[44px] rounded-lg bg-primary px-7 font-display text-lg uppercase tracking-[0.1em] text-primary-foreground">End tour</button>
+          </div>
+        )}
       </div>
     </div>
   );
