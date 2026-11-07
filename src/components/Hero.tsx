@@ -94,9 +94,12 @@ const Hero = () => {
     link_url: s.link_url, link_text: s.link_text, show_watch_live: s.show_watch_live ?? true, show_reminder: s.show_reminder ?? false, tag,
   }));
 
-  const slidesToShow = user
+  // Website hero (mobile, tablet, desktop): show only the first 4 articles. The TV app uses its own carousel.
+  const MAX_HERO_SLIDES = 4;
+  const slidesToShow = (user
     ? (memberSlides.length > 0 ? mapDbSlides(memberSlides, "MEMBER") : defaultSlides)
-    : (publicSlides.length > 0 ? mapDbSlides(publicSlides, "FEATURED") : defaultSlides);
+    : (publicSlides.length > 0 ? mapDbSlides(publicSlides, "FEATURED") : defaultSlides)
+  ).slice(0, MAX_HERO_SLIDES);
 
   const mobileSlides = slidesToShow.map((sl, i) => ({
     ...sl,
