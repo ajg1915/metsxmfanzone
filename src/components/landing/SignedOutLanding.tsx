@@ -298,7 +298,7 @@ export default function SignedOutLanding() {
         </div>
       </Section>
 
-      {/* Spring Training + Mets Tracker */}
+      {/* Spring Training (Mets Tracker removed) */}
       <HomeSpringTrackerSection />
 
       {/* Latest blog posts */}

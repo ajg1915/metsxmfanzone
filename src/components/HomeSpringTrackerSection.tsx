@@ -328,7 +328,6 @@ export function MetsTrackerSection() {
 export default function HomeSpringTrackerSection() {
   return (
     <>
-      <MetsTrackerSection />
       <div className="section-divider my-1" />
       <SpringTrainingSection />
     </>
