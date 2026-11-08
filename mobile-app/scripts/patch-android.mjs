@@ -15,13 +15,29 @@ const permissions = [
   "android.permission.POST_NOTIFICATIONS",
   "android.permission.RECORD_AUDIO",
   "android.permission.MODIFY_AUDIO_SETTINGS",
+  // Keep audio playing in the background (Listen mode): a "listening live" notification service.
+  "android.permission.FOREGROUND_SERVICE",
+  "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+  "android.permission.WAKE_LOCK",
 ];
 for (const name of permissions) {
   if (!xml.includes(name)) {
     xml = xml.replace("</manifest>", `    <uses-permission android:name="${name}" />\n</manifest>`);
   }
 }
+// The background-audio service, and the native code that lets the website start it.
+if (!xml.includes("com.metsxmfanzone.app.ListenService") && !xml.includes('android:name=".ListenService"')) {
+  xml = xml.replace(
+    "</application>",
+    '    <service android:name=".ListenService" android:exported="false" android:foregroundServiceType="mediaPlayback" />\n    </application>'
+  );
+}
 fs.writeFileSync(manifestPath, xml);
+const javaDir = path.resolve("android/app/src/main/java/com/metsxmfanzone/app");
+fs.mkdirSync(javaDir, { recursive: true });
+for (const file of ["MainActivity.java", "ListenService.java", "ListenServicePlugin.java"]) {
+  fs.copyFileSync(path.resolve("native", file), path.join(javaDir, file));
+}
 
 // Plain PNG launcher icons (made by make_icons.py) instead of the Capacitor adaptive icon.
 const anydpi = path.resolve("android/app/src/main/res/mipmap-anydpi-v26");
@@ -33,6 +49,10 @@ if (!fs.readFileSync(gradlePath, "utf8").includes(`versionName "2.0.${run}"`)) {
 }
 if (!xml.includes("android.permission.RECORD_AUDIO")) {
   console.error("Microphone permission patch failed");
+  process.exit(1);
+}
+if (!xml.includes("ListenService") || !xml.includes("FOREGROUND_SERVICE_MEDIA_PLAYBACK")) {
+  console.error("Background audio patch failed");
   process.exit(1);
 }
 console.log(`Mobile app patched: version 2.0.${run}`);

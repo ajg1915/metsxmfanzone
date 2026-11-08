@@ -140,6 +140,14 @@ function load(source: string) {
   attempt();
 }
 
+/** In the installed Android app, start/stop a background service so audio keeps playing with the screen locked. */
+function nativeListen(action: "start" | "stop", title = "") {
+  try {
+    const p = (window as any).Capacitor?.Plugins?.ListenService;
+    if (p) p[action](action === "start" ? { title } : {}).catch?.(() => {});
+  } catch { /* not in the app */ }
+}
+
 /** Start (or switch to) listening to a live stream. Call from a tap so the browser allows sound. */
 export function startListening(opts: { source: string; title: string; path?: string }) {
   if (!opts.source) return;
@@ -153,12 +161,14 @@ export function startListening(opts: { source: string; title: string; path?: str
     status: "loading",
   });
   setMediaSession();
+  nativeListen("start", opts.title);
   load(opts.source);
 }
 
 export function stopListening() {
   teardown();
   clearMediaSession();
+  nativeListen("stop");
   set({ active: false, source: "", title: "", playing: false, status: "idle" });
 }
 
