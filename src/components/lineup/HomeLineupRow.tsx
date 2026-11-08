@@ -39,7 +39,7 @@ export default function HomeLineupRow() {
 
   const { data: mlb } = useQuery<MlbLineupResult>({
     queryKey: ["lineup-card-mlb", todayET()],
-    queryFn: () => fetchMlbLineup(),
+    queryFn: () => fetchMlbLineup(todayET(), true),
     enabled: !!design?.enabled && !override && !test,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 10 * 60 * 1000,
@@ -126,7 +126,7 @@ export default function HomeLineupRow() {
 
         {lineup.length === 0 && (
           <div className="flex w-[240px] shrink-0 snap-start items-center justify-center rounded-2xl p-4 text-center text-sm font-semibold" style={{ background: cardBg, color: p.sub, border: cardBorder }}>
-            Lineup coming soon. Check back about two hours before first pitch.
+            Lineup not available yet. Check back about two hours before first pitch.
           </div>
         )}
 

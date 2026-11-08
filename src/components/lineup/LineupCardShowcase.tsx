@@ -9,7 +9,7 @@ export default function LineupCardShowcase() {
 
   const { data: mlb } = useQuery<MlbLineupResult>({
     queryKey: ["lineup-card-mlb", todayET()],
-    queryFn: () => fetchMlbLineup(),
+    queryFn: () => fetchMlbLineup(todayET(), true),
     enabled: !!design?.enabled && !override,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 10 * 60 * 1000,

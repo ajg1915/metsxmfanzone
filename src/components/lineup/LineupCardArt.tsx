@@ -81,7 +81,7 @@ export const LineupCardArt = forwardRef<HTMLDivElement, Props>(function LineupCa
       <div className="px-4 pt-3">
         {rows.length === 0 ? (
           <div className="rounded-xl px-3 py-8 text-center text-sm font-semibold" style={{ background: p.row, color: p.sub }}>
-            Lineup coming soon. Check back about two hours before first pitch.
+            Lineup not available yet. Check back about two hours before first pitch.
           </div>
         ) : (
           <ol className="grid gap-1.5">

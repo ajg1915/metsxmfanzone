@@ -139,14 +139,20 @@ export interface MlbLineupResult {
   message?: string;
 }
 
-export async function fetchMlbLineup(date = todayET()): Promise<MlbLineupResult> {
+export async function fetchMlbLineup(date = todayET(), nextIfNone = false): Promise<MlbLineupResult> {
   const res = await fetch(
     `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${METS}&date=${date}&hydrate=lineups,probablePitcher,team`,
   );
   if (!res.ok) throw new Error("MLB did not answer. Try again in a minute.");
   const data = await res.json();
   const g = data?.dates?.[0]?.games?.[0];
-  if (!g) return { game: null, lineup: [], pitcher: null, message: "No Mets game on that date." };
+  if (!g) {
+    if (nextIfNone) {
+      const next = await fetchNextGame(date);
+      if (next) return { game: next, lineup: [], pitcher: null, message: "Lineup not available yet." };
+    }
+    return { game: null, lineup: [], pitcher: null, message: "No Mets game on that date." };
+  }
 
   const isHome = g.teams.home.team.id === METS;
   const opp = (isHome ? g.teams.away.team.name : g.teams.home.team.name) as string;
@@ -172,4 +178,33 @@ export async function fetchMlbLineup(date = todayET()): Promise<MlbLineupResult>
     : null;
 
   return { game, lineup, pitcher, message: lineup.length ? undefined : "MLB has not posted the lineup yet." };
+}
+
+/** The next scheduled Mets game after the given date (spring training included), for "lineup not available yet". */
+export async function fetchNextGame(after = todayET()): Promise<LineupGameInfo | null> {
+  try {
+    const start = new Date(`${after}T12:00:00Z`);
+    start.setUTCDate(start.getUTCDate() + 1);
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 400);
+    const ymd = (d: Date) => d.toISOString().slice(0, 10);
+    const res = await fetch(
+      `https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=${METS}&startDate=${ymd(start)}&endDate=${ymd(end)}&hydrate=team`,
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const g = data?.dates?.[0]?.games?.[0];
+    if (!g) return null;
+    const isHome = g.teams.home.team.id === METS;
+    const opp = (isHome ? g.teams.away.team.name : g.teams.home.team.name) as string;
+    const when = new Date(g.gameDate);
+    return {
+      opponent: opp.replace(/^(New York|Los Angeles|San Francisco|San Diego) /, ""),
+      isHome,
+      dateLabel: new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric" }).format(when),
+      timeLabel: new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" }).format(when),
+    };
+  } catch {
+    return null;
+  }
 }
