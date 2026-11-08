@@ -113,6 +113,8 @@ public class ListenService extends Service {
         session.setMetadata(new MediaMetadata.Builder()
                 .putString(MediaMetadata.METADATA_KEY_TITLE, title)
                 .putString(MediaMetadata.METADATA_KEY_ARTIST, "MetsXMFanZone · Live")
+                .putBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART, logo())
+                .putBitmap(MediaMetadata.METADATA_KEY_ART, logo())
                 .build());
         long actions = PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_STOP;
         session.setPlaybackState(new PlaybackState.Builder()
