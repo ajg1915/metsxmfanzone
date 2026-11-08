@@ -491,19 +491,20 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       )}
 
       {listening && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-player px-4 text-center text-player-foreground">
-          <img src={logoImage} alt="MetsXMFanZone" className="h-16 w-auto rounded-xl bg-white p-1 sm:h-20" />
-          <div>
-            <p className="flex items-center justify-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.2em] text-primary">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 overflow-hidden bg-gradient-to-b from-[hsl(var(--mets-blue))] to-[hsl(var(--mets-blue-dark))] px-3 py-2 text-center text-white sm:gap-3">
+          <div className="absolute inset-x-0 top-0 h-1 bg-primary" />
+          <img src={logoImage} alt="MetsXMFanZone" className="h-11 w-auto max-w-[70%] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] sm:h-16" />
+          <div className="min-w-0 max-w-full">
+            <p className="flex items-center justify-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-primary sm:text-[11px]">
               <Headphones className="h-3.5 w-3.5" /> Listening live
             </p>
-            <p className="mt-1 line-clamp-1 text-sm font-bold sm:text-base">{pageTitle}</p>
+            <p className="mt-0.5 line-clamp-1 text-xs font-bold sm:text-base">{pageTitle}</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => toggleListenPlay()}
-              className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/40 active:scale-95"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-black/40 active:scale-95 sm:h-14 sm:w-14"
               aria-label={listen.playing ? "Pause" : "Play"}
             >
               {listen.status === "loading" ? <Loader2 className="h-6 w-6 animate-spin" /> : listen.playing ? <Pause className="h-6 w-6" fill="currentColor" /> : <Play className="ml-0.5 h-6 w-6" fill="currentColor" />}
@@ -511,13 +512,13 @@ export const ClapprPlayer = memo(function ClapprPlayer({
             <button
               type="button"
               onClick={() => stopListening()}
-              className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-white/25 px-4 py-2 text-xs font-bold active:scale-95"
+              className="flex min-h-[40px] items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-bold active:scale-95"
             >
               <Tv className="h-4 w-4" /> Watch video
             </button>
           </div>
-          <p className="max-w-[260px] text-[11px] text-player-foreground/60">
-            Audio keeps playing when you lock your screen, switch apps or open other pages. Use the controls on your lock screen or the mini player to pause.
+          <p className="hidden max-w-[320px] text-[11px] text-white/60 sm:block">
+            Audio keeps playing when you lock your screen or switch apps.
           </p>
         </div>
       )}
