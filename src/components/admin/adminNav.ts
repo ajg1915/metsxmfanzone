@@ -4,7 +4,7 @@ import {
   Megaphone, BookOpen, Trophy, Send, Wallpaper,
   Activity, AlertTriangle, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
   ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift, Bot, Search,
-  Calendar, ShieldCheck, CreditCard, Tv, ClipboardCheck,
+  LayoutTemplate, Calendar, ShieldCheck, CreditCard, Tv, ClipboardCheck,
 } from "lucide-react";
 
 type Icon = React.ComponentType<{ className?: string }>;
@@ -161,6 +161,7 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Events", url: "/admin/events", icon: Calendar },
           { title: "Player of Month", url: "/admin/player-of-the-month", icon: Trophy },
           { title: "Roster Details", url: "/admin/roster-details", icon: Users },
+          { title: "Lineup Card", url: "/admin/lineup-card", icon: LayoutTemplate },
         ],
       },
       {

@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import logoImage from "@/assets/metsxmfanzone-logo.png";
 import { getTodayET } from "@/utils/dateUtils";
 import PlayerStatsDialog from "@/components/PlayerStatsDialog";
+import LineupCardShowcase from "@/components/lineup/LineupCardShowcase";
 
 const extractPlayerId = (imageUrl?: string): number | undefined => {
   const match = imageUrl?.match(/\/people\/(\d+)\//);
@@ -326,6 +327,7 @@ export default function HomeLineupCard({ className, onLineupLoaded }: HomeLineup
         </motion.div>
 
         <div>
+          <LineupCardShowcase />
           {/* Main Lineup Card */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
