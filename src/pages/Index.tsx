@@ -25,7 +25,6 @@ const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedSt
 
 const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerOfTheMonthSection"), "home-player-of-the-month-section");
 
-const MetsTrackerSection = lazyWithRetry(() => import("@/components/HomeSpringTrackerSection").then((m) => ({ default: m.MetsTrackerSection })), "home-mets-tracker-section");
 const SpringTrainingSection = lazyWithRetry(() => import("@/components/HomeSpringTrackerSection").then((m) => ({ default: m.SpringTrainingSection })), "home-spring-training-section");
 const BlogSection = lazyWithRetry(() => import("@/components/BlogSection"), "home-blog-section");
 const PodcastLivePlayer = lazyWithRetry(() => import("@/components/podcast/PodcastLivePlayer"), "home-podcast-live-player");
@@ -189,11 +188,6 @@ const Index = () => {
         <div className="hidden sm:block sm:h-[72px]" aria-hidden="true" />
         <div data-guide="home-hero"><Hero /></div>
         <HolidayRibbon />
-
-        {/* Mets Tracker FA (trades, signings, radar), first section under the hero */}
-        <Suspense fallback={<SectionSkeleton />}>
-          <MetsTrackerSection />
-        </Suspense>
 
         {/* Sports networks: shown in TV mode only (see .sports-networks in index.css) */}
         <div data-guide="sports-networks"><SportsNetworksStrip /></div>
