@@ -41,7 +41,7 @@ const PayPalSuccess = () => {
             title: "Payment Successful!",
             description: "Your subscription has been activated.",
           });
-          setTimeout(() => navigate('/claim-shirt'), 2000); // the claim page sends non-eligible members back home
+          setTimeout(() => navigate('/claim-shirt?from=signup'), 2000);
         } else {
           setStatus('error');
           toast({
