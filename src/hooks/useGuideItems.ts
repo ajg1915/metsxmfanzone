@@ -30,6 +30,7 @@ export const GUIDE_SECTIONS: { key: string; label: string; path: string; group: 
   { group: "Home sections", key: "fa-tabs", label: "FA · Moves / Trades / Signings / Waivers tabs", path: "/" },
   { group: "Home sections", key: "gamecast", label: "Game Center banner", path: "/" },
   { group: "Home sections", key: "live-streams", label: "Live Streams", path: "/" },
+  { group: "Home sections", key: "lineup-row", label: "Today's Lineup", path: "/" },
   { group: "Home sections", key: "spring-training", label: "Spring Training", path: "/" },
   { group: "Home sections", key: "spring-watch-live", label: "Spring Training · Watch live link", path: "/" },
   { group: "Home sections", key: "scores", label: "Scores strip", path: "/" },
