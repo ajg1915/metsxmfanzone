@@ -1,6 +1,7 @@
 import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Hls from "hls.js";
-import { Loader2, AlertCircle, RotateCw, Play, Volume2 } from "lucide-react";
+import { Loader2, AlertCircle, RotateCw, Play, Pause, Volume2, Headphones, Tv } from "lucide-react";
+import logoImage from "@/assets/metsxmfanzone-logo.png";
 import { StreamIssueDialog } from "./StreamIssueDialog";
 import { StreamControls } from "./player/StreamControls";
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,21 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   streamId,
 }: ClapprPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  // Listen-only mode plays the same stream through a hidden audio element, which phones and tablets
+  // keep playing when the screen locks or the viewer switches apps (a video element gets paused).
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [listenOnly, setListenOnly] = useState(false);
+  const [listenPlaying, setListenPlaying] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const mediaEl = useCallback(
+    () => (listenOnly ? audioRef.current : videoRef.current) as unknown as HTMLVideoElement | null,
+    [listenOnly],
+  );
+  // Phones and tablets only (never TV mode).
+  const canListen =
+    typeof window !== "undefined" &&
+    !document.documentElement.classList.contains("tv-mode") &&
+    (isMobile || isIos() || window.matchMedia?.("(pointer: coarse)").matches);
 
   const hlsRef = useRef<Hls | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -94,15 +109,15 @@ export const ClapprPlayer = memo(function ClapprPlayer({
 
   const handleTapPlay = useCallback(() => {
     // A tap counts as permission, so start with sound.
-    unmuteFromTap(videoRef.current);
+    unmuteFromTap(mediaEl());
     setNeedsTap(false);
     setNeedsSound(false);
-  }, []);
+  }, [mediaEl]);
 
   const handleTapSound = useCallback(() => {
-    unmuteFromTap(videoRef.current);
+    unmuteFromTap(mediaEl());
     setNeedsSound(false);
-  }, []);
+  }, [mediaEl]);
 
   const handleRetry = useCallback(() => {
     setStatus("loading");
@@ -119,7 +134,7 @@ export const ClapprPlayer = memo(function ClapprPlayer({
   }, []);
 
   useEffect(() => {
-    const video = videoRef.current;
+    const video = mediaEl();
     if (!video) return;
     if (!activeSource) {
       setStatus("error");
@@ -374,7 +389,38 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       }
       try { video.removeAttribute("src"); video.load(); } catch {}
     };
-  }, [activeSource, onStandby, effectiveSource, standbySource, retryKey, notifyAdmins]);
+  }, [activeSource, onStandby, effectiveSource, standbySource, retryKey, notifyAdmins, listenOnly, mediaEl]);
+
+  // Lock-screen / notification controls while listening.
+  useEffect(() => {
+    if (!listenOnly || typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    const ms = navigator.mediaSession;
+    try {
+      ms.metadata = new MediaMetadata({
+        title: pageTitle,
+        artist: "MetsXMFanZone",
+        album: "Live",
+        artwork: [{ src: logoImage, sizes: "512x512", type: "image/png" }],
+      });
+      ms.setActionHandler("play", () => audioRef.current?.play().catch(() => {}));
+      ms.setActionHandler("pause", () => audioRef.current?.pause());
+      ms.setActionHandler("stop", () => setListenOnly(false));
+    } catch {}
+    return () => {
+      try {
+        ms.setActionHandler("play", null);
+        ms.setActionHandler("pause", null);
+        ms.setActionHandler("stop", null);
+        ms.metadata = null;
+      } catch {}
+    };
+  }, [listenOnly, pageTitle]);
+
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && "mediaSession" in navigator && listenOnly) {
+      try { navigator.mediaSession.playbackState = listenPlaying ? "playing" : "paused"; } catch {}
+    }
+  }, [listenOnly, listenPlaying]);
 
   // TV mode: go straight to full screen when the stream page opens, whether or not the stream
   // has started yet (slow or standby streams never show the controls that used to trigger this).
@@ -453,13 +499,67 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         x-webkit-airplay="allow"
         crossOrigin={isIos() ? undefined : "anonymous"}
       />
+      <audio
+        ref={audioRef}
+        className="hidden"
+        preload="none"
+        onPlay={() => setListenPlaying(true)}
+        onPause={() => setListenPlaying(false)}
+      />
 
 
       {/* Cast and Report a stream issue now live in the settings (gear) menu of the control bar. */}
 
       {tvFull && <TVStreamOverlay title={pageTitle} streamId={streamId} />}
 
-      {status === "ready" && (
+      {status === "ready" && canListen && !listenOnly && (
+        <button
+          type="button"
+          onClick={() => setListenOnly(true)}
+          className="absolute right-2 top-2 z-20 flex min-h-[40px] items-center gap-1.5 rounded-full bg-black/60 px-3.5 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-sm active:scale-95"
+          aria-label="Listen only: keep the audio playing without the video"
+        >
+          <Headphones className="h-4 w-4" /> Listen
+        </button>
+      )}
+
+      {listenOnly && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-player px-4 text-center text-player-foreground">
+          <img src={logoImage} alt="MetsXMFanZone" className="h-16 w-auto rounded-xl bg-white p-1 sm:h-20" />
+          <div>
+            <p className="flex items-center justify-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.2em] text-primary">
+              <Headphones className="h-3.5 w-3.5" /> Listening live
+            </p>
+            <p className="mt-1 line-clamp-1 text-sm font-bold sm:text-base">{pageTitle}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                const a = audioRef.current;
+                if (!a) return;
+                if (a.paused) { a.muted = false; a.play().catch(() => {}); } else a.pause();
+              }}
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/40 active:scale-95"
+              aria-label={listenPlaying ? "Pause" : "Play"}
+            >
+              {listenPlaying ? <Pause className="h-6 w-6" fill="currentColor" /> : <Play className="ml-0.5 h-6 w-6" fill="currentColor" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => setListenOnly(false)}
+              className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-white/25 px-4 py-2 text-xs font-bold active:scale-95"
+            >
+              <Tv className="h-4 w-4" /> Watch video
+            </button>
+          </div>
+          <p className="max-w-[260px] text-[11px] text-player-foreground/60">
+            Audio keeps playing when you lock your screen or switch apps. Use the controls on your lock screen to pause.
+          </p>
+        </div>
+      )}
+
+      {status === "ready" && !listenOnly && (
         <StreamControls
           videoRef={videoRef}
           hlsRef={hlsRef}
