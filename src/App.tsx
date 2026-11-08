@@ -111,6 +111,7 @@ const ReplayGames = lazyWithRetry(() => import("./pages/ReplayGames"), "page-rep
 const MetsSchedule2027 = lazyWithRetry(() => import("./pages/MetsSchedule2027"), "page-mets-schedule-2027");
 const TVBroadcastSchedule = lazyWithRetry(() => import("./pages/TVBroadcastSchedule"), "page-tv-broadcast-schedule");
 import { HolidayDecor } from "@/components/HolidayDecor";
+import ListenMiniPlayer from "@/components/ListenMiniPlayer";
 const TVDashboard = lazyWithRetry(() => import("./pages/TVDashboard"), "page-tv-dashboard");
 const MetsLineupCard = lazyWithRetry(() => import("./pages/MetsLineupCard"), "page-mets-lineup-card");
 const MetsScores = lazyWithRetry(() => import("./pages/MetsScores"), "page-mets-scores");
@@ -317,6 +318,7 @@ const AppContent = () => {
         <StreamExitDialog />
         <LiveEventBanner />
         <HolidayDecor />
+        <ListenMiniPlayer />
         <SocialMediaBar />
         <MobileGuide />
         <LiveEventPopup />
