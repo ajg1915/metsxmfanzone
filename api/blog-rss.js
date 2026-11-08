@@ -65,6 +65,7 @@ export default async function handler(req, res) {
 
     res.setHeader("Content-Type", "application/rss+xml; charset=utf-8");
     res.setHeader("X-Robots-Tag", "noindex, follow");
+    res.setHeader("Access-Control-Allow-Origin", "*"); // lets the OBS stream bar read the headlines
     res.setHeader(
       "Cache-Control",
       "public, max-age=0, s-maxage=600, stale-while-revalidate=1800",
