@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, ClipboardList } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import { oppLogo, palette } from "@/components/lineup/LineupCardArt";
@@ -78,7 +78,7 @@ export default function HomeLineupRow() {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-3 flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5 sm:gap-2">
-            <ClipboardList className="h-4 w-4 shrink-0 text-primary sm:h-6 sm:w-6" />
+            <img src={logo} alt="MetsXMFanZone" className="h-7 w-7 shrink-0 rounded-lg object-cover sm:h-9 sm:w-9" />
             <h2 className="truncate text-sm font-bold text-foreground sm:text-xl md:text-2xl">{design.title}</h2>
             {game && (
               <span className="ml-1 hidden shrink-0 text-xs font-medium text-muted-foreground sm:inline">
@@ -110,7 +110,7 @@ export default function HomeLineupRow() {
         >
           <div className="absolute inset-x-0 top-0 h-1.5" style={{ background: design.accent }} />
           <div className="mt-1 flex items-center gap-2">
-            <img src={logo} alt="" className="h-8 w-8 rounded-lg object-cover" />
+            <img src={logo} alt="MetsXMFanZone" className="h-11 w-11 shrink-0 rounded-xl object-cover" />
             <p className="truncate text-[10px] font-extrabold uppercase leading-tight tracking-[0.18em]" style={{ color: design.accent }}>{design.subtitle}</p>
           </div>
           <div className="my-3 flex items-center justify-center gap-2">
