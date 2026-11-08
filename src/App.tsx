@@ -129,7 +129,6 @@ const BackgroundManagement = lazyWithRetry(() => import("./pages/admin/Backgroun
 const ActivityDashboard = lazyWithRetry(() => import("./pages/admin/ActivityDashboard"), "page-admin-activity-dashboard");
 const WriterApplications = lazyWithRetry(() => import("./pages/admin/WriterApplications"), "page-admin-writer-applications");
 const RealtimeAnalytics = lazyWithRetry(() => import("./pages/admin/RealtimeAnalytics"), "page-admin-realtime-analytics");
-const FeedHealth = lazyWithRetry(() => import("./pages/admin/FeedHealth"), "page-admin-feed-health");
 const SEOManagement = lazyWithRetry(() => import("./pages/admin/SEOManagement"), "page-admin-seo-management");
 const HeroManagement = lazyWithRetry(() => import("./pages/admin/HeroManagement"), "page-admin-hero-management");
 
@@ -430,7 +429,7 @@ const AppContent = () => {
               <Route path="stream-health" element={<Navigate to="/admin/live-streams?tab=health" replace />} />
               <Route path="stream-issues" element={<Navigate to="/admin/live-streams?tab=health" replace />} />
               <Route path="stream-tester" element={<Navigate to="/admin/live-streams?tab=health" replace />} />
-              <Route path="feed-health" element={<FeedHealth />} />
+              <Route path="feed-health" element={<Navigate to="/admin/live-streams?tab=health" replace />} />
               <Route path="seo" element={<SEOManagement />} />
               <Route path="game-notifications" element={<GameNotifications />} />
               <Route path="game-alerts" element={<GameAlertsManagement />} />

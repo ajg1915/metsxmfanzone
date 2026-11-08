@@ -53,14 +53,7 @@ export const ADMIN_HUBS: AdminHub[] = [
     groups: [
       { title: "Live Streams", items: [{ title: "Live Streams", url: "/admin/live-streams", icon: Radio }] },
       { title: "Stream Issues", items: [{ title: "Stream Issues", url: "/admin/stream-issues", icon: AlertTriangle }] },
-      {
-        title: "Health & Tests",
-        items: [
-          { title: "Stream Health", url: "/admin/stream-health", icon: HeartPulse },
-          { title: "Feed Health", url: "/admin/feed-health", icon: Activity },
-          { title: "Stream Tester", url: "/admin/stream-tester", icon: Monitor },
-        ],
-      },
+      { title: "Health & Tests", items: [{ title: "Health & Tests", url: "/admin/live-streams?tab=health", icon: HeartPulse }] },
       {
         title: "Players & Radio",
         items: [

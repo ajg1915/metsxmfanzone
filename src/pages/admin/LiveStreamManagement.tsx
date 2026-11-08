@@ -5,6 +5,7 @@ import LiveNotificationManagement from "@/pages/admin/LiveNotificationManagement
 import StreamHealthDashboard from "@/pages/admin/StreamHealthDashboard";
 import StreamIssues from "@/pages/admin/StreamIssues";
 import StreamTester from "@/pages/admin/StreamTester";
+import FeedHealth from "@/pages/admin/FeedHealth";
 import { supabase } from "@/integrations/supabase/client";
 import { isAutoStartMetsGame } from "@/lib/metsGameCheck";
 import { NY_TEAM_PAGES } from "@/lib/nyTeamStreamCheck";
@@ -1357,6 +1358,7 @@ export default function LiveStreamManagement() {
       ) : hubTab === "health" ? (
         <div className="space-y-6">
           <StreamHealthDashboard />
+          <FeedHealth />
           <StreamIssues />
           <StreamTester />
         </div>
