@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SEOHead from "@/components/SEOHead";
 import { TVHeroCarousel, type TVHeroSlide } from "@/components/tv/TVHeroCarousel";
+import { HolidayRibbon } from "@/components/HolidayRibbon";
+import { HolidayFall } from "@/components/HolidayDecor";
 import { TVSpringTraining } from "@/components/tv/TVSpringTraining";
 import { TVGamesRail } from "@/components/tv/TVGamesRail";
 import { OPPONENT_REGISTRY } from "@/pages/matchups/opponentRegistry";
@@ -441,6 +443,8 @@ const TVDashboard = () => {
       />
 
       <TVTopBar onHome={() => handleCategoryChange("home")} />
+      <HolidayRibbon tv />
+      <HolidayFall count={14} big />
 
       <main id="tv-main" className="flex-1 overflow-y-auto overflow-x-hidden">
         {isLoading ? (

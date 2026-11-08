@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
+import { getHoliday, HOLIDAY_EMOJI } from "@/lib/holiday";
 
 interface TVTopBarProps {
   onHome: () => void;
@@ -20,6 +21,7 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
   }, []);
 
   const [active, setActive] = useState("Home");
+  const holiday = getHoliday(new Date(), typeof window !== "undefined" ? window.location.search : "");
   const jump = (label: string, id: string) => () => {
     setActive(label);
     if (id === "top") onHome();
@@ -39,7 +41,14 @@ export function TVTopBar({ onHome }: TVTopBarProps) {
 
   return (
     <header className="shrink-0 flex items-center gap-[2vw] bg-[color:var(--tv-bg)] px-[2.4vw] py-[1.4vh]">
-      <img src={metsLogo} alt="MetsXMFanZone" className="h-[5vh] w-auto shrink-0" />
+      <span className="relative shrink-0">
+        <img src={metsLogo} alt="MetsXMFanZone" className="h-[5vh] w-auto shrink-0" />
+        {holiday && (
+          <span aria-hidden="true" className="pointer-events-none absolute -right-[0.6vh] -top-[0.8vh] text-[2.4vh] leading-none -rotate-12">
+            {HOLIDAY_EMOJI[holiday]}
+          </span>
+        )}
+      </span>
 
       <nav aria-label="Sections" className="flex items-center gap-[0.4vw] min-w-0">
         {sections.map((s) => (

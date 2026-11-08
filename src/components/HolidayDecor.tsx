@@ -12,9 +12,9 @@ const FLAKES: Record<string, string[]> = {
 };
 
 // Soft falling snow (Christmas) or leaves (Thanksgiving). Decorative only, never blocks taps.
-export function HolidayDecor() {
-  const { pathname, search } = useLocation();
-  const { isTV, isTVDevice } = useDevice();
+// HolidayFall draws it; HolidayDecor decides where it shows on the website. The TV dashboard uses HolidayFall directly.
+export function HolidayFall({ count = 22, big = false }: { count?: number; big?: boolean }) {
+  const { search } = useLocation();
   const [reduced, setReduced] = useState(true);
   const holiday = getHoliday(new Date(), search);
 
@@ -28,19 +28,18 @@ export function HolidayDecor() {
 
   const pieces = useMemo(
     () =>
-      Array.from({ length: 22 }, (_, i) => ({
+      Array.from({ length: count }, (_, i) => ({
         left: (i * 97) % 100,
-        size: 12 + ((i * 7) % 14),
+        size: (12 + ((i * 7) % 14)) * (big ? 2 : 1),
         dur: 11 + ((i * 5) % 9),
         delay: -((i * 3) % 14),
         drift: ((i % 5) - 2) * 18,
         glyph: i % 3,
       })),
-    [],
+    [count, big],
   );
 
-  if (!holiday || reduced || isTV || isTVDevice) return null;
-  if (SKIP.some((p) => pathname === p || pathname.startsWith(p + "/"))) return null;
+  if (!holiday || reduced) return null;
   const glyphs = FLAKES[holiday];
 
   return (
@@ -66,4 +65,12 @@ export function HolidayDecor() {
       ))}
     </div>
   );
+}
+
+export function HolidayDecor() {
+  const { pathname } = useLocation();
+  const { isTV, isTVDevice } = useDevice();
+  if (isTV || isTVDevice) return null;
+  if (SKIP.some((p) => pathname === p || pathname.startsWith(p + "/"))) return null;
+  return <HolidayFall />;
 }
