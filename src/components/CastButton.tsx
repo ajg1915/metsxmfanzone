@@ -27,6 +27,14 @@ interface CastButtonProps {
 const CAST_FRAMEWORK_SRC =
   "https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1";
 
+/** The installed Android app casts through its own native plugin (the web view has no Cast support). */
+function nativeCast(): any {
+  try {
+    const w = window as any;
+    return w.Capacitor?.isNativePlatform?.() ? w.Capacitor?.Plugins?.NativeCast : null;
+  } catch { return null; }
+}
+
 let frameworkReady: Promise<boolean> | null = null;
 
 function frameworkAvailable() {
@@ -197,6 +205,19 @@ export function CastButton({ source, title, poster, variant = "pill" }: CastButt
   }, [source, title, poster]);
 
   const handleCast = useCallback(async () => {
+    const native = nativeCast();
+    if (native) {
+      if (connected) {
+        try { await native.stop(); } catch {}
+        setConnected(false);
+      } else {
+        try {
+          await native.cast({ url: source, title: title || "Live Stream" });
+          setConnected(true);
+        } catch (e) { console.warn("[Cast] native cast failed:", e); }
+      }
+      return;
+    }
     // Cast is blocked inside iframes (embeds) — open the real site.
     const inIframe = window.self !== window.top;
     if (inIframe) {
@@ -245,10 +266,11 @@ export function CastButton({ source, title, poster, variant = "pill" }: CastButt
         await remotePrompt();
       }
     }
-  }, [connected]);
+  }, [connected, source, title]);
 
-  if (!ready && !castSupported && variant !== "menu") return null;
-  const unsupported = !ready && !castSupported;
+  if (!ready && !castSupported && !nativeCast() && variant !== "menu") return null;
+  const isNative = !!nativeCast();
+  const unsupported = !ready && !castSupported && !isNative;
 
   if (variant === "menu") {
     return (
@@ -256,7 +278,7 @@ export function CastButton({ source, title, poster, variant = "pill" }: CastButt
         type="button"
         data-guide="stream-cast"
         className="relative flex w-full items-center gap-3 overflow-hidden px-4 py-2.5 text-left text-[13px] text-white hover:bg-secondary/50"
-        onClick={connected || !ready || window.self !== window.top ? handleCast : undefined}
+        onClick={isNative || connected || !ready || window.self !== window.top ? handleCast : undefined}
         aria-label={connected ? "Stop casting" : "Cast to TV"}
         title={connected ? "Stop casting" : "Cast to TV"}
       >
@@ -268,7 +290,7 @@ export function CastButton({ source, title, poster, variant = "pill" }: CastButt
         {connected && <span className="text-[11px] font-bold text-primary">Casting</span>}
         {/* Click surface for the Google launcher, clipped to this row. */}
         <span className="absolute inset-0 overflow-hidden">
-          {ready && !connected && window.self === window.top ? (
+          {ready && !isNative && !connected && window.self === window.top ? (
             <google-cast-launcher
               aria-label="Cast to TV"
               title="Cast to TV"
@@ -293,7 +315,7 @@ export function CastButton({ source, title, poster, variant = "pill" }: CastButt
           ? "bg-primary text-primary-foreground"
           : "bg-background/70 text-foreground hover:bg-background/90"
       }`}
-      onClick={connected || !ready || window.self !== window.top ? handleCast : undefined}
+      onClick={isNative || connected || !ready || window.self !== window.top ? handleCast : undefined}
       aria-label={connected ? "Stop casting" : "Cast to TV"}
       title={connected ? "Stop casting" : "Cast to TV"}
     >
@@ -303,7 +325,7 @@ export function CastButton({ source, title, poster, variant = "pill" }: CastButt
       {/* Click surface. The Google launcher element is clipped to this badge so
           its default (very large) icon can never cover the video. */}
       <span className="absolute inset-0 overflow-hidden rounded-full">
-        {ready && !connected && window.self === window.top ? (
+        {ready && !isNative && !connected && window.self === window.top ? (
           <google-cast-launcher
             aria-label="Cast to TV"
             title="Cast to TV"

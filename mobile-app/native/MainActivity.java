@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(ListenServicePlugin.class);
+        registerPlugin(NativeCastPlugin.class);
         super.onCreate(savedInstanceState);
         try {
             getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);

@@ -32,10 +32,18 @@ if (!xml.includes("com.metsxmfanzone.app.ListenService") && !xml.includes('andro
     '    <service android:name=".ListenService" android:exported="false" android:foregroundServiceType="mediaPlayback" />\n    </application>'
   );
 }
+// Chromecast support in the app.
+if (!xml.includes("OPTIONS_PROVIDER_CLASS_NAME")) {
+  xml = xml.replace("</application>", '    <meta-data android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME" android:value="com.metsxmfanzone.app.CastOptionsProvider" />\n    </application>');
+}
+if (!gradle.includes("play-services-cast-framework")) {
+  gradle = gradle.replace(/dependencies\s*\{/, "dependencies {\n    implementation 'com.google.android.gms:play-services-cast-framework:21.5.0'");
+  fs.writeFileSync(gradlePath, gradle);
+}
 fs.writeFileSync(manifestPath, xml);
 const javaDir = path.resolve("android/app/src/main/java/com/metsxmfanzone/app");
 fs.mkdirSync(javaDir, { recursive: true });
-for (const file of ["MainActivity.java", "ListenService.java", "ListenServicePlugin.java"]) {
+for (const file of ["MainActivity.java", "ListenService.java", "ListenServicePlugin.java", "NativeCastPlugin.java", "CastOptionsProvider.java"]) {
   fs.copyFileSync(path.resolve("native", file), path.join(javaDir, file));
 }
 
@@ -56,7 +64,7 @@ if (!xml.includes("android.permission.RECORD_AUDIO")) {
   console.error("Microphone permission patch failed");
   process.exit(1);
 }
-if (!xml.includes("ListenService") || !xml.includes("FOREGROUND_SERVICE_MEDIA_PLAYBACK")) {
+if (!xml.includes("OPTIONS_PROVIDER_CLASS_NAME") || !gradle.includes("play-services-cast-framework") || !xml.includes("ListenService") || !xml.includes("FOREGROUND_SERVICE_MEDIA_PLAYBACK")) {
   console.error("Background audio patch failed");
   process.exit(1);
 }
