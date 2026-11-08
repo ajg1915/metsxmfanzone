@@ -7,12 +7,12 @@ export function HolidayRibbon() {
   if (!h) return null;
   const text =
     h === "thanksgiving"
-      ? "🦃 Happy Thanksgiving from the MetsXMFanZone family! 🍂"
-      : "🎄 Happy Holidays from MetsXMFanZone! LFGM 🎅";
+      ? "🦃 Happy Thanksgiving from MetsXMFanZone 🍂"
+      : "🎄 Happy Holidays from MetsXMFanZone 🎅";
   return (
     <div
       role="status"
-      className="w-full bg-gradient-to-r from-[#002D72] via-[#FF5910] to-[#002D72] py-1.5 text-center text-xs font-bold uppercase tracking-wide text-white sm:text-sm"
+      className="w-full overflow-hidden whitespace-nowrap bg-gradient-to-r from-[#002D72] via-[#FF5910] to-[#002D72] px-2 py-1 text-center text-[clamp(9px,3.1vw,13px)] font-bold uppercase leading-tight tracking-normal text-white sm:py-1.5 sm:text-sm sm:tracking-wide"
     >
       {text}
     </div>
