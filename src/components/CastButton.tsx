@@ -247,19 +247,24 @@ export function CastButton({ source, title, poster, variant = "pill" }: CastButt
     }
   }, [connected]);
 
-  if (!ready && !castSupported) return null;
+  if (!ready && !castSupported && variant !== "menu") return null;
+  const unsupported = !ready && !castSupported;
 
   if (variant === "menu") {
     return (
       <button
         type="button"
+        data-guide="stream-cast"
         className="relative flex w-full items-center gap-3 overflow-hidden px-4 py-2.5 text-left text-[13px] text-white hover:bg-secondary/50"
         onClick={connected || !ready || window.self !== window.top ? handleCast : undefined}
         aria-label={connected ? "Stop casting" : "Cast to TV"}
         title={connected ? "Stop casting" : "Cast to TV"}
       >
         <Cast className={`h-5 w-5 ${connected ? "text-primary" : ""}`} />
-        <span className="flex-1">{connected ? "Stop casting" : "Cast to TV"}</span>
+        <span className="flex-1">
+          {connected ? "Stop casting" : "Cast to TV"}
+          {unsupported && <span className="block text-[11px] text-white/55">Open metsxmfanzone.com in Chrome to cast</span>}
+        </span>
         {connected && <span className="text-[11px] font-bold text-primary">Casting</span>}
         {/* Click surface for the Google launcher, clipped to this row. */}
         <span className="absolute inset-0 overflow-hidden">

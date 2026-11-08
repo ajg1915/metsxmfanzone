@@ -484,6 +484,7 @@ export function StreamControls({
 
           <button
             ref={gearRef}
+            data-guide="stream-settings"
             type="button"
             onClick={() => setMenu((m) => (m === "closed" ? "main" : "closed"))}
             className={cn(btn, menuOpen && "text-white")}

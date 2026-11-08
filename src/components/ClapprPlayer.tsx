@@ -483,7 +483,8 @@ export const ClapprPlayer = memo(function ClapprPlayer({
         <button
           type="button"
           onClick={() => startListening({ source: effectiveSource, title: pageTitle })}
-          className="absolute right-2 top-2 z-20 flex min-h-[40px] items-center gap-1.5 rounded-full bg-black/60 px-3.5 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-sm active:scale-95"
+          data-guide="stream-listen"
+          className="absolute left-2 top-2 z-20 flex min-h-[40px] items-center gap-1.5 rounded-full bg-black/60 px-3.5 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-sm active:scale-95"
           aria-label="Listen only: keep the audio playing without the video"
         >
           <Headphones className="h-4 w-4" /> Listen

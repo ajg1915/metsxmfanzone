@@ -85,6 +85,9 @@ export const GUIDE_SECTIONS: { key: string; label: string; path: string; group: 
   { group: "PC / tablet top bar", key: "nav-account", label: "Account menu (signed in)", path: "/" },
   { group: "PC / tablet top bar", key: "guide-button", label: "What's new button", path: "/" },
   { group: "TV", key: "tv-sidebar", label: "TV left bar", path: "/" },
+  { group: "Live stream player", key: "stream-listen", label: "Listen (radio mode) button, top left", path: "/spring-training-live" },
+  { group: "Live stream player", key: "stream-settings", label: "Settings (pinwheel) button", path: "/spring-training-live" },
+  { group: "Live stream player", key: "stream-cast", label: "Cast to TV (in the pinwheel menu)", path: "/spring-training-live" },
   { group: "Install page", key: "install-android", label: "Android app button", path: "/install" },
   { group: "Install page", key: "install-tv", label: "TV app button", path: "/install" },
 ];

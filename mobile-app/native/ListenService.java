@@ -7,6 +7,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.MediaMetadata;
 import android.media.MediaPlayer;
@@ -39,6 +41,14 @@ public class ListenService extends Service {
     private boolean wantPlaying = true;
     private boolean isPlaying = false;
     private String title = "Live stream";
+    private Bitmap logo;
+
+    private Bitmap logo() {
+        if (logo == null) {
+            try { logo = BitmapFactory.decodeResource(getResources(), getResources().getIdentifier("listen_logo", "drawable", getPackageName())); } catch (Exception ignored) {}
+        }
+        return logo;
+    }
     private final Handler handler = new Handler(Looper.getMainLooper());
 
     private void report(boolean playing, String status) {
@@ -129,6 +139,7 @@ public class ListenService extends Service {
         if (launch != null) {
             b.setContentIntent(PendingIntent.getActivity(this, 0, launch, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
         }
+        if (logo() != null) b.setLargeIcon(logo());
         b.setSmallIcon(android.R.drawable.ic_media_play)
                 .setContentTitle(title)
                 .setContentText("MetsXMFanZone · Listening live")

@@ -39,6 +39,11 @@ for (const file of ["MainActivity.java", "ListenService.java", "ListenServicePlu
   fs.copyFileSync(path.resolve("native", file), path.join(javaDir, file));
 }
 
+// Logo shown on the lock-screen player.
+const drawDir = path.resolve("android/app/src/main/res/drawable-nodpi");
+fs.mkdirSync(drawDir, { recursive: true });
+fs.copyFileSync(path.resolve("native/listen_logo.png"), path.join(drawDir, "listen_logo.png"));
+
 // Plain PNG launcher icons (made by make_icons.py) instead of the Capacitor adaptive icon.
 const anydpi = path.resolve("android/app/src/main/res/mipmap-anydpi-v26");
 if (fs.existsSync(anydpi)) fs.rmSync(anydpi, { recursive: true, force: true });
