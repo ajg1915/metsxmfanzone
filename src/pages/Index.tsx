@@ -187,8 +187,8 @@ const Index = () => {
       ) : (
       <main className="relative z-10 homepage-broadcast-feed">
         <div className="hidden sm:block sm:h-[72px]" aria-hidden="true" />
-        <HolidayRibbon />
         <div data-guide="home-hero"><Hero /></div>
+        <HolidayRibbon />
 
         {/* Mets Tracker FA (trades, signings, radar), first section under the hero */}
         <Suspense fallback={<SectionSkeleton />}>
