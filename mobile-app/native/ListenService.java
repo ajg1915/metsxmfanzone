@@ -7,34 +7,44 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
-import android.os.Build;
-import android.os.IBinder;
 import android.media.AudioAttributes;
+import android.media.MediaMetadata;
 import android.media.MediaPlayer;
+import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
+import android.os.Build;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
 import android.os.PowerManager;
 
-import androidx.core.app.NotificationCompat;
-
 /**
- * Keeps the app alive while a viewer is listening to a live stream (Listen mode on the website), so the
- * audio keeps playing when the screen locks or another app is open. Shows a "Listening live" notification.
+ * Plays the live stream's audio in the background (Listen mode) and shows a lock-screen / notification
+ * media player with play-pause and stop, so audio keeps going with the screen locked.
  */
 public class ListenService extends Service {
     public static volatile boolean running = false;
+    public static volatile ListenService instance;
+    public interface StateListener { void onState(boolean playing, String status); }
+    public static volatile StateListener listener;
+
     private static final String CHANNEL_ID = "listen_live";
     private static final int NOTIFICATION_ID = 4107;
+
     private PowerManager.WakeLock wakeLock;
     private MediaPlayer player;
+    private MediaSession session;
     private String[] urls = new String[0];
     private int urlIndex = 0;
     private boolean wantPlaying = true;
-    private final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
-
-    public interface StateListener { void onState(boolean playing, String status); }
-    public static volatile StateListener listener;
-    public static volatile ListenService instance;
+    private boolean isPlaying = false;
+    private String title = "Live stream";
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     private void report(boolean playing, String status) {
+        isPlaying = playing;
+        updateSession();
+        refreshNotification();
         StateListener l = listener;
         if (l != null) l.onState(playing, status);
     }
@@ -43,7 +53,6 @@ public class ListenService extends Service {
         releasePlayer();
         if (urlIndex >= urls.length) {
             report(false, "error");
-            // live feeds come and go: retry from the start in 15s
             handler.postDelayed(() -> { if (running && wantPlaying) { urlIndex = 0; playCurrent(); } }, 15000);
             return;
         }
@@ -57,7 +66,7 @@ public class ListenService extends Service {
             player.setDataSource(urls[urlIndex]);
             player.setOnPreparedListener(mp -> { if (wantPlaying) mp.start(); report(wantPlaying, "ready"); });
             player.setOnErrorListener((mp, what, extra) -> { urlIndex++; playCurrent(); return true; });
-            player.setOnCompletionListener(mp -> { playCurrent(); });
+            player.setOnCompletionListener(mp -> playCurrent());
             player.prepareAsync();
         } catch (Exception e) {
             urlIndex++;
@@ -73,47 +82,97 @@ public class ListenService extends Service {
         wantPlaying = play;
         if (player == null) return;
         try {
-            if (play) { player.start(); } else { player.pause(); }
+            if (play) player.start(); else player.pause();
             report(play, "ready");
         } catch (Exception ignored) {}
     }
 
+    private void ensureSession() {
+        if (session != null) return;
+        session = new MediaSession(this, "MetsXMFanZoneListen");
+        session.setCallback(new MediaSession.Callback() {
+            @Override public void onPlay() { setPlaying(true); }
+            @Override public void onPause() { setPlaying(false); }
+            @Override public void onStop() { stopFromUser(); }
+        });
+        session.setActive(true);
+    }
+
+    private void updateSession() {
+        if (session == null) return;
+        session.setMetadata(new MediaMetadata.Builder()
+                .putString(MediaMetadata.METADATA_KEY_TITLE, title)
+                .putString(MediaMetadata.METADATA_KEY_ARTIST, "MetsXMFanZone · Live")
+                .build());
+        long actions = PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_STOP;
+        session.setPlaybackState(new PlaybackState.Builder()
+                .setActions(actions)
+                .setState(isPlaying ? PlaybackState.STATE_PLAYING : PlaybackState.STATE_PAUSED, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1f)
+                .build());
+    }
+
+    private void stopFromUser() {
+        StateListener l = listener;
+        if (l != null) l.onState(false, "stopped");
+        stopSelf();
+    }
+
+    private PendingIntent actionIntent(String action, int code) {
+        return PendingIntent.getService(this, code, new Intent(this, ListenService.class).setAction(action),
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private Notification buildNotification() {
+        Notification.Builder b = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(this, CHANNEL_ID) : new Notification.Builder(this);
+        Intent launch = getPackageManager().getLaunchIntentForPackage(getPackageName());
+        if (launch != null) {
+            b.setContentIntent(PendingIntent.getActivity(this, 0, launch, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
+        }
+        b.setSmallIcon(android.R.drawable.ic_media_play)
+                .setContentTitle(title)
+                .setContentText("MetsXMFanZone · Listening live")
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .setCategory(Notification.CATEGORY_TRANSPORT);
+        b.addAction(new Notification.Action.Builder(
+                isPlaying ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
+                isPlaying ? "Pause" : "Play", actionIntent("TOGGLE", 2)).build());
+        b.addAction(new Notification.Action.Builder(
+                android.R.drawable.ic_menu_close_clear_cancel, "Stop", actionIntent("STOP", 1)).build());
+        Notification.MediaStyle style = new Notification.MediaStyle().setShowActionsInCompactView(0, 1);
+        if (session != null) style.setMediaSession(session.getSessionToken());
+        b.setStyle(style);
+        return b.build();
+    }
+
+    private void refreshNotification() {
+        if (!running) return;
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (nm != null) nm.notify(NOTIFICATION_ID, buildNotification());
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && "STOP".equals(intent.getAction())) {
-            report(false, "stopped");
-            stopSelf();
-            return START_NOT_STICKY;
-        }
-        String title = intent != null ? intent.getStringExtra("title") : null;
-        if (title == null || title.trim().isEmpty()) title = "Live stream";
+        String act = intent != null ? intent.getAction() : null;
+        if ("STOP".equals(act)) { stopFromUser(); return START_NOT_STICKY; }
+        if ("TOGGLE".equals(act)) { setPlaying(!isPlaying); return START_NOT_STICKY; }
+
+        String t = intent != null ? intent.getStringExtra("title") : null;
+        if (t != null && !t.trim().isEmpty()) title = t;
 
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && nm != null) {
             NotificationChannel ch = new NotificationChannel(CHANNEL_ID, "Listening live", NotificationManager.IMPORTANCE_LOW);
             ch.setShowBadge(false);
+            ch.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             nm.createNotificationChannel(ch);
         }
+        ensureSession();
+        updateSession();
 
-        PendingIntent open = null;
-        Intent launch = getPackageManager().getLaunchIntentForPackage(getPackageName());
-        if (launch != null) {
-            open = PendingIntent.getActivity(this, 0, launch, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
-        }
-
-        Notification n = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(android.R.drawable.ic_media_play)
-                .setContentTitle("MetsXMFanZone · Listening live")
-                .setContentText(title)
-                .setOngoing(true)
-                .setOnlyAlertOnce(true)
-                .setCategory(NotificationCompat.CATEGORY_TRANSPORT)
-                .setContentIntent(open)
-                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop",
-                        PendingIntent.getService(this, 1, new Intent(this, ListenService.class).setAction("STOP"),
-                                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT))
-                .build();
-
+        Notification n = buildNotification();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(NOTIFICATION_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK);
         } else {
@@ -125,7 +184,7 @@ public class ListenService extends Service {
             if (pm != null) {
                 wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MetsXMFanZone:listen");
                 wakeLock.setReferenceCounted(false);
-                wakeLock.acquire(6 * 60 * 60 * 1000L); // at most 6 hours
+                wakeLock.acquire(6 * 60 * 60 * 1000L);
             }
         }
         running = true;
@@ -147,6 +206,7 @@ public class ListenService extends Service {
         instance = null;
         handler.removeCallbacksAndMessages(null);
         releasePlayer();
+        if (session != null) { try { session.setActive(false); session.release(); } catch (Exception ignored) {} session = null; }
         if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
         wakeLock = null;
         super.onDestroy();
