@@ -245,7 +245,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
         <CardTitle className="line-clamp-2 text-base">{stream.title}</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
+        <div className="space-y-1.5 break-words text-xs text-muted-foreground mb-3">
           <p>Assigned to: {stream.assigned_pages?.length > 0 ? stream.assigned_pages.map(p => PAGE_LABELS[p] || p).join(', ') : 'None'}</p>
           {stream.scheduled_start && <p>Starts: {new Date(stream.scheduled_start).toLocaleString()}</p>}
           <p>Viewers: {stream.viewers_count}</p>
@@ -256,7 +256,7 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
             value={getFeed(stream.stream_url)}
             onValueChange={(v) => onSelectWatchPage(stream.id, v)}
           >
-            <SelectTrigger className="h-7 text-[11px]">
+            <SelectTrigger className="h-8 w-full min-w-0 text-[11px] [&>span]:truncate">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -294,25 +294,25 @@ function SortableStreamCard({ stream, onEdit, onDelete, getStatusBadge, selected
             />
           </div>
         )}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={stream.status === "live" ? "secondary" : "default"}
             size="sm"
             onClick={() => onToggleLive(stream)}
-            className="flex-1 h-7 text-xs"
+            className="h-8 min-w-[6.5rem] flex-1 text-xs"
           >
             <Radio className="w-3 h-3 mr-1" />
             {stream.status === "live" ? "End Live" : "Go Live"}
           </Button>
           {stream.status === "live" && (
-            <Button variant="outline" size="sm" onClick={() => onToggleLive(stream, "scheduled")} className="flex-1 h-7 text-xs">
+            <Button variant="outline" size="sm" onClick={() => onToggleLive(stream, "scheduled")} className="h-8 min-w-[6.5rem] flex-1 text-xs">
               Not Live Yet
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={() => onEdit(stream)} className="flex-1 h-7 text-xs">
+          <Button variant="outline" size="sm" onClick={() => onEdit(stream)} className="h-8 min-w-[6.5rem] flex-1 text-xs">
             <Edit className="w-3 h-3 mr-1" /> Edit
           </Button>
-          <Button variant="destructive" size="sm" onClick={() => onDelete(stream.id)} className="h-7 text-xs">
+          <Button variant="destructive" size="sm" onClick={() => onDelete(stream.id)} className="h-8 shrink-0 text-xs" aria-label="Delete stream">
             <Trash2 className="w-3 h-3" />
           </Button>
         </div>
@@ -957,7 +957,7 @@ export default function LiveStreamManagement() {
                 Add Live Stream
               </Button>
             </DialogTrigger>
-          <DialogContent onCloseAutoFocus={(e) => e.preventDefault()} className="min-w-0 max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-2xl overflow-x-hidden overflow-y-auto p-4 sm:max-h-[90dvh] sm:p-6">
+          <DialogContent onCloseAutoFocus={(e) => e.preventDefault()} className="min-w-0 max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-3xl overflow-x-hidden overflow-y-auto p-4 sm:max-h-[92dvh] sm:p-6">
             <DialogHeader className="min-w-0 pr-7 text-left">
               <DialogTitle>{editingStream ? "Edit Live Stream" : "Add New Live Stream"}</DialogTitle>
               <DialogDescription>
@@ -1316,7 +1316,7 @@ export default function LiveStreamManagement() {
                 <Label htmlFor="published">Published</Label>
               </div>
 
-              <div className="flex gap-2 justify-end">
+              <div className="sticky bottom-[-1rem] z-10 -mx-4 flex justify-end gap-2 border-t border-border bg-background px-4 py-3 sm:bottom-[-1.5rem] sm:-mx-6 sm:px-6">
                 <Button type="button" variant="outline" onClick={() => handleDialogClose(false)}>
                   Cancel
                 </Button>
