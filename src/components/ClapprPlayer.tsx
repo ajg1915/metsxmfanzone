@@ -1,6 +1,6 @@
 import { memo, useRef, useEffect, useState, useCallback } from "react";
 import Hls from "hls.js";
-import { Loader2, AlertCircle, RotateCw, Play, Pause, Volume2, Headphones, Tv } from "lucide-react";
+import { Loader2, AlertCircle, RotateCw, Play, Pause, Volume2, Headphones, Tv, X } from "lucide-react";
 import logoImage from "@/assets/metsxmfanzone-logo.png";
 import { registerPanelHost, startListening, stopListening, togglePlay as toggleListenPlay, useListenSession } from "@/lib/listenSession";
 import { StreamIssueDialog } from "./StreamIssueDialog";
@@ -493,6 +493,14 @@ export const ClapprPlayer = memo(function ClapprPlayer({
       {listening && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 overflow-hidden bg-gradient-to-b from-[hsl(var(--mets-blue))] to-[hsl(var(--mets-blue-dark))] px-3 py-2 text-center text-white sm:gap-3">
           <div className="absolute inset-x-0 top-0 h-1 bg-primary" />
+          <button
+            type="button"
+            onClick={() => stopListening()}
+            className="absolute right-2 top-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-black/50 text-white active:scale-95"
+            aria-label="Close listen mode and watch the video"
+          >
+            <X className="h-6 w-6" />
+          </button>
           <img src={logoImage} alt="MetsXMFanZone" className="h-11 w-auto max-w-[70%] object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] sm:h-16" />
           <div className="min-w-0 max-w-full">
             <p className="flex items-center justify-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-primary sm:text-[11px]">
