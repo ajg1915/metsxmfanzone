@@ -46,7 +46,8 @@ const PaymentSuccess = () => {
             : "Your subscription is now active. Welcome to the premium experience!",
         });
 
-        setTimeout(() => navigate('/'), 5000);
+        // Monthly and yearly members get a free shirt: send them to the claim page.
+        setTimeout(() => navigate(confirmedPlan === 'premium' || confirmedPlan === 'annual' ? '/claim-shirt?from=signup' : '/'), 5000);
       } catch (error) {
         console.error('Payment verification error:', error);
         setStatus('error');

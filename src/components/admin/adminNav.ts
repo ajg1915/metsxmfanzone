@@ -162,6 +162,7 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Player of Month", url: "/admin/player-of-the-month", icon: Trophy },
           { title: "Roster Details", url: "/admin/roster-details", icon: Users },
           { title: "Lineup Card", url: "/admin/lineup-card", icon: LayoutTemplate },
+          { title: "Free Shirts", url: "/admin/shirt-claims", icon: Gift },
         ],
       },
       {

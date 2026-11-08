@@ -47,6 +47,8 @@ const AdminSetup = lazyWithRetry(() => import("./pages/AdminSetup"), "page-admin
 const AdminLayout = lazyWithRetry(() => import("./components/AdminLayout").then(m => ({ default: m.AdminLayout })), "component-admin-layout");
 const AdminDashboard = lazyWithRetry(() => import("./pages/admin/Dashboard"), "page-admin-dashboard");
 const LineupCardDesigner = lazyWithRetry(() => import("./pages/admin/LineupCardDesigner"), "page-admin-lineup-card");
+const ShirtClaims = lazyWithRetry(() => import("./pages/admin/ShirtClaims"), "page-admin-shirt-claims");
+const ClaimShirt = lazyWithRetry(() => import("./pages/ClaimShirt"), "page-claim-shirt");
 const PostsManagement = lazyWithRetry(() => import("./pages/admin/PostsManagement"), "page-admin-posts-management");
 const UserRoles = lazyWithRetry(() => import("./pages/admin/UserRoles"), "page-admin-user-roles");
 const AdminSettings = lazyWithRetry(() => import("./pages/admin/AdminSettings"), "page-admin-settings");
@@ -333,6 +335,7 @@ const AppContent = () => {
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/pricing" element={<Plans />} />
             <Route path="/paypal-success" element={<PayPalSuccess />} />
+            <Route path="/claim-shirt" element={<ClaimShirt />} />
             
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/payment-error" element={<PaymentError />} />
@@ -415,6 +418,7 @@ const AppContent = () => {
               <Route path="email-templates" element={<EmailTemplateSettings />} />
               <Route path="chat" element={<Navigate to="/admin" replace />} />
               <Route path="lineup-card" element={<LineupCardDesigner />} />
+              <Route path="shirt-claims" element={<ShirtClaims />} />
               <Route path="posts" element={<PostsManagement />} />
               <Route path="business-ads" element={<BusinessAdsManagement />} />
               <Route path="roles" element={<UserRoles />} />
