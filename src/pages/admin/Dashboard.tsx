@@ -28,7 +28,6 @@ import {
   Globe,
   HelpCircle,
   Image as ImageIcon,
-  Link2,
   Loader2,
   Mail,
   Megaphone,
@@ -287,7 +286,7 @@ export default function AdminDashboard() {
 
   const jumpItems = [
     { title: "Live streams", description: "Schedule, go live, monitor", icon: Radio, url: "/admin/live-streams", tag: isLive ? "Live now" : "Standby" },
-    { title: "Stream tester", description: "Test M3U8 links before going live", icon: Link2, url: "/admin/live-streams?tab=health", tag: "Tool" },
+    { title: "Health & tests", description: "Stream health, stream tester and feed health", icon: Activity, url: "/admin/live-streams?tab=health", tag: feed?.overall === "healthy" ? "Healthy" : "Check" },
     { title: "Blog", description: "Write and publish articles", icon: FileText, url: "/admin/drafts", tag: `${stats.totalBlogs} posts` },
     { title: "Media library", description: "Images, video and audio", icon: ImageIcon, url: "/admin/media-library", tag: "Uploads" },
     { title: "Highlights", description: "Video gallery and clips", icon: Video, url: "/admin/video-gallery-management", tag: "Videos" },
@@ -300,7 +299,6 @@ export default function AdminDashboard() {
     { title: "Business", description: "Review and create business ads", icon: Briefcase, url: "/admin/business-ads", tag: "Ads" },
     { title: "Newsletter", description: "Write and send emails", icon: Mail, url: "/admin/newsletter", tag: "Send" },
     { title: "Alerts & popups", description: "Push alerts and banners", icon: Megaphone, url: "/admin/popup-notifications", tag: "Notify" },
-    { title: "Feed health", description: "Watch your content sources", icon: Activity, url: "/admin/live-streams?tab=health", tag: feed?.overall === "healthy" ? "Healthy" : "Check" },
     { title: "Stream issues", description: "Review viewer playback tickets", icon: AlertTriangle, url: "/admin/stream-issues", tag: "Triage" },
     { title: "SEO", description: "Titles, previews and sitemap", icon: Globe, url: "/admin/seo", tag: "Optimize" },
   ];
