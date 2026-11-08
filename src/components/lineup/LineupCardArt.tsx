@@ -8,13 +8,13 @@ const TEAM_IDS: Record<string, number> = {
   yankees: 147, athletics: 133, phillies: 143, pirates: 134, padres: 135, giants: 137, mariners: 136, cardinals: 138,
   rays: 139, rangers: 140, "blue jays": 141, nationals: 120,
 };
-const oppLogo = (name?: string) => {
+export const oppLogo = (name?: string) => {
   const key = (name || "").toLowerCase();
   for (const [team, id] of Object.entries(TEAM_IDS)) if (key.includes(team)) return `https://www.mlbstatic.com/team-logos/${id}.svg`;
   return undefined;
 };
 
-function palette(d: LineupDesign) {
+export function palette(d: LineupDesign) {
   if (d.template === "classic")
     return { bg: "#ffffff", panel: "#f1f4f9", text: d.background, sub: "#5b6b86", row: "#f6f8fc", line: "#d9e0ec", onAccent: "#ffffff" };
   if (d.template === "night")

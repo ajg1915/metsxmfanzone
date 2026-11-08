@@ -21,6 +21,7 @@ const ImmersiveBackground = lazyWithRetry(() => import("@/components/ImmersiveBa
 const FreeTrialExpiryBanner = lazyWithRetry(() => import("@/components/FreeTrialExpiryBanner"), "home-free-trial-expiry-banner");
 const RegularSeasonSeriesSection = lazyWithRetry(() => import("@/components/RegularSeasonSeriesSection"), "home-game-series-section");
 const LiveStreamsSection = lazyWithRetry(() => import("@/components/LiveStreamsSection"), "home-live-streams-section-v2");
+const HomeLineupRow = lazyWithRetry(() => import("@/components/lineup/HomeLineupRow"), "home-lineup-row");
 const RelatedStreamsSection = lazyWithRetry(() => import("@/components/RelatedStreamsSection"), "home-related-streams-section");
 
 const PlayerOfTheMonthSection = lazyWithRetry(() => import("@/components/PlayerOfTheMonthSection"), "home-player-of-the-month-section");
@@ -204,6 +205,13 @@ const Index = () => {
         <div data-guide="live-streams">
           <Suspense fallback={<SectionSkeleton />}>
             <LiveStreamsSection />
+          </Suspense>
+        </div>
+
+        {/* Today's lineup (hidden until turned on in Admin > Lineup Card) */}
+        <div data-guide="lineup-row">
+          <Suspense fallback={null}>
+            <HomeLineupRow />
           </Suspense>
         </div>
 
