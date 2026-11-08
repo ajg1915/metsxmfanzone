@@ -140,12 +140,22 @@ function load(source: string) {
   attempt();
 }
 
-/** In the installed Android app, start/stop a background service so audio keeps playing with the screen locked. */
-function nativeListen(action: "start" | "stop", title = "") {
+/** The installed Android app can play the stream natively (keeps going with the screen locked). */
+function nativePlugin(): any {
   try {
-    const p = (window as any).Capacitor?.Plugins?.ListenService;
-    if (p) p[action](action === "start" ? { title } : {}).catch?.(() => {});
-  } catch { /* not in the app */ }
+    const w = window as any;
+    return w.Capacitor?.isNativePlatform?.() ? w.Capacitor?.Plugins?.ListenService : null;
+  } catch { return null; }
+}
+let nativeHooked = false;
+function hookNative(p: any) {
+  if (nativeHooked) return;
+  nativeHooked = true;
+  p.addListener?.("state", (e: { playing: boolean; status: string }) => {
+    if (!state.active) return;
+    if (e.status === "stopped") { stopListening(); return; }
+    set({ playing: !!e.playing, status: e.status === "ready" ? "ready" : e.status === "error" ? "error" : "loading" } as any);
+  });
 }
 
 /** Start (or switch to) listening to a live stream. Call from a tap so the browser allows sound. */
@@ -161,18 +171,26 @@ export function startListening(opts: { source: string; title: string; path?: str
     status: "loading",
   });
   setMediaSession();
-  nativeListen("start", opts.title);
+  const np = nativePlugin();
+  if (np) {
+    hookNative(np);
+    const urls = Array.from(new Set([opts.source, isInsecureUrl(opts.source) ? toSecureStreamUrl(opts.source) : ""].filter(Boolean)));
+    np.start({ title: opts.title, urls }).catch(() => { teardown(); load(opts.source); });
+    return;
+  }
   load(opts.source);
 }
 
 export function stopListening() {
   teardown();
   clearMediaSession();
-  nativeListen("stop");
+  try { nativePlugin()?.stop?.(); } catch {}
   set({ active: false, source: "", title: "", playing: false, status: "idle" });
 }
 
 export function togglePlay(want?: boolean) {
+  const np = nativePlugin();
+  if (np && state.active) { np.setPlaying({ playing: typeof want === "boolean" ? want : !state.playing }); return; }
   const a = audio;
   if (!a || !state.active) return;
   const play = typeof want === "boolean" ? want : a.paused;
