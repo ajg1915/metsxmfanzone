@@ -5,6 +5,7 @@ import MobileSportsMenu from "@/components/MobileSportsMenu";
 import { Button } from "@/components/ui/button";
 import { Menu, Shield, LogOut, LayoutDashboard, ArrowLeft, Users, CalendarDays, RefreshCw, Sparkles, Tv, ChevronDown, ChevronRight, PenLine, ShoppingBag, Bell, Newspaper, Trophy, Loader2, X, Download, HelpCircle } from "lucide-react";
 import logo from "@/assets/metsxmfanzone-logo.png";
+import { getHoliday, HOLIDAY_EMOJI } from "@/lib/holiday";
 import liveStreamIcon from "@/assets/live-streaming-icon.png";
 import podcastIcon from "@/assets/podcast-icon.png";
 import { useAuth } from "@/hooks/useAuth";
@@ -46,6 +47,7 @@ const Navigation = () => {
   const { isTVDevice } = useDevice();
   const navigate = useNavigate();
   const location = useLocation();
+  const holiday = getHoliday(new Date(), location.search);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isWriter, setIsWriter] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -266,11 +268,18 @@ const Navigation = () => {
               <span className="font-display text-[25px] uppercase leading-none tracking-wide md:hidden">Watch Live</span>
             )}
             <div className={`flex min-w-0 items-center gap-1.5 cursor-pointer lg:shrink-0 ${location.pathname === "/metsxmfanzone" ? "max-md:hidden" : ""}`} onClick={() => navigate("/")}>
-              <img 
-                src={logo} 
-                alt="MetsXMFanZone Logo" 
-                className="h-9 w-auto max-md:h-8 shrink-0"
-              />
+              <span className="relative shrink-0">
+                <img 
+                  src={logo} 
+                  alt="MetsXMFanZone Logo" 
+                  className="h-9 w-auto max-md:h-8 shrink-0"
+                />
+                {holiday && (
+                  <span aria-hidden="true" className="pointer-events-none absolute -right-2 -top-2 text-base leading-none -rotate-12">
+                    {HOLIDAY_EMOJI[holiday]}
+                  </span>
+                )}
+              </span>
               <div className="min-w-0 font-display text-xl uppercase leading-none md:max-[1439px]:hidden max-md:text-[clamp(12px,4.5vw,20px)] whitespace-nowrap sm:text-2xl">
                 <span className={isHomePage ? "text-secondary max-md:text-foreground" : "text-secondary"}>Mets</span>
                 <span className="text-primary">XM</span>

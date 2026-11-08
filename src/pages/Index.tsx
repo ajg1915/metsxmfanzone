@@ -2,6 +2,7 @@ import { Suspense, useEffect, useState } from "react";
 import SEOHead from "@/components/SEOHead";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
+import { HolidayRibbon } from "@/components/HolidayRibbon";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import NYScoresStrip from "@/components/NYScoresStrip";
@@ -186,6 +187,7 @@ const Index = () => {
       ) : (
       <main className="relative z-10 homepage-broadcast-feed">
         <div className="hidden sm:block sm:h-[72px]" aria-hidden="true" />
+        <HolidayRibbon />
         <div data-guide="home-hero"><Hero /></div>
 
         {/* Mets Tracker FA (trades, signings, radar), first section under the hero */}

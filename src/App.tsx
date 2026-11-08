@@ -108,6 +108,7 @@ const SpringTrainingLive = lazyWithRetry(() => import("./pages/SpringTrainingLiv
 const ReplayGames = lazyWithRetry(() => import("./pages/ReplayGames"), "page-replay-games");
 const MetsSchedule2027 = lazyWithRetry(() => import("./pages/MetsSchedule2027"), "page-mets-schedule-2027");
 const TVBroadcastSchedule = lazyWithRetry(() => import("./pages/TVBroadcastSchedule"), "page-tv-broadcast-schedule");
+import { HolidayDecor } from "@/components/HolidayDecor";
 const TVDashboard = lazyWithRetry(() => import("./pages/TVDashboard"), "page-tv-dashboard");
 const MetsLineupCard = lazyWithRetry(() => import("./pages/MetsLineupCard"), "page-mets-lineup-card");
 const MetsScores = lazyWithRetry(() => import("./pages/MetsScores"), "page-mets-scores");
@@ -314,6 +315,7 @@ const AppContent = () => {
         {/* Removed: ExitIntentPopup, most toasts. Only Live/Offline kept */}
         <StreamExitDialog />
         <LiveEventBanner />
+        <HolidayDecor />
         <SocialMediaBar />
         <MobileGuide />
         <LiveEventPopup />
