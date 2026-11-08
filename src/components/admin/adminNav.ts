@@ -1,6 +1,6 @@
 import {
   Home, FileText, Video, Radio, Bell, Mic, TrendingUp,
-  MessageSquare, Users, Mail, Palette,
+  Users, Mail, Palette,
   Megaphone, BookOpen, Trophy, Send, Wallpaper,
   Activity, AlertTriangle, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
   ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift, Bot, Search,
@@ -152,7 +152,7 @@ export const ADMIN_HUBS: AdminHub[] = [
     key: "engage",
     title: "Engage",
     icon: Bell,
-    hint: "Chat, alerts",
+    hint: "Alerts, fan features",
     groups: [
       {
         title: "Fan Features",
@@ -163,7 +163,6 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Roster Details", url: "/admin/roster-details", icon: Users },
         ],
       },
-      { title: "Chat", items: [{ title: "Chat", url: "/admin/chat", icon: MessageSquare }] },
       {
         title: "Alerts",
         items: [

@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { HelpCircle, Book, Video, MessageCircle, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { HelpMessenger } from "@/components/HelpMessenger";
 
 const HelpCenter = () => {
   const categories = [
@@ -110,6 +111,7 @@ const HelpCenter = () => {
           </div>
         </div>
       </main>
+      <HelpMessenger />
       <Footer />
     </div>
   );

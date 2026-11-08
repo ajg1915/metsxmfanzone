@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchFeedHealth } from "@/lib/feedHealth";
-import ChatDashboardCard from "@/components/admin/ChatDashboardCard";
 import ContentIdeasCard from "@/components/admin/ContentIdeasCard";
 import RefreshEveryoneCard from "@/components/admin/RefreshEveryoneCard";
 import { Button } from "@/components/ui/button";
@@ -398,7 +397,6 @@ export default function AdminDashboard() {
       <ContentIdeasCard />
 
       {/* Chat */}
-      <ChatDashboardCard />
 
       {/* Daily actions */}
       <section className="adm-panel p-4 sm:p-5">

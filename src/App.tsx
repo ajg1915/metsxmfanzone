@@ -66,7 +66,6 @@ const TrialManagement = lazyWithRetry(() => import("./pages/admin/TrialManagemen
 const SubscriptionManagement = lazyWithRetry(() => import("./pages/admin/SubscriptionManagement"), "page-admin-subscription-management");
 const StoriesManagement = lazyWithRetry(() => import("./pages/admin/StoriesManagement"), "page-admin-stories-management");
 const TutorialManagement = lazyWithRetry(() => import("./pages/admin/TutorialManagement"), "page-admin-tutorial-management");
-const ChatManagement = lazyWithRetry(() => import("./pages/admin/ChatManagement"), "page-admin-chat-management");
 
 const NewsletterGenerator = lazyWithRetry(() => import("./pages/admin/NewsletterGenerator"), "page-admin-newsletter-generator");
 const EmailEditor = lazyWithRetry(() => import("./pages/admin/EmailEditor"), "page-admin-email-editor");
@@ -413,7 +412,7 @@ const AppContent = () => {
               <Route path="newsletter" element={<NewsletterGenerator />} />
               <Route path="email-editor" element={<EmailEditor />} />
               <Route path="email-templates" element={<EmailTemplateSettings />} />
-              <Route path="chat" element={<ChatManagement />} />
+              <Route path="chat" element={<Navigate to="/admin" replace />} />
               <Route path="posts" element={<PostsManagement />} />
               <Route path="business-ads" element={<BusinessAdsManagement />} />
               <Route path="roles" element={<UserRoles />} />
