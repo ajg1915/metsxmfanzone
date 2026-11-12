@@ -117,7 +117,7 @@ ${f.url ? `<div style="margin-top:6px">${link(f.url, f.linkLabel || "Check it ou
 }
 
 /** Welcome email, sent right after signup. */
-export function welcome({ name } = {}) {
+export function welcome({ name, unsubscribeUrl } = {}) {
   const hi = name ? `Welcome, ${name}!` : "Welcome to MetsXMFanZone!";
   const perk = (t, d) =>
     `<tr><td style="padding:8px 0;color:#d3dde8;font-size:15px"><span style="color:${ORANGE};font-weight:800">&#9679;</span>&nbsp; <strong style="color:#fff">${esc(t)}</strong> ${esc(d)}</td></tr>`;
@@ -138,9 +138,11 @@ export function welcome({ name } = {}) {
         perk("Site news", "new features and app updates.") +
         `</table>` +
         `<div style="height:10px"></div>` +
+        p("Heads up: you'll get our Weekly Mets Recap every Monday morning, plus the occasional breaking update.") +
         p("Not into an email? Every message has a one-click unsubscribe at the bottom."),
       cta: { label: "Jump into MetsXMFanZone", url: SITE },
       unsubscribe: true,
+      unsubscribeUrl,
     }),
   };
 }

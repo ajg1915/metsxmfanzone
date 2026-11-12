@@ -259,6 +259,13 @@ const Auth = () => {
       }).catch(() => undefined);
 
 
+      // Everyone who creates an account joins the weekly newsletter (they can unsubscribe in any email).
+      fetch("/api/join-fan-list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, name: account.fullName.trim() }),
+      }).catch(() => undefined);
+
       localStorage.removeItem(SIGNUP_DRAFT_KEY);
       localStorage.setItem("pending_membership_selection", "true");
       toast({ title: "Account created", description: "Confirm your email, then choose your membership." });

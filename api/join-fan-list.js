@@ -1,9 +1,35 @@
 // Newsletter signup. Adds the visitor to the "MetsXMFanZone Newsletter" list in Resend.
 // The Resend key stays on the server.
 
+import { welcome } from "./_lib/newsletter-templates.js";
+import { unsubUrl } from "./_lib/unsub.js";
+
 const SEGMENT_ID = "53422271-e367-4699-a322-b3e7d586f8a4";
 const ALLOWED_ORIGINS = ["https://metsxmfanzone.com", "https://www.metsxmfanzone.com"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+// Welcome email for brand new subscribers. Never blocks the signup if it fails.
+async function sendWelcome(email, name) {
+  const key = process.env.RESEND_API_KEY || process.env.RESEND_API_KEY_1;
+  if (!key) return;
+  try {
+    const mail = welcome({ name: name ? name.split(" ")[0] : undefined, unsubscribeUrl: unsubUrl(email) });
+    await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        from: "MetsXMFanZone <noreply@metsxmfanzone.com>",
+        reply_to: "support@metsxmfanzone.com",
+        to: [email],
+        subject: mail.subject,
+        html: mail.html,
+        headers: { "List-Unsubscribe": `<${unsubUrl(email)}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
+      }),
+    });
+  } catch (e) {
+    console.error("welcome email failed:", e);
+  }
+}
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
@@ -34,7 +60,10 @@ export default async function handler(req, res) {
       headers,
       body: JSON.stringify({ email, first_name: name || undefined, unsubscribed: false, segments: [{ id: SEGMENT_ID }] }),
     });
-    if (created.ok) return res.status(200).json({ success: true });
+    if (created.ok) {
+      await sendWelcome(email, name);
+      return res.status(200).json({ success: true });
+    }
 
     // Already a contact: make sure they are on the newsletter list.
     const added = await fetch(

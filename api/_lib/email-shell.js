@@ -11,7 +11,7 @@ export const esc = (v) =>
  * @param {{preheader?:string, heading?:string, content:string, cta?:{label:string,url:string}, note?:string, unsubscribe?:boolean}} o
  * content is an HTML fragment you trust. Everything else is escaped for you.
  */
-export function renderEmail({ preheader = "", heading = "", content, cta, note, unsubscribe = false, banner, signoff = false }) {
+export function renderEmail({ preheader = "", heading = "", content, cta, note, unsubscribe = false, banner, signoff = false, unsubscribeUrl }) {
   const button = cta
     ? `<tr><td align="center" style="padding:6px 0 22px"><a href="${esc(cta.url)}" style="display:inline-block;background:#ff4500;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:26px;font-weight:700;font-size:15px">${esc(cta.label)}</a></td></tr>`
     : "";
@@ -19,7 +19,7 @@ export function renderEmail({ preheader = "", heading = "", content, cta, note, 
     ? `<tr><td style="padding:0 0 16px;color:#8b99ab;font-size:12px;line-height:1.6;text-align:center">${esc(note)}</td></tr>`
     : "";
   const unsub = unsubscribe
-    ? `<br><a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color:#8b99ab;text-decoration:underline">Unsubscribe</a>`
+    ? `<br><a href="${esc(unsubscribeUrl || "{{{RESEND_UNSUBSCRIBE_URL}}}")}" style="color:#8b99ab;text-decoration:underline">Unsubscribe</a>`
     : "";
   return `<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><title>${esc(heading)}</title></head>

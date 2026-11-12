@@ -13,9 +13,21 @@
       "destination": "https://metsxmfanzone.com/:path*",
       "permanent": true
     },
-    { "source": "/mlb-network", "destination": "/apple-tv", "permanent": true },
-    { "source": "/espn-network", "destination": "/prime-video", "permanent": true },
-    { "source": "/msg-network", "destination": "/peacock", "permanent": true },
+    {
+      "source": "/mlb-network",
+      "destination": "/apple-tv",
+      "permanent": true
+    },
+    {
+      "source": "/espn-network",
+      "destination": "/prime-video",
+      "permanent": true
+    },
+    {
+      "source": "/msg-network",
+      "destination": "/peacock",
+      "permanent": true
+    },
     {
       "source": "/mets-schedule-2026",
       "destination": "/mets-schedule-2027",
@@ -55,17 +67,33 @@
     },
     {
       "source": "/blog/:slug*",
-      "has": [{ "type": "header", "key": "user-agent", "value": ".*(MetsXMFanZoneTV|AFT[A-Z]|Android TV|AndroidTV|GoogleTV|BRAVIA|SMART-TV|SmartTV).*" }],
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(MetsXMFanZoneTV|AFT[A-Z]|Android TV|AndroidTV|GoogleTV|BRAVIA|SMART-TV|SmartTV).*"
+        }
+      ],
       "destination": "/index.html"
     },
     {
       "source": "/blog/:slug*",
-      "has": [{ "type": "query", "key": "__chunk_retry" }],
+      "has": [
+        {
+          "type": "query",
+          "key": "__chunk_retry"
+        }
+      ],
       "destination": "/index.html"
     },
     {
       "source": "/blog/:slug*",
-      "has": [{ "type": "query", "key": "tv" }],
+      "has": [
+        {
+          "type": "query",
+          "key": "tv"
+        }
+      ],
       "destination": "/index.html"
     },
     {
@@ -85,12 +113,30 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Permissions-Policy", "value": "accelerometer=(), gyroscope=(), magnetometer=()" },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "accelerometer=(), gyroscope=(), magnetometer=()"
+        },
         {
           "key": "Content-Security-Policy",
           "value": "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: blob:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; media-src 'self' https: blob:; font-src 'self' data: https:; connect-src 'self' https: wss: blob:; frame-src https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
@@ -105,6 +151,16 @@
           "value": "public, max-age=0, must-revalidate"
         }
       ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/weekly-newsletter",
+      "schedule": "0 12 * * 1"
+    },
+    {
+      "path": "/api/weekly-newsletter",
+      "schedule": "0 13 * * 1"
     }
   ]
 }
