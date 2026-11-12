@@ -118,7 +118,7 @@ ${f.url ? `<div style="margin-top:6px">${link(f.url, f.linkLabel || "Check it ou
 
 /** Welcome email, sent right after signup. */
 export function welcome({ name } = {}) {
-  const hi = name ? `Welcome, ${name}!` : "Welcome to the FanZone!";
+  const hi = name ? `Welcome, ${name}!` : "Welcome to MetsXMFanZone!";
   const perk = (t, d) =>
     `<tr><td style="padding:8px 0;color:#d3dde8;font-size:15px"><span style="color:${ORANGE};font-weight:800">&#9679;</span>&nbsp; <strong style="color:#fff">${esc(t)}</strong> ${esc(d)}</td></tr>`;
   return {
@@ -139,7 +139,7 @@ export function welcome({ name } = {}) {
         `</table>` +
         `<div style="height:10px"></div>` +
         p("Not into an email? Every message has a one-click unsubscribe at the bottom."),
-      cta: { label: "Jump into the FanZone", url: SITE },
+      cta: { label: "Jump into MetsXMFanZone", url: SITE },
       unsubscribe: true,
     }),
   };
