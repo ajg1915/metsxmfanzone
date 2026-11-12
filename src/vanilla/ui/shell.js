@@ -13,7 +13,6 @@ const navItems = [
 const footerQuick = [
   ["/metsxmfanzone", "Live"],
   ["/blog", "News"],
-  ["/broadcast-schedule", "Schedule"],
   ["/podcast", "Podcast"],
   ["/pricing", "Plans"],
   ["/help-center", "Help"],

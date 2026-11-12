@@ -78,9 +78,9 @@ const footer = () => `
         ${byPath.has("/install") ? `<a class="footer-app-btn" href="${fileFor("/install")}">Get the App</a>` : ""}
       </div>
       <nav class="footer-quick" aria-label="Footer">
-        ${["/metsxmfanzone", "/blog", "/broadcast-schedule", "/podcast", "/pricing", "/help-center"]
+        ${["/metsxmfanzone", "/blog", "/podcast", "/mets-shop", "/pricing", "/help-center"]
           .filter((p) => byPath.has(p))
-          .map((p) => link(p, { "/metsxmfanzone": "Live", "/blog": "News", "/broadcast-schedule": "Schedule", "/podcast": "Podcast", "/pricing": "Plans", "/help-center": "Help" }[p]))
+          .map((p) => link(p, { "/metsxmfanzone": "Live", "/blog": "News", "/podcast": "Podcast", "/mets-shop": "Mets Shop", "/pricing": "Plans", "/help-center": "Help" }[p]))
           .join("")}
       </nav>
       <div class="footer-legal">${["/privacy", "/terms", "/contact"].filter((p) => byPath.has(p)).map((p) => link(p, p === "/contact" ? "Contact" : LABELS[p])).join("")}</div>
