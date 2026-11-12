@@ -3,6 +3,7 @@
 import { renderEmail, esc } from "./email-shell.js";
 
 const SITE = "https://metsxmfanzone.com";
+const B = (n) => `${SITE}/email/banner-${n}.png`;
 const ORANGE = "#ff4500";
 const MUTED = "#8b99ab";
 const PANEL = "#10253a";
@@ -53,16 +54,18 @@ function showBox({ title, when, url }) {
 export function weeklyRecap({ weekOf, intro, results = [], stories = [], upcoming = [], shows = [], shop } = {}) {
   const parts = [];
   if (intro) parts.push(p(intro));
-  if (results.length) parts.push(h2("Last week's results"), table(results.map(resultRow).join("")));
-  if (stories.length) parts.push(h2("Top stories"), stories.map(storyCard).join(""));
-  if (upcoming.length) parts.push(h2("This week"), table(upcoming.map(upcomingRow).join("")));
-  if (shows.length) parts.push(h2("Watch & listen"), shows.map(showBox).join(""));
-  if (shop) parts.push(h2("Rep the orange & blue"), p(shop.text), `<p style="margin:0 0 6px">${link(shop.url, shop.label || "Shop Mets gear")}</p>`);
+  if (results.length) parts.push(h2("⚾ Last week's results"), table(results.map(resultRow).join("")));
+  if (stories.length) parts.push(h2("📰 Top stories"), stories.map(storyCard).join(""));
+  if (upcoming.length) parts.push(h2("📅 This week"), table(upcoming.map(upcomingRow).join("")));
+  if (shows.length) parts.push(h2("🎙️ Watch & listen"), shows.map(showBox).join(""));
+  if (shop) parts.push(h2("🛍️ Rep the orange & blue"), p(shop.text), `<p style="margin:0 0 6px">${link(shop.url, shop.label || "Shop Mets gear")}</p>`);
   return {
     subject: `Your Weekly Mets Recap${weekOf ? ` · ${weekOf}` : ""}`,
     html: renderEmail({
       preheader: intro || "Results, top stories and what's coming up this week.",
       heading: "Weekly Mets Recap",
+      banner: B("weekly"),
+      signoff: true,
       content: parts.join(""),
       cta: { label: "Open MetsXMFanZone", url: SITE },
       note: weekOf ? `Week of ${weekOf}` : undefined,
@@ -81,7 +84,8 @@ export function breakingUpdate({ headline, body, image, url, buttonLabel = "Read
     html: renderEmail({
       preheader: body ? String(body).slice(0, 110) : headline,
       heading: headline,
-      content: `<div style="text-align:center;margin:-4px 0 14px"><span style="display:inline-block;background:${ORANGE};color:#fff;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;padding:4px 12px;border-radius:12px">${esc(tag)}</span></div>${img}${p(body || "")}`,
+      banner: B("breaking"),
+      content: `<h1 style="margin:0 0 14px;color:#ffffff;font-size:24px;line-height:1.25;font-weight:800;text-align:center">🚨 ${esc(headline)}</h1>${img}${p(body || "")}`,
       cta: { label: buttonLabel, url: url || SITE },
       unsubscribe: true,
     }),
@@ -103,6 +107,8 @@ ${f.url ? `<div style="margin-top:6px">${link(f.url, f.linkLabel || "Check it ou
     html: renderEmail({
       preheader: intro || "New features, app updates and more.",
       heading: title,
+      banner: B("update"),
+      signoff: true,
       content: (intro ? p(intro) : "") + list,
       cta: cta || { label: "See what's new", url: SITE },
       unsubscribe: true,
@@ -120,7 +126,10 @@ export function welcome({ name } = {}) {
     html: renderEmail({
       preheader: "Here's what you'll get from us every week.",
       heading: hi,
+      banner: B("welcome"),
+      signoff: true,
       content:
+        `<h1 style="margin:0 0 14px;color:#ffffff;font-size:24px;line-height:1.25;font-weight:800;text-align:center">${esc(hi)}</h1>` +
         p("You're in. MetsXMFanZone is fan-run Mets coverage, and here's what lands in your inbox:") +
         `<table role="presentation" width="100%" cellpadding="0" cellspacing="0">` +
         perk("Weekly Mets Recap", "results, top stories and what's coming up.") +
@@ -128,6 +137,7 @@ export function welcome({ name } = {}) {
         perk("Live shows", "when the podcast and game streams go live.") +
         perk("Site news", "new features and app updates.") +
         `</table>` +
+        `<div style="height:10px"></div>` +
         p("Not into an email? Every message has a one-click unsubscribe at the bottom."),
       cta: { label: "Jump into the FanZone", url: SITE },
       unsubscribe: true,
