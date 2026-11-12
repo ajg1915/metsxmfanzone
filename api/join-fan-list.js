@@ -2,7 +2,7 @@
 // The Resend key stays on the server.
 
 import { welcome } from "./_lib/newsletter-templates.js";
-import { unsubUrl } from "./_lib/unsub.js";
+import { unsubUrl, validToken } from "./_lib/unsub.js";
 
 const SEGMENT_ID = "53422271-e367-4699-a322-b3e7d586f8a4";
 const ALLOWED_ORIGINS = ["https://metsxmfanzone.com", "https://www.metsxmfanzone.com"];
@@ -31,7 +31,27 @@ async function sendWelcome(email, name) {
   }
 }
 
+const page = (msg) => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribe | MetsXMFanZone</title></head><body style="margin:0;background:#06101c;color:#fff;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center;padding:24px"><div style="max-width:420px"><img src="/metsxmfanzone-logo.png" alt="MetsXMFanZone" width="96"><h1 style="font-size:24px">${msg}</h1><a href="/" style="color:#ff7a3d">Back to MetsXMFanZone</a></div></body></html>`;
+
+// GET ?e=email&t=token: one-click unsubscribe link used in welcome emails.
+async function unsubscribe(req, res) {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("X-Robots-Tag", "noindex");
+  const email = String(req.query?.e || "").trim().toLowerCase();
+  if (!email || !validToken(email, req.query?.t)) return res.status(400).send(page("That unsubscribe link isn't valid."));
+  const key = process.env.RESEND_CONTACTS_KEY;
+  if (!key) return res.status(500).send(page("Something went wrong. Please try again later."));
+  const r = await fetch(`https://api.resend.com/contacts/${encodeURIComponent(email)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    body: JSON.stringify({ unsubscribed: true }),
+  });
+  if (!r.ok && r.status !== 404) return res.status(502).send(page("We couldn't unsubscribe you right now. Please try again."));
+  return res.status(200).send(page("You're unsubscribed. Sorry to see you go!"));
+}
+
 export default async function handler(req, res) {
+  if (req.method === "GET") return unsubscribe(req, res);
   if (req.method === "OPTIONS") {
     res.setHeader("Allow", "POST");
     return res.status(204).end();

@@ -155,11 +155,11 @@
   ],
   "crons": [
     {
-      "path": "/api/weekly-newsletter",
+      "path": "/api/mail-admin",
       "schedule": "0 12 * * 1"
     },
     {
-      "path": "/api/weekly-newsletter",
+      "path": "/api/mail-admin",
       "schedule": "0 13 * * 1"
     }
   ]

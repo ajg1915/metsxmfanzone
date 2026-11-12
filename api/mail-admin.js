@@ -5,6 +5,8 @@
 // The caller must be signed in as a site admin (their Supabase login token is checked).
 
 import { renderEmail } from "./_lib/email-shell.js";
+import { runWeekly } from "./_lib/weekly.js";
+import { SAMPLES } from "./_lib/newsletter-templates.js";
 
 const SEGMENT_ID = "53422271-e367-4699-a322-b3e7d586f8a4";
 const FROM = "MetsXMFanZone <noreply@metsxmfanzone.com>";
@@ -54,6 +56,19 @@ async function countSubscribers() {
 
 export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(204).end();
+  if (req.method === "GET") {
+    // ?preview=weekly|breaking|update|welcome shows a template with sample content.
+    const t = req.query?.preview;
+    if (t) {
+      const make = SAMPLES[String(t)];
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("X-Robots-Tag", "noindex");
+      if (!make) return res.status(200).send(Object.keys(SAMPLES).map((k) => `<a href="?preview=${k}">${k}</a>`).join(" | "));
+      return res.status(200).send(make().html.replace("{{{RESEND_UNSUBSCRIBE_URL}}}", "#"));
+    }
+    // Otherwise this is the Monday cron (Vercel Cron sends GET with the CRON_SECRET).
+    return runWeekly(req, res);
+  }
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const origin = req.headers.origin;

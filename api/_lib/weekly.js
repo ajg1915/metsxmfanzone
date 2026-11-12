@@ -1,9 +1,9 @@
-// Weekly Mets Recap. Vercel Cron calls this every Monday; it sends at 8 AM New York time and builds the
+// Weekly Mets Recap (called from api/mail-admin.js on GET). Vercel Cron calls it every Monday; it sends at 8 AM New York time and builds the
 // email from the last week's blog posts and the Mets' results and schedule (MLB Stats API).
 //   Auth: Authorization: Bearer $CRON_SECRET (Vercel Cron sends this automatically when CRON_SECRET is set).
 //   ?dry=1   returns the email HTML instead of sending.   ?force=1  skips the Monday-8AM check.
-import { weeklyRecap } from "./_lib/newsletter-templates.js";
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL, stripHtml, resolveImage, cleanText } from "./_lib/article.js";
+import { weeklyRecap } from "./newsletter-templates.js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL, stripHtml, resolveImage, cleanText } from "./article.js";
 
 const SEGMENT_ID = "53422271-e367-4699-a322-b3e7d586f8a4";
 const FROM = "MetsXMFanZone <noreply@metsxmfanzone.com>";
@@ -95,7 +95,7 @@ const resend = (path, init = {}) =>
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.RESEND_CONTACTS_KEY}`, ...(init.headers || {}) },
   });
 
-export default async function handler(req, res) {
+export async function runWeekly(req, res) {
   const secret = process.env.CRON_SECRET;
   if (!secret || req.headers.authorization !== `Bearer ${secret}`) return res.status(401).json({ error: "Unauthorized" });
   if (!process.env.RESEND_CONTACTS_KEY) return res.status(500).json({ error: "Email service is not configured" });

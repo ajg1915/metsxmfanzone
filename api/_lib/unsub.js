@@ -7,4 +7,4 @@ export function validToken(email, token) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 export const unsubUrl = (email) =>
-  `https://metsxmfanzone.com/api/unsubscribe?e=${encodeURIComponent(String(email).toLowerCase())}&t=${unsubToken(email)}`;
+  `https://metsxmfanzone.com/api/join-fan-list?e=${encodeURIComponent(String(email).toLowerCase())}&t=${unsubToken(email)}`;
