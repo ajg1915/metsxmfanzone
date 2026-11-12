@@ -8,6 +8,7 @@ const QUICK_LINKS: { label: string; to: string }[] = [
   { label: "News", to: "/blog" },
   { label: "Schedule", to: "/broadcast-schedule" },
   { label: "Podcast", to: "/podcast" },
+  { label: "Mets Shop", to: "/mets-shop" },
   { label: "Plans", to: "/pricing" },
   { label: "Help", to: "/help-center" },
 ];

@@ -4,7 +4,7 @@ import BrandIcon from "@/components/brand/BrandIcon";
 import { Link } from "react-router-dom";
 import { useUnseenGuideItems } from "@/components/MobileGuide";
 import {
-  X, Play, Bell, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard, Target,
+  X, Play, Bell, Download, CalendarDays, Trophy, Newspaper, Mic, Users, ChevronRight, LayoutDashboard, Target, ShoppingBag,
   PenLine, Shield, Sparkles, LogOut, Tv, HelpCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -46,6 +46,7 @@ export default function MobileSportsMenu({ user, profile, isAdmin, isWriter, clo
     { label: "Picks", icon: Target, onClick: run(() => go("/picks")) },
     { label: "Blog", icon: Newspaper, onClick: run(() => go("/blog")) },
     { label: "Podcast", icon: Mic, onClick: run(() => go("/podcast")) },
+    { label: "Mets Shop", icon: ShoppingBag, onClick: run(() => go("/mets-shop")) },
   ];
 
   const initial = profile.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "M";
