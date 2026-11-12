@@ -6,7 +6,6 @@ import { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
 const QUICK_LINKS: { label: string; to: string }[] = [
   { label: "Live", to: "/metsxmfanzone" },
   { label: "News", to: "/blog" },
-  { label: "Schedule", to: "/broadcast-schedule" },
   { label: "Podcast", to: "/podcast" },
   { label: "Mets Shop", to: "/mets-shop" },
   { label: "Plans", to: "/pricing" },
