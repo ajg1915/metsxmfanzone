@@ -68,6 +68,37 @@ export async function uploadToR2(
   return { key: signed.key, publicUrl: signed.publicUrl };
 }
 
+/**
+ * Uploads to R2 and also lists the file in the admin Media Library (media_library table), so images used in
+ * articles can be reused later. Saving to the library is best-effort: the R2 upload still counts if it fails
+ * (for example when the signed-in user is not allowed to write to the library).
+ */
+export async function uploadToR2AndLibrary(
+  file: File | Blob,
+  folder: string,
+  libraryFolder = "blog",
+  fileName?: string,
+): Promise<R2UploadResult> {
+  const result = await uploadToR2(file, folder, fileName);
+  try {
+    const { data } = await supabase.auth.getUser();
+    if (data?.user) {
+      const { error } = await supabase.from("media_library").insert({
+        uploaded_by: data.user.id,
+        file_name: result.key.split("/").pop() as string,
+        file_url: result.publicUrl,
+        file_size: file.size,
+        file_type: file.type || "image/jpeg",
+        folder: libraryFolder,
+      });
+      if (error) console.warn("[media library] could not save:", error.message);
+    }
+  } catch (e) {
+    console.warn("[media library] could not save:", e);
+  }
+  return result;
+}
+
 /** Removes an object from R2. Silently ignores files that are not stored in R2. */
 export async function deleteFromR2(key: string): Promise<void> {
   const signed = await signR2(key, "delete");

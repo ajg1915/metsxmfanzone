@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, ImagePlus, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { uploadToR2 } from "@/lib/r2Upload";
+import { uploadToR2, uploadToR2AndLibrary } from "@/lib/r2Upload";
 import { validateFile } from "@/utils/fileValidation";
 import { useToast } from "@/hooks/use-toast";
 import { forgetDraftsWaiting } from "@/hooks/useDraftsWaiting";
@@ -215,7 +215,7 @@ export default function DraftEditor() {
     }
     setUploading(kind);
     try {
-      const { publicUrl } = await uploadToR2(file, isAudio ? "blog-audio" : "blog-images");
+      const { publicUrl } = isAudio ? await uploadToR2(file, "blog-audio") : await uploadToR2AndLibrary(file, "blog-images");
       return publicUrl;
     } catch (e) {
       toast({ title: "Upload failed", description: e instanceof Error ? e.message : undefined, variant: "destructive" });

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { uploadToR2 } from "@/lib/r2Upload";
+import { uploadToR2, uploadToR2AndLibrary } from "@/lib/r2Upload";
 import ImageCropDialog from "@/components/admin/ImageCropDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -206,7 +206,7 @@ export default function WriterArticleEditor() {
 
     setImageUploading(true);
     try {
-      const { publicUrl } = await uploadToR2(file, "blog-images");
+      const { publicUrl } = await uploadToR2AndLibrary(file, "blog-images");
       setFeaturedImageUrl(publicUrl);
       toast({
         title: "Image uploaded",

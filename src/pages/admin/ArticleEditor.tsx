@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { uploadToR2 } from "@/lib/r2Upload";
+import { uploadToR2, uploadToR2AndLibrary } from "@/lib/r2Upload";
 import ImageCropDialog from "@/components/admin/ImageCropDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -207,7 +207,7 @@ export default function ArticleEditor() {
     if (!v.valid) { toast({ title: "Error", description: v.error, variant: "destructive" }); return null; }
     setUploading(kind);
     try {
-      const { publicUrl } = await uploadToR2(file, isAudio ? "blog-audio" : "blog-images");
+      const { publicUrl } = isAudio ? await uploadToR2(file, "blog-audio") : await uploadToR2AndLibrary(file, "blog-images");
       return publicUrl;
     } catch (e: any) {
       toast({ title: "Upload failed", description: e?.message, variant: "destructive" });
