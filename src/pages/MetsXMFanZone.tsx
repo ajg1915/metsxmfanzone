@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { ClapprPlayer } from "@/components/ClapprPlayer";
@@ -8,13 +8,15 @@ import { NewPostAlert } from "@/components/NewPostAlert";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
 import TVGuide from "@/components/TVGuide";
 import SEOHead from "@/components/SEOHead";
-import { Users, Mic, Trophy, Signal, Tv } from "lucide-react";
+import { Users, Mic, Trophy, Signal, Tv, Film, CalendarDays } from "lucide-react";
 import { ChannelSwitcher, METS_BRAND, StreamBrandHeader } from "@/components/streaming/StreamChrome";
 import fanzoneLogo from "@/assets/metsxmfanzone-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
 import SocialLinksSection, { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
 import { useMarkEngaged } from "@/hooks/useMarkEngaged";
+import LiveStatsSection from "@/components/live/LiveStatsSection";
+import { ScheduledShowsSection } from "@/components/radio/ScheduledShowsSection";
 
 // Default feed for the Watch Live page when no MetsXMFanZone stream is switched on:
 // MetsXMFanZone Stream 3 (live audio show). When an admin turns a MetsXMFanZone
@@ -31,6 +33,7 @@ const MetsXMFanZone = () => {
   const navigate = useNavigate();
   const [moreStreams, setMoreStreams] = useState<MoreStream[]>([]);
   const [streamUrl, setStreamUrl] = useState(METSXM_STREAM_URL);
+  const [liveTitle, setLiveTitle] = useState<string | null>(null);
 
   // Follow whichever MetsXMFanZone stream is live right now (newest start wins),
   // on desktop and phone alike. Re-checks on any change and every 30 seconds.
@@ -49,6 +52,7 @@ const MetsXMFanZone = () => {
       const live = data.find((s: any) => s.stream_url && !/24\/7|24-7|24x7/i.test(s.title || ""));
       const next = live?.stream_url?.trim() || METSXM_STREAM_URL;
       setStreamUrl((cur) => (cur === next ? cur : next));
+      setLiveTitle(live?.title || null);
     };
     pick();
     const timer = setInterval(pick, 30000);
@@ -80,6 +84,30 @@ const MetsXMFanZone = () => {
     })();
   }, []);
 
+  const moreList = moreStreams.length > 0 && (
+    <section aria-label="More streams" className="rounded-2xl border border-border/50 bg-card/80 p-4">
+      <h2 className="mb-3 font-display text-[22px] font-bold uppercase leading-none tracking-wide text-foreground">More Streams</h2>
+      <div className="flex flex-col gap-3">
+        {moreStreams.map((st) => (
+          <button key={st.id} type="button" onClick={() => navigate(`/live/${st.id}`)} className="flex items-center gap-3 rounded-xl text-left transition-colors hover:bg-white/5">
+            <div className="relative h-[63px] w-28 shrink-0 overflow-hidden rounded-lg border border-border/50 bg-gradient-to-br from-secondary/60 to-card">
+              {st.thumbnail_url && <img src={st.thumbnail_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+              {st.status === "live" && (
+                <span className="absolute left-1 top-1 rounded-[3px] bg-red-700 px-1.5 py-px text-[9px] font-extrabold tracking-[0.08em] text-white">LIVE</span>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="line-clamp-2 text-[15px] font-bold leading-tight text-foreground">{st.title}</p>
+              {st.scheduled_start && (
+                <p className="mt-0.5 text-[12.5px] text-muted-foreground">{format(parseISO(st.scheduled_start), "EEE, MMM d \u2022 h:mm a")}</p>
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+
   return (
     <StreamTimeLimit>
     <div className="min-h-screen bg-background flex flex-col">
@@ -91,7 +119,7 @@ const MetsXMFanZone = () => {
         ogType="video.other"
       />
       <Navigation />
-      
+
       <main className="flex-1 pt-12 max-md:pt-14">
         <StreamBrandHeader
           brand={METS_BRAND}
@@ -101,26 +129,18 @@ const MetsXMFanZone = () => {
           badges={[<><Signal className="h-3 w-3" /> Live now</>, <><Tv className="h-3 w-3" /> HD Quality</>]}
         />
 
-        {/* Ambient backdrop */}
         <div className="relative">
-          <div className="absolute inset-0 h-[520px] pointer-events-none overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/25 via-secondary/10 to-transparent" />
-            <div className="absolute -top-20 -right-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-secondary/20 rounded-full blur-3xl" />
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-background" />
-          </div>
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-gradient-to-b from-primary/15 via-secondary/5 to-transparent" />
 
-          {/* Player + TV guide */}
-          <div className="container mx-auto px-3 sm:px-4 pt-4 pb-8 relative z-10 max-w-[1400px] max-md:px-0 max-md:pt-0 max-md:pb-24">
-            <div className="grid grid-cols-1 gap-4 lg:gap-5">
-              {/* Player + meta */}
-              <div className="flex flex-col gap-4 min-w-0">
-                {/* MLB Live Scores Ticker (scrolls left, above player) - hidden on mobile */}
-                <div className="hidden md:block rounded-xl overflow-hidden border border-border/60 shadow-lg shadow-primary/10">
+          <div className="container relative z-10 mx-auto max-w-[1400px] px-0 pb-24 pt-0 sm:px-4 sm:pt-4 md:pb-10 lg:px-6">
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+              {/* Main column: player, status, game center */}
+              <div className="flex min-w-0 flex-col gap-4">
+                <div className="hidden overflow-hidden rounded-xl border border-border/60 shadow-lg shadow-primary/10 md:block">
                   <MLBScoresTicker />
                 </div>
 
-                {/* 16:9 Player */}
+                {/* 16:9 player, clean: nothing is drawn over the video */}
                 <div className="stream-player-shell relative aspect-video w-full overflow-hidden bg-player max-sm:!mx-0 sm:rounded-lg">
                   <ClapprPlayer
                     key={streamUrl}
@@ -133,74 +153,77 @@ const MetsXMFanZone = () => {
                   <NewPostAlert />
                 </div>
 
+                {/* Status bar under the player */}
+                <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-0">
+                  <div className="flex min-w-0 items-center gap-3">
+                    {liveTitle ? (
+                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-red-700/90 px-3 py-1 text-[11px] font-extrabold tracking-[0.1em] text-white">
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" /> LIVE NOW
+                      </span>
+                    ) : (
+                      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-[11px] font-extrabold tracking-[0.1em] text-foreground">
+                        <Signal className="h-3 w-3" /> STREAMING
+                      </span>
+                    )}
+                    <h2 className="truncate font-display text-[22px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-2xl">
+                      {liveTitle || "MetsXMFanZone TV"}
+                    </h2>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link to="/replay-games" className="inline-flex h-11 items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/50">
+                      <Film className="h-4 w-4 text-primary" /> Replays
+                    </Link>
+                    <Link to="/mets-schedule-2027" className="inline-flex h-11 items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/50">
+                      <CalendarDays className="h-4 w-4 text-primary" /> Schedule
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Game Center in a game, otherwise the next-game card */}
+                <div className="px-4 sm:px-0">
+                  <LiveStatsSection />
+                </div>
+
                 <ChannelSwitcher activeKey="metsxmfanzone" className="max-md:px-4" />
 
                 <TVGuide className="max-md:mx-4" />
 
-                {/* Phone: stream title, follow chips, more streams */}
-                <div className="flex flex-col gap-4 px-4 md:hidden">
-                  <div className="-mx-4">
-                    <p className="mb-2 px-4 text-[11px] font-extrabold tracking-[0.18em] text-primary">FOLLOW @METSXMFANZONE</p>
-                    <div className="flex gap-2 overflow-x-auto px-4 scrollbar-hide">
-                      {METSXMFANZONE_SOCIALS.map((l) => (
-                        <a
-                          key={l.name}
-                          href={l.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex h-11 shrink-0 items-center rounded-full border border-border/60 bg-card px-4 text-sm font-bold text-foreground"
-                        >
-                          {l.name}
-                        </a>
-                      ))}
+                <div className="hidden grid-cols-3 gap-3 md:grid">
+                  {[
+                    { icon: Mic, title: "Live Shows", text: "Fan discussions & reactions" },
+                    { icon: Users, title: "Community", text: "Connect with fellow fans" },
+                    { icon: Trophy, title: "Exclusive", text: "Interviews & analysis" },
+                  ].map(({ icon: Icon, title, text }) => (
+                    <div key={title} className="rounded-2xl border border-border/60 bg-card/80 p-4 transition-colors hover:border-primary/40">
+                      <Icon className="mb-2 h-5 w-5 text-primary" />
+                      <p className="text-sm font-bold text-foreground">{title}</p>
+                      <p className="text-xs text-muted-foreground">{text}</p>
                     </div>
-                  </div>
-                  {moreStreams.length > 0 && (
-                    <div>
-                      <h2 className="mb-2 font-display text-[25px] uppercase leading-none tracking-wide">More Streams</h2>
-                      <div className="flex flex-col gap-3">
-                        {moreStreams.map((st) => (
-                          <button key={st.id} type="button" onClick={() => navigate(`/live/${st.id}`)} className="flex items-center gap-3 text-left">
-                            <div className="relative h-[63px] w-28 shrink-0 overflow-hidden rounded-lg border border-border/50 bg-gradient-to-br from-secondary/60 to-card">
-                              {st.thumbnail_url && <img src={st.thumbnail_url} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
-                              {st.status === "live" && (
-                                <span className="absolute left-1 top-1 rounded-[3px] bg-red-700 px-1.5 py-px text-[9px] font-extrabold tracking-[0.08em] text-white">LIVE</span>
-                              )}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="line-clamp-2 text-[15px] font-bold leading-tight text-foreground">{st.title}</p>
-                              {st.scheduled_start && (
-                                <p className="mt-0.5 text-[12.5px] text-muted-foreground">{format(parseISO(st.scheduled_start), "EEE, MMM d • h:mm a")}</p>
-                              )}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  ))}
                 </div>
-
-                {/* Channel info pills */}
-                <div className="hidden grid-cols-3 gap-2 sm:gap-3 md:grid">
-                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-2.5 sm:p-3 hover:border-primary/40 transition-colors">
-                    <Mic className="w-4 h-4 text-primary mb-1.5" />
-                    <p className="text-[11px] sm:text-xs font-bold text-foreground">Live Shows</p>
-                    <p className="text-[10px] text-muted-foreground hidden sm:block">Fan discussions & reactions</p>
-                  </div>
-                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-2.5 sm:p-3 hover:border-primary/40 transition-colors">
-                    <Users className="w-4 h-4 text-secondary mb-1.5" />
-                    <p className="text-[11px] sm:text-xs font-bold text-foreground">Community</p>
-                    <p className="text-[10px] text-muted-foreground hidden sm:block">Connect with fellow fans</p>
-                  </div>
-                  <div className="rounded-xl bg-card/80 backdrop-blur-xl border border-border/60 p-2.5 sm:p-3 hover:border-primary/40 transition-colors">
-                    <Trophy className="w-4 h-4 text-primary mb-1.5" />
-                    <p className="text-[11px] sm:text-xs font-bold text-foreground">Exclusive</p>
-                    <p className="text-[10px] text-muted-foreground hidden sm:block">Interviews & analysis</p>
-                  </div>
-                </div>
-
               </div>
 
+              {/* Side column: show schedule, more streams, follow */}
+              <aside className="flex min-w-0 flex-col gap-4 px-4 sm:px-0">
+                <ScheduledShowsSection />
+                {moreList}
+                <section aria-label="Follow" className="rounded-2xl border border-border/50 bg-card/80 p-4 md:hidden">
+                  <p className="mb-2 text-[11px] font-extrabold tracking-[0.18em] text-primary">FOLLOW @METSXMFANZONE</p>
+                  <div className="-mx-1 flex gap-2 overflow-x-auto px-1 scrollbar-hide">
+                    {METSXMFANZONE_SOCIALS.map((l) => (
+                      <a
+                        key={l.name}
+                        href={l.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex h-11 shrink-0 items-center rounded-full border border-border/60 bg-background/50 px-4 text-sm font-bold text-foreground"
+                      >
+                        {l.name}
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              </aside>
             </div>
           </div>
         </div>
@@ -208,7 +231,7 @@ const MetsXMFanZone = () => {
           <SocialLinksSection />
         </div>
       </main>
-      
+
       <Footer />
     </div>
     </StreamTimeLimit>
