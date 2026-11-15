@@ -13,9 +13,9 @@ import { ChannelSwitcher, METS_BRAND, StreamBrandHeader } from "@/components/str
 import fanzoneLogo from "@/assets/metsxmfanzone-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
-import SocialLinksSection, { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
 import { useMarkEngaged } from "@/hooks/useMarkEngaged";
-import LiveStatsSection from "@/components/live/LiveStatsSection";
+import { GameTabsPanel, NoGameCard, ScoreStrip } from "@/components/live/LiveStatsSection";
+import { useMetsLiveGame } from "@/lib/metsLiveGame";
 import { ScheduledShowsSection } from "@/components/radio/ScheduledShowsSection";
 
 // Default feed for the Watch Live page when no MetsXMFanZone stream is switched on:
@@ -34,6 +34,8 @@ const MetsXMFanZone = () => {
   const [moreStreams, setMoreStreams] = useState<MoreStream[]>([]);
   const [streamUrl, setStreamUrl] = useState(METSXM_STREAM_URL);
   const [liveTitle, setLiveTitle] = useState<string | null>(null);
+  const live = useMetsLiveGame();
+  const game = (live.state === "live" || live.state === "final") && live.game ? live.game : null;
 
   // Follow whichever MetsXMFanZone stream is live right now (newest start wins),
   // on desktop and phone alike. Re-checks on any change and every 30 seconds.
@@ -85,7 +87,7 @@ const MetsXMFanZone = () => {
   }, []);
 
   const moreList = moreStreams.length > 0 && (
-    <section aria-label="More streams" className="rounded-2xl border border-border/50 bg-card/80 p-4">
+    <div role="region" aria-label="More streams" className="rounded-2xl border border-border/50 bg-card/80 p-4">
       <h2 className="mb-3 font-display text-[22px] font-bold uppercase leading-none tracking-wide text-foreground">More Streams</h2>
       <div className="flex flex-col gap-3">
         {moreStreams.map((st) => (
@@ -105,7 +107,7 @@ const MetsXMFanZone = () => {
           </button>
         ))}
       </div>
-    </section>
+    </div>
   );
 
   return (
@@ -179,10 +181,21 @@ const MetsXMFanZone = () => {
                   </div>
                 </div>
 
-                {/* Game Center in a game, otherwise the next-game card */}
+                {/* Score bar + line score in a game, otherwise the next-game card */}
                 <div className="px-4 sm:px-0">
-                  <LiveStatsSection />
+                  {game ? (
+                    <ScoreStrip g={game} />
+                  ) : (
+                    live.state !== "loading" && <NoGameCard next={live.next} offseason={live.state === "offseason"} pregame={live.state === "pregame"} />
+                  )}
                 </div>
+
+                {/* Phone / tablet: Game Center tabs right under the score (desktop shows them in the side column) */}
+                {game && (
+                  <div className="px-4 sm:px-0 lg:hidden">
+                    <GameTabsPanel g={game} />
+                  </div>
+                )}
 
                 <ChannelSwitcher activeKey="metsxmfanzone" className="max-md:px-4" />
 
@@ -205,30 +218,16 @@ const MetsXMFanZone = () => {
 
               {/* Side column: show schedule, more streams, follow */}
               <aside className="flex min-w-0 flex-col gap-4 px-4 sm:px-0">
+                {game && (
+                  <div className="hidden lg:block">
+                    <GameTabsPanel g={game} />
+                  </div>
+                )}
                 <ScheduledShowsSection />
                 {moreList}
-                <section aria-label="Follow" className="rounded-2xl border border-border/50 bg-card/80 p-4 md:hidden">
-                  <p className="mb-2 text-[11px] font-extrabold tracking-[0.18em] text-primary">FOLLOW @METSXMFANZONE</p>
-                  <div className="-mx-1 flex gap-2 overflow-x-auto px-1 scrollbar-hide">
-                    {METSXMFANZONE_SOCIALS.map((l) => (
-                      <a
-                        key={l.name}
-                        href={l.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex h-11 shrink-0 items-center rounded-full border border-border/60 bg-background/50 px-4 text-sm font-bold text-foreground"
-                      >
-                        {l.name}
-                      </a>
-                    ))}
-                  </div>
-                </section>
               </aside>
             </div>
           </div>
-        </div>
-        <div className="hidden md:block">
-          <SocialLinksSection />
         </div>
       </main>
 

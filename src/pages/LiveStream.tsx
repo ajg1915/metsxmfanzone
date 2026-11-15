@@ -13,7 +13,6 @@ import { Tv, Signal, Share2, Radio, CalendarClock } from "lucide-react";
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import SocialLinksSection from "@/components/SocialLinksSection";
 import { ChannelSwitcher, METS_BRAND, StreamBrandHeader } from "@/components/streaming/StreamChrome";
 import logo from "@/assets/metsxmfanzone-logo.png";
 import TVGuide from "@/components/TVGuide";
@@ -252,7 +251,6 @@ const LiveStream = () => {
               </div>
             </div>
           </div>
-          <SocialLinksSection />
         </main>
 
         <Footer />

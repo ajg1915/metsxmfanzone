@@ -67,16 +67,16 @@ const LineScore = ({ g }: { g: GameView }) => {
   };
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[420px] text-center text-sm tabular-nums">
+      <table className="w-full min-w-[440px] table-fixed border-collapse text-center text-sm tabular-nums">
         <thead>
           <tr className="text-[12px] font-bold text-muted-foreground">
-            <th className="w-12 text-left" />
+            <th className="w-14 text-left" />
             {nums.map((n) => (
-              <th key={n} className="py-1">{n}</th>
+              <th key={n} className="w-8 py-1">{n}</th>
             ))}
-            <th className="px-2 text-foreground">R</th>
-            <th className="px-2">H</th>
-            <th className="px-2">E</th>
+            <th className="w-9 text-foreground">R</th>
+            <th className="w-9">H</th>
+            <th className="w-9">E</th>
           </tr>
         </thead>
         <tbody>
@@ -88,9 +88,9 @@ const LineScore = ({ g }: { g: GameView }) => {
                 {nums.map((n) => (
                   <td key={n} className="py-1.5 text-foreground/90">{cell(side, n)}</td>
                 ))}
-                <td className="px-2 font-display text-lg font-bold" style={{ color: t.id === METS_ID ? ACCENT : undefined }}>{g.runs[side]}</td>
-                <td className="px-2">{g.hits[side]}</td>
-                <td className="px-2">{g.errors[side]}</td>
+                <td className="font-display text-lg font-bold" style={{ color: t.id === METS_ID ? ACCENT : undefined }}>{g.runs[side]}</td>
+                <td>{g.hits[side]}</td>
+                <td>{g.errors[side]}</td>
               </tr>
             );
           })}
@@ -106,11 +106,11 @@ const PitchList = ({ g }: { g: GameView }) => {
   return (
     <ol className="divide-y divide-border/40">
       {g.pitches.map((p) => (
-        <li key={p.n} className="flex items-center gap-3 py-2 text-sm">
+        <li key={p.n} className="flex items-center gap-2 py-2 text-sm">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 font-display text-sm font-bold text-foreground">{p.n}</span>
-          <span className="flex-1 font-semibold text-foreground">{p.type}</span>
-          {p.mph !== undefined && <span className="tabular-nums text-muted-foreground">{p.mph} mph</span>}
-          <span className={cn("w-24 text-right text-[13px] font-bold", color[p.kind])}>{p.call}</span>
+          <span className="min-w-0 flex-1 truncate font-semibold text-foreground">{p.type}</span>
+          {p.mph !== undefined && <span className="shrink-0 whitespace-nowrap text-[13px] tabular-nums text-muted-foreground">{p.mph}</span>}
+          <span className={cn("w-20 shrink-0 text-right text-[12px] font-bold", color[p.kind])}>{p.call}</span>
         </li>
       ))}
     </ol>
@@ -180,84 +180,86 @@ const PitchTable = ({ title, rows }: { title: string; rows: PitcherLine[] }) => 
   </div>
 );
 
-const GameCenter = ({ g, className }: { g: GameView; className?: string }) => {
+const PanelHeader = ({ g }: { g: GameView }) => (
+  <div className="flex items-center justify-between gap-2 border-b border-border/40 px-4 py-3">
+    <h2 className="whitespace-nowrap font-display text-[20px] font-bold uppercase leading-none tracking-wide text-foreground">Game Center</h2>
+    {g.final ? (
+      <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-foreground">Final</span>
+    ) : (
+      <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[10px] font-extrabold uppercase tracking-wider text-emerald-400">
+        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> Updating live
+      </span>
+    )}
+  </div>
+);
+
+/** Score, inning, bases, count, and the batter / pitcher boxes */
+const ScoreBody = ({ g }: { g: GameView }) => {
+  const inningText = g.final ? "Final" : `${g.isTop ? "Top" : "Bot"} ${g.inningLabel}`;
+  return (
+    <div className="grid gap-4 px-4 py-4 sm:px-5 md:grid-cols-[auto_1fr] md:items-center md:gap-x-8">
+      <div className="flex flex-col gap-1.5">
+        <TeamChipView abbr={g.away.abbr} id={g.away.id} runs={g.runs.away} dim={g.runs.away < g.runs.home} />
+        <TeamChipView abbr={g.home.abbr} id={g.home.id} runs={g.runs.home} dim={g.runs.home < g.runs.away} />
+      </div>
+
+      <div className="flex items-center gap-4 text-foreground">
+        <div className="text-center">
+          <div className="font-display text-2xl font-bold uppercase leading-none">{inningText}</div>
+        </div>
+        {!g.final && (
+          <>
+            <Diamond bases={g.bases} />
+            <div className="flex flex-col gap-1">
+              <Dots label="Balls" count={g.balls} max={3} color="#34d399" />
+              <Dots label="Strikes" count={g.strikes} max={2} color="#fbbf24" />
+              <Dots label="Outs" count={g.outs} max={2} color="#f87171" />
+            </div>
+          </>
+        )}
+      </div>
+
+      {!g.final && g.batter && (
+        <div className="grid gap-4 rounded-xl bg-background/40 p-3 sm:grid-cols-2 md:col-span-2" style={{ borderLeft: `4px solid ${ACCENT}` }}>
+          <div>
+            <div className="text-[11px] font-extrabold uppercase tracking-[0.14em]" style={{ color: ACCENT }}>At bat</div>
+            <div className="font-display text-2xl font-bold uppercase leading-tight text-foreground">
+              {g.batter.name} <span className="text-base font-semibold text-muted-foreground">{g.batter.pos}</span>
+            </div>
+            <div className="mt-2 grid grid-cols-4 gap-3">
+              <Stat label="AVG" value={g.batter.avg} />
+              <Stat label="HR" value={g.batter.hr} />
+              <Stat label="RBI" value={g.batter.rbi} />
+              <Stat label="Today" value={g.batter.today} />
+            </div>
+          </div>
+          {g.pitcher && (
+            <div>
+              <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground">Pitching</div>
+              <div className="font-display text-2xl font-bold uppercase leading-tight text-foreground">{g.pitcher.name}</div>
+              <div className="mt-2 grid grid-cols-4 gap-3">
+                <Stat label="IP" value={g.pitcher.ip} />
+                <Stat label="K" value={g.pitcher.k} />
+                <Stat label="PIT" value={g.pitcher.pitches} />
+                <Stat label="ERA" value={g.pitcher.era} />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/** Live / Box / Pitching / Plays tabs. `compact` stacks the tables for a narrow side panel. */
+const TabsBody = ({ g, compact = false }: { g: GameView; compact?: boolean }) => {
   const [tab, setTab] = useState<Tab>("Live");
   const mets = g.metsSide;
   const other = mets === "home" ? "away" : "home";
-  const inningText = g.final ? "Final" : `${g.isTop ? "Top" : "Bot"} ${g.inningLabel}`;
-
+  const cols = compact ? "grid gap-5" : "grid gap-5 lg:grid-cols-2";
   return (
-    <section aria-label="Game Center" className={cn("overflow-hidden rounded-2xl border border-border/50 bg-card/80", className)}>
-      <div className="flex items-center justify-between gap-3 border-b border-border/40 px-4 py-3 sm:px-5">
-        <h2 className="font-display text-[22px] font-bold uppercase leading-none tracking-wide text-foreground">Game Center</h2>
-        {g.final ? (
-          <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider text-foreground">Final</span>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-emerald-400">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> Updating live
-          </span>
-        )}
-      </div>
-
-      {/* score bar */}
-      <div className="grid gap-4 px-4 py-4 sm:px-5 md:grid-cols-[auto_auto_1fr] md:items-center md:gap-6">
-        <div className="flex flex-col gap-1.5">
-          <TeamChipView abbr={g.away.abbr} id={g.away.id} runs={g.runs.away} dim={g.runs.away < g.runs.home} />
-          <TeamChipView abbr={g.home.abbr} id={g.home.id} runs={g.runs.home} dim={g.runs.home < g.runs.away} />
-        </div>
-
-        <div className="flex items-center gap-4 text-foreground">
-          <div className="text-center">
-            <div className="font-display text-2xl font-bold uppercase leading-none">{inningText}</div>
-          </div>
-          {!g.final && (
-            <>
-              <Diamond bases={g.bases} />
-              <div className="flex flex-col gap-1">
-                <Dots label="Balls" count={g.balls} max={3} color="#34d399" />
-                <Dots label="Strikes" count={g.strikes} max={2} color="#fbbf24" />
-                <Dots label="Outs" count={g.outs} max={2} color="#f87171" />
-              </div>
-            </>
-          )}
-        </div>
-
-        {!g.final && g.batter && (
-          <div className="grid gap-3 rounded-xl bg-background/40 p-3 sm:grid-cols-2" style={{ borderLeft: `4px solid ${ACCENT}` }}>
-            <div>
-              <div className="text-[11px] font-extrabold uppercase tracking-[0.14em]" style={{ color: ACCENT }}>At bat</div>
-              <div className="font-display text-2xl font-bold uppercase leading-tight text-foreground">
-                {g.batter.name} <span className="text-base font-semibold text-muted-foreground">{g.batter.pos}</span>
-              </div>
-              <div className="mt-2 grid grid-cols-4 gap-1">
-                <Stat label="AVG" value={g.batter.avg} />
-                <Stat label="HR" value={g.batter.hr} />
-                <Stat label="RBI" value={g.batter.rbi} />
-                <Stat label="Today" value={g.batter.today} />
-              </div>
-            </div>
-            {g.pitcher && (
-              <div>
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-muted-foreground">Pitching</div>
-                <div className="font-display text-2xl font-bold uppercase leading-tight text-foreground">{g.pitcher.name}</div>
-                <div className="mt-2 grid grid-cols-4 gap-1">
-                  <Stat label="IP" value={g.pitcher.ip} />
-                  <Stat label="K" value={g.pitcher.k} />
-                  <Stat label="PIT" value={g.pitcher.pitches} />
-                  <Stat label="ERA" value={g.pitcher.era} />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="px-4 pb-3 sm:px-5">
-        <LineScore g={g} />
-      </div>
-
-      {/* tabs */}
-      <div role="tablist" aria-label="Game details" className="flex gap-1.5 border-t border-border/40 px-3 pt-3 sm:px-4">
+    <>
+      <div role="tablist" aria-label="Game details" className="flex gap-1.5 px-3 pt-3 sm:px-4">
         {TABS.map((t) => (
           <button
             key={t}
@@ -282,7 +284,7 @@ const GameCenter = ({ g, className }: { g: GameView; className?: string }) => {
           </div>
         )}
         {tab === "Box" && (
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className={cols}>
             <div>
               <div className="mb-1 text-[12px] font-bold uppercase tracking-wider text-muted-foreground">{g[mets].name} batting</div>
               <BoxTable rows={g.batting[mets]} />
@@ -294,7 +296,7 @@ const GameCenter = ({ g, className }: { g: GameView; className?: string }) => {
           </div>
         )}
         {tab === "Pitching" && (
-          <div className="grid gap-5 lg:grid-cols-2">
+          <div className={cols}>
             <PitchTable title={g[mets].name} rows={g.pitching[mets]} />
             <PitchTable title={g[other].name} rows={g.pitching[other]} />
           </div>
@@ -302,11 +304,7 @@ const GameCenter = ({ g, className }: { g: GameView; className?: string }) => {
         {tab === "Plays" && (
           <ul className="space-y-2">
             {g.plays.map((p, i) => (
-              <li
-                key={i}
-                className="flex gap-3 rounded-xl bg-background/40 p-3"
-                style={p.scoring ? { borderLeft: `4px solid ${ACCENT}` } : undefined}
-              >
+              <li key={i} className="flex gap-3 rounded-xl bg-background/40 p-3" style={p.scoring ? { borderLeft: `4px solid ${ACCENT}` } : undefined}>
                 <span className="h-fit shrink-0 rounded-md bg-white/10 px-2 py-0.5 font-display text-sm font-bold text-foreground">
                   {p.half.toLowerCase().startsWith("top") ? "Top" : "Bot"} {p.inning}
                 </span>
@@ -317,9 +315,43 @@ const GameCenter = ({ g, className }: { g: GameView; className?: string }) => {
           </ul>
         )}
       </div>
-    </section>
+    </>
   );
 };
+
+const CARD = "overflow-hidden rounded-2xl border border-border/50 bg-card/80";
+
+/** Score bar + line score, to sit under the video */
+export const ScoreStrip = ({ g, className }: { g: GameView; className?: string }) => (
+  <div role="region" aria-label="Score" className={cn(CARD, className)}>
+    <ScoreBody g={g} />
+    <div className="px-4 pb-3 sm:px-5">
+      <LineScore g={g} />
+    </div>
+  </div>
+);
+
+/** The tabbed Game Center for a side column */
+export const GameTabsPanel = ({ g, className }: { g: GameView; className?: string }) => (
+  <div role="region" aria-label="Game Center" className={cn(CARD, className)}>
+    <PanelHeader g={g} />
+    <TabsBody g={g} compact />
+  </div>
+);
+
+/** Everything in one card, for single-column pages */
+const GameCenter = ({ g, className }: { g: GameView; className?: string }) => (
+  <div role="region" aria-label="Game Center" className={cn(CARD, className)}>
+    <PanelHeader g={g} />
+    <ScoreBody g={g} />
+    <div className="px-4 pb-3 sm:px-5">
+      <LineScore g={g} />
+    </div>
+    <div className="border-t border-border/40">
+      <TabsBody g={g} />
+    </div>
+  </div>
+);
 
 /* ---------- no game ---------- */
 
@@ -337,7 +369,7 @@ const useCountdown = (target?: Date) => {
 const fmtWhen = (d: Date) =>
   new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(d) + " ET";
 
-const NoGameCard = ({ next, offseason, pregame, className }: { next: NextGame | null; offseason: boolean; pregame: boolean; className?: string }) => {
+export const NoGameCard = ({ next, offseason, pregame, className }: { next: NextGame | null; offseason: boolean; pregame: boolean; className?: string }) => {
   const cd = useCountdown(next?.date);
   const kicker = pregame ? "First pitch soon" : offseason ? "Offseason" : "No game right now";
   const head = pregame
@@ -348,7 +380,7 @@ const NoGameCard = ({ next, offseason, pregame, className }: { next: NextGame | 
         : "The Mets are back soon"
       : `Next up: ${next?.home ? "vs" : "at"} ${next?.opponent ?? "TBD"}`;
   return (
-    <section aria-label="Next game" className={cn("rounded-2xl border border-border/50 bg-card/80 p-4 sm:p-5", className)}>
+    <div role="region" aria-label="Next game" className={cn("rounded-2xl border border-border/50 bg-card/80 p-4 sm:p-5", className)}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0 flex-1 basis-64">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: ACCENT }}>{kicker}</p>
@@ -384,7 +416,7 @@ const NoGameCard = ({ next, offseason, pregame, className }: { next: NextGame | 
           </Link>
         ))}
       </div>
-    </section>
+    </div>
   );
 };
 

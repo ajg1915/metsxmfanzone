@@ -6,7 +6,6 @@ import Footer from "@/components/Footer";
 import { StreamPlayer } from "@/components/StreamPlayer";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
 import SEOHead from "@/components/SEOHead";
-import SocialLinksSection from "@/components/SocialLinksSection";
 import { ChannelSwitcher, StreamBrandHeader } from "@/components/streaming/StreamChrome";
 import TVGuide from "@/components/TVGuide";
 import LiveStatsSection from "@/components/live/LiveStatsSection";
@@ -108,7 +107,6 @@ const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
               </section>
             )}
           </div>
-          <SocialLinksSection />
         </main>
 
         <Footer />
