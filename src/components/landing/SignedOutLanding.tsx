@@ -335,8 +335,8 @@ export default function SignedOutLanding() {
         </div>
       </section>
 
-      {/* Final call */}
-      <div className="px-4 pb-16 sm:px-6">
+      {/* Final call (hidden on desktop) */}
+      <div className="px-4 pb-16 sm:px-6 lg:hidden">
         <Section
           bg={bgs.join}
           className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-5 rounded-3xl px-7 py-11"

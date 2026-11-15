@@ -65,7 +65,7 @@ const NewsletterSection = () => {
           <div className="min-w-0">
             <p className="text-xs font-bold tracking-[0.14em] text-[#ff8a57] md:text-[13px]">THE NEWSLETTER</p>
             <h2 id="newsletter-title" className="whitespace-nowrap font-display text-[22px] min-[380px]:text-[24px] uppercase leading-none text-white md:whitespace-normal md:text-5xl lg:text-[40px] xl:text-[54px]">
-              Get MetsXMFanZone News
+              Latest MetsXMFanZone
             </h2>
             <p className="mt-2 hidden max-w-[460px] text-base leading-snug text-[#c3cfdb] md:block">
               Mets news, game highlights and updates from the fan zone, straight to your email.
