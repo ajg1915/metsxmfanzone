@@ -323,15 +323,41 @@ export default function SignedOutLanding() {
       </Section>
 
       {/* FAQ */}
-      <section id="faq" className="mx-auto max-w-[860px] px-4 py-16 sm:px-6">
-        <H2 className="mb-5">Questions</H2>
-        <div className="flex flex-col gap-2.5">
-          {FAQ.map((f) => (
-            <details key={f.q} className="rounded-xl bg-[#0d1a2e] px-4 py-4">
-              <summary className="cursor-pointer text-[17px] font-bold text-white">{f.q}</summary>
-              <p className="mt-2.5 text-[#b6c3d6]">{f.a}</p>
-            </details>
-          ))}
+      <section id="faq" className="mx-auto max-w-[1100px] px-4 py-14 sm:px-6 md:py-20">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] lg:gap-14">
+          <div className="text-center lg:sticky lg:top-24 lg:self-start lg:text-left">
+            <p className="text-xs font-bold tracking-[0.18em] text-[#ff8a57] sm:text-[13px]">FAQ</p>
+            <H2 className="mt-2">Got questions?</H2>
+            <p className="mx-auto mt-3 max-w-[420px] text-base leading-relaxed text-[#b6c3d6] lg:mx-0">
+              Quick answers about watching, plans and devices. Need more?{" "}
+              <Link to="/help-center" className="font-bold text-[#ff7a3d] hover:underline">
+                Visit the Help Center
+              </Link>
+              .
+            </p>
+          </div>
+          <div className="flex flex-col gap-3">
+            {FAQ.map((f) => (
+              <details
+                key={f.q}
+                className="group overflow-hidden rounded-2xl border border-white/10 bg-[#0d1a2e] transition-colors open:border-[#ff5910]/60 open:bg-[#102340] hover:border-white/25"
+              >
+                <summary className="flex min-h-[60px] cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 text-left sm:px-6 [&::-webkit-details-marker]:hidden">
+                  <span className="text-[16px] font-bold leading-snug text-white sm:text-[18px]">{f.q}</span>
+                  <span
+                    aria-hidden="true"
+                    className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition-all group-open:rotate-45 group-open:bg-[#ff5910]"
+                  >
+                    <span className="absolute h-[2px] w-3.5 rounded bg-current" />
+                    <span className="absolute h-3.5 w-[2px] rounded bg-current" />
+                  </span>
+                </summary>
+                <p className="border-t border-white/10 px-4 pb-5 pt-4 text-[15px] leading-relaxed text-[#c4cfdf] sm:px-6 sm:text-base">
+                  {f.a}
+                </p>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
     </div>
