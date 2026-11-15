@@ -334,28 +334,6 @@ export default function SignedOutLanding() {
           ))}
         </div>
       </section>
-
-      {/* Final call (hidden on desktop) */}
-      <div className="px-4 pb-16 sm:px-6 lg:hidden">
-        <Section
-          bg={bgs.join}
-          className="mx-auto flex max-w-[1240px] flex-wrap items-center justify-between gap-5 rounded-3xl px-7 py-11"
-          base={{ background: "linear-gradient(120deg, #0f2a52, #1a2c4d 60%, #3a1d10)" }}
-        >
-          <div>
-            <H2>Join MetsXMFanZone today</H2>
-            <p className="mt-1.5 text-[17px] text-[#c4cfdf]">
-              From $3.99 a week. Cancel anytime. Already a member?{" "}
-              <Link to="/auth?mode=login" className="font-bold text-[#ff7a3d] hover:underline">
-                Sign in
-              </Link>
-            </p>
-          </div>
-          <Link to="/auth?mode=signup" className="inline-flex min-h-[54px] items-center rounded-full bg-[#ff5910] px-8 text-lg font-bold text-white hover:opacity-90">
-            Join now
-          </Link>
-        </Section>
-      </div>
     </div>
   );
 }
