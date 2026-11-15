@@ -104,7 +104,7 @@ const H2 = ({ children, className = "" }: { children: ReactNode; className?: str
 export default function SignedOutLanding() {
   const { data: bgs = {} } = useFrontPageStyles();
   const { data: media } = useLandingMedia();
-  const tvPicture = bgs.tv?.image || media?.tv || null;
+  const tvPicture = bgs.tv?.image || null; // only the picture or video chosen in the admin: no fallback thumbnail
   const tvVideo = bgs.tv?.video || null;
   const tvPictureStyle: CSSProperties | undefined = tvPicture
     ? { backgroundImage: `url("${tvPicture.replace(/"/g, "%22")}")`, backgroundSize: "cover", backgroundPosition: "center" }
