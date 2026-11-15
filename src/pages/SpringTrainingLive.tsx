@@ -76,6 +76,7 @@ const config: NetworkPageConfig = {
   ],
   player: { title: "Spring Training Live", description: "Watch Mets Spring Training games live" },
   extra: <Offseason />,
+  liveStats: "gameOnly",
 };
 
 const SpringTrainingLive = () => <NetworkStreamPage cfg={config} />;

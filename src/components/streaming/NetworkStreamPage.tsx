@@ -9,6 +9,7 @@ import SEOHead from "@/components/SEOHead";
 import SocialLinksSection from "@/components/SocialLinksSection";
 import { ChannelSwitcher, StreamBrandHeader } from "@/components/streaming/StreamChrome";
 import TVGuide from "@/components/TVGuide";
+import LiveStatsSection from "@/components/live/LiveStatsSection";
 
 type Feature = { icon: ComponentType<{ className?: string; style?: CSSProperties }>; title: string; text: string };
 
@@ -30,6 +31,8 @@ export type NetworkPageConfig = {
   notice?: { title: string; text: string };
   /** optional block rendered between the player facts and the channel switcher */
   extra?: ReactNode;
+  /** Mets Game Center under the player: "full" (default) also shows a next-game card, "gameOnly" only during games, "off" hides it */
+  liveStats?: "full" | "gameOnly" | "off";
 };
 
 const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
@@ -63,6 +66,8 @@ const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
           </div>
 
           <div className="container mx-auto max-w-6xl px-4 pt-4">
+            {cfg.liveStats !== "off" && <LiveStatsSection className="mb-5" gameOnly={cfg.liveStats === "gameOnly"} />}
+
             <ChannelSwitcher activeKey={cfg.pageKey} brand={brand} className="mb-5" />
 
             {cfg.notice && (

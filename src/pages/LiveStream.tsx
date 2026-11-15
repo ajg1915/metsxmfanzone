@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { StreamPlayer } from "@/components/StreamPlayer";
+import LiveStatsSection from "@/components/live/LiveStatsSection";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
 import { isNYSportsPackageStream } from "@/lib/nyTeamStreamCheck";
 import SEOHead from "@/components/SEOHead";
@@ -193,6 +194,7 @@ const LiveStream = () => {
               </motion.div>
 
               <div className="px-4 pt-4">
+                <LiveStatsSection className="mb-4" />
                 <div className="flex flex-wrap items-center gap-2">
                   {isLive ? (
                     <span className="inline-flex items-center gap-1.5 rounded bg-red-700 px-2.5 py-1 text-[11px] font-extrabold tracking-[0.1em] text-white">
