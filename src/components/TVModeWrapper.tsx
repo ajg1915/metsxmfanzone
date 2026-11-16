@@ -1,5 +1,5 @@
 import { useDevice } from "@/hooks/use-device";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 import { useAuth } from "@/hooks/useAuth";
 import { useTVFocusNav } from "@/hooks/useTVFocusNav";
 import { handleTVBack, leaveTV } from "@/lib/tvNavigation";
@@ -18,7 +18,8 @@ interface TVModeWrapperProps {
 export function TVModeWrapper({ children }: TVModeWrapperProps) {
   const { isTV, isTVDevice } = useDevice();
   const { user, loading: authLoading } = useAuth();
-  const { isFullMember: isPremium, loading: subLoading } = useSubscription();
+  const { can, loading: subLoading } = usePlanAccess();
+  const isPremium = can("apps");
   const location = useLocation();
   const navigate = useNavigate();
   const [showTVBar, setShowTVBar] = useState(false);

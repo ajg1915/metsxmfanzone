@@ -5,6 +5,7 @@ import { Radio, Play, ChevronRight, ChevronLeft, ShieldCheck, CalendarClock } fr
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 import { useSubscription } from "@/hooks/useSubscription";
 import fanartGeneral from "@/assets/fanart-mets-general.jpg";
 import metsxmfanzoneLogo from "@/assets/metsxmfanzone-logo.png";
@@ -26,7 +27,9 @@ interface LiveStream {
 const OffseasonNYTeamsSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { tier, isAdmin, canWatchNYSports } = useSubscription();
+  const { tier, isAdmin, hasNYSports } = useSubscription();
+  const { can } = usePlanAccess();
+  const canWatchNYSports = can("nyTeams") || can("premiumPlatforms") || hasNYSports;
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollPosition, setScrollPosition] = useState(0);

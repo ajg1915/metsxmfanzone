@@ -18,7 +18,7 @@ import { TVContentRail } from "@/components/tv/TVContentRail";
 import TVNYScores from "@/components/tv/TVNYScores";
 import { streamPath, NETWORK_STREAM, leaveTV } from "@/lib/tvNavigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Crown } from "lucide-react";
@@ -32,7 +32,8 @@ export type TVCategory = "home" | "live" | "highlights" | "replays";
 const TVDashboard = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
-  const { isFullMember: isPremium, loading: subLoading } = useSubscription();
+  const { can, loading: subLoading } = usePlanAccess();
+  const isPremium = can("apps");
 
   // Section refs for scrolling
   const storiesRef = useRef<HTMLDivElement>(null);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 import { Badge } from "@/components/ui/badge";
 import { Radio, Users, Play, ChevronRight, ChevronLeft, RotateCcw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -26,7 +26,8 @@ interface LiveStream {
 const ReplayGamesSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { tier, isAdmin } = useSubscription();
+  const { can } = usePlanAccess();
+  const canWatchHighlights = can("highlights");
   const [streams, setStreams] = useState<LiveStream[]>([]);
   const [loading, setLoading] = useState(true);
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -85,7 +86,7 @@ const ReplayGamesSection = () => {
       navigate(getStreamPageUrl(stream));
       return;
     }
-    if (isAdmin || tier === "premium" || tier === "annual") {
+    if (canWatchHighlights) {
       navigate(getStreamPageUrl(stream));
     } else {
       navigate("/pricing");
@@ -197,10 +198,10 @@ const ReplayGamesSection = () => {
                   )}
 
                   <div className="absolute top-2 right-2 flex items-center gap-1.5">
-                    {!isSpringTrainingStream(stream) && !isAdmin && tier !== "premium" && tier !== "annual" && (
+                    {!isSpringTrainingStream(stream) && !canWatchHighlights && (
                       <PremiumBadge size="sm" />
                     )}
-                    {isSpringTrainingStream(stream) && !isAdmin && tier !== "premium" && tier !== "annual" && (
+                    {isSpringTrainingStream(stream) && !canWatchHighlights && (
                       <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-green-600/90 text-white">
                         FREE
                       </Badge>

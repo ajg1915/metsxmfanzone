@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
+import { usePlansConfig, streamCategory, type StreamCategory } from "@/lib/plansConfig";
 import { isNYSportsPackageStream } from "@/lib/nyTeamStreamCheck";
 import { NY_SPORTS_PLAN } from "@/hooks/useSubscription";
 
@@ -27,8 +28,10 @@ interface StreamTimeLimitProps {
   allowGuestPreview?: boolean;
   /** Stream is covered by the NY Sports Streaming add-on (NY teams + premium platforms) */
   nySportsStream?: boolean;
-  /** Weekly members may watch this stream (MetsXMFanZone and Spring Training only). Defaults to those two pages */
-  weeklyAllowed?: boolean;
+  /** The stream (for NY team detection and assigned pages) */
+  stream?: { title?: string | null; description?: string | null; assigned_pages?: string[] | null } | null;
+  /** Force the access group instead of working it out from the page */
+  category?: StreamCategory;
 }
 
 type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
@@ -36,7 +39,9 @@ type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
 const STORAGE_KEY = "stream_viewing_start";
 const GUEST_STORAGE_KEY = "guest_stream_preview_start";
 
-const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false, nySportsStream, weeklyAllowed }: StreamTimeLimitProps) => {
+const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false, nySportsStream, stream, category: categoryProp }: StreamTimeLimitProps) => {
+  const { config: plansCfg } = usePlansConfig();
+  const category = categoryProp ?? streamCategory({ pageKey, stream });
   const coveredByNYSports = nySportsStream ?? isNYSportsPackageStream(null, pageKey);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -268,8 +273,8 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     return <>{children}</>;
   }
 
-  // Weekly covers MetsXMFanZone and Spring Training only: no premium pages (Apple TV, Prime Video, Peacock, NY teams, other game streams).
-  if (userPlan === "weekly" && !(weeklyAllowed ?? (pageKey === "metsxmfanzone" || pageKey === "spring-training-live"))) {
+  // Paid plans: what each plan can watch is set in Admin > Plans and Access.
+  if ((userPlan === "weekly" || userPlan === "premium" || userPlan === "annual") && !plansCfg[userPlan].access[category]) {
     return (
       <AlertDialog open>
         <AlertDialogContent className="max-w-md" onEscapeKeyDown={(e) => e.preventDefault()}>
@@ -279,7 +284,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
             </div>
             <AlertDialogTitle className="text-xl">Upgrade to watch this stream</AlertDialogTitle>
             <AlertDialogDescription className="text-center">
-              The Weekly plan includes MetsXMFanZone and Spring Training streams only. Upgrade to Monthly or Yearly for Apple TV, Prime Video, Peacock and every other premium stream.
+              The {plansCfg[userPlan].name} plan doesn't include this stream. See the plans to find one that does.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col gap-2 sm:flex-col">

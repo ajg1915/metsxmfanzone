@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
@@ -28,7 +28,7 @@ interface ReplayGame {
 const ReplayGames = () => {
   useMarkEngaged();
   const { user, loading: authLoading } = useAuth();
-  const { tier, isAdmin } = useSubscription();
+  const { can } = usePlanAccess();
   const navigate = useNavigate();
   const [games, setGames] = useState<ReplayGame[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +60,7 @@ const ReplayGames = () => {
     }
   };
 
-  const canWatch = isAdmin || tier === "premium" || tier === "annual";
+  const canWatch = can("highlights");
 
   const handleGameSelect = (game: ReplayGame) => {
     if (!user) { navigate("/auth"); return; }

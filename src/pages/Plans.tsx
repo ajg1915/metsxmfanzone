@@ -1,3 +1,4 @@
+import { usePlansConfig, PLAN_IDS, formatPrice } from "@/lib/plansConfig";
 import SEOHead from "@/components/SEOHead";
 
 import Navigation from "@/components/Navigation";
@@ -90,63 +91,23 @@ const Plans = () => {
     }
   };
 
-  const allPlans = [
-    {
-      id: "weekly",
-      name: "Weekly",
-      price: "$3.99",
-      priceValue: 3.99,
-      period: "per week",
-      billingNote: "Billed weekly through PayPal",
-      description: "MetsXMFanZone streams with a shorter commitment",
-      features: ["MetsXMFanZone streams", "Spring Training streams", "Standard quality", "1 device at a time"],
-      notIncluded: ["No premium features", "Apple TV, Prime Video and Peacock games", "All other premium pages and streams", "Highlights", "HD streaming and ad-free viewing", "Android and TV apps"],
-      cta: "Choose Weekly",
-      popular: false,
-    },
-    {
-      id: "premium",
-      name: "Monthly",
-      price: "$9.99",
-      priceValue: 9.99,
-      period: "per month",
-      billingNote: "Billed monthly",
-      description: "Most popular for true fans",
-      features: [
-        "Everything in Weekly",
-        "Every stream and premium page",
-        "Mets game events on Apple TV, Prime Video and Peacock (all 2027 games will also stream on these premium platforms)",
-        "Highlights",
-        "HD streaming",
-        "Ad-free experience",
-        "Exclusive content",
-        "Up to 2 devices at once",
-        "Android + TV apps",
-      ],
-      notIncluded: [],
-      cta: "Choose Monthly",
-      popular: true,
-    },
-    {
-      id: "annual",
-      name: "Yearly",
-      price: "$119.88",
-      priceValue: 119.88,
-      period: "per year",
-      billingNote: "Billed annually",
-      description: "One payment for a full year",
-      features: [
-        "Everything in Monthly",
-        "Merch discounts",
-        "VIP community badge",
-        "Priority support",
-        "Early access to content",
-      ],
-      notIncluded: [],
-      cta: "Choose Yearly",
-      popular: false,
-    },
-  ];
+  const { config: plansCfg } = usePlansConfig();
+  const allPlans = PLAN_IDS.map((id) => {
+    const c = plansCfg[id];
+    return {
+      id,
+      name: c.name,
+      price: formatPrice(c.price),
+      priceValue: c.price,
+      period: c.period,
+      billingNote: c.billingNote,
+      description: c.description,
+      features: c.features,
+      notIncluded: c.notIncluded,
+      cta: c.cta,
+      popular: c.popular,
+    };
+  });
 
   // Included with every membership, shown on each plan card.
   const sharedPerks = ["Secure plan", "Watch on the go", "Cancel anytime"];

@@ -145,7 +145,7 @@ const MetsXMFanZone = () => {
   );
 
   return (
-    <StreamTimeLimit weeklyAllowed>
+    <StreamTimeLimit pageKey="metsxmfanzone">
     <div className="min-h-screen bg-background flex flex-col">
       <SEOHead
         title="MetsXMFanZone TV - Watch Live Mets Shows & Exclusive Content"

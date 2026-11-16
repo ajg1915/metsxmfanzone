@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy, Download, LockKeyhole, Smartphone, Tv } from "lucide-react";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 
 // Member Center: the Android app and the TV app, for paid members only.
 const TV_CODE = "6750144";
@@ -10,7 +10,8 @@ const ANDROID_URL = "https://metsxmfanzone.com/android-app";
 const TV_URL = "https://metsxmfanzone.com/tv-app";
 
 export default function MemberApps() {
-  const { isFullMember: isPremium, loading } = useSubscription();
+  const { can, loading } = usePlanAccess();
+  const isPremium = can("apps");
   const [copied, setCopied] = useState(false);
 
   if (loading) return null;

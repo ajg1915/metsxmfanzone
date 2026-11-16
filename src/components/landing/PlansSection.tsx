@@ -1,35 +1,8 @@
 import { Link } from "react-router-dom";
+import { usePlansConfig, PLAN_IDS, formatPrice } from "@/lib/plansConfig";
 import { sectionStyle, type SectionStyle } from "@/lib/frontPageSections";
 
 // The membership plans, shown on the signed-out front page and on the phone home page.
-const PLANS = [
-  {
-    id: "weekly",
-    name: "Weekly",
-    price: "$3.99",
-    period: "/ week",
-    blurb: "Try it for a series.",
-    features: ["MetsXMFanZone and Spring Training streams", "Standard quality, 1 device", "No premium features"],
-  },
-  {
-    id: "premium",
-    name: "Monthly",
-    price: "$9.99",
-    period: "/ month",
-    blurb: "The full season experience.",
-    features: ["Everything in Weekly", "Apple TV, Prime Video and Peacock games", "Highlights and HD streaming", "Ad-free, exclusive content", "Up to 2 devices, Android + TV apps"],
-    popular: true,
-  },
-  {
-    id: "annual",
-    name: "Yearly",
-    price: "$119.88",
-    period: "/ year",
-    blurb: "One payment, the whole year.",
-    features: ["Everything in Monthly", "Merch discounts", "VIP community badge", "Priority support", "Early access to content"],
-  },
-];
-
 const pickPlan = (id: string) => {
   try {
     localStorage.setItem("pending_signup_plan", id);
@@ -39,6 +12,11 @@ const pickPlan = (id: string) => {
 };
 
 export default function PlansSection({ bg }: { bg?: SectionStyle }) {
+  const { config } = usePlansConfig();
+  const PLANS = PLAN_IDS.map((id) => {
+    const c = config[id];
+    return { id, name: c.name, price: formatPrice(c.price), period: `/ ${c.period.replace("per ", "")}`, blurb: c.description, features: c.features.slice(0, 5), popular: c.popular };
+  });
   return (
       <section id="plans" className="relative overflow-hidden px-4 py-12 sm:px-6 sm:py-16" style={sectionStyle(bg)}>
         <div className="mx-auto max-w-[1240px]">

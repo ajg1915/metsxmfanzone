@@ -60,8 +60,26 @@ async function findOrCreateProduct(api: string, token: string) {
   return product.id;
 }
 
-async function findOrCreatePlan(api: string, token: string, productId: string, planType: string) {
-  const config = PLAN_CONFIG[planType];
+// The admin can change a price in Admin > Plans and Access (site_settings.plans_config). A price equal to the
+// built-in one keeps the original PayPal billing plan; a different price gets its own plan, named with the price,
+// so existing subscribers are untouched and only new signups pay the new amount.
+async function resolvePlanConfig(supabase: any, planType: string) {
+  const base = PLAN_CONFIG[planType];
+  if (planType === 'ny_sports') return base;
+  try {
+    const { data } = await supabase.from('site_settings').select('setting_value').eq('setting_key', 'plans_config').maybeSingle();
+    const raw = Number(data?.setting_value?.[planType]?.price);
+    if (Number.isFinite(raw) && raw >= 0.5 && raw <= 999.99) {
+      const price = Math.round(raw * 100) / 100;
+      if (price !== base.price) return { ...base, price, name: `${base.name} $${price.toFixed(2)}` };
+    }
+  } catch (e) {
+    console.error('plans_config read failed, using built-in price');
+  }
+  return base;
+}
+
+async function findOrCreatePlan(api: string, token: string, productId: string, planType: string, config: { price: number; interval: string; intervalCount: number; name: string }) {
   const planName = `MetsXMFanZone ${config.name}`;
 
   // List existing plans for the product
@@ -192,7 +210,7 @@ Deno.serve(async (req: Request) => {
     // Use the client's origin for return URLs so it works on web, PWA, and preview
     const baseUrl = returnOrigin || 'https://www.metsxmfanzone.com';
 
-    const config = PLAN_CONFIG[planType];
+    const config = await resolvePlanConfig(supabase, planType);
     const PAYPAL_CLIENT_ID = Deno.env.get('PAYPAL_CLIENT_ID')!;
     const PAYPAL_SECRET = Deno.env.get('PAYPAL_SECRET')!;
     const PAYPAL_API = Deno.env.get('PAYPAL_BASE_URL') || 'https://api-m.paypal.com';
@@ -203,7 +221,7 @@ Deno.serve(async (req: Request) => {
 
     // Get or create product and billing plan
     const productId = await findOrCreateProduct(PAYPAL_API, accessToken);
-    const billingPlanId = await findOrCreatePlan(PAYPAL_API, accessToken, productId, planType);
+    const billingPlanId = await findOrCreatePlan(PAYPAL_API, accessToken, productId, planType, config);
 
     // Create a PayPal subscription
     const subscriptionRes = await fetch(`${PAYPAL_API}/v1/billing/subscriptions`, {

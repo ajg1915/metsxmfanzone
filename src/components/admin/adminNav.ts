@@ -215,6 +215,7 @@ export const ADMIN_HUBS: AdminHub[] = [
     groups: [
       { title: "Admin Settings", items: [{ title: "Admin Settings", url: "/admin/settings", icon: Settings }] },
       { title: "Welcome Screen", items: [{ title: "Welcome Screen", url: "/admin/welcome-screen", icon: Monitor }] },
+      { title: "Plans and Access", items: [{ title: "Plans and Access", url: "/admin/plans", icon: CreditCard }] },
       { title: "Front Page", items: [{ title: "Front Page sections", url: "/admin/front-page", icon: Wallpaper }] },
       { title: "TV App Colours", items: [{ title: "TV App Colours", url: "/admin/tv-colors", icon: Tv }] },
       { title: "Backgrounds", items: [{ title: "Backgrounds", url: "/admin/backgrounds", icon: Wallpaper }] },
