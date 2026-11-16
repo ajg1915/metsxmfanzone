@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarDays, Film, Newspaper } from "lucide-react";
+import { CalendarDays, Film, Newspaper, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   METS_ID,
@@ -379,16 +379,44 @@ export const NoGameCard = ({ next, offseason, pregame, className }: { next: Next
         ? "Spring Training is coming"
         : "The Mets are back soon"
       : `Next up: ${next?.home ? "vs" : "at"} ${next?.opponent ?? "TBD"}`;
+  const links = [
+    { to: "/replay-games", icon: Film, label: "Watch replays" },
+    { to: "/blog", icon: Newspaper, label: "Mets news" },
+    { to: "/mets-schedule-2027", icon: CalendarDays, label: "Schedule" },
+    ...(offseason ? [{ to: "/mets-shop", icon: ShoppingBag, label: "Mets Shop" }] : []),
+  ];
   return (
-    <div role="region" aria-label="Next game" className={cn("rounded-2xl border border-border/50 bg-card/80 p-4 sm:p-5", className)}>
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div
+      role="region"
+      aria-label={offseason ? "Offseason" : "Next game"}
+      className={cn(
+        "relative overflow-hidden rounded-2xl border p-4 sm:p-6",
+        offseason ? "text-white" : "border-border/50 bg-card/80",
+        className,
+      )}
+      style={offseason ? { background: "radial-gradient(80% 120% at 50% 130%, #7a3210 0%, #2a2a4a 42%, #08142c 100%)" } : undefined}
+    >
+      {offseason && (
+        <div aria-hidden className="pointer-events-none absolute right-[-60px] top-1/2 hidden h-[300px] w-[300px] -translate-y-1/2 rotate-45 border-[3px] border-white/[0.07] sm:block" />
+      )}
+      <div className="relative flex flex-wrap items-center justify-between gap-5">
         <div className="min-w-0 flex-1 basis-64">
-          <p className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: ACCENT }}>{kicker}</p>
-          <h2 className="mt-1 font-display text-[26px] font-bold uppercase leading-none tracking-wide text-foreground sm:text-3xl">{head}</h2>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">
-            Game Center and live stats appear here when a Mets game starts. The stream keeps going in the meantime.
+          {offseason ? (
+            <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-[#dfe7f3]">{kicker}</span>
+          ) : (
+            <p className="text-[11px] font-extrabold uppercase tracking-[0.18em]" style={{ color: ACCENT }}>{kicker}</p>
+          )}
+          <h2 className={cn("mt-2 font-display text-[26px] font-bold uppercase leading-none tracking-wide sm:text-3xl", offseason ? "text-white" : "text-foreground")}>{head}</h2>
+          <p className={cn("mt-2 text-[15px] leading-relaxed", offseason ? "text-[#c4cfdf]" : "text-muted-foreground")}>
+            {offseason
+              ? "Live games return in the spring. Until then, MetsXMFanZone has the news, the replays and the show. The stream keeps going."
+              : "Game Center and live stats appear here when a Mets game starts. The stream keeps going in the meantime."}
           </p>
-          {next && <p className="mt-2 text-sm font-semibold text-foreground">{`Mets ${next.home ? "vs" : "at"} ${next.opponent} · ${fmtWhen(next.date)}`}</p>}
+          {next && (
+            <p className={cn("mt-2 text-sm font-semibold", offseason ? "text-[#dfe7f3]" : "text-foreground")}>
+              {`${offseason && next.spring ? "First game: " : ""}Mets ${next.home ? "vs" : "at"} ${next.opponent} · ${fmtWhen(next.date)}`}
+            </p>
+          )}
         </div>
         {cd && (
           <div className="flex gap-2" role="timer" aria-label={`${cd.days} days, ${cd.hours} hours, ${cd.mins} minutes to the next game`}>
@@ -397,21 +425,24 @@ export const NoGameCard = ({ next, offseason, pregame, className }: { next: Next
               [cd.hours, "Hrs"],
               [cd.mins, "Min"],
             ].map(([n, l]) => (
-              <div key={l as string} className="min-w-[60px] rounded-xl bg-background/50 px-2 py-2 text-center">
-                <div className="font-display text-3xl font-bold leading-none tabular-nums text-foreground">{String(n).padStart(2, "0")}</div>
-                <div className="mt-0.5 text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{l}</div>
+              <div key={l as string} className={cn("rounded-xl text-center", offseason ? "min-w-[68px] bg-white/[0.08] px-2 py-3" : "min-w-[60px] bg-background/50 px-2 py-2")}>
+                <div className={cn("font-display font-bold leading-none tabular-nums", offseason ? "text-4xl text-white" : "text-3xl text-foreground")}>{String(n).padStart(2, "0")}</div>
+                <div className={cn("mt-0.5 text-[11px] font-bold uppercase tracking-wide", offseason ? "text-[#b6c3d6]" : "text-muted-foreground")}>{l}</div>
               </div>
             ))}
           </div>
         )}
       </div>
-      <div className="mt-4 grid gap-2 sm:grid-cols-3">
-        {[
-          { to: "/replay-games", icon: Film, label: "Watch replays" },
-          { to: "/blog", icon: Newspaper, label: "Mets news" },
-          { to: "/mets-schedule-2027", icon: CalendarDays, label: "Schedule" },
-        ].map(({ to, icon: Icon, label }) => (
-          <Link key={to} to={to} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-border/60 bg-background/50 text-sm font-bold text-foreground transition-colors hover:border-primary/50">
+      <div className={cn("relative mt-4 grid gap-2 sm:grid-cols-3", offseason && "sm:grid-cols-4")}>
+        {links.map(({ to, icon: Icon, label }) => (
+          <Link
+            key={to}
+            to={to}
+            className={cn(
+              "flex h-12 items-center justify-center gap-2 rounded-xl border text-sm font-bold transition-colors",
+              offseason ? "bg-white/[0.06] text-white hover:bg-white/[0.12]" : "border-border/60 bg-background/50 text-foreground hover:border-primary/50",
+            )}
+          >
             <Icon className="h-4 w-4" style={{ color: ACCENT }} /> {label}
           </Link>
         ))}
