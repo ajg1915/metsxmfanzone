@@ -47,6 +47,12 @@ const MAIN_PAGES = [
   "/metsxmfanzone",
 ];
 
+// URLs that redirect elsewhere, or are thin utility pages, must not be in the
+// sitemap (Google reports redirected sitemap URLs as "Page with redirect").
+const REDIRECTED = new Set(["/mets-schedule-2026", "/mlb-network", "/espn-network", "/msg-network", "/android-app", "/tv-app"]);
+const SKIP_PREFIXES = ["/help/"];
+const keepInSitemap = (path) => !REDIRECTED.has(path) && !SKIP_PREFIXES.some((x) => path.startsWith(x));
+
 function xmlEscape(input) {
   return String(input ?? "").replace(
     /[&<>"']/g,
@@ -116,7 +122,9 @@ export default async function handler(req, res) {
 
   const seen = new Set();
   const lines = [];
-  for (const pg of pages) {
+  // The old 2026 schedule URL now redirects to 2027: make sure 2027 is listed.
+  if (!pages.some((pg) => pg.path === "/mets-schedule-2027")) pages.push({ path: "/mets-schedule-2027", priority: 0.7, updated: null });
+  for (const pg of pages.filter((x) => keepInSitemap(x.path))) {
     const loc = pg.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${pg.path}`;
     if (seen.has(loc)) continue;
     seen.add(loc);

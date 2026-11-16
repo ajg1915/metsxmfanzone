@@ -6,17 +6,16 @@ User-agent: *
 Allow: /
 Allow: /manifest.json
 
-# Private areas
+# Private areas. /auth and the payment result pages are NOT listed on purpose:
+# they carry a noindex tag, and Google can only obey it if it is allowed to
+# crawl the page (blocking them left some stuck as "indexed, though blocked").
 Disallow: /admin
 Disallow: /admin/
 Disallow: /admin-setup
 Disallow: /api/
 Disallow: /dashboard
-Disallow: /auth
 Disallow: /logout
 Disallow: /confirm-account
-Disallow: /payment-success
-Disallow: /payment-error
 Disallow: /paypal-success
 Disallow: /helcim-checkout
 Disallow: /writer-auth
