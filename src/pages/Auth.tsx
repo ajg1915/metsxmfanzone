@@ -98,6 +98,11 @@ const Auth = () => {
 
   useEffect(() => {
     if (isSignup || isRecovery) return;
+    const emailFromLink = searchParams.get("email");
+    if (emailFromLink) {
+      setEmail(emailFromLink.trim().toLowerCase());
+      return;
+    }
     try {
       const remembered = JSON.parse(localStorage.getItem(REMEMBER_ME_KEY) || "null");
       if (remembered?.email && remembered?.expiresAt > Date.now()) {
@@ -160,7 +165,7 @@ const Auth = () => {
       }
       const { data: subscriptions } = await supabase.rpc("get_user_subscription_safe", { p_user_id: user.id });
       const hasPlan = subscriptions?.some((subscription) =>
-        subscription.status === "active" && ["free", "trial", "weekly", "premium", "annual"].includes(subscription.plan_type)
+        subscription.status === "active" && ["weekly", "premium", "annual"].includes(subscription.plan_type)
       );
       navigate(hasPlan ? "/dashboard" : "/pricing?required=true", { replace: true });
     };

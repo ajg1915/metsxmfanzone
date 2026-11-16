@@ -215,8 +215,16 @@ export default function ConfirmAccount() {
   
   const handleContinueAfterConfirmation = () => {
     localStorage.setItem("pending_membership_selection", "true");
-    navigate("/auth?mode=login");
+    navigate(`/auth?mode=login${email ? `&email=${encodeURIComponent(email)}` : ""}`, { replace: true });
   };
+
+  // Once the email is confirmed, move on to sign in by themselves; after sign in the member lands on the plans page.
+  useEffect(() => {
+    if (verificationState !== "success") return;
+    const timer = window.setTimeout(handleContinueAfterConfirmation, 3000);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [verificationState]);
 
   // Show success state
   if (verificationState === "success") {
@@ -233,7 +241,7 @@ export default function ConfirmAccount() {
             </CardHeader>
             <CardContent className="space-y-6 text-center">
               <p className="text-muted-foreground">
-                 Your account is verified. Sign in, then choose Weekly, Monthly, or Yearly membership.
+                 Your account is verified. Taking you to sign in now, then you can choose Weekly, Monthly, or Yearly membership.
               </p>
               <Button
                 onClick={handleContinueAfterConfirmation}
