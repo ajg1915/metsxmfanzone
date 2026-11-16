@@ -101,10 +101,13 @@ const H2 = ({ children, className = "" }: { children: ReactNode; className?: str
   <h2 className={`font-display text-[clamp(32px,4vw,48px)] uppercase leading-none text-white ${className}`}>{children}</h2>
 );
 
+const LANDING_WALLPAPER = "/images/landing-wallpaper.jpg";
+
 export default function SignedOutLanding() {
   const { data: bgs = {} } = useFrontPageStyles();
   const { data: media } = useLandingMedia();
-  const tvPicture = bgs.tv?.image || null; // only the picture or video chosen in the admin: no fallback thumbnail
+  // The TV picture chosen in the admin, otherwise the MetsXMFanZone fan wallpaper (never a stream thumbnail).
+  const tvPicture = bgs.tv?.image || LANDING_WALLPAPER;
   const tvVideo = bgs.tv?.video || null;
   const tvPictureStyle: CSSProperties | undefined = tvPicture
     ? { backgroundImage: `url("${tvPicture.replace(/"/g, "%22")}")`, backgroundSize: "cover", backgroundPosition: "center" }
@@ -132,7 +135,7 @@ export default function SignedOutLanding() {
             {tvVideo && <TvVideo src={tvVideo} />}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#07101f] via-[#07101f]/75 to-[#07101f]/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#07101f]/90 via-[#07101f]/55 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#07101f] to-transparent" />
 
         <div className="relative mx-auto flex min-h-[clamp(520px,calc(100svh-9rem),820px)] max-w-[1400px] flex-col justify-center gap-5 pb-24">
