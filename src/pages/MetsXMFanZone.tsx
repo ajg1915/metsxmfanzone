@@ -8,7 +8,7 @@ import { NewPostAlert } from "@/components/NewPostAlert";
 import StreamTimeLimit from "@/components/StreamTimeLimit";
 import TVGuide from "@/components/TVGuide";
 import SEOHead from "@/components/SEOHead";
-import { Users, Mic, Trophy, Signal, Tv, Film, CalendarDays } from "lucide-react";
+import { Users, Mic, Trophy, Signal, Tv, Film, CalendarDays, Newspaper, ShoppingBag } from "lucide-react";
 import { ChannelSwitcher, METS_BRAND, StreamBrandHeader } from "@/components/streaming/StreamChrome";
 import fanzoneLogo from "@/assets/metsxmfanzone-logo.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +27,40 @@ const METSXM_STREAM_URL = STREAM3_FEED_URL;
 const METSXM_STANDBY_URL = "https://media.metsxmfanzone.com/offline/offline.mp4";
 
 type MoreStream = { id: string; title: string; thumbnail_url: string | null; status: string; scheduled_start: string | null };
+
+// Phone-only: one slim status strip plus four small shortcut buttons
+// (the large offseason card is kept for tablet and desktop).
+const PhoneQuickBar = ({ state, next }: { state: string; next: { date: Date; opponent: string; home: boolean; spring: boolean } | null }) => {
+  const days = next ? Math.max(0, Math.ceil((next.date.getTime() - Date.now()) / 86400000)) : null;
+  const text =
+    state === "pregame"
+      ? "First pitch soon"
+      : state === "offseason" && next && days !== null
+        ? `${next.spring ? "Spring Training" : "Opening Day"} in ${days} ${days === 1 ? "day" : "days"}`
+        : next
+          ? `Next game: ${next.home ? "vs" : "at"} ${next.opponent}`
+          : "No game right now";
+  const links = [
+    { to: "/replay-games", icon: Film, label: "Replays" },
+    { to: "/blog", icon: Newspaper, label: "News" },
+    { to: "/mets-schedule-2027", icon: CalendarDays, label: "Schedule" },
+    { to: "/mets-shop", icon: ShoppingBag, label: "Shop" },
+  ];
+  return (
+    <div className="flex flex-col gap-3 md:hidden">
+      <div className="flex items-center gap-2 rounded-xl bg-primary/15 px-3.5 py-3 text-sm font-bold text-foreground">
+        <CalendarDays className="h-4 w-4 shrink-0 text-primary" /> {text}
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        {links.map(({ to, icon: Icon, label }) => (
+          <Link key={to} to={to} className="flex h-16 flex-col items-center justify-center gap-1 rounded-xl border border-border/60 bg-card/70 text-xs font-bold text-foreground">
+            <Icon className="h-5 w-5 text-primary" /> {label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const MetsXMFanZone = () => {
   useMarkEngaged();
@@ -171,7 +205,7 @@ const MetsXMFanZone = () => {
                       {liveTitle || "MetsXMFanZone TV"}
                     </h2>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="hidden gap-2 md:flex">
                     <Link to="/replay-games" className="inline-flex h-11 items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/50">
                       <Film className="h-4 w-4 text-primary" /> Replays
                     </Link>
@@ -186,7 +220,12 @@ const MetsXMFanZone = () => {
                   {game ? (
                     <ScoreStrip g={game} />
                   ) : (
-                    live.state !== "loading" && <NoGameCard next={live.next} offseason={live.state === "offseason"} pregame={live.state === "pregame"} />
+                    live.state !== "loading" && (
+                      <>
+                        <NoGameCard className="hidden md:block" next={live.next} offseason={live.state === "offseason"} pregame={live.state === "pregame"} />
+                        <PhoneQuickBar state={live.state} next={live.next} />
+                      </>
+                    )
                   )}
                 </div>
 
