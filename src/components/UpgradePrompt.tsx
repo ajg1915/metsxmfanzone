@@ -20,8 +20,7 @@ export function UpgradePrompt({ open, onOpenChange }: UpgradePromptProps) {
         <DialogHeader>
           <DialogTitle>🔒 PRO Feature</DialogTitle>
           <DialogDescription>
-            This content is available exclusively to PRO members. Free members get Spring Training streams only. 
-            Upgrade to PRO to unlock MetsXMFanZone live streams, podcasts, blogs, events, and all premium content.
+            This content is available exclusively to PRO members. Upgrade to PRO to unlock MetsXMFanZone live streams, podcasts, blogs, events, and all premium content.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col sm:flex-row gap-2">

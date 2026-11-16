@@ -146,7 +146,7 @@ const LiveStream = () => {
   const isLive = stream.status === "live";
 
   return (
-    <StreamTimeLimit streamId={stream.id} pageKey={pageName} allowGuestPreview nySportsStream={isNYSportsPackageStream(stream, pageName)} springTraining={(stream.assigned_pages || []).includes("spring-training-live")} weeklyAllowed={(stream.assigned_pages || []).some((p) => ["metsxmfanzone"].includes(p)) && !isNYSportsPackageStream(stream, pageName)}>
+    <StreamTimeLimit streamId={stream.id} pageKey={pageName} allowGuestPreview nySportsStream={isNYSportsPackageStream(stream, pageName)} weeklyAllowed={(stream.assigned_pages || []).some((p) => ["metsxmfanzone"].includes(p)) && !isNYSportsPackageStream(stream, pageName)}>
       <div className="min-h-screen bg-background flex flex-col">
         <SEOHead
           title={`${stream.title} - Live Stream | MetsXMFanZone`}

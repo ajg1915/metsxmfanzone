@@ -59,9 +59,6 @@ const CreateAccount = () => {
                 </p>
                 <ul className="space-y-2 text-muted-foreground">
                   <li>
-                    <strong>Free Plan:</strong> Access to basic content and community features
-                  </li>
-                  <li>
                     <strong>Weekly Plan ($3.99/week):</strong> Full access with weekly PayPal billing
                   </li>
                   <li>

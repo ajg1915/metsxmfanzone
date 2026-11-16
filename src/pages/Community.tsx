@@ -513,7 +513,7 @@ const Community = () => {
             <Lock className="mx-auto mb-3 h-8 w-8 text-primary" />
             <h1 className="mb-2 text-2xl font-bold">Community is for members</h1>
             <p className="mb-6 text-sm text-muted-foreground">
-              The Free membership is for Spring Training streams only. Upgrade to a Weekly, Monthly or Yearly plan to join the community and see the MetsXMFanZone Feed.
+              Choose a Weekly, Monthly or Yearly plan to join the community and see the MetsXMFanZone Feed.
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
               <Button variant="outline" onClick={() => navigate("/")}>Back to home</Button>

@@ -45,7 +45,7 @@ export default function PlansSection({ bg }: { bg?: SectionStyle }) {
           <div className="text-center">
             <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#ff7a3d]">Plans</p>
             <h2 className="mb-2 mt-1.5 font-display text-[clamp(32px,4vw,48px)] uppercase leading-none text-white">Pick your plan</h2>
-            <p className="mb-7 text-base text-[#b6c3d6] sm:mb-8 sm:text-[17px]">Spring Training streams are free with a Free, Monthly or Yearly account. Cancel anytime.</p>
+            <p className="mb-7 text-base text-[#b6c3d6] sm:mb-8 sm:text-[17px]">Spring Training streams are included with Monthly and Yearly. Cancel anytime.</p>
           </div>
           <div className="grid items-stretch gap-5 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
             {PLANS.map((p) => (

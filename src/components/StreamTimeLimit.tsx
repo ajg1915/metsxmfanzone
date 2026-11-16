@@ -27,8 +27,6 @@ interface StreamTimeLimitProps {
   allowGuestPreview?: boolean;
   /** Stream is covered by the NY Sports Streaming add-on (NY teams + premium platforms) */
   nySportsStream?: boolean;
-  /** Spring Training stream: free for everyone with an account, unlimited, no preview timer */
-  springTraining?: boolean;
   /** Weekly members may watch this stream (MetsXMFanZone streams only). Defaults to pageKey === "metsxmfanzone" */
   weeklyAllowed?: boolean;
 }
@@ -38,8 +36,7 @@ type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
 const STORAGE_KEY = "stream_viewing_start";
 const GUEST_STORAGE_KEY = "guest_stream_preview_start";
 
-const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false, nySportsStream, springTraining, weeklyAllowed }: StreamTimeLimitProps) => {
-  const isSpring = springTraining ?? pageKey === "spring-training-live";
+const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false, nySportsStream, weeklyAllowed }: StreamTimeLimitProps) => {
   const coveredByNYSports = nySportsStream ?? isNYSportsPackageStream(null, pageKey);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -54,7 +51,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
   const [guestExpired, setGuestExpired] = useState(false);
 
   const guestPreviewEnabled =
-    allowGuestPreview && !isSpring && !configLoading && config.guestPreviewEnabled !== false;
+    allowGuestPreview && !configLoading && config.guestPreviewEnabled !== false;
   const guestMinutes = Math.max(1, Number(config.guestPreviewMinutes) || 30);
 
   const previewMinutes = Math.max(1, Number(config.streamPreviewMinutes) || 30);
@@ -249,7 +246,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
                 Your {guestMinutes}-Minute Free Preview Has Ended
               </AlertDialogTitle>
               <AlertDialogDescription className="text-center">
-                Create a free account or log in to keep watching the game.
+                Create an account or log in to keep watching the game.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
@@ -292,11 +289,6 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
         </AlertDialogContent>
       </AlertDialog>
     );
-  }
-
-  // Spring Training is free, with no preview timer, for Free, Monthly and Yearly members (guests were sent to sign up above).
-  if (isSpring) {
-    return <>{children}</>;
   }
 
   // Free + trial members get a timed stream preview

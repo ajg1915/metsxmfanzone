@@ -92,18 +92,6 @@ const Plans = () => {
 
   const allPlans = [
     {
-      id: "free",
-      name: "Free",
-      price: "$0",
-      priceValue: 0,
-      period: "Spring Training",
-      billingNote: "No payment needed",
-      description: "Free Spring Training streams",
-      features: ["Spring Training streams, free with your account", "No payment method needed"],
-      cta: "Choose Free",
-      popular: false,
-    },
-    {
       id: "weekly",
       name: "Weekly",
       price: "$3.99",
@@ -125,7 +113,7 @@ const Plans = () => {
       billingNote: "Billed monthly",
       description: "Most popular for true fans",
       features: [
-        "Everything in Free (Spring Training streams)",
+        "Spring Training streams",
         "Every stream and premium page",
         "Mets game events on Apple TV, Prime Video and Peacock (all 2027 games will also stream on these premium platforms)",
         "Highlights",
@@ -172,17 +160,12 @@ const Plans = () => {
     {
       question: "What is included with each membership?",
       answer:
-        "Free gives you Spring Training streams. Weekly is MetsXMFanZone streams only, in standard quality on 1 device, with no Spring Training and no premium pages. Monthly and Yearly include everything: Spring Training, every stream, Apple TV, Prime Video and Peacock game events, highlights, HD, ad-free viewing, up to 2 devices and the Android and TV apps.",
+        "Weekly is MetsXMFanZone streams only, in standard quality on 1 device, with no Spring Training and no premium pages. Monthly and Yearly include everything: Spring Training, every stream, Apple TV, Prime Video and Peacock game events, highlights, HD, ad-free viewing, up to 2 devices and the Android and TV apps.",
     },
     {
       question: "Are Apple TV, Prime Video and Peacock included?",
       answer:
         "Yes, on Monthly and Yearly. Weekly is MetsXMFanZone streams only, so it does not include Apple TV, Prime Video, Peacock or Spring Training. On Monthly and Yearly, all games in 2027 will also be on these premium platforms.",
-    },
-    {
-      question: "Does the Free membership need PayPal?",
-      answer:
-        "No. Free only needs an email and password. PayPal is used only for the paid plans (Weekly, Monthly and Yearly), and you can upgrade any time from your Member Center.",
     },
     {
       question: "Can I switch between paid memberships?",
@@ -230,7 +213,7 @@ const Plans = () => {
                 <div>
                   <h3 className="font-semibold text-foreground">Please Select a Plan</h3>
                    <p className="text-sm text-muted-foreground">
-                     Complete your setup with Free, Weekly, Monthly, or Yearly.
+                     Complete your setup with Weekly, Monthly, or Yearly.
                   </p>
                 </div>
               </div>
@@ -249,7 +232,7 @@ const Plans = () => {
 
             {/* Plans Grid */}
 
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 sm:gap-5 mb-12 max-w-6xl mx-auto">
+            <div className="grid gap-4 md:grid-cols-3 sm:gap-5 mb-12 max-w-5xl mx-auto">
               {mainPlans.map((plan) => (
                 <Card
                   key={plan.id}

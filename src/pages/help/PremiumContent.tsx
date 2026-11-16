@@ -103,7 +103,7 @@ const PremiumContent = () => {
               <div className="space-y-6 pt-6 border-t">
                 <h2 className="text-2xl font-bold text-primary">How to Upgrade</h2>
                 <p className="text-muted-foreground leading-relaxed mb-4">
-                  If you're on the Free plan and want to access premium content:
+                  If you don't have a plan yet and want to access premium content:
                 </p>
                 <ol className="space-y-3 text-muted-foreground list-decimal list-inside">
                   <li>
@@ -125,7 +125,7 @@ const PremiumContent = () => {
                   Mets game events on Apple TV, Prime Video and Peacock are premium content, included with the Monthly
                   and Yearly plans. The Weekly plan does not include them, and Free and trial members get a short
                   preview. With the Monthly plan, all Mets games in 2027 that stream on these platforms are intended
-                  to be included too. Spring Training streams are free for Free, Monthly and Yearly members, but not on the Weekly plan.
+                  to be included too. Spring Training streams are included with Monthly and Yearly, but not with the Weekly plan.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   Every plan is a secure plan you can watch on the go and cancel anytime. Weekly streams on 1 device at a time; Monthly and Yearly on up to 2.

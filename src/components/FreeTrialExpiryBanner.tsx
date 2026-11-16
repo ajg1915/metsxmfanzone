@@ -45,11 +45,11 @@ const FreeTrialExpiryBanner = () => {
           <p className="text-xs sm:text-sm font-medium">
             {daysUntilEnd > 0 ? (
               <>
-                Your free plan expires in <strong>{daysUntilEnd} day{daysUntilEnd !== 1 ? "s" : ""}</strong>. Upgrade now to keep access to all live streaming features.
+                Your access expires in <strong>{daysUntilEnd} day{daysUntilEnd !== 1 ? "s" : ""}</strong>. Upgrade now to keep access to all live streaming features.
               </>
             ) : (
               <>
-                Your free plan has expired. Upgrade to continue watching live streams.
+                Your access has expired. Upgrade to continue watching live streams.
               </>
             )}
           </p>

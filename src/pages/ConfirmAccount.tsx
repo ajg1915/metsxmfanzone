@@ -233,7 +233,7 @@ export default function ConfirmAccount() {
             </CardHeader>
             <CardContent className="space-y-6 text-center">
               <p className="text-muted-foreground">
-                 Your account is verified. Sign in, then choose Free, Weekly, Monthly, or Yearly membership.
+                 Your account is verified. Sign in, then choose Weekly, Monthly, or Yearly membership.
               </p>
               <Button
                 onClick={handleContinueAfterConfirmation}
