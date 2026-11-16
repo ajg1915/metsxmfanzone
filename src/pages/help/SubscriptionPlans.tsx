@@ -61,7 +61,7 @@ const SubscriptionPlans = () => {
                 <div className="p-6 rounded-lg border-2 border-border bg-card">
                   <h3 className="text-2xl font-bold text-primary mb-2">Weekly Plan</h3>
                   <p className="text-3xl font-bold text-primary mb-4">$3.99<span className="text-lg text-muted-foreground">/week</span></p>
-                  <ul className="space-y-2 text-muted-foreground"><li>✓ Everything in Free</li><li>✓ Live streams and game replays</li><li>✓ Premium content and HD viewing</li></ul>
+                  <ul className="space-y-2 text-muted-foreground"><li>✓ Everything in Free (Spring Training)</li><li>✓ MetsXMFanZone live streams</li><li>✓ Standard quality, 1 device at a time</li><li>✗ No Apple TV, Prime Video or Peacock, highlights, HD, ad-free or apps</li></ul>
                 </div>
 
                 <div className="p-6 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border-2 border-primary">

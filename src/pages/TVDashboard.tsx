@@ -32,7 +32,7 @@ export type TVCategory = "home" | "live" | "highlights" | "replays";
 const TVDashboard = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
-  const { isPremium, loading: subLoading } = useSubscription();
+  const { isFullMember: isPremium, loading: subLoading } = useSubscription();
 
   // Section refs for scrolling
   const storiesRef = useRef<HTMLDivElement>(null);
@@ -399,9 +399,9 @@ const TVDashboard = () => {
       <div className="h-screen w-screen overflow-y-auto bg-[color:var(--tv-bg)] text-[color:var(--tv-text)]">
         <div className="mx-auto flex min-h-full max-w-[44rem] flex-col justify-center px-8 py-6 text-center">
           <img src={metsLogo} alt="MetsXMFanZone" className="h-16 w-auto mx-auto mb-4" />
-          <h1 className="text-[2.4rem] font-bold mb-4">TV Mode is for paid members</h1>
+          <h1 className="text-[2.4rem] font-bold mb-4">TV Mode is for Monthly and Yearly members</h1>
           <p className="text-[1.35rem] text-[color:var(--tv-subtext)] mb-8">
-            Join a plan on your phone or computer at metsxmfanzone.com/pricing, then come back and
+            Join the Monthly or Yearly plan on your phone or computer at metsxmfanzone.com/pricing, then come back and
             this screen will open.
           </p>
           <div className="flex flex-col gap-4 items-center">

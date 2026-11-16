@@ -58,7 +58,7 @@ const FAQs = () => {
     },
     {
       question: "What's the difference between Free and Premium plans?",
-      answer: "Free plan gives you basic access to highlights and community features. Premium ($9.99/month) unlocks all live streams, full game replays, HD quality, ad-free experience, and exclusive content. Annual plan ($119.88/year) includes everything in Premium plus 2 months free savings.",
+      answer: "Free gives you Spring Training streams and the community. Weekly ($3.99) adds MetsXMFanZone live streams in standard quality on 1 device. Monthly ($9.99) adds Apple TV, Prime Video and Peacock game events, highlights, HD quality, ad-free viewing, up to 2 devices and the apps. Annual plan ($119.88/year) includes everything in Premium plus 2 months free savings.",
     },
     {
       question: "Can I switch between monthly and yearly billing?",
@@ -86,7 +86,7 @@ const FAQs = () => {
     },
     {
       question: "Can I watch on multiple devices?",
-      answer: "Premium and Annual plans allow streaming on up to 2 devices simultaneously. Accounts found accessing from more than 2 devices may face restrictions.",
+      answer: "Weekly allows 1 device at a time. Monthly and Yearly allow streaming on up to 2 devices simultaneously. Accounts found accessing from more than 2 devices may face restrictions.",
     },
     {
       question: "What happens to my unused access?",

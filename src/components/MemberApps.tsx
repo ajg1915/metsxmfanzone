@@ -10,7 +10,7 @@ const ANDROID_URL = "https://metsxmfanzone.com/android-app";
 const TV_URL = "https://metsxmfanzone.com/tv-app";
 
 export default function MemberApps() {
-  const { isPremium, loading } = useSubscription();
+  const { isFullMember: isPremium, loading } = useSubscription();
   const [copied, setCopied] = useState(false);
 
   if (loading) return null;
@@ -37,9 +37,9 @@ export default function MemberApps() {
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/15">
             <LockKeyhole className="h-5 w-5 text-primary" />
           </div>
-          <h3 className="text-lg font-bold text-foreground">Apps are for paid members</h3>
+          <h3 className="text-lg font-bold text-foreground">Apps are for Monthly and Yearly members</h3>
           <p className="max-w-xl text-sm text-muted-foreground">
-            Pick Weekly, Monthly or Yearly to unlock the Android app and the TV app for Fire TV, Android TV and Google TV.
+            Pick Monthly or Yearly to unlock the Android app and the TV app for Fire TV, Android TV and Google TV.
           </p>
           <Link to="/pricing" className="inline-flex h-11 items-center rounded-full bg-primary px-6 text-sm font-bold text-primary-foreground hover:opacity-90">
             See plans

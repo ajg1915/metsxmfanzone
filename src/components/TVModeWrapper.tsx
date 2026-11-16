@@ -18,7 +18,7 @@ interface TVModeWrapperProps {
 export function TVModeWrapper({ children }: TVModeWrapperProps) {
   const { isTV, isTVDevice } = useDevice();
   const { user, loading: authLoading } = useAuth();
-  const { isPremium, loading: subLoading } = useSubscription();
+  const { isFullMember: isPremium, loading: subLoading } = useSubscription();
   const location = useLocation();
   const navigate = useNavigate();
   const [showTVBar, setShowTVBar] = useState(false);

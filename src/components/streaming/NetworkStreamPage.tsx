@@ -37,7 +37,7 @@ export type NetworkPageConfig = {
 const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
   const { brand } = cfg;
   return (
-    <StreamTimeLimit pageKey={cfg.pageKey} allowGuestPreview>
+    <StreamTimeLimit pageKey={cfg.pageKey} allowGuestPreview springTraining={cfg.pageKey === "spring-training-live"}>
       <div className="flex min-h-screen flex-col bg-background">
         <SEOHead
           title={cfg.seo.title}

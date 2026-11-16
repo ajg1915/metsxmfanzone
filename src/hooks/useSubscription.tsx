@@ -124,12 +124,16 @@ export const useSubscription = () => {
     return false;
   };
 
+  // Monthly and Yearly (and admins). Weekly is a lighter plan: Mets MetsXMFanZone streams only, no
+  // Apple TV / Prime Video / Peacock, no highlights, no Android or TV apps.
+  const isFullMember = isAdmin || (!limitedAccess && (tier === "premium" || tier === "annual"));
+
   const isPremium = isAdmin || (!limitedAccess && (tier === "weekly" || tier === "premium" || tier === "annual"));
   // Trial members can browse the whole site, but streams are preview-only
   const isTrial = !isAdmin && tier === "trial";
   // NY team + premium platform (Apple TV, Prime Video, Peacock) streams: paid plans have access,
   // and the NY Sports add-on unlocks them on its own.
-  const canWatchNYSports = isPremium || (!limitedAccess && hasNYSports);
+  const canWatchNYSports = isFullMember || (!limitedAccess && hasNYSports);
 
   return {
     tier,
@@ -138,6 +142,7 @@ export const useSubscription = () => {
     loading,
     hasAccess,
     isPremium,
+    isFullMember,
     isTrial,
     trialEndsAt,
     isAdmin,

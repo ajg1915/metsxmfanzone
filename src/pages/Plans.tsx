@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, AlertCircle, CreditCard, Loader2, ShieldCheck } from "lucide-react";
+import { Check, AlertCircle, CreditCard, Loader2, ShieldCheck, X } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -99,7 +99,7 @@ const Plans = () => {
       period: "Spring Training",
       billingNote: "No payment needed",
       description: "Free Spring Training streams",
-      features: ["Spring Training streams only", "No payment method needed"],
+      features: ["Spring Training streams, free for everyone with an account", "No payment method needed"],
       cta: "Choose Free",
       popular: false,
     },
@@ -110,8 +110,9 @@ const Plans = () => {
       priceValue: 3.99,
       period: "per week",
       billingNote: "Billed weekly through PayPal",
-      description: "Full access with a shorter commitment",
-      features: ["Everything in Free", "All live streams", "Premium Mets game events on Apple TV, Prime Video and Peacock", "Full game replays", "All highlights", "HD streaming"],
+      description: "MetsXMFanZone streams with a shorter commitment",
+      features: ["Everything in Free (Spring Training)", "MetsXMFanZone live streams", "Standard quality", "1 device at a time"],
+      notIncluded: ["Apple TV, Prime Video and Peacock games", "Highlights", "HD streaming and ad-free viewing", "Android and TV apps"],
       cta: "Choose Weekly",
       popular: false,
     },
@@ -125,10 +126,13 @@ const Plans = () => {
       description: "Most popular for true fans",
       features: [
         "Everything in Weekly",
-        "All 2027 games will also stream on our premium platforms: Prime Video, Peacock and Apple TV",
+        "Mets game events on Apple TV, Prime Video and Peacock (all 2027 games will also stream on these premium platforms)",
+        "Highlights",
+        "HD streaming",
         "Ad-free experience",
         "Exclusive content",
-        "Watch on all your devices (Android + TV apps)",
+        "Up to 2 devices at once",
+        "Android + TV apps",
       ],
       notIncluded: [],
       cta: "Choose Monthly",
@@ -156,7 +160,7 @@ const Plans = () => {
   ];
 
   // Included with every membership, shown on each plan card.
-  const sharedPerks = ["Secure plan", "Watch on the go", "View on all your devices", "Cancel anytime"];
+  const sharedPerks = ["Secure plan", "Watch on the go", "Cancel anytime"];
 
   const plans = allPlans;
   const mainPlans = allPlans;
@@ -167,12 +171,12 @@ const Plans = () => {
     {
       question: "What is included with each membership?",
       answer:
-        "Free is for Spring Training streams only. Weekly, Monthly, and Yearly include live streams, replays, highlights, premium content, and the premium Mets game events on Apple TV, Prime Video and Peacock.",
+        "Spring Training streams are free for everyone with an account, on every plan. Weekly adds MetsXMFanZone live streams in standard quality on 1 device. Monthly and Yearly add Apple TV, Prime Video and Peacock game events, highlights, HD, ad-free viewing, up to 2 devices and the Android and TV apps.",
     },
     {
       question: "Are Apple TV, Prime Video and Peacock included?",
       answer:
-        "Yes. Mets game events on Apple TV, Prime Video and Peacock are premium and included with every paid plan (Weekly, Monthly and Yearly). On the Monthly plan, all games in 2027 will also be on these premium platforms.",
+        "Yes, on Monthly and Yearly. Mets game events on Apple TV, Prime Video and Peacock are not part of the Weekly plan. On Monthly and Yearly, all games in 2027 will also be on these premium platforms.",
     },
     {
       question: "Does the Free membership need PayPal?",
@@ -202,7 +206,7 @@ const Plans = () => {
     {
       question: "Can I watch on multiple devices?",
       answer:
-        "Yes. Every plan works on your phone, tablet, computer and TV, so you can watch on the go. Paid memberships allow streaming on up to 2 devices at the same time. Accounts found accessing from more than 2 devices at once may be restricted.",
+        "Yes. Every plan works on your phone, tablet, computer and TV, so you can watch on the go. Weekly allows 1 device at a time; Monthly and Yearly allow up to 2 devices at the same time. Accounts found accessing from more than 2 devices at once may be restricted.",
     },
   ];
 
@@ -289,6 +293,12 @@ const Plans = () => {
                           <span className="text-sm text-foreground">{feature}</span>
                         </div>
                       ))}
+                      {(plan.notIncluded || []).map((feature: string) => (
+                        <div key={feature} className="flex items-start gap-2">
+                          <X className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-muted-foreground">{feature}</span>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
@@ -296,7 +306,7 @@ const Plans = () => {
             </div>
 
             <div className="mb-12 grid gap-3 sm:grid-cols-3 max-w-4xl mx-auto">
-              {["Secure PayPal checkout", "Cancel from Member Center", "Access on up to 2 devices"].map((label) => (
+              {["Secure PayPal checkout", "Cancel from Member Center", "Watch on your phone, tablet, computer and TV"].map((label) => (
                 <div key={label} className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 p-3 text-sm">
                   <ShieldCheck className="h-4 w-4 shrink-0 text-primary" />{label}
                 </div>

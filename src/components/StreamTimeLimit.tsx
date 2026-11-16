@@ -27,6 +27,8 @@ interface StreamTimeLimitProps {
   allowGuestPreview?: boolean;
   /** Stream is covered by the NY Sports Streaming add-on (NY teams + premium platforms) */
   nySportsStream?: boolean;
+  /** Spring Training stream: free for everyone with an account, unlimited, no preview timer */
+  springTraining?: boolean;
 }
 
 type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
@@ -34,7 +36,8 @@ type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
 const STORAGE_KEY = "stream_viewing_start";
 const GUEST_STORAGE_KEY = "guest_stream_preview_start";
 
-const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false, nySportsStream }: StreamTimeLimitProps) => {
+const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false, nySportsStream, springTraining }: StreamTimeLimitProps) => {
+  const isSpring = springTraining ?? pageKey === "spring-training-live";
   const coveredByNYSports = nySportsStream ?? isNYSportsPackageStream(null, pageKey);
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -49,7 +52,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
   const [guestExpired, setGuestExpired] = useState(false);
 
   const guestPreviewEnabled =
-    allowGuestPreview && !configLoading && config.guestPreviewEnabled !== false;
+    allowGuestPreview && !isSpring && !configLoading && config.guestPreviewEnabled !== false;
   const guestMinutes = Math.max(1, Number(config.guestPreviewMinutes) || 30);
 
   const previewMinutes = Math.max(1, Number(config.streamPreviewMinutes) || 30);
@@ -130,7 +133,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
         // Main Mets plan ignores the NY Sports add-on row.
         const mainPlan = (valid.find((row) => row.plan_type !== NY_SPORTS_PLAN)?.plan_type as PlanType) || "free";
         const plan: PlanType =
-          hasNYSports && coveredByNYSports && (mainPlan === "free" || mainPlan === "trial")
+          hasNYSports && coveredByNYSports && (mainPlan === "free" || mainPlan === "trial" || mainPlan === "weekly")
             ? "premium" // NY Sports unlocks this stream in full
             : mainPlan;
         setUserPlan(plan);
@@ -264,6 +267,34 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
   // Admin-selected free games remain unrestricted for signed-in viewers.
   if (freeForEveryone) {
     return <>{children}</>;
+  }
+
+  // Spring Training is free on every plan for anyone with an account (guests were sent to sign up above).
+  if (isSpring) {
+    return <>{children}</>;
+  }
+
+  // Weekly does not include Apple TV, Prime Video, Peacock or the NY team streams.
+  if (userPlan === "weekly" && coveredByNYSports) {
+    return (
+      <AlertDialog open>
+        <AlertDialogContent className="max-w-md" onEscapeKeyDown={(e) => e.preventDefault()}>
+          <AlertDialogHeader className="text-center">
+            <div className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center">
+              <img src={metsLogo} alt="MetsXM" className="w-14 h-14 object-contain" />
+            </div>
+            <AlertDialogTitle className="text-xl">This stream is on Monthly and Yearly</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              Apple TV, Prime Video, Peacock and NY team streams aren't part of the Weekly plan. Upgrade to Monthly or Yearly to watch.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button onClick={handleUpgrade} className="w-full">See plans</Button>
+            <Button variant="outline" onClick={handleGoHome} className="w-full">Return Home</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
   }
 
   // Free + trial members get a timed stream preview

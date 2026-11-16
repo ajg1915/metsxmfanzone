@@ -76,7 +76,7 @@ const Terms = () => {
               <h2 className="text-2xl font-semibold text-foreground mb-4">Premium Platforms: Apple TV, Prime Video and Peacock</h2>
               <p className="text-muted-foreground mb-4">
                 Mets game events that stream on Apple TV, Prime Video and Peacock through MetsXMFanZone are premium
-                content. They are included with every paid membership (Weekly, Monthly and Yearly) at no extra charge.
+                content. They are included with the Monthly and Yearly memberships at no extra charge. The Weekly membership does not include them.
                 Free and trial members can watch a short preview only.
               </p>
               <p className="text-muted-foreground mb-4">

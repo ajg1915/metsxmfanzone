@@ -122,12 +122,13 @@ const PremiumContent = () => {
               <div className="space-y-4 pt-6 border-t">
                 <h2 className="text-2xl font-bold text-primary">Premium Platforms: Apple TV, Prime Video and Peacock</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Mets game events on Apple TV, Prime Video and Peacock are premium content, included with every paid
-                  plan (Weekly, Monthly and Yearly). Free and trial members get a short preview. With the Monthly plan,
-                  all Mets games in 2027 that stream on these platforms are intended to be included too.
+                  Mets game events on Apple TV, Prime Video and Peacock are premium content, included with the Monthly
+                  and Yearly plans. The Weekly plan does not include them, and Free and trial members get a short
+                  preview. With the Monthly plan, all Mets games in 2027 that stream on these platforms are intended
+                  to be included too. Spring Training streams are free for everyone with an account.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Every plan is a secure plan you can watch on the go, on all your devices, and cancel anytime.
+                  Every plan is a secure plan you can watch on the go and cancel anytime. Weekly streams on 1 device at a time; Monthly and Yearly on up to 2.
                 </p>
               </div>
 
