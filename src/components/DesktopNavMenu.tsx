@@ -41,7 +41,7 @@ type Entry = {
 const METS: Entry[] = [
   { label: "Schedule", hint: "Every game, date and time", icon: CalendarDays, to: "/mets-schedule-2027", gate: "protected" },
   { label: "Scores", hint: "Live and final scores", icon: Trophy, to: "/mets-scores" },
-  { label: "Game Center", hint: "Lineups, players to watch, stats, replays", icon: LayoutGrid, to: "/game-center" },
+  { label: "Game Center", hint: "Lineups, players to watch, stats, highlights", icon: LayoutGrid, to: "/game-center" },
   { label: "Picks", hint: "Anthony's predictions, lineup and podcast review", icon: Target, to: "/picks" },
   { label: "Roster", hint: "Players and stats", icon: Users, to: "/mets-roster", membersOnly: true },
   { label: "Game Recaps", hint: "Breakdowns of every game", icon: Newspaper, to: "/mets-game-recaps" },

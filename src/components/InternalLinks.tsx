@@ -54,7 +54,7 @@ export const mediaLinks: InternalLink[] = [
   { title: "Blog", description: "In-depth articles, analysis, and opinion pieces", href: "/blog" },
   { title: "Video Gallery", description: "Highlights, replays, and exclusive video content", href: "/video-gallery" },
   { title: "Photo Gallery", description: "Fan art, game photos, and exclusive images", href: "/gallery" },
-  { title: "Replay Games", description: "Watch classic and recent Mets games on demand", href: "/replay-games" },
+  { title: "Highlights", description: "Watch Mets game highlights on demand", href: "/highlights" },
 ];
 
 export const communityLinks: InternalLink[] = [

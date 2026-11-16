@@ -40,7 +40,7 @@ const Offseason = () => {
         </p>
         <div className="mt-4 grid gap-2 sm:grid-cols-3">
           {[
-            { to: "/replay-games", icon: Film, label: "Watch replays" },
+            { to: "/highlights", icon: Film, label: "Highlights" },
             { to: "/blog", icon: Newspaper, label: "Mets news" },
             { to: "/mets-schedule-2027", icon: CalendarDays, label: "Schedule" },
           ].map(({ to, icon: Icon, label }) => (
@@ -58,7 +58,7 @@ const config: NetworkPageConfig = {
   pageKey: "spring-training-live",
   route: "/spring-training-live",
   seo: {
-    title: "Mets Spring Training Live - Games, Replays & Countdown | MetsXMFanZone",
+    title: "Mets Spring Training Live - Games, Highlights & Countdown | MetsXMFanZone",
     description: "Watch New York Mets Spring Training games live, catch replays, and count down to pitchers and catchers reporting.",
     keywords: "Mets Spring Training, Spring Training live stream, Mets spring training games, Mets replays, Grapefruit League",
   },
@@ -71,7 +71,7 @@ const config: NetworkPageConfig = {
   facts: ["Feb - Mar", "Port St. Lucie, FL"],
   features: [
     { icon: Sun, title: "Live Games", text: "Every Spring Training game we stream shows up here as soon as it goes live." },
-    { icon: Film, title: "Replays", text: "Missed one? Watch full replays on demand." },
+    { icon: Film, title: "Highlights", text: "Missed one? Catch the highlights on demand." },
     { icon: Newspaper, title: "Camp News", text: "Roster battles, injuries and prospects to watch, from the blog." },
   ],
   player: { title: "Spring Training Live", description: "Watch Mets Spring Training games live" },

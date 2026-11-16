@@ -380,7 +380,7 @@ export const NoGameCard = ({ next, offseason, pregame, className }: { next: Next
         : "The Mets are back soon"
       : `Next up: ${next?.home ? "vs" : "at"} ${next?.opponent ?? "TBD"}`;
   const links = [
-    { to: "/replay-games", icon: Film, label: "Highlights" },
+    { to: "/highlights", icon: Film, label: "Highlights" },
     { to: "/blog", icon: Newspaper, label: "Mets news" },
     { to: "/mets-schedule-2027", icon: CalendarDays, label: "Schedule" },
     ...(offseason ? [{ to: "/mets-shop", icon: ShoppingBag, label: "Mets Shop" }] : []),

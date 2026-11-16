@@ -133,7 +133,7 @@ const InstallPrompt = () => {
                     {isIOS
                       ? "Add this app to your Home Screen for the best experience"
                       : isAndroid
-                        ? "Our real Android app for members: live games, replays and alerts."
+                        ? "Our real Android app for members: live games, highlights and alerts."
                         : "Get the full app experience with offline access and push notifications"}
                   </p>
                 </div>

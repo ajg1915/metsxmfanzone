@@ -119,10 +119,10 @@
     "image": "/share/rewards-claim.jpg"
   },
   {
-    "path": "/replay-games",
-    "label": "Game Replays",
-    "title": "Mets Game Replays | MetsXMFanZone",
-    "description": "Watch full replays of recent New York Mets games on MetsXMFanZone.",
+    "path": "/highlights",
+    "label": "Highlights",
+    "title": "Mets Highlights | MetsXMFanZone",
+    "description": "Watch New York Mets game highlights on MetsXMFanZone.",
     "image": "/share/replay-games.jpg"
   },
   {

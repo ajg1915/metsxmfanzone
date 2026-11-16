@@ -38,7 +38,7 @@ const GameCenter = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="Mets Game Center — Lineups, Players to Watch, Stats & Replays"
+        title="Mets Game Center — Lineups, Players to Watch, Stats & Highlights"
         description="Everything for game day in one place: Mets lineups, players to watch, stats, series, Spring Training games and full-game replays."
         keywords="Mets game center, Mets lineup, Mets players to watch, Mets stats, Mets replays, Spring Training"
         canonical="https://metsxmfanzone.com/game-center"

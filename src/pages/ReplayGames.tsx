@@ -80,10 +80,10 @@ const ReplayGames = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SEOHead
-        title="Replay Games - Watch Past Mets Games | MetsXMFanZone"
-        description="Relive the best Mets moments. Watch full game replays, classic matchups, and memorable performances on demand."
-        canonical="https://www.metsxmfanzone.com/replay-games"
-        keywords="Mets replay games, Mets game replays, watch Mets games, Mets highlights, past Mets games"
+        title="Mets Highlights - Watch Game Highlights | MetsXMFanZone"
+        description="Relive the best Mets moments. Watch game highlights and memorable performances on demand."
+        canonical="https://metsxmfanzone.com/highlights"
+        keywords="Mets highlights, Mets game highlights, watch Mets highlights, Mets video highlights"
       />
       <Navigation />
 
@@ -98,7 +98,7 @@ const ReplayGames = () => {
                 </div>
                 <motion.div className="absolute -top-2 -right-2 flex items-center gap-1 bg-muted text-muted-foreground px-2 py-1 rounded-full text-xs font-bold shadow-lg" animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
                   <RotateCcw className="w-3 h-3" />
-                  REPLAY
+                  HIGHLIGHT
                 </motion.div>
               </motion.div>
 
@@ -112,16 +112,16 @@ const ReplayGames = () => {
                     <PremiumBadge size="sm" />
                   </div>
                   <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground mb-2">
-                    Replay <span className="text-primary">Games</span>
+                    Game <span className="text-primary">Highlights</span>
                   </h1>
                   <p className="text-muted-foreground text-sm sm:text-base max-w-xl">
-                    Relive the best Mets moments. Watch full game replays and classic matchups on demand.
+                    Relive the best Mets moments. Watch game highlights on demand.
                   </p>
                 </motion.div>
                 <motion.div className="flex flex-wrap gap-3 mt-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
                   <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-3 py-2 rounded-lg border border-border/50">
                     <Film className="w-4 h-4 text-primary" />
-                    <span className="text-xs text-foreground">{games.length} Replays Available</span>
+                    <span className="text-xs text-foreground">{games.length} Highlights Available</span>
                   </div>
                   <div className="flex items-center gap-2 bg-card/50 backdrop-blur-sm px-3 py-2 rounded-lg border border-border/50">
                     <Clock className="w-4 h-4 text-muted-foreground" />
@@ -167,17 +167,17 @@ const ReplayGames = () => {
           <div className="max-w-6xl mx-auto">
             <div className="flex items-center gap-2 mb-6">
               <RotateCcw className="w-6 h-6 text-primary" />
-              <h2 className="text-2xl font-bold text-foreground">All Replay Games</h2>
+              <h2 className="text-2xl font-bold text-foreground">All Highlights</h2>
             </div>
 
             {loading ? (
-              <div className="text-center text-muted-foreground py-12">Loading replay games...</div>
+              <div className="text-center text-muted-foreground py-12">Loading highlights...</div>
             ) : games.length === 0 ? (
               <Card className="border-border/50">
                 <CardContent className="p-12 text-center">
                   <RotateCcw className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No Replay Games Available</h3>
-                  <p className="text-muted-foreground text-sm">Check back later for game replays.</p>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No Highlights Available</h3>
+                  <p className="text-muted-foreground text-sm">Check back later for new highlights.</p>
                 </CardContent>
               </Card>
             ) : (
@@ -217,7 +217,7 @@ const ReplayGames = () => {
                           {!canWatch && <PremiumBadge size="sm" />}
                           <Badge className="text-[10px] px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-muted/80 text-muted-foreground">
                             <RotateCcw className="w-2.5 h-2.5 mr-1" />
-                            REPLAY
+                            HIGHLIGHT
                           </Badge>
                         </div>
                       </div>
@@ -241,8 +241,8 @@ const ReplayGames = () => {
                 <Card className="border-primary/30 bg-primary/5 max-w-lg mx-auto">
                   <CardContent className="p-6">
                     <Lock className="w-8 h-8 text-primary mx-auto mb-3" />
-                    <h3 className="text-lg font-bold text-foreground mb-2">Unlock All Replays</h3>
-                    <p className="text-sm text-muted-foreground mb-4">Upgrade to Premium to watch full game replays on demand.</p>
+                    <h3 className="text-lg font-bold text-foreground mb-2">Unlock All Highlights</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Upgrade to Premium to watch highlights on demand.</p>
                     <Button onClick={() => navigate("/pricing")} className="gap-2">
                       View Plans <ChevronRight className="w-4 h-4" />
                     </Button>

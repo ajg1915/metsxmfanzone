@@ -112,7 +112,7 @@ const ReplayGamesSection = () => {
     return (
       <section className="py-6 sm:py-8">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-          <div className="text-center text-muted-foreground">Loading replay games...</div>
+          <div className="text-center text-muted-foreground">Loading highlights...</div>
         </div>
       </section>
     );
@@ -133,14 +133,14 @@ const ReplayGamesSection = () => {
           <div className="flex items-center gap-1.5 sm:gap-2">
             <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
             <h2 className="text-[25px] leading-none tracking-wide sm:text-2xl md:text-3xl font-bold uppercase text-foreground">
-              Replay Games
+              Highlights
             </h2>
           </div>
           <a
-            href="/replay-games"
+            href="/highlights"
             className="flex min-h-[44px] items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors"
           >
-            View All Replays
+            View All Highlights
             <ChevronRight className="w-4 h-4" />
           </a>
         </motion.div>
@@ -207,7 +207,7 @@ const ReplayGamesSection = () => {
                     )}
                     <Badge className="text-[10px] sm:text-xs px-1.5 py-0.5 font-semibold backdrop-blur-sm bg-muted/80 text-muted-foreground">
                       <RotateCcw className="w-2.5 h-2.5 mr-1" />
-                      REPLAY
+                      HIGHLIGHT
                     </Badge>
                   </div>
 

@@ -239,7 +239,7 @@ export default function SignedOutLanding() {
               <div className="flex gap-2 text-[13px]">
                 <span className="rounded-full bg-[#ff5910] px-3 py-1.5 font-bold">Home</span>
                 <span className="rounded-full bg-[#13233d] px-3 py-1.5">Live</span>
-                <span className="rounded-full bg-[#13233d] px-3 py-1.5">Replays</span>
+                <span className="rounded-full bg-[#13233d] px-3 py-1.5">Highlights</span>
                 <span className="hidden rounded-full bg-[#13233d] px-3 py-1.5 sm:inline">Podcast</span>
               </div>
             </div>
