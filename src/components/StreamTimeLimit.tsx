@@ -29,6 +29,8 @@ interface StreamTimeLimitProps {
   nySportsStream?: boolean;
   /** Spring Training stream: free for everyone with an account, unlimited, no preview timer */
   springTraining?: boolean;
+  /** Weekly members may watch this stream (MetsXMFanZone streams only). Defaults to pageKey === "metsxmfanzone" */
+  weeklyAllowed?: boolean;
 }
 
 type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
@@ -36,7 +38,7 @@ type PlanType = "free" | "trial" | "weekly" | "premium" | "annual";
 const STORAGE_KEY = "stream_viewing_start";
 const GUEST_STORAGE_KEY = "guest_stream_preview_start";
 
-const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false, nySportsStream, springTraining }: StreamTimeLimitProps) => {
+const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = false, nySportsStream, springTraining, weeklyAllowed }: StreamTimeLimitProps) => {
   const isSpring = springTraining ?? pageKey === "spring-training-live";
   const coveredByNYSports = nySportsStream ?? isNYSportsPackageStream(null, pageKey);
   const { user, loading: authLoading } = useAuth();
@@ -269,13 +271,8 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     return <>{children}</>;
   }
 
-  // Spring Training is free on every plan for anyone with an account (guests were sent to sign up above).
-  if (isSpring) {
-    return <>{children}</>;
-  }
-
-  // Weekly does not include Apple TV, Prime Video, Peacock or the NY team streams.
-  if (userPlan === "weekly" && coveredByNYSports) {
+  // Weekly is MetsXMFanZone-only: no Spring Training, Apple TV, Prime Video, Peacock, NY teams or other game streams.
+  if (userPlan === "weekly" && !(weeklyAllowed ?? pageKey === "metsxmfanzone")) {
     return (
       <AlertDialog open>
         <AlertDialogContent className="max-w-md" onEscapeKeyDown={(e) => e.preventDefault()}>
@@ -283,9 +280,9 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
             <div className="mx-auto mb-4 w-16 h-16 rounded-full flex items-center justify-center">
               <img src={metsLogo} alt="MetsXM" className="w-14 h-14 object-contain" />
             </div>
-            <AlertDialogTitle className="text-xl">This stream is on Monthly and Yearly</AlertDialogTitle>
+            <AlertDialogTitle className="text-xl">Upgrade to watch this stream</AlertDialogTitle>
             <AlertDialogDescription className="text-center">
-              Apple TV, Prime Video, Peacock and NY team streams aren't part of the Weekly plan. Upgrade to Monthly or Yearly to watch.
+              The Weekly plan includes MetsXMFanZone streams only. Upgrade to Monthly or Yearly for Spring Training, Apple TV, Prime Video, Peacock and every other stream.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
@@ -295,6 +292,11 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
         </AlertDialogContent>
       </AlertDialog>
     );
+  }
+
+  // Spring Training is free, with no preview timer, for Free, Monthly and Yearly members (guests were sent to sign up above).
+  if (isSpring) {
+    return <>{children}</>;
   }
 
   // Free + trial members get a timed stream preview
