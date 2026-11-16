@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { usePlansConfig, formatPrice } from "@/lib/plansConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,6 +64,7 @@ interface ActivityRecord {
 }
 
 export default function SubscriptionsTab() {
+  const { config: plansCfg } = usePlansConfig();
   const { user } = useAuth();
   const { toast } = useToast();
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
@@ -265,7 +267,7 @@ export default function SubscriptionsTab() {
   };
 
   const getPlanPrice = (planType: string) => {
-    switch (planType) { case "weekly": return "$3.99/wk"; case "premium": return "$9.99/mo"; case "annual": return "$119.88/yr"; default: return "Free"; }
+    switch (planType) { case "weekly": return `${formatPrice(plansCfg.weekly.price)}/wk`; case "premium": return `${formatPrice(plansCfg.premium.price)}/mo`; case "annual": return `${formatPrice(plansCfg.annual.price)}/yr`; default: return "Free"; }
   };
 
   const filteredSubscriptions = useMemo(() => {

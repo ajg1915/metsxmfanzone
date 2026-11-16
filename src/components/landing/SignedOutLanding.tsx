@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { usePlansConfig, formatPrice } from "@/lib/plansConfig";
 import type { CSSProperties, ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -104,6 +105,7 @@ const H2 = ({ children, className = "" }: { children: ReactNode; className?: str
 const LANDING_WALLPAPER = "/images/landing-wallpaper.jpg";
 
 export default function SignedOutLanding() {
+  const { config: plansCfg } = usePlansConfig();
   const { data: bgs = {} } = useFrontPageStyles();
   const { data: media } = useLandingMedia();
   // The TV picture chosen in the admin, otherwise the MetsXMFanZone fan wallpaper (never a stream thumbnail).
@@ -150,7 +152,7 @@ export default function SignedOutLanding() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link to="/auth?mode=signup" className="inline-flex min-h-[56px] items-center rounded-md bg-[#ff5910] px-8 text-[18px] font-bold text-white hover:opacity-90">
-              Join from $3.99 a week
+              Join from {formatPrice(plansCfg.weekly.price)} a week
             </Link>
             <a href="#what" className="inline-flex min-h-[56px] items-center rounded-md bg-white/15 px-7 text-[18px] font-semibold text-white backdrop-blur-sm hover:bg-white/25">
               See what's included

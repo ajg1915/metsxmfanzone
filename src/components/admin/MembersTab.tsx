@@ -20,6 +20,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { usePlansConfig } from "@/lib/plansConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { maskEmail, maskSensitiveField, vaultAuthHeaders } from "@/utils/secureDataVault";
 import { AdminList, AdminListCard, AdminRow } from "@/components/admin/AdminUI";
@@ -48,6 +49,7 @@ type PlanFilter = "all" | "free" | "trial" | "weekly" | "premium" | "annual";
 export default function MembersTab() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { config: plansCfg } = usePlansConfig();
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [decrypted, setDecrypted] = useState(false);
@@ -153,7 +155,8 @@ export default function MembersTab() {
   const dispPhone = (m: MemberRow) => decrypted ? (decryptedData.get(m.user_id)?.phone_number || "—") : (m.phone_number ? maskSensitiveField(m.phone_number) : "—");
 
   const planMonths = (plan: string) => plan === "annual" ? 12 : plan === "premium" ? 1 : 0;
-  const planPrice = (plan: string) => plan === "annual" ? 119.88 : plan === "premium" ? 9.99 : plan === "weekly" ? 3.99 : 0;
+  // Prices come from Admin > Plans and Access, so hand-assigned plans match what the site charges.
+  const planPrice = (plan: string) => (plan === "annual" || plan === "premium" || plan === "weekly") ? plansCfg[plan].price : 0;
 
   const logActivity = async (m: MemberRow, action: string, details: any) => {
     if (!m.subscription_id) return;

@@ -1,4 +1,5 @@
 import logo from "@/assets/metsxmfanzone-logo.png";
+import { usePlansConfig, formatPrice } from "@/lib/plansConfig";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -25,6 +26,7 @@ interface HeroSlide {
 const HERO_SLIDE_MS = 15000;
 
 const Hero = () => {
+  const { config: plansCfg } = usePlansConfig();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
@@ -393,7 +395,7 @@ const Hero = () => {
                 {!user && (
                   <div className="mt-3 sm:mt-4">
                     <Button onClick={() => navigate("/auth")} variant="link" className="h-auto p-0 text-[10px] text-foreground/60 hover:text-foreground/80 sm:text-xs">
-                      Join MetsXMFanZone · Plans from $9.99/mo
+                      Join MetsXMFanZone · Plans from {formatPrice(plansCfg.premium.price)}/mo
                     </Button>
                   </div>
                 )}

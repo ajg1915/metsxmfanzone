@@ -5,10 +5,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { motion } from "framer-motion";
+import { usePlansConfig, formatPrice } from "@/lib/plansConfig";
 import { Helmet } from "react-helmet-async";
 import metsxmfanzoneLogo from "@/assets/metsxmfanzone-logo.png";
 
 const FAQSection = () => {
+  const { config: plansCfg } = usePlansConfig();
   const faqs = [
     {
       question: "What is MetsXMFanZone?",
@@ -16,7 +18,7 @@ const FAQSection = () => {
     },
     {
       question: "How much does MetsXMFanZone cost?",
-      answer: "MetsXMFanZone is just $9.99/month or $89.99/year for unlimited access to live streams, exclusive content, podcasts, and more."
+      answer: `MetsXMFanZone starts at ${formatPrice(plansCfg.weekly.price)}/week. Monthly is ${formatPrice(plansCfg.premium.price)} and Yearly is ${formatPrice(plansCfg.annual.price)}. Monthly and Yearly include every stream, highlights, podcasts, and more.`
     },
     {
       question: "What content is available on MetsXMFanZone?",

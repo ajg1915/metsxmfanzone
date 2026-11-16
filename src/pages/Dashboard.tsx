@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { usePlansConfig, formatPrice } from "@/lib/plansConfig";
 import { Link, useNavigate } from "react-router-dom";
 import {
   BookOpen, Calendar, CheckCircle2, ChevronRight, CircleDollarSign,
@@ -43,6 +44,7 @@ const PLAN_PRICES: Record<MemberPlan, string> = {
 };
 
 const Dashboard = () => {
+  const { config: plansCfg } = usePlansConfig();
   const { user, loading } = useAuth();
   const { limitedAccess, hasNYSports, isPremium: isPaidMember } = useSubscription();
   const { isTVDevice } = useDevice();
@@ -213,7 +215,7 @@ const Dashboard = () => {
                     <h2 className="text-xl sm:text-2xl text-foreground">{PLAN_LABELS[plan]}</h2>
                     <Badge variant={accessActive ? "default" : "secondary"}>{limitedAccess ? "Limited" : accessActive ? "Access active" : "Inactive"}</Badge>
                   </div>
-                  <p className="mt-1 text-sm text-muted-foreground">{PLAN_PRICES[plan]}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{plan === "weekly" ? `${formatPrice(plansCfg.weekly.price)} / week` : plan === "premium" ? `${formatPrice(plansCfg.premium.price)} / month` : plan === "annual" ? `${formatPrice(plansCfg.annual.price)} / year` : PLAN_PRICES[plan]}</p>
                 </div>
               </div>
 

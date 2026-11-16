@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { usePlansConfig, formatPrice } from "@/lib/plansConfig";
 import { Check, Crown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -6,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import GlassCard from "@/components/GlassCard";
 
 const AppInstallSection = () => {
+  const { config: plansCfg } = usePlansConfig();
   const { user } = useAuth();
   const { isPremium, loading } = useSubscription();
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ const AppInstallSection = () => {
             <Crown className="h-4 w-4" /> PREMIUM MEMBERSHIP
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
-            Join for Only <span className="text-primary">$9.99/month</span>
+            Join for Only <span className="text-primary">{formatPrice(plansCfg.premium.price)}/month</span>
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto mb-4">
             Get unlimited access to all streams with no ads, no providers, and live 24/7 content
