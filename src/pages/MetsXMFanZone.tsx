@@ -41,7 +41,7 @@ const PhoneQuickBar = ({ state, next }: { state: string; next: { date: Date; opp
           ? `Next game: ${next.home ? "vs" : "at"} ${next.opponent}`
           : "No game right now";
   const links = [
-    { to: "/replay-games", icon: Film, label: "Replays" },
+    { to: "/replay-games", icon: Film, label: "Highlights" },
     { to: "/blog", icon: Newspaper, label: "News" },
     { to: "/mets-schedule-2027", icon: CalendarDays, label: "Schedule" },
     { to: "/mets-shop", icon: ShoppingBag, label: "Shop" },
@@ -207,7 +207,7 @@ const MetsXMFanZone = () => {
                   </div>
                   <div className="hidden gap-2 md:flex">
                     <Link to="/replay-games" className="inline-flex h-11 items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/50">
-                      <Film className="h-4 w-4 text-primary" /> Replays
+                      <Film className="h-4 w-4 text-primary" /> Highlights
                     </Link>
                     <Link to="/mets-schedule-2027" className="inline-flex h-11 items-center gap-2 rounded-full border border-border/60 bg-card/70 px-4 text-sm font-bold text-foreground transition-colors hover:border-primary/50">
                       <CalendarDays className="h-4 w-4 text-primary" /> Schedule

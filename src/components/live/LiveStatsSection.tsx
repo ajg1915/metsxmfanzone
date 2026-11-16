@@ -380,7 +380,7 @@ export const NoGameCard = ({ next, offseason, pregame, className }: { next: Next
         : "The Mets are back soon"
       : `Next up: ${next?.home ? "vs" : "at"} ${next?.opponent ?? "TBD"}`;
   const links = [
-    { to: "/replay-games", icon: Film, label: "Watch replays" },
+    { to: "/replay-games", icon: Film, label: "Highlights" },
     { to: "/blog", icon: Newspaper, label: "Mets news" },
     { to: "/mets-schedule-2027", icon: CalendarDays, label: "Schedule" },
     ...(offseason ? [{ to: "/mets-shop", icon: ShoppingBag, label: "Mets Shop" }] : []),
@@ -409,7 +409,7 @@ export const NoGameCard = ({ next, offseason, pregame, className }: { next: Next
           <h2 className={cn("mt-2 font-display text-[26px] font-bold uppercase leading-none tracking-wide sm:text-3xl", offseason ? "text-white" : "text-foreground")}>{head}</h2>
           <p className={cn("mt-2 text-[15px] leading-relaxed", offseason ? "text-[#c4cfdf]" : "text-muted-foreground")}>
             {offseason
-              ? "Live games return in the spring. Until then, MetsXMFanZone has the news, the replays and the show. The stream keeps going."
+              ? "Live games return in the spring. Until then, MetsXMFanZone has the news, the highlights and the show. The stream keeps going."
               : "Game Center and live stats appear here when a Mets game starts. The stream keeps going in the meantime."}
           </p>
           {next && (
