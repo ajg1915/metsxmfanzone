@@ -31,7 +31,7 @@ function AdminMobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {
   return (
     <nav
       aria-label="Main sections"
-      className="md:hidden sticky bottom-0 z-30 border-t border-white/10 bg-[#14223f]/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden sticky bottom-0 z-30 border-t border-white/10 bg-[#0e1730]/95  pb-[env(safe-area-inset-bottom)]"
     >
       <div className="grid grid-cols-5 px-1.5 py-1.5">
         {quick.map((hub) => {
@@ -86,7 +86,7 @@ function AdminHeader({
   const { pathname } = useLocation();
   const hubTitle = findActiveHub(pathname)?.title ?? "Admin";
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-2 border-b border-white/5 bg-[#14223f]/85 px-3 backdrop-blur-xl sm:gap-4 sm:px-6">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-2 border-b border-white/5 bg-[#0e1730]/85 px-3  sm:gap-4 sm:px-6">
       <div className="flex min-w-0 items-center gap-2">
         <SidebarTrigger className="hidden h-10 w-10 rounded-xl text-slate-200 hover:bg-white/5 hover:text-white md:inline-flex" />
         <button
@@ -346,7 +346,7 @@ export function AdminLayout() {
   if (loading || checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="w-full max-w-sm rounded-2xl border border-border bg-card/90 p-5 text-center shadow-2xl backdrop-blur-xl">
+        <div className="w-full max-w-sm rounded-2xl border border-border bg-card/90 p-5 text-center shadow-2xl ">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             {loadingTimedOut ? (
               <AlertTriangle className="h-6 w-6 text-destructive" />
@@ -383,7 +383,7 @@ export function AdminLayout() {
   if (!isAdmin && !pinOnlyAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="w-full max-w-sm rounded-2xl border border-border bg-card/90 p-5 text-center shadow-2xl backdrop-blur-xl">
+        <div className="w-full max-w-sm rounded-2xl border border-border bg-card/90 p-5 text-center shadow-2xl ">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
             <AlertTriangle className="h-6 w-6 text-destructive" />
           </div>
@@ -421,7 +421,7 @@ export function AdminLayout() {
             [&_h2]:text-sm [&_h2]:sm:text-base [&_h2]:font-semibold [&_h2]:text-white
             [&_h3]:text-xs [&_h3]:sm:text-sm [&_h3]:text-white
             [&_.container]:px-0 [&_.container]:sm:px-1 [&_.container]:max-w-full
-            [&_.card]:bg-white/[0.03] [&_.card]:backdrop-blur-xl [&_.card]:border-white/10 [&_.card]:rounded-2xl
+            [&_.card]:bg-white/[0.03] [&_.card]: [&_.card]:border-white/10 [&_.card]:rounded-2xl
             [&_input]:bg-white/5 [&_input]:border-white/10
             [&_textarea]:bg-white/5 [&_textarea]:border-white/10
             [&_table]:text-xs

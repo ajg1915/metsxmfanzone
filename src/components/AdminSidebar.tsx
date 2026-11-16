@@ -52,7 +52,7 @@ export function AdminSidebar() {
     "border-transparent font-medium text-slate-200 hover:bg-white/5 hover:text-white";
 
   return (
-    <Sidebar collapsible="icon" className="admin-shell border-r border-white/10 bg-[#14223f]/95 backdrop-blur-2xl">
+    <Sidebar collapsible="icon" className="admin-shell border-r border-white/10 bg-[#0e1730]/95 ">
       <SidebarHeader className="gap-3 p-3 group-data-[collapsible=icon]:p-2">
         <div className="flex items-center gap-2.5 px-1">
           <img src={logo} alt="MetsXMFanZone Logo" className="h-8 w-auto flex-shrink-0" />

@@ -73,7 +73,7 @@ export function AdminMobileMenu({ open, onOpenChange, onSignOut }: Props) {
                         close();
                         navigate(item.url);
                       }}
-                      className="flex h-14 w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#14223F] px-4 text-left"
+                      className="flex h-14 w-full items-center gap-3 rounded-2xl border border-white/10 bg-[#111b30] px-4 text-left"
                     >
                       <item.icon className="h-5 w-5 text-[#FF9A6B]" />
                       <span className="flex-1 text-[15px] font-medium">{item.title}</span>
@@ -95,7 +95,7 @@ export function AdminMobileMenu({ open, onOpenChange, onSignOut }: Props) {
                     className={`flex min-h-[96px] flex-col gap-2.5 rounded-2xl border p-3.5 ${
                       active
                         ? "border-[#FF5910]/60 bg-[#FF5910]/15"
-                        : "border-white/12 bg-[#14223F]"
+                        : "border-white/12 bg-[#111b30]"
                     }`}
                   >
                     <span className="flex items-center justify-between text-[#FF9A6B]">

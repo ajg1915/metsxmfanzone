@@ -1451,20 +1451,17 @@ google-cast-launcher,
    Admin portal theme (scoped) — Outfit headings / Figtree body
    ============================================================ */
 .admin-shell {
-  --adm-bg: 218 46% 14%;
-  --adm-bg-2: 219 44% 18%;
-  --adm-panel: 218 40% 22%;
-  --adm-line: 213 30% 34%;
-  --adm-text: 212 34% 92%;
-  --adm-muted: 214 18% 64%;
+  --adm-bg: 220 52% 8%;
+  --adm-bg-2: 220 52% 8%;
+  --adm-panel: 219 49% 13%;
+  --adm-line: 220 38% 25%;
+  --adm-text: 215 46% 94%;
+  --adm-muted: 215 28% 70%;
   --adm-orange: 18 100% 53%;
   --adm-blue: 214 74% 44%;
   font-family: "Figtree", system-ui, -apple-system, sans-serif;
   color: hsl(var(--adm-text));
-  background:
-    radial-gradient(1200px 600px at 12% -10%, hsl(var(--adm-blue) / 0.18), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, hsl(var(--adm-orange) / 0.12), transparent 55%),
-    linear-gradient(180deg, hsl(var(--adm-bg-2)), hsl(var(--adm-bg)));
+  background: #0b1220;
 }
 
 .admin-shell h1,
@@ -1480,27 +1477,26 @@ google-cast-launcher,
    The sidebar component is only used by the admin layout. */
 .admin-shell,
 [data-sidebar="sidebar"][data-mobile="true"] {
-  --sidebar-background: 218 44% 20%;
-  --sidebar-accent: 218 44% 28%;
-  --sidebar-border: 213 30% 34%;
+  --sidebar-background: 222 55% 12%;
+  --sidebar-accent: 219 45% 20%;
+  --sidebar-border: 220 38% 25%;
 }
 
 /* Tame the site-wide orange border override inside the admin area */
 .admin-shell :where(.border, [class*="border-"]):not(.border-transparent):not([class*="border-transparent"]) {
-  border-color: hsl(var(--adm-line) / 0.55) !important;
+  border-color: hsl(var(--adm-line)) !important;
 }
 .admin-shell :where(input, textarea, select, button, [role="button"]):not(.border-transparent) {
-  border-color: hsl(var(--adm-line) / 0.6) !important;
+  border-color: hsl(var(--adm-line)) !important;
 }
 .admin-shell .adm-accent-border {
   border-color: hsl(var(--adm-orange) / 0.55) !important;
 }
 
 .adm-panel {
-  background: linear-gradient(180deg, hsl(var(--adm-panel) / 0.85), hsl(var(--adm-panel) / 0.55));
-  border: 1px solid hsl(var(--adm-line) / 0.5);
+  background: hsl(var(--adm-panel));
+  border: 1px solid hsl(var(--adm-line));
   border-radius: 1rem;
-  backdrop-filter: blur(18px);
 }
 .adm-panel-hover:hover {
   border-color: hsl(var(--adm-orange) / 0.5) !important;
