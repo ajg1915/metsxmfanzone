@@ -27,7 +27,7 @@ interface StreamTimeLimitProps {
   allowGuestPreview?: boolean;
   /** Stream is covered by the NY Sports Streaming add-on (NY teams + premium platforms) */
   nySportsStream?: boolean;
-  /** Weekly members may watch this stream (MetsXMFanZone streams only). Defaults to pageKey === "metsxmfanzone" */
+  /** Weekly members may watch this stream (MetsXMFanZone and Spring Training only). Defaults to those two pages */
   weeklyAllowed?: boolean;
 }
 
@@ -268,8 +268,8 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
     return <>{children}</>;
   }
 
-  // Weekly is MetsXMFanZone-only: no Spring Training, Apple TV, Prime Video, Peacock, NY teams or other game streams.
-  if (userPlan === "weekly" && !(weeklyAllowed ?? pageKey === "metsxmfanzone")) {
+  // Weekly covers MetsXMFanZone and Spring Training only: no premium pages (Apple TV, Prime Video, Peacock, NY teams, other game streams).
+  if (userPlan === "weekly" && !(weeklyAllowed ?? (pageKey === "metsxmfanzone" || pageKey === "spring-training-live"))) {
     return (
       <AlertDialog open>
         <AlertDialogContent className="max-w-md" onEscapeKeyDown={(e) => e.preventDefault()}>
@@ -279,7 +279,7 @@ const StreamTimeLimit = ({ children, streamId, pageKey, allowGuestPreview = fals
             </div>
             <AlertDialogTitle className="text-xl">Upgrade to watch this stream</AlertDialogTitle>
             <AlertDialogDescription className="text-center">
-              The Weekly plan includes MetsXMFanZone streams only. Upgrade to Monthly or Yearly for Spring Training, Apple TV, Prime Video, Peacock and every other stream.
+              The Weekly plan includes MetsXMFanZone and Spring Training streams only. Upgrade to Monthly or Yearly for Apple TV, Prime Video, Peacock and every other premium stream.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col gap-2 sm:flex-col">

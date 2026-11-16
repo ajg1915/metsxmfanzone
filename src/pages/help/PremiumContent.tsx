@@ -125,7 +125,7 @@ const PremiumContent = () => {
                   Mets game events on Apple TV, Prime Video and Peacock are premium content, included with the Monthly
                   and Yearly plans. The Weekly plan does not include them, and Free and trial members get a short
                   preview. With the Monthly plan, all Mets games in 2027 that stream on these platforms are intended
-                  to be included too. Spring Training streams are included with Monthly and Yearly, but not with the Weekly plan.
+                  to be included too. Spring Training streams are included with every plan, including Weekly, which has no other premium features.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   Every plan is a secure plan you can watch on the go and cancel anytime. Weekly streams on 1 device at a time; Monthly and Yearly on up to 2.

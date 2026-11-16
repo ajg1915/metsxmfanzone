@@ -9,7 +9,7 @@ const PLANS = [
     price: "$3.99",
     period: "/ week",
     blurb: "Try it for a series.",
-    features: ["MetsXMFanZone streams only", "Standard quality, 1 device", "No Spring Training or premium pages"],
+    features: ["MetsXMFanZone and Spring Training streams", "Standard quality, 1 device", "No premium features"],
   },
   {
     id: "premium",
@@ -17,7 +17,7 @@ const PLANS = [
     price: "$9.99",
     period: "/ month",
     blurb: "The full season experience.",
-    features: ["Everything, including Spring Training", "Apple TV, Prime Video and Peacock games", "Highlights and HD streaming", "Ad-free, exclusive content", "Up to 2 devices, Android + TV apps"],
+    features: ["Everything in Weekly", "Apple TV, Prime Video and Peacock games", "Highlights and HD streaming", "Ad-free, exclusive content", "Up to 2 devices, Android + TV apps"],
     popular: true,
   },
   {
@@ -45,7 +45,7 @@ export default function PlansSection({ bg }: { bg?: SectionStyle }) {
           <div className="text-center">
             <p className="text-sm font-bold uppercase tracking-[0.14em] text-[#ff7a3d]">Plans</p>
             <h2 className="mb-2 mt-1.5 font-display text-[clamp(32px,4vw,48px)] uppercase leading-none text-white">Pick your plan</h2>
-            <p className="mb-7 text-base text-[#b6c3d6] sm:mb-8 sm:text-[17px]">Spring Training streams are included with Monthly and Yearly. Cancel anytime.</p>
+            <p className="mb-7 text-base text-[#b6c3d6] sm:mb-8 sm:text-[17px]">Spring Training streams are included with every plan. Cancel anytime.</p>
           </div>
           <div className="grid items-stretch gap-5 [grid-template-columns:repeat(auto-fit,minmax(260px,1fr))]">
             {PLANS.map((p) => (

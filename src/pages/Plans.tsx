@@ -99,8 +99,8 @@ const Plans = () => {
       period: "per week",
       billingNote: "Billed weekly through PayPal",
       description: "MetsXMFanZone streams with a shorter commitment",
-      features: ["MetsXMFanZone streams only", "Standard quality", "1 device at a time"],
-      notIncluded: ["Spring Training streams", "Apple TV, Prime Video and Peacock games", "Premium pages and all other streams", "Highlights", "HD streaming and ad-free viewing", "Android and TV apps"],
+      features: ["MetsXMFanZone streams", "Spring Training streams", "Standard quality", "1 device at a time"],
+      notIncluded: ["No premium features", "Apple TV, Prime Video and Peacock games", "All other premium pages and streams", "Highlights", "HD streaming and ad-free viewing", "Android and TV apps"],
       cta: "Choose Weekly",
       popular: false,
     },
@@ -113,7 +113,7 @@ const Plans = () => {
       billingNote: "Billed monthly",
       description: "Most popular for true fans",
       features: [
-        "Spring Training streams",
+        "Everything in Weekly",
         "Every stream and premium page",
         "Mets game events on Apple TV, Prime Video and Peacock (all 2027 games will also stream on these premium platforms)",
         "Highlights",
@@ -160,12 +160,12 @@ const Plans = () => {
     {
       question: "What is included with each membership?",
       answer:
-        "Weekly is MetsXMFanZone streams only, in standard quality on 1 device, with no Spring Training and no premium pages. Monthly and Yearly include everything: Spring Training, every stream, Apple TV, Prime Video and Peacock game events, highlights, HD, ad-free viewing, up to 2 devices and the Android and TV apps.",
+        "Weekly includes MetsXMFanZone and Spring Training streams in standard quality on 1 device, with no premium features. Monthly and Yearly include everything: every stream, Apple TV, Prime Video and Peacock game events, highlights, HD, ad-free viewing, up to 2 devices and the Android and TV apps.",
     },
     {
       question: "Are Apple TV, Prime Video and Peacock included?",
       answer:
-        "Yes, on Monthly and Yearly. Weekly is MetsXMFanZone streams only, so it does not include Apple TV, Prime Video, Peacock or Spring Training. On Monthly and Yearly, all games in 2027 will also be on these premium platforms.",
+        "Yes, on Monthly and Yearly. Weekly has no premium features, so it does not include Apple TV, Prime Video or Peacock. On Monthly and Yearly, all games in 2027 will also be on these premium platforms.",
     },
     {
       question: "Can I switch between paid memberships?",

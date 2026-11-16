@@ -58,7 +58,7 @@ const FAQs = () => {
     },
     {
       question: "What's the difference between Free and Premium plans?",
-      answer: "Weekly ($3.99) is MetsXMFanZone streams only, in standard quality on 1 device, with no Spring Training or premium pages. Monthly ($9.99) includes everything: Spring Training, every stream, Apple TV, Prime Video and Peacock game events, highlights, HD quality, ad-free viewing, up to 2 devices and the apps. Annual plan ($119.88/year) includes everything in Premium plus 2 months free savings.",
+      answer: "Weekly ($3.99) includes MetsXMFanZone and Spring Training streams in standard quality on 1 device, with no premium features. Monthly ($9.99) includes everything: every stream, Apple TV, Prime Video and Peacock game events, highlights, HD quality, ad-free viewing, up to 2 devices and the apps. Annual plan ($119.88/year) includes everything in Premium plus 2 months free savings.",
     },
     {
       question: "Can I switch between monthly and yearly billing?",
