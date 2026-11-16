@@ -21,7 +21,7 @@ const Sitemap = () => {
         { url: '/spring-training-live', changefreq: 'daily', priority: '0.9' },
         { url: '/community', changefreq: 'weekly', priority: '0.8' },
         { url: '/gallery', changefreq: 'weekly', priority: '0.7' },
-        { url: '/plans', changefreq: 'monthly', priority: '0.8' },
+        { url: '/pricing', changefreq: 'monthly', priority: '0.8' },
         { url: '/blog', changefreq: 'daily', priority: '0.8' },
         { url: '/picks', changefreq: 'daily', priority: '0.8' },
         { url: '/podcast', changefreq: 'weekly', priority: '0.8' },

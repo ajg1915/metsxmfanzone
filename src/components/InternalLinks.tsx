@@ -60,7 +60,7 @@ export const mediaLinks: InternalLink[] = [
 export const communityLinks: InternalLink[] = [
   { title: "Fan Community", description: "Join thousands of Mets fans in discussions", href: "/community" },
   { title: "Events", description: "Upcoming fan meetups and community events", href: "/events" },
-  { title: "Membership Plans", description: "Unlock premium content and exclusive features", href: "/plans" },
+  { title: "Membership Plans", description: "Unlock premium content and exclusive features", href: "/pricing" },
   { title: "Social Media Hub", description: "Follow us across all social platforms", href: "/social-media-hub" },
 ];
 

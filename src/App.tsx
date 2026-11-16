@@ -338,6 +338,7 @@ const AppContent = () => {
             <Route path="/community" element={<Community />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/pricing" element={<Plans />} />
+            <Route path="/plans" element={<Navigate to={`/pricing${window.location.search}`} replace />} />
             <Route path="/paypal-success" element={<PayPalSuccess />} />
             <Route path="/claim-shirt" element={<ClaimShirt />} />
             

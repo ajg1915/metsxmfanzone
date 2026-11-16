@@ -2,6 +2,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
+    { "source": "/plans", "destination": "/pricing", "permanent": true },
     {
       "source": "/:path*",
       "has": [
