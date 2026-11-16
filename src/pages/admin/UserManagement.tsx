@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   Bot, Send, Loader2, Users, CreditCard, Shield,
   Sparkles, UserPlus, ChevronDown, ShieldCheck,
@@ -45,7 +45,7 @@ const UserManagement = () => {
   const [command, setCommand] = useState("");
   const [aiMessages, setAiMessages] = useState<AIMessage[]>([]);
   const [aiProcessing, setAiProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState("members");
+  const [panel, setPanel] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -159,11 +159,10 @@ const UserManagement = () => {
         icon={Bot}
         title="Members"
         count={totalMembers}
-        description="Manage membership access, PayPal status, signups, transactions, and roles"
+        description="Search, filter and manage every member in one place"
       />
 
-      <details className="group overflow-hidden rounded-md border border-border/40 bg-card/70">
-        <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 px-3 py-2 text-xs font-semibold"><Bot className="h-4 w-4 text-primary" />AI member assistant<ChevronDown className="ml-auto h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-180" /></summary>
+      <div className="overflow-hidden rounded-md border border-border/40 bg-card/70">
       <Card className="border-0 bg-transparent shadow-none">
         <CardContent className="pt-4 pb-3">
           <div className="flex gap-2">
@@ -255,48 +254,38 @@ const UserManagement = () => {
           </CardContent>
         </Card>
       )}
-      </details>
+      </div>
 
-      {/* Tabs: Members / Signups / Transactions / PayPal / Roles */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0">
-        <TabsList className="grid h-10 w-full grid-cols-5 rounded-md border border-border/30 bg-card/80 p-1 sm:max-w-3xl">
-          <TabsTrigger value="members" className="gap-1 px-1 text-[10px] sm:text-xs">
-            <Users className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Members</span>
-          </TabsTrigger>
-          <TabsTrigger value="signups" className="gap-1 px-1 text-[10px] sm:text-xs">
-            <UserPlus className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Signups</span>
-          </TabsTrigger>
-          <TabsTrigger value="transactions" className="gap-1 px-1 text-[10px] sm:text-xs">
-            <CreditCard className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Billing</span>
-          </TabsTrigger>
-          <TabsTrigger value="paypal" className="gap-1 px-1 text-[10px] sm:text-xs">
-            <ShieldCheck className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">PayPal</span>
-          </TabsTrigger>
-          <TabsTrigger value="roles" className="gap-1 px-1 text-[10px] sm:text-xs">
-            <Shield className="h-3.5 w-3.5" /><span className="hidden min-[390px]:inline">Roles</span>
-          </TabsTrigger>
-        </TabsList>
+      {/* One screen: the member list. Signups, payments, PayPal and roles open as side panels. */}
+      <div className="flex flex-wrap gap-2">
+        {([
+          ["signups", "Signups", UserPlus],
+          ["transactions", "Payments", CreditCard],
+          ["paypal", "PayPal billing", Shield],
+          ["roles", "Roles", ShieldCheck],
+        ] as [string, string, typeof Users][]).map(([key, label, Icon]) => (
+          <Button key={key} variant="outline" onClick={() => setPanel(key)} className="min-h-11 gap-2">
+            <Icon className="h-4 w-4" />{label}
+          </Button>
+        ))}
+      </div>
 
-        <TabsContent value="members">
-          <MembersTab />
-        </TabsContent>
+      <MembersTab />
 
-        <TabsContent value="signups">
-          <SignupsTab />
-        </TabsContent>
-
-        <TabsContent value="transactions">
-          <SubscriptionsTab />
-        </TabsContent>
-
-        <TabsContent value="paypal">
-          <PayPalBillingTab />
-        </TabsContent>
-
-        <TabsContent value="roles">
-          <RolesTab />
-        </TabsContent>
-      </Tabs>
+      <Sheet open={!!panel} onOpenChange={(o) => !o && setPanel(null)}>
+        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-3xl">
+          <SheetHeader className="text-left">
+            <SheetTitle>{{ signups: "Signups", transactions: "Payments", paypal: "PayPal billing", roles: "Roles" }[panel || "signups"]}</SheetTitle>
+            <SheetDescription>Opened from the Members screen.</SheetDescription>
+          </SheetHeader>
+          <div className="mt-4">
+            {panel === "signups" && <SignupsTab />}
+            {panel === "transactions" && <SubscriptionsTab />}
+            {panel === "paypal" && <PayPalBillingTab />}
+            {panel === "roles" && <RolesTab />}
+          </div>
+        </SheetContent>
+      </Sheet>
     </AdminPage>
   );
 };

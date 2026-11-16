@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +19,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
 import { maskEmail, maskSensitiveField, vaultAuthHeaders } from "@/utils/secureDataVault";
 import { AdminList, AdminListCard, AdminRow } from "@/components/admin/AdminUI";
@@ -41,7 +42,7 @@ interface MemberRow {
   limited_access: boolean;
 }
 
-type StatusFilter = "all" | "active" | "pending" | "cancelled" | "none";
+type StatusFilter = "all" | "active" | "pending" | "cancelled" | "none" | "attention" | "writers" | "admins";
 type PlanFilter = "all" | "free" | "trial" | "weekly" | "premium" | "annual";
 
 export default function MembersTab() {
@@ -59,6 +60,8 @@ export default function MembersTab() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [customTarget, setCustomTarget] = useState<{ member: MemberRow; mode: "trial" | "extend" } | null>(null);
   const [customDays, setCustomDays] = useState("14");
+  const [openId, setOpenId] = useState<string | null>(null);
+  const [payments, setPayments] = useState<{ id: string; amount: number | null; payment_date: string | null; status: string | null }[]>([]);
 
   useEffect(() => { fetchMembers(); }, []);
 
@@ -414,10 +417,22 @@ export default function MembersTab() {
     }
   };
 
+  useEffect(() => {
+    if (!openId) { setPayments([]); return; }
+    let cancelled = false;
+    supabase.from("subscription_payments").select("id, amount, payment_date, status").eq("user_id", openId)
+      .order("payment_date", { ascending: false }).limit(5)
+      .then(({ data }) => { if (!cancelled) setPayments(data || []); });
+    return () => { cancelled = true; };
+  }, [openId]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return members.filter(m => {
-      if (statusFilter !== "all" && m.status !== statusFilter) return false;
+      if (statusFilter === "attention") { if (!(m.status === "suspended" || m.limited_access)) return false; }
+      else if (statusFilter === "writers") { if (!m.roles.includes("writer")) return false; }
+      else if (statusFilter === "admins") { if (!m.roles.includes("admin")) return false; }
+      else if (statusFilter !== "all" && m.status !== statusFilter) return false;
       if (planFilter !== "all" && m.plan_type !== planFilter) return false;
       if (!q) return true;
       const fields = [m.full_name, m.email, m.phone_number].filter(Boolean).join(" ").toLowerCase();
@@ -431,6 +446,7 @@ export default function MembersTab() {
     pending: members.filter(m => m.status === "pending").length,
     inactive: members.filter(m => m.status !== "active").length,
     paid: members.filter(m => m.status === "active" && m.plan_type !== "free").length,
+    attention: members.filter(m => m.status === "suspended" || m.limited_access).length,
   }), [members]);
 
   const statusBadge = (s: string) => {
@@ -474,26 +490,20 @@ export default function MembersTab() {
 
   return (
     <div className="mt-3 space-y-3">
-      {/* Stats */}
-      <div className="grid grid-cols-5 gap-1.5 overflow-hidden rounded-md border border-border/30 bg-card/80 p-1.5">
-        {[
-          { label: "Total", value: stats.total, icon: <Users className="w-5 h-5 text-primary" />, color: "" },
-          { label: "Active", value: stats.active, icon: <UserCheck className="w-5 h-5 text-affirmative" />, color: "text-affirmative" },
-          { label: "Paid", value: stats.paid, icon: <DollarSign className="w-5 h-5 text-primary" />, color: "text-primary" },
-          { label: "Pending", value: stats.pending, icon: <RefreshCw className="w-5 h-5 text-yellow-500" />, color: "text-yellow-500" },
-          { label: "Inactive", value: stats.inactive, icon: <UserX className="w-5 h-5 text-destructive" />, color: "text-destructive" },
-        ].map(s => (
-          <Card key={s.label} className="border-0 bg-muted/35 shadow-none">
-            <CardContent className="p-1.5 sm:p-2">
-              <div className="flex min-w-0 items-center gap-1.5">
-                <div className="hidden opacity-60 sm:block">{s.icon}</div>
-                <div className="min-w-0">
-                  <p className="truncate text-[8px] text-muted-foreground sm:text-[10px]">{s.label}</p>
-                  <p className={`text-sm font-bold leading-none sm:text-lg ${s.color}`}>{s.value}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Stats: tap a card to filter the list */}
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+        {([
+          { label: "Total members", sub: "all accounts", value: stats.total, filter: "all" as StatusFilter, color: "" },
+          { label: "Active paid", sub: "Weekly, Monthly, Yearly", value: stats.paid, filter: "active" as StatusFilter, color: "text-affirmative" },
+          { label: "Pending signups", sub: "need a plan", value: stats.pending, filter: "pending" as StatusFilter, color: "text-yellow-500" },
+          { label: "Needs attention", sub: "suspended or limited", value: stats.attention, filter: "attention" as StatusFilter, color: "text-destructive" },
+        ]).map(c => (
+          <button key={c.label} type="button" onClick={() => setStatusFilter(c.filter)}
+            className={`min-h-[84px] rounded-xl border bg-card/80 p-3 text-left transition-colors hover:border-primary sm:p-4 ${statusFilter === c.filter ? "border-primary" : "border-border/40"}`}>
+            <p className="text-xs text-muted-foreground">{c.label}</p>
+            <p className={`mt-1 text-2xl font-bold leading-none sm:text-3xl ${c.color}`}>{c.value}</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">{c.sub}</p>
+          </button>
         ))}
       </div>
 
@@ -505,16 +515,6 @@ export default function MembersTab() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                <Input placeholder="Search members…" value={query} onChange={e => setQuery(e.target.value)} className="h-8 pl-9 text-xs" />
             </div>
-            <Select value={statusFilter} onValueChange={(v: StatusFilter) => setStatusFilter(v)}>
-              <SelectTrigger className="h-8 w-full text-xs sm:w-[130px]"><Filter className="mr-1 h-3.5 w-3.5" /><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-                <SelectItem value="none">No subscription</SelectItem>
-              </SelectContent>
-            </Select>
             <Select value={planFilter} onValueChange={(v: PlanFilter) => setPlanFilter(v)}>
               <SelectTrigger className="h-8 w-full text-xs sm:w-[120px]"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -532,6 +532,12 @@ export default function MembersTab() {
                <span className="hidden sm:inline">{decrypted ? "Hide PII" : "Show PII"}</span>
             </Button>
           </div>
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {([["all", "All"], ["active", "Active"], ["pending", "Pending"], ["cancelled", "Cancelled"], ["none", "No plan"], ["writers", "Writers"], ["admins", "Admins"]] as [StatusFilter, string][]).map(([v, label]) => (
+              <button key={v} type="button" onClick={() => setStatusFilter(v)}
+                className={`min-h-9 shrink-0 rounded-full border px-4 text-xs font-semibold transition-colors ${statusFilter === v ? "border-primary bg-primary text-primary-foreground" : "border-border/60 text-foreground hover:border-primary"}`}>{label}</button>
+            ))}
+          </div>
           <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground sm:text-[10px]">
             {decrypted ? <Unlock className="w-3.5 h-3.5 text-warning" /> : <Lock className="w-3.5 h-3.5 text-affirmative" />}
             <span>{decrypted ? "Sensitive PII visible — handle with care." : "PII is masked. Click Show PII to decrypt."}</span>
@@ -546,7 +552,7 @@ export default function MembersTab() {
           {filtered.map(m => (
             <AdminListCard key={m.user_id} highlight={m.limited_access}>
               <AdminRow
-                title={dispName(m)}
+                title={<button type="button" onClick={() => setOpenId(m.user_id)} className="min-h-9 text-left text-sm font-semibold underline-offset-2 hover:underline">{dispName(m)}</button>}
                 meta={dispEmail(m)}
                 badges={<>{statusBadge(m.status)}<Badge variant="outline" className="text-[9px] capitalize">{m.plan_type}</Badge></>}
                 actions={memberActions(m)}
@@ -586,7 +592,7 @@ export default function MembersTab() {
                   <TableRow key={m.user_id}>
                     <TableCell>
                       <div className="min-w-[160px]">
-                        <p className={`font-medium truncate max-w-[220px] ${!decrypted ? "font-mono text-xs" : ""}`}>{dispName(m)}</p>
+                        <button type="button" onClick={() => setOpenId(m.user_id)} className={`block max-w-[220px] truncate text-left font-medium hover:underline ${!decrypted ? "font-mono text-xs" : ""}`}>{dispName(m)}</button>
                         <p className={`truncate max-w-[220px] text-xs text-muted-foreground ${!decrypted ? "font-mono" : ""}`}>{dispEmail(m)}</p>
                         {m.phone_number && <p className={`truncate max-w-[220px] text-[10px] text-muted-foreground ${!decrypted ? "font-mono" : ""}`}>{dispPhone(m)}</p>}
                          <div className="mt-1 flex flex-wrap gap-1">
@@ -655,6 +661,62 @@ export default function MembersTab() {
           </div>
         </CardContent>
       </Card>
+
+      <Sheet open={!!openId} onOpenChange={(o) => !o && setOpenId(null)}>
+        <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">
+          {(() => {
+            const m = members.find(x => x.user_id === openId);
+            if (!m) return null;
+            const row = (label: string, value: ReactNode) => (
+              <div className="flex items-center justify-between gap-3 border-b border-border/30 py-3 text-sm"><span className="text-muted-foreground">{label}</span><span className="text-right font-semibold">{value}</span></div>
+            );
+            return (
+              <>
+                <SheetHeader className="text-left">
+                  <SheetTitle className={!decrypted ? "font-mono text-base" : ""}>{dispName(m)}</SheetTitle>
+                  <SheetDescription className={!decrypted ? "font-mono" : ""}>{dispEmail(m)}</SheetDescription>
+                </SheetHeader>
+                <div className="mt-4">
+                  {row("Plan", (
+                    <Select value={m.plan_type} onValueChange={(v) => changePlan(m, v)}>
+                      <SelectTrigger className="h-9 w-[130px] text-sm capitalize"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="free">Free</SelectItem><SelectItem value="trial">Trial</SelectItem><SelectItem value="weekly">Weekly</SelectItem><SelectItem value="premium">Premium</SelectItem><SelectItem value="annual">Annual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ))}
+                  {row("Status", (
+                    <Select value={m.status} onValueChange={(v) => changeStatus(m, v)}>
+                      <SelectTrigger className="h-9 w-[130px] text-sm"><SelectValue>{statusBadge(m.status)}</SelectValue></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem><SelectItem value="pending">Pending</SelectItem><SelectItem value="suspended">Suspended</SelectItem><SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ))}
+                  {row("PayPal", m.payment_method === "paypal" ? "Linked" : "Not linked")}
+                  {row("Role", m.roles.length ? <span className="capitalize">{m.roles.join(", ")}</span> : "Member")}
+                  {row("Renews / ends", m.end_date ? new Date(m.end_date).toLocaleDateString() : "—")}
+                  {row("Member since", m.joined_date ? new Date(m.joined_date).toLocaleDateString() : "—")}
+                  {row("Cancellations", `${m.cancellation_count}${m.limited_access ? " · Limited access" : ""}`)}
+                </div>
+                <p className="mb-1 mt-5 text-xs font-bold uppercase tracking-wide text-muted-foreground">Recent payments</p>
+                {payments.length === 0 && <p className="py-3 text-sm text-muted-foreground">No payments recorded.</p>}
+                {payments.map(pm => row(pm.payment_date ? new Date(pm.payment_date).toLocaleDateString() : "—", `$${pm.amount ?? 0} ${pm.status || ""}`))}
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                  <Button onClick={() => markPaid(m)} disabled={busyId === m.user_id} className="min-h-11"><DollarSign className="mr-1.5 h-4 w-4" />Mark as paid</Button>
+                  <Button variant="outline" onClick={() => extend(m, 30)} disabled={busyId === m.user_id} className="min-h-11"><CalendarPlus className="mr-1.5 h-4 w-4" />Extend 30 days</Button>
+                  <Button variant="outline" onClick={() => grantTrial(m, 7)} disabled={busyId === m.user_id} className="min-h-11"><Timer className="mr-1.5 h-4 w-4" />7-day trial</Button>
+                  <Button variant="outline" onClick={() => toggleRole(m, "writer")} disabled={busyId === m.user_id} className="min-h-11"><ShieldPlus className="mr-1.5 h-4 w-4" />{m.roles.includes("writer") ? "Remove writer" : "Make writer"}</Button>
+                  <Button variant="outline" onClick={() => sendPasswordReset(m)} className="min-h-11"><KeyRound className="mr-1.5 h-4 w-4" />Password reset</Button>
+                  {m.limited_access && <Button variant="outline" onClick={() => restoreAccess(m)} className="min-h-11"><Unlock className="mr-1.5 h-4 w-4" />Restore eligibility</Button>}
+                  {m.status === "active" && <Button variant="outline" onClick={() => changeStatus(m, "cancelled")} className="min-h-11 text-destructive"><Ban className="mr-1.5 h-4 w-4" />Cancel membership</Button>}
+                  {m.user_id !== user?.id && <Button variant="outline" onClick={() => { setOpenId(null); setPendingDelete(m); }} className="min-h-11 text-destructive"><Trash2 className="mr-1.5 h-4 w-4" />Delete account</Button>}
+                </div>
+              </>
+            );
+          })()}
+        </SheetContent>
+      </Sheet>
 
       <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && setPendingDelete(null)}>
         <AlertDialogContent>
