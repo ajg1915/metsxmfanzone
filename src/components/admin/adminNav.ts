@@ -1,10 +1,10 @@
 import {
-  Home, FileText, Video, Radio, Bell, Mic, TrendingUp,
+  Home, Zap, FileText, Video, Radio, Bell, Mic, TrendingUp,
   Users, Mail, Palette,
   Megaphone, BookOpen, Trophy, Send, Wallpaper,
-  Activity, AlertTriangle, PenLine, HeartPulse, Settings, Layers, Sparkles, Monitor,
+  Activity, PenLine, Settings, Layers, Sparkles, Monitor,
   ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift, Bot, Search,
-  LayoutTemplate, Calendar, ShieldCheck, CreditCard, Tv, ClipboardCheck,
+  LayoutTemplate, Calendar, CreditCard, Tv, ClipboardCheck,
 } from "lucide-react";
 
 type Icon = React.ComponentType<{ className?: string }>;
@@ -40,23 +40,28 @@ export const ADMIN_HUBS: AdminHub[] = [
     key: "home",
     title: "Home",
     icon: Home,
-    hint: "Dashboard",
+    hint: "Dashboard, daily actions",
     groups: [
-      { title: "Dashboard", items: [{ title: "Dashboard", url: "/admin", icon: Home }] },
+      {
+        title: "Home",
+        items: [
+          { title: "Dashboard", url: "/admin", icon: Home },
+          { title: "Daily Actions", url: "/admin/daily-actions", icon: Zap },
+        ],
+      },
     ],
   },
   {
     key: "live",
     title: "Live",
     icon: Radio,
-    hint: "Streams, health, players",
+    hint: "Streams, radio, players",
     groups: [
-      { title: "Live Streams", items: [{ title: "Live Streams", url: "/admin/live-streams", icon: Radio }] },
-      { title: "Stream Issues", items: [{ title: "Stream Issues", url: "/admin/stream-issues", icon: AlertTriangle }] },
-      { title: "Health & Tests", items: [{ title: "Health & Tests", url: "/admin/live-streams?tab=health", icon: HeartPulse }] },
       {
-        title: "Players & Radio",
+        title: "Live",
         items: [
+          { title: "Live Streams", url: "/admin/live-streams", icon: Radio },
+          { title: "Live Podcast Radio", url: "/admin/podcast-live-stream", icon: Mic },
           { title: "Radio Network", url: "/admin/gameday-live", icon: Radio },
           { title: "Private Player", url: "/admin/private-player", icon: Monitor },
           { title: "MetsXM Player", url: "/metsxm-player", icon: Monitor },
@@ -99,17 +104,14 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Podcast Outlines", url: "/admin/podcast-outlines", icon: ClipboardList },
         ],
       },
-      { title: "Community Posts", items: [{ title: "Community Posts", url: "/admin/posts", icon: FileText }] },
-      { title: "Tutorials", items: [{ title: "Tutorials", url: "/admin/tutorials", icon: BookOpen }] },
-    ],
-  },
-  {
-    key: "live-radio",
-    title: "Live Radio",
-    icon: Radio,
-    hint: "Go live with your mic",
-    groups: [
-      { title: "Live Radio", items: [{ title: "Live Podcast Radio", url: "/admin/podcast-live-stream", icon: Mic }] },
+      {
+        title: "Community & Help",
+        items: [
+          { title: "Community Posts", url: "/admin/posts", icon: FileText },
+          { title: "Tutorials", url: "/admin/tutorials", icon: BookOpen },
+          { title: "Mobile Guide", url: "/admin/guide", icon: BookOpen },
+        ],
+      },
     ],
   },
   {
@@ -122,11 +124,7 @@ export const ADMIN_HUBS: AdminHub[] = [
         title: "People",
         items: [
           { title: "Members", url: "/admin/user-management", icon: Users },
-        ],
-      },
-      {
-        title: "Plans",
-        items: [
+          { title: "Subscriptions", url: "/admin/subscriptions", icon: CreditCard },
           { title: "Plans and Access", url: "/admin/plans", icon: CreditCard },
           { title: "Trials & Promos", url: "/admin/trials", icon: Star },
         ],
@@ -200,23 +198,33 @@ export const ADMIN_HUBS: AdminHub[] = [
     icon: BarChart3,
     hint: "Stats, reports, AI",
     groups: [
-      { title: "Real-Time Stats", items: [{ title: "Real-Time Stats", url: "/admin/realtime-analytics", icon: TrendingUp }] },
-      { title: "Daily Reports", items: [{ title: "Daily Reports", url: "/admin/daily-reports", icon: ClipboardList }] },
-      { title: "Activity & Logins", items: [{ title: "Activity & Logins", url: "/admin/activity", icon: Activity }] },
-      { title: "AI Assistant", items: [{ title: "AI Assistant", url: "/admin/ai-assistant", icon: Bot }] },
+      {
+        title: "Insights",
+        items: [
+          { title: "Real-Time Stats", url: "/admin/realtime-analytics", icon: TrendingUp },
+          { title: "Daily Reports", url: "/admin/daily-reports", icon: ClipboardList },
+          { title: "Activity & Logins", url: "/admin/activity", icon: Activity },
+          { title: "AI Assistant", url: "/admin/ai-assistant", icon: Bot },
+        ],
+      },
     ],
   },
   {
     key: "settings",
     title: "Settings",
     icon: Settings,
-    hint: "Welcome screen, front page, backgrounds",
+    hint: "Site look and admin",
     groups: [
-      { title: "Admin Settings", items: [{ title: "Admin Settings", url: "/admin/settings", icon: Settings }] },
-      { title: "Welcome Screen", items: [{ title: "Welcome Screen", url: "/admin/welcome-screen", icon: Monitor }] },
-      { title: "Front Page", items: [{ title: "Front Page sections", url: "/admin/front-page", icon: Wallpaper }] },
-      { title: "TV App Colours", items: [{ title: "TV App Colours", url: "/admin/tv-colors", icon: Tv }] },
-      { title: "Backgrounds", items: [{ title: "Backgrounds", url: "/admin/backgrounds", icon: Wallpaper }] },
+      {
+        title: "Settings",
+        items: [
+          { title: "Admin Settings", url: "/admin/settings", icon: Settings },
+          { title: "Welcome Screen", url: "/admin/welcome-screen", icon: Monitor },
+          { title: "Front Page sections", url: "/admin/front-page", icon: Wallpaper },
+          { title: "TV App Colours", url: "/admin/tv-colors", icon: Tv },
+          { title: "Backgrounds", url: "/admin/backgrounds", icon: Wallpaper },
+        ],
+      },
     ],
   },
 ];

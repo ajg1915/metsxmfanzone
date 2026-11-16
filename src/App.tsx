@@ -45,6 +45,7 @@ const ConfirmAccount = lazyWithRetry(() => import("./pages/ConfirmAccount"), "pa
 const AuthConfirm = lazyWithRetry(() => import("./pages/AuthConfirm"), "page-auth-confirm");
 const AdminSetup = lazyWithRetry(() => import("./pages/AdminSetup"), "page-admin-setup");
 const AdminLayout = lazyWithRetry(() => import("./components/AdminLayout").then(m => ({ default: m.AdminLayout })), "component-admin-layout");
+const DailyActions = lazyWithRetry(() => import("./pages/admin/DailyActions"), "page-admin-daily-actions");
 const AdminDashboard = lazyWithRetry(() => import("./pages/admin/Dashboard"), "page-admin-dashboard");
 const LineupCardDesigner = lazyWithRetry(() => import("./pages/admin/LineupCardDesigner"), "page-admin-lineup-card");
 const ShirtClaims = lazyWithRetry(() => import("./pages/admin/ShirtClaims"), "page-admin-shirt-claims");
@@ -399,6 +400,7 @@ const AppContent = () => {
             <Route path="/admin-pin-reset" element={<AdminPinReset />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
+              <Route path="daily-actions" element={<DailyActions />} />
               <Route path="hero" element={<HeroManagement />} />
               <Route path="blog" element={<Navigate to="/admin/drafts" replace />} />
               <Route path="media-library" element={<MediaLibrary />} />

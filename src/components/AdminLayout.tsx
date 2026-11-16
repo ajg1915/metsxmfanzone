@@ -69,7 +69,7 @@ function AdminMobileNav({ onOpenMenu }: { onOpenMenu: () => void }) {
           }`}
         >
           <LayoutGrid className="h-[22px] w-[22px]" />
-          Menu
+          More
         </button>
       </div>
     </nav>
@@ -416,7 +416,7 @@ export function AdminLayout() {
           <AdminHeader navigate={navigate} onOpenSearch={() => setSearchOpen(true)} />
           <AdminCommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
           <AdminMobileMenu open={menuOpen} onOpenChange={setMenuOpen} onSignOut={handleFreshAdminLogin} />
-          <main className="flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-5 md:p-7 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-6 max-w-full
+          <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8 pb-[calc(0.75rem+env(safe-area-inset-bottom))] sm:pb-6 max-w-full
             [&_h1]:text-lg [&_h1]:sm:text-xl [&_h1]:md:text-2xl [&_h1]:font-bold [&_h1]:tracking-tight [&_h1]:text-white
             [&_h2]:text-sm [&_h2]:sm:text-base [&_h2]:font-semibold [&_h2]:text-white
             [&_h3]:text-xs [&_h3]:sm:text-sm [&_h3]:text-white
