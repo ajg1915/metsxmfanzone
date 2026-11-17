@@ -197,12 +197,12 @@ const Plans = () => {
               {mainPlans.map((plan) => (
                 <Card
                   key={plan.id}
-                  className={`relative overflow-hidden transition-colors bg-card/90 ${
+                  className={`relative transition-colors bg-card/90 ${
                     plan.popular ? "border-primary ring-2 ring-primary/20" : "border-border"
                   }`}
                 >
                   {plan.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                    <Badge className="absolute right-4 top-4 bg-primary text-primary-foreground">
                       MOST POPULAR
                     </Badge>
                   )}

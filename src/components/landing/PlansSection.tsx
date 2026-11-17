@@ -34,7 +34,7 @@ export default function PlansSection({ bg }: { bg?: SectionStyle }) {
                 }`}
               >
                 {p.popular && (
-                  <span className="absolute -top-3.5 left-7 rounded-full bg-[#ff5910] px-3.5 py-1 text-[13px] font-extrabold uppercase tracking-wide">Most popular</span>
+                  <span className="absolute right-5 top-5 rounded-full bg-[#ff5910] px-3.5 py-1 text-[13px] font-extrabold uppercase tracking-wide">Most popular</span>
                 )}
                 <p className="text-xl font-bold">{p.name}</p>
                 <p>

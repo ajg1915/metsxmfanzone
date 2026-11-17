@@ -95,7 +95,6 @@ export const DEFAULT_PLANS: PlansConfig = {
     cta: "Choose Monthly",
     popular: true,
     features: [
-      "Everything in Weekly",
       "Every stream and premium page",
       "Mets game events on Apple TV, Prime Video and Peacock (all 2027 games will also stream on these premium platforms)",
       "Highlights",

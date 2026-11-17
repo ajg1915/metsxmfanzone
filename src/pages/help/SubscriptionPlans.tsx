@@ -51,7 +51,7 @@ const SubscriptionPlans = () => {
                   <ul className="space-y-2 text-muted-foreground">
                     <li className="flex items-start gap-2">
                       <span className="text-green-600">✓</span>
-                      <span>Everything in Weekly plus every premium stream</span>
+                      <span>Every stream and premium page</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-green-600">✓</span>
