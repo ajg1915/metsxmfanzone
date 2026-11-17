@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { AndroidIcon } from "@/components/icons/AndroidIcon";
 import { useAuth } from "@/hooks/useAuth";
 import { useSubscription } from "@/hooks/useSubscription";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -21,7 +22,9 @@ const Install = () => {
   const [isInstalled, setIsInstalled] = useState(false);
   const { user } = useAuth();
   const { isPremium } = useSubscription();
+  const { can } = usePlanAccess();
   const isMember = !!user && isPremium;
+  const canTV = !!user && can("tvApp");
   // Apple devices see the iPhone steps first; everyone else sees the Android app first.
   const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) && "ontouchend" in document;
 
@@ -157,7 +160,7 @@ const Install = () => {
             </Card>
 
             {/* MetsXMFanZone TV: only shown to signed-in members, the code is never public */}
-            {user && (
+            {canTV && (
               <Card className="order-4 flex flex-col gap-4 border-primary/40 p-6 sm:flex-row sm:items-center">
                 <div className="flex flex-1 items-center gap-4">
                   <div className="rounded-xl bg-primary/15 p-3">

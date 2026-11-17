@@ -33,7 +33,7 @@ const TVDashboard = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { can, loading: subLoading } = usePlanAccess();
-  const isPremium = can("apps");
+  const isPremium = can("tvApp");
 
   // Section refs for scrolling
   const storiesRef = useRef<HTMLDivElement>(null);

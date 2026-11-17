@@ -18,7 +18,8 @@ export type AccessKey =
   | "nyTeams"
   | "otherStreams"
   | "highlights"
-  | "apps";
+  | "apps"
+  | "tvApp";
 
 export const ACCESS_KEYS: { key: AccessKey; label: string; hint: string }[] = [
   { key: "springTraining", label: "Spring Training streams", hint: "The Spring Training page and its games" },
@@ -27,7 +28,8 @@ export const ACCESS_KEYS: { key: AccessKey; label: string; hint: string }[] = [
   { key: "nyTeams", label: "NY team streams", hint: "Jets, Giants, Knicks, Rangers, Islanders, Nets" },
   { key: "otherStreams", label: "All other streams", hint: "Every other live game or event page" },
   { key: "highlights", label: "Highlights", hint: "The Highlights page" },
-  { key: "apps", label: "Android and TV apps", hint: "App downloads and TV Mode" },
+  { key: "apps", label: "Android app", hint: "The phone and tablet app download" },
+  { key: "tvApp", label: "TV app", hint: "The Fire TV, Android TV and Google TV app and TV Mode" },
 ];
 
 export type PlanAccess = Record<AccessKey, boolean>;
@@ -57,6 +59,7 @@ const ALL_ON: PlanAccess = {
   otherStreams: true,
   highlights: true,
   apps: true,
+  tvApp: true,
 };
 
 export const DEFAULT_PLANS: PlansConfig = {
@@ -68,13 +71,13 @@ export const DEFAULT_PLANS: PlansConfig = {
     description: "MetsXMFanZone streams with a shorter commitment",
     cta: "Choose Weekly",
     popular: false,
-    features: ["Mets games", "MetsXMFanZone streams", "Spring Training streams", "Standard quality", "1 device at a time"],
+    features: ["Mets games", "MetsXMFanZone streams", "Spring Training streams", "Android phone and tablet app", "Standard quality", "1 device at a time"],
     notIncluded: [
       "Premium games on Apple TV, Prime Video and Peacock (upgrade to watch)",
       "NY team streams",
       "Highlights",
       "HD streaming and ad-free viewing",
-      "Android and TV apps",
+      "TV app (Fire TV, Android TV, Google TV)",
     ],
     access: {
       springTraining: true,
@@ -83,7 +86,8 @@ export const DEFAULT_PLANS: PlansConfig = {
       nyTeams: false,
       otherStreams: true,
       highlights: false,
-      apps: false,
+      apps: true,
+      tvApp: false,
     },
   },
   premium: {
@@ -169,7 +173,7 @@ export function usePlansConfig() {
   return { config: query.data ?? DEFAULT_PLANS, loading: query.isLoading };
 }
 
-export type StreamCategory = Exclude<AccessKey, "highlights" | "apps">;
+export type StreamCategory = Exclude<AccessKey, "highlights" | "apps" | "tvApp">;
 
 /** Which access group a stream page belongs to. The stricter groups are checked first. */
 export function streamCategory(opts: {

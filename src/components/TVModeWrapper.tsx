@@ -19,7 +19,7 @@ export function TVModeWrapper({ children }: TVModeWrapperProps) {
   const { isTV, isTVDevice } = useDevice();
   const { user, loading: authLoading } = useAuth();
   const { can, loading: subLoading } = usePlanAccess();
-  const isPremium = can("apps");
+  const isPremium = can("tvApp");
   const location = useLocation();
   const navigate = useNavigate();
   const [showTVBar, setShowTVBar] = useState(false);
