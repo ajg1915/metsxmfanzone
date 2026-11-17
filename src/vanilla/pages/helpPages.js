@@ -391,7 +391,7 @@ const helpArticles = [
       <h3>Monthly Plan — $9.99/month</h3>
       <ul><li>Everything in Free plan</li><li>Access to all live game streams</li><li>HD and Full HD quality</li></ul>
       <h3>Yearly Plan — $119.88/year</h3>
-      <ul><li>Everything in Monthly plan</li><li>One convenient yearly payment</li><li>Exclusive yearly member perks</li></ul>`,
+      <ul><li>One convenient yearly payment</li><li>Exclusive yearly member perks</li></ul>`,
   },
   {
     path: "/help/payment-methods",
