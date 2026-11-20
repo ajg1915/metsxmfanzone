@@ -13,6 +13,9 @@
 //      one for members), newest first. Keeps the 5 newest automatic slides per audience
 //      and switches a slide off when its post is unpublished. Slides made by hand in
 //      Hero Management are never touched.
+//   4. Search engine ping: when an article goes live, tells Google (WebSub hub that
+//      watches the RSS feed) and Bing/IndexNow right away, so it gets crawled in
+//      minutes instead of waiting for the next sitemap read.
 //
 // SETUP (Cloudflare dashboard → Workers & Pages → mxf-scheduler):
 //   Settings → Variables and Secrets:
@@ -184,6 +187,42 @@ async function runBlogHero(api, now = new Date()) {
   return out;
 }
 
+// ---------- search engine ping for new articles ----------
+const SITE = "https://metsxmfanzone.com";
+const INDEXNOW_KEY = "a33df096e9140f8cdb721c9667ba869a"; // matches public/a33df096e9140f8cdb721c9667ba869a.txt on the site
+const PING_WINDOW_MS = 2 * 60 * 1000; // same as the cron interval, so each post is pinged once
+
+async function runSearchPing(api, when) {
+  const end = when.getTime();
+  const since = new Date(end - PING_WINDOW_MS).toISOString();
+  const until = new Date(end).toISOString();
+  const posts = await api.get(
+    `blog_posts?select=slug,published_at&published=eq.true&published_at=gte.${encodeURIComponent(since)}&published_at=lt.${encodeURIComponent(until)}&limit=20`,
+  );
+  const urls = posts.filter((p) => p.slug).map((p) => `${SITE}/blog/${encodeURIComponent(p.slug)}`);
+  if (!urls.length) return { pinged: 0 };
+
+  const out = { pinged: urls.length, urls };
+  // Google: WebSub hub. The RSS feed declares this hub, so Google re-reads the feed now.
+  const hub = await Promise.all(
+    [`${SITE}/blog/rss`, `${SITE}/rss.xml`].map((feed) =>
+      fetch("https://pubsubhubbub.appspot.com/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ "hub.mode": "publish", "hub.url": feed }).toString(),
+      }).then((r) => r.status, (e) => String(e)),
+    ),
+  );
+  out.websub = hub;
+  // Bing, Yandex and others: IndexNow.
+  out.indexnow = await fetch("https://api.indexnow.org/indexnow", {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    body: JSON.stringify({ host: "metsxmfanzone.com", key: INDEXNOW_KEY, keyLocation: `${SITE}/${INDEXNOW_KEY}.txt`, urlList: urls }),
+  }).then((r) => r.status, (e) => String(e));
+  return out;
+}
+
 // ---------- entry points ----------
 async function tick(env, when = new Date()) {
   const api = sb(env);
@@ -195,6 +234,7 @@ async function tick(env, when = new Date()) {
   await step("mets", () => runMetsAlerts(api, when.getTime()));
   // every run (cron is every 2 minutes), so a new post reaches the hero within about 2 minutes
   await step("blogHero", () => runBlogHero(api, when));
+  await step("searchPing", () => runSearchPing(api, when));
   lastRun = result;
   return result;
 }

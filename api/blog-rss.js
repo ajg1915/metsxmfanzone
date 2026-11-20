@@ -58,6 +58,7 @@ export default async function handler(req, res) {
       "    <language>en-us</language>",
       `    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>`,
       `    <atom:link href="${SITE_URL}/blog/rss" rel="self" type="application/rss+xml" />`,
+      '    <atom:link href="https://pubsubhubbub.appspot.com/" rel="hub" />',
       items,
       "  </channel>",
       "</rss>",
