@@ -53,7 +53,7 @@ export const GUIDE_SECTIONS: { key: string; label: string; path: string; group: 
   { group: "Phone bottom tabs", key: "tab-watch-live", label: "Watch Live tab", path: "/" },
   { group: "Phone bottom tabs", key: "tab-blog", label: "Blog tab", path: "/" },
   { group: "Phone bottom tabs", key: "tab-podcast", label: "Podcast tab", path: "/" },
-  { group: "Phone bottom tabs", key: "tab-feed", label: "Feed tab", path: "/" },
+  { group: "Phone bottom tabs", key: "tab-merch", label: "Merch tab", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-button", label: "Menu button (three lines)", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-watch-live", label: "Watch Live button", path: "/" },
   { group: "Phone menu (opens by itself)", key: "menu-schedule", label: "Schedule", path: "/" },
