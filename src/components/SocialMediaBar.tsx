@@ -25,7 +25,7 @@ const navItems: NavItem[] = [
   { label: "Watch Live", path: "/metsxmfanzone", requiresPremium: true },
   { label: "Blog", path: "/blog", requiresPremium: false },
   { label: "Podcast", path: "/podcast", requiresPremium: false },
-  { label: "Merch", path: "/mets-shop", requiresPremium: false },
+  { label: "Merch", path: "/merch", requiresPremium: false },
 ];
 
 

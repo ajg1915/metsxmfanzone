@@ -28,7 +28,7 @@ const money = (n: number) => `$${Number(n).toFixed(2)}`;
 const field =
   "h-11 border-white/15 bg-white/5 text-[15px] text-white placeholder:text-white/40 focus-visible:ring-primary";
 
-export default function PodcastShop() {
+export default function PodcastShop({ all = false }: { all?: boolean }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [buying, setBuying] = useState<Product | null>(null);
   const [busy, setBusy] = useState(false);
@@ -37,6 +37,15 @@ export default function PodcastShop() {
 
   useEffect(() => {
     (async () => {
+      if (all) {
+        const { data } = await supabase
+          .from("shop_products")
+          .select("id, title, price, image_url, stock_quantity")
+          .eq("published", true)
+          .order("title");
+        if (data) setProducts(data as Product[]);
+        return;
+      }
       const { data } = await supabase
         .from("shop_products")
         .select("id, title, price, image_url, stock_quantity")
@@ -47,7 +56,7 @@ export default function PodcastShop() {
         setProducts(FEATURED_IDS.map((id) => rows.find((r) => r.id === id)).filter(Boolean) as Product[]);
       }
     })();
-  }, []);
+  }, [all]);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -85,8 +94,8 @@ export default function PodcastShop() {
   if (products.length === 0) return null;
 
   return (
-    <section aria-labelledby="pod-shop" className="py-8 sm:py-10">
-      <div className="mb-5 flex items-end justify-between gap-3">
+    <section aria-labelledby="pod-shop" className={all ? "py-2" : "py-8 sm:py-10"}>
+      {!all && (<div className="mb-5 flex items-end justify-between gap-3">
         <div>
           <p className="mx-eyebrow mb-1.5 !text-primary">The Shop</p>
           <h2 id="pod-shop" className="font-display text-[30px] uppercase leading-none tracking-wide text-foreground sm:text-4xl">
@@ -96,7 +105,7 @@ export default function PodcastShop() {
         <span className="hidden items-center gap-1.5 rounded-full border border-border/60 px-3 py-1.5 text-xs font-semibold text-muted-foreground sm:inline-flex">
           <ShoppingBag className="h-3.5 w-3.5" /> Pay securely with PayPal
         </span>
-      </div>
+      </div>)}
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {products.map((p) => {

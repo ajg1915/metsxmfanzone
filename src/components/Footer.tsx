@@ -7,6 +7,7 @@ const QUICK_LINKS: { label: string; to: string }[] = [
   { label: "Live", to: "/metsxmfanzone" },
   { label: "News", to: "/blog" },
   { label: "Podcast", to: "/podcast" },
+  { label: "Merch", to: "/merch" },
   { label: "Mets Shop", to: "/mets-shop" },
   { label: "Plans", to: "/pricing" },
   { label: "Help", to: "/help-center" },

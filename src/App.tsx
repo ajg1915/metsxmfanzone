@@ -97,6 +97,7 @@ const Privacy = lazyWithRetry(() => import("./pages/Privacy"), "page-privacy");
 const Terms = lazyWithRetry(() => import("./pages/Terms"), "page-terms");
 const ResponsibleGambling = lazyWithRetry(() => import("./pages/ResponsibleGambling"), "page-responsible-gambling");
 const Podcast = lazyWithRetry(() => import("./pages/Podcast"), "page-podcast");
+const Merch = lazyWithRetry(() => import("./pages/Merch"), "page-merch");
 const MetsShop = lazyWithRetry(() => import("./pages/MetsShop"), "page-mets-shop");
 const ShopOrderSuccess = lazyWithRetry(() => import("./pages/ShopOrderSuccess"), "page-shop-order-success");
 const CommunityPodcast = lazyWithRetry(() => import("./pages/CommunityPodcast"), "page-community-podcast");
@@ -388,6 +389,7 @@ const AppContent = () => {
             <Route path="/whats-new" element={<WhatsNew />} />
             <Route path="/install" element={<Install />} />
             <Route path="/podcast" element={<Podcast />} />
+            <Route path="/merch" element={<Merch />} />
             <Route path="/mets-shop" element={<MetsShop />} />
             <Route path="/shop/order-success" element={<ShopOrderSuccess />} />
             <Route path="/community-podcast" element={<CommunityPodcast />} />
