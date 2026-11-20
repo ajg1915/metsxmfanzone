@@ -23,7 +23,7 @@ const Footer = () => {
       transition={{ duration: 0.6 }}
       className="relative border-t border-border/60 bg-card/80 backdrop-blur-md"
     >
-      <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-6 pb-24 md:py-10">
+      <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-10 pb-24 md:py-14">
         {/* Brand, socials, app */}
         <div className="flex flex-col items-center gap-3 text-center md:gap-6 md:flex-row md:justify-between md:text-left">
           <div>

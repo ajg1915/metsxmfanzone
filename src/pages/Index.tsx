@@ -304,7 +304,7 @@ const Index = () => {
       </main>
       )}
       {/* Newsletter signup, above the footer for everyone */}
-      <div className="relative z-10 mb-8">
+      <div className="relative z-10 mb-16 sm:mb-20">
         <div data-guide="newsletter">
           <LazySection fallback={<SectionSkeleton height="h-48" />}>
             <Suspense fallback={<SectionSkeleton height="h-48" />}>
