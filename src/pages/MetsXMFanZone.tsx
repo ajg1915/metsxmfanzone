@@ -16,6 +16,7 @@ import { format, parseISO } from "date-fns";
 import { useMarkEngaged } from "@/hooks/useMarkEngaged";
 import { GameTabsPanel, NoGameCard, ScoreStrip } from "@/components/live/LiveStatsSection";
 import { useMetsLiveGame } from "@/lib/metsLiveGame";
+import MemberGearSection from "@/components/MemberGearSection";
 import { ScheduledShowsSection } from "@/components/radio/ScheduledShowsSection";
 
 // Default feed for the Watch Live page when no MetsXMFanZone stream is switched on:
@@ -214,6 +215,9 @@ const MetsXMFanZone = () => {
                     </Link>
                   </div>
                 </div>
+
+                {/* Members only: MetsXMFanZone gear, right under the player */}
+                <MemberGearSection className="mx-4 sm:mx-0" />
 
                 {/* Score bar + line score in a game, otherwise the next-game card */}
                 <div className="px-4 sm:px-0">
