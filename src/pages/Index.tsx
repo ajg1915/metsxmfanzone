@@ -209,6 +209,11 @@ const Index = () => {
           </Suspense>
         </div>
 
+        {/* MetsXMFanZone gear: signed-in members only (the section hides itself for visitors) */}
+        <div data-guide="gear" className="container mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+          <MemberGearSection />
+        </div>
+
         {/* Today's lineup (hidden until turned on in Admin > Lineup Card) */}
         <div data-guide="lineup-row">
           <Suspense fallback={null}>
@@ -224,11 +229,6 @@ const Index = () => {
         </div>
 
         <div data-guide="scores"><NYScoresStrip /></div>
-
-        {/* MetsXMFanZone gear: signed-in members only (the section hides itself for visitors) */}
-        <div data-guide="gear" className="container mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-          <MemberGearSection />
-        </div>
 
         {/* Game series: every Mets series, one card each */}
         <div data-guide="game-series">
