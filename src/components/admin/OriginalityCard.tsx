@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, Check, ClipboardCopy, ExternalLink, Loader2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { findOutsideWriters, KIND_LABEL } from "@/lib/outsideWriters";
 import { checkOriginality, checkWeb, htmlToText, type OriginalityResult, type WebCheckResult } from "@/lib/draftsApi";
 
 const label = "text-[12px] font-extrabold tracking-wider text-[#FF9A6B]";
@@ -145,7 +146,8 @@ export default function OriginalityCard({
   };
 
   const level = result?.level;
-  const flagged = level === "review" || web?.level === "review";
+  const outside = useMemo(() => findOutsideWriters(`${title}\n${htmlToText(html)}`), [title, html]);
+  const flagged = level === "review" || web?.level === "review" || outside.length > 0;
   useEffect(() => {
     onFlaggedChange?.(flagged);
   }, [flagged, onFlaggedChange]);
@@ -168,6 +170,39 @@ export default function OriginalityCard({
           <span className="flex items-center gap-1.5 rounded-full bg-[#FF5910] px-3 py-1 text-[12px] font-extrabold text-[#0B1730]">
             <AlertTriangle className="h-3.5 w-3.5" /> REVIEW
           </span>
+        )}
+      </div>
+
+      {/* Other writers: every article must be our own words, with no other writers or outlets in it */}
+      <div className="space-y-3 rounded-xl bg-black/20 p-3.5">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[12px] font-extrabold tracking-wider text-slate-300">OTHER WRITERS</p>
+          {outside.length === 0 ? (
+            <span className="flex items-center gap-1.5 rounded-full bg-emerald-700 px-3 py-1 text-[12px] font-extrabold text-white">
+              <Check className="h-3.5 w-3.5" /> NONE FOUND
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 rounded-full bg-[#FF5910] px-3 py-1 text-[12px] font-extrabold text-[#0B1730]">
+              <AlertTriangle className="h-3.5 w-3.5" /> {outside.length} FOUND
+            </span>
+          )}
+        </div>
+        {outside.length === 0 ? (
+          <p className="text-[14px] leading-relaxed text-slate-200">No reporter names, news outlets, credits or quoted passages in this article.</p>
+        ) : (
+          <>
+            <p className="text-[14px] leading-relaxed text-slate-200">
+              This article names or quotes other writers. Rewrite these parts as plain facts in your own words, then it will clear.
+            </p>
+            {outside.map((f, i) => (
+              <div key={i} className="rounded-xl bg-black/25 p-3">
+                <p className="text-[12px] font-extrabold tracking-wider text-[#FFB08A]">{KIND_LABEL[f.kind].toUpperCase()}</p>
+                <p className="mt-1 text-[14px] leading-relaxed text-white">
+                  <mark className="rounded bg-[#FF5910]/35 px-0.5 text-white">{f.text}</mark>
+                </p>
+              </div>
+            ))}
+          </>
         )}
       </div>
 
