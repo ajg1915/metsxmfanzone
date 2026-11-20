@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { MERCH, merchFrom, merchMoney, merchPrice, type MerchItem } from "@/lib/merchCatalog";
+import { COLORS, MERCH, merchFrom, merchImage, merchMoney, merchPrice, type MerchItem } from "@/lib/merchCatalog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,14 +12,18 @@ const field =
   "h-11 border-white/15 bg-white/5 text-[15px] text-white placeholder:text-white/40 focus-visible:ring-primary";
 
 export default function PodcastShop({ all = false }: { all?: boolean }) {
-  const items = all ? MERCH : MERCH.filter((m) => ["tshirt", "hoodie", "jacket", "cap"].includes(m.sku));
+  const items = (all ? MERCH : MERCH.filter((m) => ["tshirt", "hoodie", "jacket", "cap"].includes(m.sku))).filter((m) => !m.hidden);
   const [sizes, setSizes] = useState<Record<string, string>>({});
+  const [colors, setColors] = useState<Record<string, string>>({});
+  const [designs, setDesigns] = useState<Record<string, string>>({});
   const [buying, setBuying] = useState<MerchItem | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", email: "", line1: "", line2: "", city: "", state: "", zip: "" });
 
   const sizeOf = (m: MerchItem) => sizes[m.sku] || (m.sizes.length === 1 ? m.sizes[0] : "");
+  const colorOf = (m: MerchItem) => colors[m.sku] || "royal";
+  const designOf = (m: MerchItem) => designs[m.sku] || "logo";
   const size = buying ? sizeOf(buying) : "";
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -33,6 +37,8 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
         body: {
           sku: buying.sku,
           size,
+          color: colorOf(buying),
+          design: designOf(buying),
           quantity: 1,
           customerName: form.name.trim(),
           customerEmail: form.email.trim(),
@@ -74,17 +80,51 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
       <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {items.map((m) => {
           const chosen = sizeOf(m);
+          const color = colorOf(m);
+          const design = designOf(m);
           const price = chosen ? merchPrice(m.sku, chosen) : null;
           return (
             <div key={m.sku} className="group flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card/60 transition-colors hover:border-primary/50">
               <div className="aspect-square overflow-hidden bg-[#0d1b30]">
-                <img src={m.image} alt={m.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <img src={merchImage(m.sku, color, design)} alt={`${m.title} in ${COLORS.find((c) => c.id === color)?.label}`} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </div>
               <div className="flex flex-1 flex-col p-3 sm:p-4">
                 <h3 className="line-clamp-2 text-[14px] font-semibold leading-snug text-foreground sm:text-[15px]">{m.title}</h3>
                 <p className="mt-1 text-lg font-extrabold text-primary" style={{ fontVariantNumeric: "tabular-nums" }}>
                   {price !== null ? merchMoney(price) : m.sizes.length > 1 && merchFrom(m) !== merchPrice(m.sku, m.sizes[m.sizes.length - 1]) ? `From ${merchMoney(merchFrom(m))}` : merchMoney(merchFrom(m))}
                 </p>
+                {m.designs && (
+                  <div className="mt-2 flex gap-1.5" role="radiogroup" aria-label={`${m.title} design`}>
+                    {m.designs.map((d) => (
+                      <button
+                        key={d.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={design === d.id}
+                        onClick={() => setDesigns((p) => ({ ...p, [m.sku]: d.id }))}
+                        className={`min-h-[34px] flex-1 rounded-lg border px-2 text-[12px] font-bold ${design === d.id ? "border-primary bg-primary text-primary-foreground" : "border-border/60 text-foreground hover:border-primary/60"}`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <div className="mt-2 flex items-center gap-2" role="radiogroup" aria-label={`${m.title} color`}>
+                  {COLORS.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={color === c.id}
+                      aria-label={c.label}
+                      title={c.label}
+                      onClick={() => setColors((p) => ({ ...p, [m.sku]: c.id }))}
+                      className={`h-7 w-7 rounded-full border-2 ${color === c.id ? "border-primary ring-2 ring-primary/40" : "border-border/60"}`}
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                  <span className="text-xs text-muted-foreground">{COLORS.find((c) => c.id === color)?.label}</span>
+                </div>
                 {m.sizes.length > 1 && (
                   <div className="mb-3 mt-2 flex flex-wrap gap-1.5" role="radiogroup" aria-label={`${m.title} size`}>
                     {m.sizes.map((s) => (
@@ -121,7 +161,7 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
           <DialogHeader>
             <DialogTitle className="text-xl">Where should we ship it?</DialogTitle>
             <DialogDescription className="text-white/60">
-              {buying?.title} · Size {size} · {buying ? merchMoney(merchPrice(buying.sku, size)) : ""} · U.S. shipping address. You'll pay on PayPal next.
+              {buying?.title}{buying?.designs && designOf(buying) === "podcast" ? " (Podcast Shop design)" : ""} · {COLORS.find((c) => c.id === colorOf(buying!))?.label} · Size {size} · {buying ? merchMoney(merchPrice(buying.sku, size)) : ""} · U.S. shipping address. You'll pay on PayPal next.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-3">

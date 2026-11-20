@@ -41,7 +41,7 @@ Deno.serve(async (req: Request) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { productId, sku, size, quantity, customerName, customerEmail, shippingAddress, returnOrigin } = await req.json();
+    const { productId, sku, size, color, design, quantity, customerName, customerEmail, shippingAddress, returnOrigin } = await req.json();
 
     if ((!productId && !sku) || !customerName || !customerEmail) {
       return new Response(
@@ -63,8 +63,18 @@ Deno.serve(async (req: Request) => {
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      product = { title: `${gear.title} (${size})`, price: gear.price(String(size)), stock_quantity: null };
-      itemNote = `${gear.title} | Size ${size}`;
+      const COLOR_NAMES: Record<string, string> = { royal: 'Royal Blue', black: 'Black', gray: 'Gray', white: 'White' };
+      const colorName = COLOR_NAMES[String(color || 'royal')];
+      if (!colorName) {
+        return new Response(
+          JSON.stringify({ error: 'Pick a valid color' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const podcast = design === 'podcast' && (sku === 'hoodie' || sku === 'cap');
+      const fullTitle = `${gear.title}${podcast ? ' - Podcast Shop design' : ''}`;
+      product = { title: `${fullTitle} (${colorName}, ${size})`, price: gear.price(String(size)), stock_quantity: null };
+      itemNote = `${fullTitle} | Color ${colorName} | Size ${size}`;
     } else {
       // Fetch product details server-side (never trust client prices)
       const { data, error: productError } = await supabase
