@@ -140,6 +140,7 @@ export default function DesktopNavMenu({
           {podcastLive && <span className="inline-flex items-center gap-1 rounded bg-red-700 px-1.5 py-0.5 text-[10px] font-extrabold tracking-wider text-white" aria-label="Live now"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" /><span className="hidden lg:inline">LIVE</span></span>}
         </TopLink>
         <TopLink to="/blog">Blog</TopLink>
+        <TopLink to="/merch">Merch</TopLink>
 
         <NavMenu.Item className="relative">
           <NavMenu.Trigger data-guide="nav-mets" className={cn(pill, metsActive && activePill)}>
