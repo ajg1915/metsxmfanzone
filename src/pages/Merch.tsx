@@ -17,7 +17,7 @@ const Merch = () => (
         <ShoppingBag className="mx-auto h-9 w-9 text-primary" />
         <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">MetsXMFanZone Merch</h1>
         <p className="mx-auto mt-2 max-w-xl text-sm text-white/80 sm:text-base">
-          Our own fan gear. Pay securely with PayPal and we ship it to you in the U.S.
+          Tees, long sleeves, hoodies, jackets and caps. Pick your size, pay securely with PayPal, and we ship it to you in the U.S.
         </p>
       </header>
       <PodcastShop all />

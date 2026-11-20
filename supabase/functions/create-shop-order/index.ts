@@ -8,6 +8,16 @@ const corsHeaders = {
   'X-Frame-Options': 'DENY',
 };
 
+// MetsXMFanZone own gear: price is decided here, never by the browser.
+// Keep in sync with src/lib/merchCatalog.ts
+const GEAR: Record<string, { title: string; sizes: string[]; price: (size: string) => number }> = {
+  tshirt: { title: 'MetsXMFanZone T-Shirt', sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'], price: (s) => (['2XL', '3XL'].includes(s) ? 26.99 : 24.56) },
+  longsleeve: { title: 'MetsXMFanZone Long Sleeve', sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'], price: (s) => (['2XL', '3XL'].includes(s) ? 26.99 : 24.56) },
+  hoodie: { title: 'MetsXMFanZone Hoodie', sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'], price: () => 40 },
+  jacket: { title: 'MetsXMFanZone Jacket', sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'], price: () => 40 },
+  cap: { title: 'MetsXMFanZone Cap', sizes: ['One size'], price: () => 15 },
+};
+
 async function getPayPalAccessToken(api: string, clientId: string, secret: string) {
   const res = await fetch(`${api}/v1/oauth2/token`, {
     method: 'POST',
@@ -31,38 +41,55 @@ Deno.serve(async (req: Request) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { productId, quantity, customerName, customerEmail, shippingAddress, returnOrigin } = await req.json();
+    const { productId, sku, size, quantity, customerName, customerEmail, shippingAddress, returnOrigin } = await req.json();
 
-    if (!productId || !customerName || !customerEmail) {
+    if ((!productId && !sku) || !customerName || !customerEmail) {
       return new Response(
         JSON.stringify({ error: 'Product ID, customer name, and email are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Fetch product details server-side (never trust client prices)
-    const { data: product, error: productError } = await supabase
-      .from('shop_products')
-      .select('*')
-      .eq('id', productId)
-      .eq('published', true)
-      .single();
+    let product: { title: string; price: number; stock_quantity: number | null };
+    let itemNote: string | null = null;
+    const qty = Math.min(Math.max(parseInt(quantity) || 1, 1), 10);
 
-    if (productError || !product) {
-      return new Response(
-        JSON.stringify({ error: 'Product not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    if (sku) {
+      // MetsXMFanZone gear with size pricing
+      const gear = GEAR[String(sku)];
+      if (!gear || !gear.sizes.includes(String(size))) {
+        return new Response(
+          JSON.stringify({ error: 'Pick a valid product and size' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      product = { title: `${gear.title} (${size})`, price: gear.price(String(size)), stock_quantity: null };
+      itemNote = `${gear.title} | Size ${size}`;
+    } else {
+      // Fetch product details server-side (never trust client prices)
+      const { data, error: productError } = await supabase
+        .from('shop_products')
+        .select('*')
+        .eq('id', productId)
+        .eq('published', true)
+        .single();
+
+      if (productError || !data) {
+        return new Response(
+          JSON.stringify({ error: 'Product not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      product = data;
+
+      if (product.stock_quantity !== null && product.stock_quantity < qty) {
+        return new Response(
+          JSON.stringify({ error: 'Insufficient stock' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
-    if (product.stock_quantity !== null && product.stock_quantity < (quantity || 1)) {
-      return new Response(
-        JSON.stringify({ error: 'Insufficient stock' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const qty = quantity || 1;
     const totalAmount = (product.price * qty).toFixed(2);
     const baseUrl = returnOrigin || 'https://www.metsxmfanzone.com';
 
@@ -78,7 +105,7 @@ Deno.serve(async (req: Request) => {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
-        'PayPal-Request-Id': `metsxm-shop-${productId}-${Date.now()}`,
+        'PayPal-Request-Id': `metsxm-shop-${productId || sku}-${Date.now()}`,
       },
       body: JSON.stringify({
         intent: 'CAPTURE',
@@ -115,7 +142,7 @@ Deno.serve(async (req: Request) => {
           shipping_preference: shippingAddress ? 'SET_PROVIDED_ADDRESS' : 'GET_FROM_FILE',
           user_action: 'PAY_NOW',
           return_url: `${baseUrl}/shop/order-success`,
-          cancel_url: `${baseUrl}/shop`,
+          cancel_url: `${baseUrl}/merch`,
         },
       }),
     });
@@ -141,7 +168,8 @@ Deno.serve(async (req: Request) => {
     const { error: insertError } = await supabase
       .from('shop_orders')
       .insert({
-        product_id: productId,
+        product_id: productId || null,
+        notes: itemNote,
         user_id: userId,
         quantity: qty,
         unit_price: product.price,
