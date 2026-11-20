@@ -49,7 +49,7 @@ export const METSXMFANZONE_SOCIALS: SocialLink[] = [
   {
     name: "YouTube",
     handle: "@metsxmfanzone",
-    url: "https://www.youtube.com/@metsxmfanzone",
+    url: "https://www.youtube.com/@MetsXMFanZonePodcast",
     Icon: Youtube,
     tile: "bg-[#E62117] hover:brightness-110",
   },

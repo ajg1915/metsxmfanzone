@@ -15,7 +15,7 @@ type Social = { name: string; handle: string; icon: LucideIcon; url: string; bg:
 
 const socials: Social[] = [
   { name: "TikTok", handle: "@metsxmfanzone", icon: Music2, url: "https://www.tiktok.com/@metsxmfanzone", bg: "from-[#010101] to-[#1f1f2b]" },
-  { name: "YouTube", handle: "@metsxmfanzone", icon: Youtube, url: "https://www.youtube.com/@metsxmfanzone", bg: "from-[#b00000] to-[#e62117]" },
+  { name: "YouTube", handle: "@MetsXMFanZonePodcast", icon: Youtube, url: "https://www.youtube.com/@MetsXMFanZonePodcast", bg: "from-[#b00000] to-[#e62117]" },
   { name: "Instagram", handle: "@metsxmfanzone", icon: Instagram, url: "https://www.instagram.com/metsxmfanzone", bg: "from-[#6a2cd8] via-[#d62976] to-[#fa7e1e]" },
   { name: "X", handle: "@metsxmfanzone", icon: Twitter, url: "https://twitter.com/metsxmfanzone", bg: "from-[#0a0a0a] to-[#2a2f36]" },
   { name: "Facebook", handle: "/metsxmfanzoneofficial", icon: Facebook, url: "https://www.facebook.com/metsxmfanzoneofficial", bg: "from-[#0d4fbf] to-[#1877f2]" },
