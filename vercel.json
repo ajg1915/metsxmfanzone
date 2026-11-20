@@ -2,7 +2,46 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    { "source": "/plans", "destination": "/pricing", "permanent": true },
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/help",
+      "destination": "/help-center",
+      "permanent": true
+    },
+    {
+      "source": "/help/biometric-login",
+      "destination": "/help-center",
+      "permanent": true
+    },
+    {
+      "source": "/rewards",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/mets-lineup-card",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/mets-lineup-cardNov",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/blog/9-11-mets-vs-yankees-25-years-anniversary",
+      "destination": "/blog/subway-series-on-9-11-a-night-of-remembrance-and-rivalry-in-new-york",
+      "permanent": true
+    },
+    {
+      "source": "/plans",
+      "destination": "/pricing",
+      "permanent": true
+    },
     {
       "source": "/:path*",
       "has": [
@@ -53,7 +92,7 @@
   "rewrites": [
     {
       "source": "/blog",
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/blog/rss",
@@ -80,7 +119,7 @@
           "value": ".*(MetsXMFanZoneTV|AFT[A-Z]|Android TV|AndroidTV|GoogleTV|BRAVIA|SMART-TV|SmartTV).*"
         }
       ],
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/blog/:slug*",
@@ -90,7 +129,7 @@
           "key": "__chunk_retry"
         }
       ],
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/blog/:slug*",
@@ -100,7 +139,7 @@
           "key": "tv"
         }
       ],
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/blog/:slug*",
@@ -112,7 +151,7 @@
     },
     {
       "source": "/((?!api/|.*\\..*).*)",
-      "destination": "/index.html"
+      "destination": "/"
     }
   ],
   "headers": [
