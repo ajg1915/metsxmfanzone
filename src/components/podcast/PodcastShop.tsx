@@ -42,7 +42,9 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
           .from("shop_products")
           .select("id, title, price, image_url, stock_quantity")
           .eq("published", true)
-          .order("title");
+          // Only our own products (photos uploaded to our media library), not the Mets gear catalog imports.
+          .like("image_url", "%media.metsxmfanzone.com%")
+          .order("created_at");
         if (data) setProducts(data as Product[]);
         return;
       }
