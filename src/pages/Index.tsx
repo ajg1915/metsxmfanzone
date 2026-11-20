@@ -10,6 +10,7 @@ import SportsNetworksStrip from "@/components/tv/SportsNetworksStrip";
 
 
 import Footer from "@/components/Footer";
+import MemberGearSection from "@/components/MemberGearSection";
 import { Skeleton } from "@/components/ui/skeleton";
 import LazySection from "@/components/LazySection";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -223,6 +224,11 @@ const Index = () => {
         </div>
 
         <div data-guide="scores"><NYScoresStrip /></div>
+
+        {/* MetsXMFanZone gear: signed-in members only (the section hides itself for visitors) */}
+        <div data-guide="gear" className="container mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+          <MemberGearSection />
+        </div>
 
         {/* Game series: every Mets series, one card each */}
         <div data-guide="game-series">
