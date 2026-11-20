@@ -184,7 +184,7 @@
   {
     "path": "/game-center",
     "label": "Game Center",
-    "title": "Mets Game Center — Lineups, Players to Watch, Stats & Replays | MetsXMFanZone",
+    "title": "Mets Game Center \u2014 Lineups, Players to Watch, Stats & Replays | MetsXMFanZone",
     "description": "Everything for game day in one place: Mets lineups, players to watch, stats, series, Spring Training games and full-game replays.",
     "image": "/share/gameday-live.jpg"
   },
@@ -432,5 +432,40 @@
     "title": "Mets vs New York Yankees \u2014 2026 Matchup | MetsXMFanZone",
     "description": "New York Mets vs New York Yankees matchup analysis, probable lineups, pitching, and head-to-head coverage.",
     "image": "/share/matchup-yankees.jpg"
+  },
+  {
+    "path": "/mets-shop",
+    "label": "Mets Shop",
+    "title": "Mets Shop \u2014 Jerseys, Hats & Gear from Fanatics | MetsXMFanZone",
+    "description": "Shop official New York Mets jerseys, hats, tees and more from Fanatics. Gear up for the 2027 season with MetsXMFanZone.",
+    "image": "/share/home.jpg"
+  },
+  {
+    "path": "/responsible-gambling",
+    "label": "Responsible Gambling",
+    "title": "Responsible Gambling & Affiliate Disclosure | MetsXMFanZone",
+    "description": "How MetsXMFanZone handles sportsbook partners and affiliate links, plus responsible gambling resources and where to get help.",
+    "image": "/share/terms.jpg"
+  },
+  {
+    "path": "/help/vpn",
+    "label": "Help \u00b7 Streaming",
+    "title": "Using a VPN with MetsXMFanZone | MetsXMFanZone",
+    "description": "What to know about using a VPN while watching MetsXMFanZone live streams, and how to fix playback problems it can cause.",
+    "image": "/share/help-center.jpg"
+  },
+  {
+    "path": "/help/cookies-data",
+    "label": "Help \u00b7 Privacy",
+    "title": "Cookies & Your Data | MetsXMFanZone",
+    "description": "How MetsXMFanZone uses cookies and site data, and how to manage your choices.",
+    "image": "/share/privacy.jpg"
+  },
+  {
+    "path": "/cookies",
+    "label": "Cookies",
+    "title": "Cookie Policy | MetsXMFanZone",
+    "description": "How MetsXMFanZone uses cookies and site data, and how to manage your choices.",
+    "image": "/share/privacy.jpg"
   }
 ]
