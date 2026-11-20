@@ -161,7 +161,7 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
           <DialogHeader>
             <DialogTitle className="text-xl">Where should we ship it?</DialogTitle>
             <DialogDescription className="text-white/60">
-              {buying?.title}{buying?.designs && designOf(buying) === "podcast" ? " (Podcast Shop design)" : ""} · {COLORS.find((c) => c.id === colorOf(buying!))?.label} · Size {size} · {buying ? merchMoney(merchPrice(buying.sku, size)) : ""} · U.S. shipping address. You'll pay on PayPal next.
+              {buying?.title}{buying?.designs && designOf(buying) === "podcast" ? " (Podcast Shop design)" : ""} · {buying ? COLORS.find((c) => c.id === colorOf(buying))?.label : ""} · Size {size} · {buying ? merchMoney(merchPrice(buying.sku, size)) : ""} · U.S. shipping address. You'll pay on PayPal next.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-3">
