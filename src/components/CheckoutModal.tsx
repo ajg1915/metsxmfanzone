@@ -220,12 +220,7 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
                 </div>
               }
             >
-              <div className="space-y-3">
-                <div className="flex justify-center">
-                  <img src={metsLogo} alt="MetsXMFanZone" className="h-20 w-auto object-contain" />
-                </div>
-                <StripeCardCheckout planId={plan.id} onActivated={handleCardActivated} onError={handleCardError} />
-              </div>
+              <StripeCardCheckout planId={plan.id} onActivated={handleCardActivated} onError={handleCardError} />
             </Suspense>
           ) : (
             <>
