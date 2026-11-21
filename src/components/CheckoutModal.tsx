@@ -8,7 +8,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Shield, ArrowLeft, CreditCard, Loader2 } from "lucide-react";
-import { stripeCardEnabled } from "@/lib/stripeBilling";
+import { STRIPE_PUBLISHABLE_KEY, stripeCardEnabled } from "@/lib/stripeBilling";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const StripeCardCheckout = lazy(() => import("@/components/StripeCardCheckout"));
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +39,9 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useSubscription();
+  // Test mode (pk_test_): only admins see the card button. Live mode (pk_live_): everyone.
+  const showCard = stripeCardEnabled && (STRIPE_PUBLISHABLE_KEY.startsWith("pk_live_") || isAdmin);
   const [isProcessing, setIsProcessing] = useState(false);
   const [payingByCard, setPayingByCard] = useState(false);
 
@@ -236,7 +240,7 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
                   : `Pay with PayPal — ${plan.price}`}
               </Button>
 
-              {stripeCardEnabled && (
+              {showCard && (
                 <Button
                   className="w-full h-12 text-base font-semibold gap-2 bg-[#FF5910] text-white hover:bg-[#e64e0c] focus-visible:ring-[#FF5910]"
                   size="lg"
@@ -251,7 +255,7 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
               {/* Security Badge */}
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <Shield className="w-4 h-4" />
-                <span>{stripeCardEnabled ? "Secure checkout powered by PayPal and Stripe" : "Secure checkout powered by PayPal"}</span>
+                <span>{showCard ? "Secure checkout powered by PayPal and Stripe" : "Secure checkout powered by PayPal"}</span>
               </div>
             </>
           )}
