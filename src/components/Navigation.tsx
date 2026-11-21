@@ -368,7 +368,7 @@ const Navigation = () => {
                     {/* Quick tiles */}
                     <div className="grid grid-cols-2 gap-2 p-3">
                       {[
-                        { label: "Member Center", icon: LayoutDashboard, go: () => navigate("/dashboard") },
+                        { label: "Account", icon: LayoutDashboard, go: () => navigate("/dashboard") },
                         { label: "Watch Live", icon: Tv, go: () => handleProNavigation("/metsxmfanzone"), live: true },
                         { label: "TV Guide", icon: CalendarDays, go: () => navigate("/tv") },
                         { label: "Get the app", icon: Download, go: () => navigate("/install") },

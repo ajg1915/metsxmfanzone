@@ -218,7 +218,7 @@ async function createCheckout(request, env, me) {
   // Test mode only: admins can test the card checkout even if their account already shows as a member.
   const adminTesting = String(env.STRIPE_SECRET_KEY || "").startsWith("sk_test_") && (await isAdmin(env, me));
   if (!adminTesting && (await hasRunningPaidPlan(env, me)))
-    return json(request, { error: "already_subscribed", message: "You already have an active membership. Manage it from your Member Center." }, 409);
+    return json(request, { error: "already_subscribed", message: "You already have an active membership. Manage it from your Account." }, 409);
 
   const customer = await getOrCreateCustomer(env, me);
   const session = await stripe(env, "POST", "/checkout/sessions", {

@@ -378,7 +378,7 @@ const Auth = () => {
     ? "Choose a secure password for your account."
     : forgotPassword ? "We’ll send a secure reset link to your email."
       : isSignup ? "Create your account first. You’ll choose Weekly, Monthly or Yearly after confirming your email."
-        : "Sign in to reach your Member Center.";
+        : "Sign in to reach your Account.";
 
   return (
     <div className="relative min-h-[100dvh] overflow-y-auto bg-background px-3 py-4 sm:flex sm:items-center sm:px-6 sm:py-8">

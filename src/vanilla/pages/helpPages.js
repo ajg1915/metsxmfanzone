@@ -414,8 +414,8 @@ const helpArticles = [
       <p>You can cancel your Weekly, Monthly, or Yearly membership at any time.</p>
       <h3>For PayPal Subscriptions</h3>
       <ol><li>Log in to your PayPal account</li><li>Go to Settings → Payments</li><li>Click "Manage automatic payments"</li><li>Find "MetsXMFanZone" and select "Cancel"</li></ol>
-      <h3>From your Member Center</h3>
-      <ol><li>Log in to your MetsXMFanZone account</li><li>Go to your <a href="/dashboard">Member Center</a></li><li>Open membership settings</li><li>Select "Cancel membership"</li></ol>
+      <h3>From your Account</h3>
+      <ol><li>Log in to your MetsXMFanZone account</li><li>Go to your <a href="/dashboard">Account</a></li><li>Open membership settings</li><li>Select "Cancel membership"</li></ol>
       <h2>Refund Policy</h2>
       <p><strong>Important:</strong> We do not offer refunds for partial subscription periods. When you cancel, your subscription remains active until the end of your current billing cycle.</p>`,
   },

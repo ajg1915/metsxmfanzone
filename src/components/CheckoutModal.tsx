@@ -133,7 +133,7 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
       if (!error && data?.error === "already_subscribed") {
         toast({
           title: "You're already subscribed",
-          description: data.message || "Manage your current plan from your Member Center.",
+          description: data.message || "Manage your current plan from your Account.",
         });
         onOpenChange(false);
         navigate("/dashboard");

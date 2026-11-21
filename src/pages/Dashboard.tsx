@@ -207,7 +207,7 @@ const Dashboard = () => {
         <div className="container max-w-6xl px-3 sm:px-6 space-y-5">
           <header className="flex items-center justify-between gap-3 py-3 border-b border-border/40">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase text-primary">Member Center</p>
+              <p className="text-xs font-semibold uppercase text-primary">Account</p>
               <h1 className="text-2xl sm:text-4xl text-foreground truncate">Welcome, {fullName || "Mets fan"}</h1>
               <p className="text-xs sm:text-sm text-muted-foreground truncate">{user.email}</p>
             </div>

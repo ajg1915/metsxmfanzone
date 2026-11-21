@@ -4,7 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { Check, Copy, Download, LockKeyhole, Smartphone, Tv } from "lucide-react";
 import { usePlanAccess } from "@/hooks/usePlanAccess";
 
-// Member Center: the Android app and the TV app, for paid members only.
+// Account: the Android app and the TV app, for paid members only.
 const TV_CODE = "6750144";
 const ANDROID_URL = "https://metsxmfanzone.com/android-app";
 const TV_URL = "https://metsxmfanzone.com/tv-app";

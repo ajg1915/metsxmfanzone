@@ -21,7 +21,7 @@ const FEATURES = [
 
 const TRUST = [
   { title: "Secure PayPal billing", text: "You pay through PayPal. We never see or store your card." },
-  { title: "Cancel anytime", text: "Stop your plan from your Member Center. No contracts." },
+  { title: "Cancel anytime", text: "Stop your plan from your Account. No contracts." },
   { title: "Run by Mets fans", text: "An independent fan site, built and hosted by fans since 2024." },
   { title: "Real help", text: "Questions? A real person answers through our Help Center." },
 ];
@@ -29,7 +29,7 @@ const TRUST = [
 const FAQ = [
   { q: "What do I get as a member?", a: "Live streams, full replays, highlights, the podcast, exclusive content and the phone and TV apps." },
   { q: "How do I pay?", a: "Through PayPal, which takes credit cards, debit cards and PayPal balance." },
-  { q: "Can I cancel?", a: "Yes, anytime from your Member Center. You keep access until the end of the period you paid for." },
+  { q: "Can I cancel?", a: "Yes, anytime from your Account. You keep access until the end of the period you paid for." },
   { q: "Can I watch on my TV?", a: "Yes. Members get our TV app for Fire TV, Android TV and Google TV." },
 ];
 

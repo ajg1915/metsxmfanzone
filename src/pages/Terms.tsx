@@ -67,7 +67,7 @@ const Terms = () => {
               </p>
               <p className="text-muted-foreground mb-4">
                 Every membership is a secure plan billed through PayPal, can be watched on the go, works on all your
-                devices (phone, tablet, computer and TV), and can be cancelled anytime from your Member Center. Paid
+                devices (phone, tablet, computer and TV), and can be cancelled anytime from your Account. Paid
                 memberships allow streaming on up to 2 devices at the same time.
               </p>
             </section>

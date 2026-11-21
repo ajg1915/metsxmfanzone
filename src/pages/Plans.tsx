@@ -131,7 +131,7 @@ const Plans = () => {
     {
       question: "Can I switch between paid memberships?",
       answer:
-        "Yes. Choose a different paid membership from your Member Center. Your new PayPal billing schedule starts with the new membership.",
+        "Yes. Choose a different paid membership from your Account. Your new PayPal billing schedule starts with the new membership.",
     },
     {
       question: "What payment methods do you accept?",
@@ -251,7 +251,7 @@ const Plans = () => {
             </div>
 
             <div className="mb-12 grid gap-3 sm:grid-cols-3 max-w-4xl mx-auto">
-              {["Secure PayPal checkout", "Cancel from Member Center", "Watch on your phone, tablet, computer and TV"].map((label) => (
+              {["Secure PayPal checkout", "Cancel from your Account", "Watch on your phone, tablet, computer and TV"].map((label) => (
                 <div key={label} className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 p-3 text-sm">
                   <ShieldCheck className="h-4 w-4 shrink-0 text-primary" />{label}
                 </div>

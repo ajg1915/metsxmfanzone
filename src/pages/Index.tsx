@@ -314,7 +314,7 @@ const Index = () => {
         </div>
       </div>
       {/* How to get the app (a strip, never a popup) */}
-      {/* Members find the app in their Member Center, so the strip is for visitors only */}
+      {/* Members find the app in their Account, so the strip is for visitors only */}
       {!user && (
         <Suspense fallback={null}>
           <div data-guide="app-strip"><GetTheAppStrip /></div>
