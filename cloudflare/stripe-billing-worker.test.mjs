@@ -33,7 +33,7 @@ async function sign(payload, secret = SECRET, t = NOW) {
 }
 
 // ---- fake backends ----
-function setup({ existingPaid = false } = {}) {
+function setup({ existingPaid = false, isAdminUser = false } = {}) {
   const db = []; // subscriptions rows
   const stripeCalls = [];
   const subs = {
@@ -62,6 +62,10 @@ function setup({ existingPaid = false } = {}) {
     if (u.pathname === "/auth/v1/user") {
       const auth = new Headers(init.headers).get("Authorization");
       return auth === "Bearer good" ? res({ id: USER, email: "fan@example.com" }) : res({}, 401);
+    }
+    if (u.pathname === "/rest/v1/user_roles") {
+      const auth = new Headers(init.headers).get("Authorization");
+      return res(isAdminUser && auth === "Bearer good" ? [{ role: "admin" }] : []);
     }
     if (u.pathname === "/rest/v1/subscriptions") {
       const key = new Headers(init.headers).get("apikey");
@@ -218,4 +222,15 @@ test("portal needs a Stripe customer", async () => {
   r = await worker.fetch(req("/portal", { method: "POST", token: "good", body: {} }), env);
   assert.equal(r.status, 200);
   assert.match((await r.json()).url, /billing\.stripe\.com/);
+});
+
+test("in test mode an admin who already shows as a member can still test checkout", async () => {
+  let { env } = setup({ existingPaid: true, isAdminUser: true });
+  let r = await worker.fetch(req("/checkout", { method: "POST", token: "good", body: { plan: "premium" } }), env);
+  assert.equal(r.status, 200);
+  // with a live key the double-charge check applies to admins too
+  ({ env } = setup({ existingPaid: true, isAdminUser: true }));
+  env.STRIPE_SECRET_KEY = "sk_live_x";
+  r = await worker.fetch(req("/checkout", { method: "POST", token: "good", body: { plan: "premium" } }), env);
+  assert.equal(r.status, 409);
 });

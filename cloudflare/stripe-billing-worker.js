@@ -170,6 +170,19 @@ async function hasRunningPaidPlan(env, me) {
   return (rows || []).some((row) => row.status === "active" || (row.end_date && new Date(row.end_date).getTime() > now));
 }
 
+async function isAdmin(env, me) {
+  try {
+    const r = await fetch(`${sbBase(env)}/rest/v1/user_roles?select=role&user_id=eq.${encodeURIComponent(me.id)}&role=eq.admin&limit=1`, {
+      headers: { apikey: sbAnon(env), Authorization: `Bearer ${me.token}` },
+    });
+    if (!r.ok) return false;
+    const rows = await r.json();
+    return Array.isArray(rows) && rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 // ---------- R2 bookkeeping ----------
 
 const K = {
@@ -202,7 +215,9 @@ async function createCheckout(request, env, me) {
   const b = await request.json().catch(() => ({}));
   const plan = String(b.plan || "");
   if (!PAID_PLANS.includes(plan)) return json(request, { error: "Pick the Weekly, Monthly or Yearly plan." }, 400);
-  if (await hasRunningPaidPlan(env, me))
+  // Test mode only: admins can test the card checkout even if their account already shows as a member.
+  const adminTesting = String(env.STRIPE_SECRET_KEY || "").startsWith("sk_test_") && (await isAdmin(env, me));
+  if (!adminTesting && (await hasRunningPaidPlan(env, me)))
     return json(request, { error: "already_subscribed", message: "You already have an active membership. Manage it from your Member Center." }, 409);
 
   const customer = await getOrCreateCustomer(env, me);
