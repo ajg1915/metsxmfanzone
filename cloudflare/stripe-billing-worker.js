@@ -215,6 +215,9 @@ async function createCheckout(request, env, me) {
     line_items: [{ price: priceFor(env, plan), quantity: 1 }],
     metadata: { user_id: me.id, plan_id: plan },
     subscription_data: { metadata: { user_id: me.id, plan_id: plan } },
+    // MetsXMFanZone orange "Subscribe" button. (Stripe doesn't allow a logo inside the
+    // embedded card screen; the site shows the logo right above it instead.)
+    branding_settings: { button_color: "#FF5910", display_name: "MetsXMFanZone", border_style: "rounded" },
     automatic_tax: { enabled: env.STRIPE_TAX === "on" ? "true" : "false" },
     customer_update: env.STRIPE_TAX === "on" ? { address: "auto" } : undefined,
   });

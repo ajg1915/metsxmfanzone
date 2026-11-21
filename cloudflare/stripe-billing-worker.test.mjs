@@ -148,6 +148,7 @@ test("checkout creates an embedded subscription session for the right price", as
   assert.equal((await r.json()).clientSecret, "cs_test_1_secret");
   const call = stripeCalls.find((c) => c.path === "/v1/checkout/sessions");
   assert.equal(call.body.get("ui_mode"), "embedded_page");
+  assert.equal(call.body.get("branding_settings[button_color]"), "#FF5910");
   assert.equal(call.body.get("mode"), "subscription");
   assert.equal(call.body.get("line_items[0][price]"), "price_1UeFnoBuIjQS2e3nICfOxaUi");
   assert.equal(call.body.get("client_reference_id"), USER);

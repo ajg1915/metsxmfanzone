@@ -220,7 +220,12 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
                 </div>
               }
             >
-              <StripeCardCheckout planId={plan.id} onActivated={handleCardActivated} onError={handleCardError} />
+              <div className="space-y-3">
+                <div className="flex justify-center">
+                  <img src={metsLogo} alt="MetsXMFanZone" className="h-20 w-auto object-contain" />
+                </div>
+                <StripeCardCheckout planId={plan.id} onActivated={handleCardActivated} onError={handleCardError} />
+              </div>
             </Suspense>
           ) : (
             <>
@@ -238,8 +243,7 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
 
               {stripeCardEnabled && (
                 <Button
-                  variant="outline"
-                  className="w-full h-12 text-base font-semibold gap-2"
+                  className="w-full h-12 text-base font-semibold gap-2 bg-[#FF5910] text-white hover:bg-[#e64e0c] focus-visible:ring-[#FF5910]"
                   size="lg"
                   onClick={handlePayByCard}
                   disabled={isProcessing}
