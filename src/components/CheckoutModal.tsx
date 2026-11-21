@@ -248,8 +248,13 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
                   disabled={isProcessing}
                 >
                   <CreditCard className="h-5 w-5" />
-                  Pay with card — {plan.price}
+                  Pay with card via Stripe — {plan.price}
                 </Button>
+              )}
+              {showCard && (
+                <p className="-mt-1 text-center text-xs text-muted-foreground">
+                  Card, Apple Pay or Google Pay · Secure checkout by Stripe
+                </p>
               )}
 
               {/* Security Badge */}
