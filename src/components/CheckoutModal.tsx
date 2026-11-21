@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Shield, ArrowLeft } from "lucide-react";
+import { Shield, ArrowLeft, CreditCard, Loader2 } from "lucide-react";
+import { stripeCardEnabled } from "@/lib/stripeBilling";
+
+const StripeCardCheckout = lazy(() => import("@/components/StripeCardCheckout"));
 import { supabase } from "@/integrations/supabase/client";
 import metsLogo from "@/assets/metsxmfanzone-logo.png";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +39,54 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [payingByCard, setPayingByCard] = useState(false);
+
+  // Start fresh each time the box opens or the plan changes.
+  useEffect(() => {
+    if (!open) setPayingByCard(false);
+  }, [open, plan?.id]);
+
+  const isPaidPlan = (id: string) => id === "premium" || id === "annual" || id === "weekly";
+
+  const handlePayByCard = () => {
+    if (!plan) return;
+    if (!user) {
+      toast({ title: "Authentication Required", description: "Please sign in to subscribe", variant: "destructive" });
+      onOpenChange(false);
+      localStorage.setItem("pending_signup_plan", plan.id);
+      navigate("/auth?mode=signup");
+      return;
+    }
+    if (!isPaidPlan(plan.id)) {
+      toast({ title: "Paid plan required", description: "Only paid memberships can be activated.", variant: "destructive" });
+      return;
+    }
+    setPayingByCard(true);
+  };
+
+  const handleCardActivated = useCallback(() => {
+    toast({ title: "Welcome to MetsXMFanZone!", description: "Your membership is active." });
+    localStorage.removeItem("pending_signup_plan");
+    localStorage.removeItem("pending_membership_selection");
+    onOpenChange(false);
+    navigate("/dashboard");
+    // Refresh membership everywhere on the site.
+    setTimeout(() => window.location.reload(), 50);
+  }, [navigate, onOpenChange, toast]);
+
+  const handleCardError = useCallback(
+    (message: string, code?: string) => {
+      setPayingByCard(false);
+      if (code === "already_subscribed") {
+        toast({ title: "You're already subscribed", description: message });
+        onOpenChange(false);
+        navigate("/dashboard");
+        return;
+      }
+      toast({ title: "Card checkout unavailable", description: `${message} You can still pay with PayPal.`, variant: "destructive" });
+    },
+    [navigate, onOpenChange, toast],
+  );
 
   const handleSubscribe = async () => {
     if (!plan) return;
@@ -110,14 +161,14 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className={`${payingByCard ? "sm:max-w-xl" : "sm:max-w-md"} max-h-[90vh] overflow-y-auto`}>
         <DialogHeader className="pb-4">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => onOpenChange(false)}
+              onClick={() => (payingByCard ? setPayingByCard(false) : onOpenChange(false))}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
@@ -161,23 +212,50 @@ const CheckoutModal = ({ open, onOpenChange, plan }: CheckoutModalProps) => {
 
           <Separator />
 
-          {/* Subscribe Button */}
-          <Button
-            className="w-full h-12 text-base font-semibold"
-            size="lg"
-            onClick={handleSubscribe}
-            disabled={isProcessing}
-          >
-            {isProcessing
-              ? "Processing..."
-              : `Pay with PayPal — ${plan.price}`}
-          </Button>
+          {payingByCard ? (
+            <Suspense
+              fallback={
+                <div className="flex justify-center py-10">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              }
+            >
+              <StripeCardCheckout planId={plan.id} onActivated={handleCardActivated} onError={handleCardError} />
+            </Suspense>
+          ) : (
+            <>
+              {/* Subscribe Button */}
+              <Button
+                className="w-full h-12 text-base font-semibold"
+                size="lg"
+                onClick={handleSubscribe}
+                disabled={isProcessing}
+              >
+                {isProcessing
+                  ? "Processing..."
+                  : `Pay with PayPal — ${plan.price}`}
+              </Button>
 
-          {/* Security Badge */}
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <Shield className="w-4 h-4" />
-            <span>Secure checkout powered by PayPal</span>
-          </div>
+              {stripeCardEnabled && (
+                <Button
+                  variant="outline"
+                  className="w-full h-12 text-base font-semibold gap-2"
+                  size="lg"
+                  onClick={handlePayByCard}
+                  disabled={isProcessing}
+                >
+                  <CreditCard className="h-5 w-5" />
+                  Pay with card — {plan.price}
+                </Button>
+              )}
+
+              {/* Security Badge */}
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <Shield className="w-4 h-4" />
+                <span>{stripeCardEnabled ? "Secure checkout powered by PayPal and Stripe" : "Secure checkout powered by PayPal"}</span>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>
