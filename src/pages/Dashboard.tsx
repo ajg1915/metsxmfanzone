@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToR2 } from "@/lib/r2Upload";
 import { CANCELLATION_RESULT_KEY } from "@/pages/CancellationStatus";
+import { openBillingPortal } from "@/lib/stripeBilling";
 
 type MemberPlan = "free" | "trial" | "weekly" | "premium" | "annual";
 
@@ -146,6 +147,18 @@ const Dashboard = () => {
     toast({ title: "Profile updated" });
   };
 
+  // Card (Stripe) members: update card, see receipts or cancel on Stripe's billing page.
+  const [openingBilling, setOpeningBilling] = useState(false);
+  const handleManageBilling = async () => {
+    setOpeningBilling(true);
+    try {
+      await openBillingPortal(`${window.location.origin}/dashboard`);
+    } catch {
+      toast({ title: "Billing page unavailable", description: "Please try again in a moment or contact support.", variant: "destructive" });
+      setOpeningBilling(false);
+    }
+  };
+
   const handleCancel = async () => {
     setCancelling(true);
     try {
@@ -243,7 +256,12 @@ const Dashboard = () => {
 
               <div className="mt-5 grid gap-2 sm:grid-cols-2">
                 <Button onClick={() => navigate("/pricing")}><CreditCard className="mr-2 h-4 w-4" />{paidPlan ? "Change plan" : "Choose a plan"}</Button>
-                {paidPlan && (status === "active" || status === "suspended") ? (
+                {paidPlan && paymentMethod === "stripe" ? (
+                  <Button variant="outline" onClick={handleManageBilling} disabled={openingBilling}>
+                    {openingBilling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
+                    Manage billing
+                  </Button>
+                ) : paidPlan && (status === "active" || status === "suspended") ? (
                   <Button variant="outline" onClick={() => { setCancelTarget("mets"); setCancelOpen(true); }}>Cancel membership</Button>
                 ) : (
                   <Button variant="outline" asChild><Link to="/contact"><LifeBuoy className="mr-2 h-4 w-4" />Membership help</Link></Button>
