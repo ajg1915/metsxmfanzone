@@ -1,39 +1,38 @@
-"""Builds the launcher icons from the site's logo: logo on the dark blue MetsXMFanZone tile with an orange edge.
-Run from mobile-app/ after `npx cap add android`. Images are generated in the build, not stored in the repo."""
+"""Builds the Android launcher icons from the MetsXMFanZone app icon (mobile-app/icons/app-icon.png).
+Run from mobile-app/ after `npx cap add android`."""
 import os
 import sys
-from PIL import Image, ImageDraw
+from PIL import Image
 
-SRC = sys.argv[1] if len(sys.argv) > 1 else "../src/assets/metsxmfanzone-logo.png"
+SRC = sys.argv[1] if len(sys.argv) > 1 else "icons/app-icon.png"
 RES = "android/app/src/main/res"
-logo = Image.open(SRC).convert("RGBA")
-logo = logo.crop(logo.getbbox())
+icon = Image.open(SRC).convert("RGBA")
+icon = icon.crop(icon.getbbox())
+BG_HEX = "#0B3A8C"  # blue behind the icon on adaptive (round / squircle) launchers
 
-def tile(px):
-    S = px * 4
-    g = Image.new("RGB", (S, S))
-    pix = g.load()
-    c1, c2 = (15, 79, 147), (7, 17, 29)
-    for y in range(S):
-        for x in range(S):
-            t = min(1, max(0, (x * 0.35 + y * 0.65) / S))
-            pix[x, y] = tuple(int(c1[i] * (1 - t) + c2[i] * t) for i in range(3))
-    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
-    mask = Image.new("L", (S, S), 0)
-    ImageDraw.Draw(mask).rounded_rectangle((0, 0, S - 1, S - 1), radius=int(S * 0.22), fill=255)
-    img.paste(g, (0, 0), mask)
-    ImageDraw.Draw(img).rounded_rectangle((S * 0.012, S * 0.012, S * 0.988, S * 0.988), radius=int(S * 0.21), outline=(255, 68, 0), width=max(2, int(S * 0.018)))
-    w = int(S * 0.78)
-    h = int(logo.height * w / logo.width)
-    art = logo.resize((w, h), Image.LANCZOS)
-    img.alpha_composite(art, ((S - w) // 2, (S - h) // 2))
-    return img.resize((px, px), Image.LANCZOS)
+def square(px):
+    s = max(icon.size)
+    sq = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    sq.paste(icon, ((s - icon.width) // 2, (s - icon.height) // 2))
+    return sq.resize((px, px), Image.LANCZOS)
+
+def foreground(px):
+    # adaptive-icon layer: keep the artwork inside the centre safe zone so no launcher mask cuts it
+    layer = Image.new("RGBA", (px, px), (0, 0, 0, 0))
+    art = square(int(px * 0.62))
+    layer.alpha_composite(art, ((px - art.width) // 2, (px - art.height) // 2))
+    return layer
 
 sizes = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
 for density, px in sizes.items():
     folder = f"{RES}/mipmap-{density}"
     os.makedirs(folder, exist_ok=True)
-    icon = tile(px)
-    for name in ("ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png"):
-        icon.save(f"{folder}/{name}")
+    full = square(px)
+    full.save(f"{folder}/ic_launcher.png")
+    full.save(f"{folder}/ic_launcher_round.png")
+    foreground(int(px * 108 / 48)).save(f"{folder}/ic_launcher_foreground.png")
+
+os.makedirs(f"{RES}/values", exist_ok=True)
+with open(f"{RES}/values/ic_launcher_background.xml", "w") as f:
+    f.write(f'<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">{BG_HEX}</color>\n</resources>\n')
 print("Launcher icons written.")

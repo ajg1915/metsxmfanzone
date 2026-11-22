@@ -1,37 +1,43 @@
-"""Builds the TV banner and launcher icons from the site's own logo (src/assets/metsxmfanzone-logo.png).
-Run from tv-app/ after `npx cap add android`. Keeps images out of the repo: they are generated in the build."""
+"""Builds the TV banner and launcher icons from the MetsXMFanZone TV app icon (tv-app/icons/tv-icon.png).
+Run from tv-app/ after `npx cap add android`."""
 import os
 import sys
 from PIL import Image
 
-SRC = sys.argv[1] if len(sys.argv) > 1 else "../src/assets/metsxmfanzone-logo.png"
+SRC = sys.argv[1] if len(sys.argv) > 1 else "icons/tv-icon.png"
 RES = "android/app/src/main/res"
-BG = (7, 16, 31, 255)  # #07101f
+BG = (11, 58, 140, 255)  # #0B3A8C
+BANNER_BG = (7, 16, 31, 255)  # #07101f
 
-logo = Image.open(SRC).convert("RGBA")
+icon = Image.open(SRC).convert("RGBA")
+icon = icon.crop(icon.getbbox())
 
-def fit(img, box_w, box_h, pad=0.12):
-    w = int(box_w * (1 - 2 * pad))
-    h = int(box_h * (1 - 2 * pad))
-    scale = min(w / img.width, h / img.height)
-    return img.resize((max(1, int(img.width * scale)), max(1, int(img.height * scale))), Image.LANCZOS)
+def square(px):
+    s = max(icon.size)
+    sq = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    sq.paste(icon, ((s - icon.width) // 2, (s - icon.height) // 2))
+    return sq.resize((px, px), Image.LANCZOS)
 
-def on_canvas(w, h, pad=0.12):
-    canvas = Image.new("RGBA", (w, h), BG)
-    art = fit(logo, w, h, pad)
-    canvas.paste(art, ((w - art.width) // 2, (h - art.height) // 2), art)
-    return canvas
-
-# Android TV banner: 320x180
+# Android TV banner: 320x180, icon centred on the dark MetsXMFanZone background
 os.makedirs(f"{RES}/drawable", exist_ok=True)
-on_canvas(320, 180, 0.1).convert("RGB").save(f"{RES}/drawable/tv_banner.png")
+banner = Image.new("RGBA", (320, 180), BANNER_BG)
+art = square(160)
+banner.alpha_composite(art, ((320 - 160) // 2, (180 - 160) // 2))
+banner.convert("RGB").save(f"{RES}/drawable/tv_banner.png")
 
-# Launcher icons
 sizes = {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}
 for density, px in sizes.items():
     folder = f"{RES}/mipmap-{density}"
     os.makedirs(folder, exist_ok=True)
-    icon = on_canvas(px, px, 0.08).convert("RGB")
-    for name in ("ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png"):
-        icon.save(f"{folder}/{name}")
+    full = square(px)
+    full.save(f"{folder}/ic_launcher.png")
+    full.save(f"{folder}/ic_launcher_round.png")
+    layer = Image.new("RGBA", (int(px * 108 / 48),) * 2, (0, 0, 0, 0))
+    art = square(int(layer.width * 0.62))
+    layer.alpha_composite(art, ((layer.width - art.width) // 2, (layer.height - art.height) // 2))
+    layer.save(f"{folder}/ic_launcher_foreground.png")
+
+os.makedirs(f"{RES}/values", exist_ok=True)
+with open(f"{RES}/values/ic_launcher_background.xml", "w") as f:
+    f.write('<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">#0B3A8C</color>\n</resources>\n')
 print("Banner and icons written.")

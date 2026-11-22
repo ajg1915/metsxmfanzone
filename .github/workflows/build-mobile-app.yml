@@ -47,7 +47,7 @@ jobs:
         run: |
           node scripts/patch-android.mjs
           pip install --quiet pillow
-          python3 scripts/make_icons.py ../src/assets/metsxmfanzone-logo.png
+          python3 scripts/make_icons.py icons/app-icon.png
           npx cap sync android
 
       - name: Build APK
