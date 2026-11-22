@@ -1,0 +1,103 @@
+name: Build TV app for Amazon Appstore
+
+# Builds a RELEASE (non-debug) APK of the TV app for submitting to the Amazon Appstore.
+# It is separate from build-tv-app.yml on purpose: that one keeps publishing the debug APK that
+# members install with the Downloader app, so their installs keep updating normally.
+# Amazon removes our signature and re-signs every upload with its own key, so a key made on the
+# spot is fine here. If you later add the secrets TV_KEYSTORE_BASE64 / TV_KEYSTORE_PASSWORD,
+# that key is used instead.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-tv-app-amazon.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: tv-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tv-app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Make it a TV app (launcher entry, banner, icons)
+        run: |
+          node scripts/patch-android.mjs
+          pip install --quiet pillow
+          python3 scripts/make_icons.py ../src/assets/metsxmfanzone-logo.png
+          npx cap sync android
+
+      - name: Set version (must go up with every Amazon upload)
+        working-directory: tv-app/android/app
+        run: |
+          CODE=$((100 + ${{ github.run_number }}))
+          sed -i -E "s/versionCode [0-9]+/versionCode $CODE/" build.gradle
+          sed -i -E "s/versionName \"[^\"]*\"/versionName \"1.0.$CODE\"/" build.gradle
+          grep -E "versionCode|versionName" build.gradle
+
+      - name: Build release APK
+        working-directory: tv-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Sign APK
+        env:
+          KS_B64: ${{ secrets.TV_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.TV_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > release.jks
+            PASS="$KS_PASS"
+          else
+            PASS="mxfz-$(openssl rand -hex 12)"
+            keytool -genkeypair -keystore release.jks -alias tv -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$PASS" -keypass "$PASS" -dname "CN=MetsXMFanZone, O=MetsXMFanZone, C=US"
+          fi
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          "$BT/zipalign" -f -p 4 android/app/build/outputs/apk/release/app-release-unsigned.apk aligned.apk
+          "$BT/apksigner" sign --ks release.jks --ks-key-alias tv --ks-pass "pass:$PASS" --key-pass "pass:$PASS" \
+            --out MetsXMFanZone-TV-Amazon.apk aligned.apk
+          "$BT/apksigner" verify MetsXMFanZone-TV-Amazon.apk
+          rm -f release.jks aligned.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MetsXMFanZone-TV-Amazon
+          path: tv-app/MetsXMFanZone-TV-Amazon.apk
+
+      - name: Publish to the tv-app-amazon release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete tv-app-amazon --cleanup-tag --yes || true
+          gh release create tv-app-amazon MetsXMFanZone-TV-Amazon.apk \
+            --target "$GITHUB_SHA" \
+            --title "MetsXMFanZone TV app (Amazon Appstore build)" \
+            --notes "Release build for uploading to the Amazon Appstore. Members should keep using the tv-app release. Built from $GITHUB_SHA."

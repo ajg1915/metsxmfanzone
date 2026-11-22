@@ -16,7 +16,7 @@ import { TVTopBar } from "@/components/tv/TVTopBar";
 import { TVSignIn } from "@/components/tv/TVSignIn";
 import { TVContentRail } from "@/components/tv/TVContentRail";
 import TVNYScores from "@/components/tv/TVNYScores";
-import { streamPath, NETWORK_STREAM, leaveTV } from "@/lib/tvNavigation";
+import { streamPath, NETWORK_STREAM, leaveTV, isTVApp } from "@/lib/tvNavigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePlanAccess } from "@/hooks/usePlanAccess";
 import { useAuth } from "@/hooks/useAuth";
@@ -406,6 +406,8 @@ const TVDashboard = () => {
             this screen will open.
           </p>
           <div className="flex flex-col gap-4 items-center">
+            {/* No plans/checkout inside the installed TV app (app store rules): members join on the website. */}
+            {!isTVApp() && (
             <Button
               onClick={() => navigate("/pricing")}
               className="gap-3 rounded-full bg-white text-[color:var(--tv-bg)] hover:bg-white/90 text-[1.3rem] font-bold px-10 py-7"
@@ -413,6 +415,7 @@ const TVDashboard = () => {
               <Crown className="w-6 h-6" />
               View plans
             </Button>
+            )}
             <Button
               variant="ghost"
               onClick={() => void signOut()}
