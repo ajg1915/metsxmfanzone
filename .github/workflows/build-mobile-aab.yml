@@ -106,3 +106,4 @@ jobs:
 # Rebuilt with the dark blue tile and orange border launcher icon.
 # Circle orange border for round icons.
 # Border matches each icon shape (square / round).
+# Orange border at the icon edge on every shape.

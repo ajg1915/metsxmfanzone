@@ -50,7 +50,8 @@ def tile_round(px):
     return img.resize((px, px), Image.LANCZOS)
 
 def adaptive_foreground(px, round_shape=False):
-    """Adaptive-icon layer (108dp canvas): dark blue fill, orange ring and the artwork, all inside the safe zone."""
+    """Adaptive-icon layer (108dp canvas). The launcher cuts it to its own shape, so the whole canvas is orange
+    and the dark blue tile sits inside it: the orange shows as the border right at the edge of the icon."""
     S = px * 4
     c1, c2 = (15, 79, 147), (7, 17, 29)
     g = Image.new("RGB", (S, S))
@@ -59,15 +60,17 @@ def adaptive_foreground(px, round_shape=False):
         for x in range(S):
             t = min(1, max(0, (x * 0.35 + y * 0.65) / S))
             pix[x, y] = tuple(int(c1[i] * (1 - t) + c2[i] * t) for i in range(3))
-    img = g.convert("RGBA")
-    box = int(S * (0.58 if round_shape else 0.52))
+    img = Image.new("RGBA", (S, S), (255, 68, 0, 255))
+    box = int(S * (0.655 if round_shape else 0.65))
     o = (S - box) // 2
-    ring = ImageDraw.Draw(img)
+    mask = Image.new("L", (S, S), 0)
+    md = ImageDraw.Draw(mask)
     if round_shape:
-        ring.ellipse((o, o, o + box, o + box), outline=(255, 68, 0), width=max(2, int(S * 0.014)))
+        md.ellipse((o, o, o + box, o + box), fill=255)
     else:
-        ring.rounded_rectangle((o, o, o + box, o + box), radius=int(box * 0.30), outline=(255, 68, 0), width=max(2, int(S * 0.014)))
-    a = art(int(box * (0.74 if round_shape else 0.86)))
+        md.rounded_rectangle((o, o, o + box, o + box), radius=int(box * 0.26), fill=255)
+    img.paste(g, (0, 0), mask)
+    a = art(int(box * (0.78 if round_shape else 0.84)))
     img.alpha_composite(a, ((S - a.width) // 2, (S - a.height) // 2))
     return img.resize((px, px), Image.LANCZOS)
 
