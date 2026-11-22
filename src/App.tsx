@@ -19,6 +19,7 @@ import SocialMediaBar from "@/components/SocialMediaBar";
 import MobileGuide from "@/components/MobileGuide";
 import LiveEventPopup from "@/components/LiveEventPopup";
 import { TVModeWrapper } from "@/components/TVModeWrapper";
+import { TVUpdateBanner } from "@/components/TVUpdateBanner";
 import { SweepstakesWheel } from "@/components/SweepstakesWheel";
 
 
@@ -321,6 +322,7 @@ const AppContent = () => {
         {/* Removed: ExitIntentPopup, most toasts. Only Live/Offline kept */}
         <StreamExitDialog />
         <LiveEventBanner />
+        <TVUpdateBanner />
         <HolidayDecor />
         <ListenMiniPlayer />
         <SocialMediaBar />

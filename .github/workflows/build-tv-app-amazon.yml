@@ -46,6 +46,9 @@ jobs:
       - name: Create Android project
         run: npx cap add android
 
+      - name: Mark this build as the Amazon Appstore one (no sideload update banner)
+        run: sed -i 's/"MetsXMFanZoneTV"/"MetsXMFanZoneTV AmazonStore"/' capacitor.config.json
+
       - name: Make it a TV app (launcher entry, banner, icons)
         run: |
           node scripts/patch-android.mjs
