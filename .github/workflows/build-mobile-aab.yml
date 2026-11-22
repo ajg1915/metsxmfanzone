@@ -77,8 +77,7 @@ jobs:
             cp release.jks keystore-out/upload-keystore.jks
             printf 'alias: upload\nstore password: %s\nkey password: %s\n' "$PASS" "$PASS" > keystore-out/PASSWORD.txt
           fi
-          ALIAS=$(keytool -list -keystore release.jks -storepass "$PASS" 2>/dev/null | awk -F, 'NR==7{print $1}')
-          [ -z "$ALIAS" ] && ALIAS=upload
+          ALIAS=upload
           cp android/app/build/outputs/bundle/release/app-release.aab MetsXMFanZone.aab
           jarsigner -sigalg SHA256withRSA -digestalg SHA-256 -keystore release.jks -storepass "$PASS" -keypass "$PASS" MetsXMFanZone.aab "$ALIAS"
           jarsigner -verify MetsXMFanZone.aab | head -3
