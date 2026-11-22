@@ -112,3 +112,4 @@ jobs:
             --title "MetsXMFanZone Android app bundle for Google Play" \
             --notes "Signed release bundle for Google Play (targets Android 16). Members should keep using the android-app release. Built from $GITHUB_SHA."
 # Rebuilt with the dark blue tile and orange border launcher icon.
+# Circle orange border for round icons.

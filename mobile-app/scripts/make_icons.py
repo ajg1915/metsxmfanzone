@@ -30,6 +30,25 @@ def tile(px, art_scale=0.80):
     img.alpha_composite(a, ((S - a.width) // 2, (S - a.height) // 2))
     return img.resize((px, px), Image.LANCZOS)
 
+def tile_round(px):
+    """Round launcher icon: dark blue circle with a circular orange edge and the artwork inside."""
+    S = px * 4
+    c1, c2 = (15, 79, 147), (7, 17, 29)
+    g = Image.new("RGB", (S, S))
+    pix = g.load()
+    for y in range(S):
+        for x in range(S):
+            t = min(1, max(0, (x * 0.35 + y * 0.65) / S))
+            pix[x, y] = tuple(int(c1[i] * (1 - t) + c2[i] * t) for i in range(3))
+    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    mask = Image.new("L", (S, S), 0)
+    ImageDraw.Draw(mask).ellipse((0, 0, S - 1, S - 1), fill=255)
+    img.paste(g, (0, 0), mask)
+    ImageDraw.Draw(img).ellipse((S * 0.012, S * 0.012, S * 0.988, S * 0.988), outline=(255, 68, 0), width=max(2, int(S * 0.02)))
+    a = art(int(S * 0.62))
+    img.alpha_composite(a, ((S - a.width) // 2, (S - a.height) // 2))
+    return img.resize((px, px), Image.LANCZOS)
+
 def adaptive_foreground(px):
     """Adaptive-icon layer (108dp canvas): dark blue fill, orange ring and the artwork, all inside the safe zone."""
     S = px * 4
@@ -41,10 +60,10 @@ def adaptive_foreground(px):
             t = min(1, max(0, (x * 0.35 + y * 0.65) / S))
             pix[x, y] = tuple(int(c1[i] * (1 - t) + c2[i] * t) for i in range(3))
     img = g.convert("RGBA")
-    box = int(S * 0.52)
+    box = int(S * 0.58)
     o = (S - box) // 2
-    ImageDraw.Draw(img).rounded_rectangle((o, o, o + box, o + box), radius=int(box * 0.30), outline=(255, 68, 0), width=max(2, int(S * 0.012)))
-    a = art(int(box * 0.86))
+    ImageDraw.Draw(img).ellipse((o, o, o + box, o + box), outline=(255, 68, 0), width=max(2, int(S * 0.014)))
+    a = art(int(box * 0.74))
     img.alpha_composite(a, ((S - a.width) // 2, (S - a.height) // 2))
     return img.resize((px, px), Image.LANCZOS)
 
@@ -60,7 +79,7 @@ for density, px in sizes.items():
     os.makedirs(folder, exist_ok=True)
     full = tile(px)
     full.save(f"{folder}/ic_launcher.png")
-    full.save(f"{folder}/ic_launcher_round.png")
+    tile_round(px).save(f"{folder}/ic_launcher_round.png")
     adaptive_foreground(int(px * 108 / 48)).save(f"{folder}/ic_launcher_foreground.png")
 
 os.makedirs(f"{RES}/values", exist_ok=True)
