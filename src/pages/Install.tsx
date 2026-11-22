@@ -170,7 +170,7 @@ const Install = () => {
                     <h2 className="text-lg font-bold">MetsXMFanZone TV app</h2>
                     <p className="text-sm text-muted-foreground">
                       A separate app for Fire TV, Android TV and Google TV. On your TV, open the Downloader app and enter code{" "}
-                      <b className="text-foreground">6750144</b>.
+                      <b className="text-foreground">1297199</b>.
                     </p>
                   </div>
                 </div>

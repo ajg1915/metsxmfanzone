@@ -5,7 +5,7 @@ import { Check, Copy, Download, LockKeyhole, Smartphone, Tv } from "lucide-react
 import { usePlanAccess } from "@/hooks/usePlanAccess";
 
 // Account: the Android app and the TV app, for paid members only.
-const TV_CODE = "6750144";
+const TV_CODE = "1297199";
 const ANDROID_URL = "https://metsxmfanzone.com/android-app";
 const TV_URL = "https://metsxmfanzone.com/tv-app";
 
