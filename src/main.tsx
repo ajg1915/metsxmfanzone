@@ -4,6 +4,10 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import { isRecoverableDynamicImportError, reloadForFreshAssets } from "./lib/lazyWithRetry";
 import "./index.css";
+import { startTVAppNames } from "./lib/tvAppNames";
+
+// Installed TV app (Amazon Appstore build): show "Premium Games 1/2/3" instead of outside brand names.
+if (navigator.userAgent.includes("MetsXMFanZoneTV")) startTVAppNames();
 
 // Keep one stable public hostname. Older social posts and saved links may still
 // use www; normalize them before the app, service worker, or auth client starts.

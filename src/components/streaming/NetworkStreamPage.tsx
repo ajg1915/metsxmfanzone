@@ -1,4 +1,6 @@
 import type { ComponentType, CSSProperties, ReactNode } from "react";
+import { isTVApp } from "@/lib/tvNavigation";
+import { tvAppName } from "@/lib/tvAppNames";
 import { motion } from "framer-motion";
 import { Signal, Tv } from "lucide-react";
 import Navigation from "@/components/Navigation";
@@ -52,8 +54,8 @@ const NetworkStreamPage = ({ cfg }: { cfg: NetworkPageConfig }) => {
           <StreamBrandHeader
             brand={brand}
             mark={cfg.mark}
-            title={cfg.title}
-            titleAccent={cfg.titleAccent}
+            title={isTVApp() ? tvAppName(`${cfg.title} ${cfg.titleAccent}`).replace(/\s*\d+$/, "") : cfg.title}
+            titleAccent={isTVApp() ? tvAppName(`${cfg.title} ${cfg.titleAccent}`).match(/\d+$/)?.[0] ?? "" : cfg.titleAccent}
             badges={[<><Signal className="h-3 w-3" /> {cfg.badges[0]}</>, <><Tv className="h-3 w-3" /> {cfg.badges[1]}</>]}
           />
 
