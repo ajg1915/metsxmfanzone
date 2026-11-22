@@ -59,14 +59,35 @@ jobs:
           sed -i -E "s/versionName \"[^\"]*\"/versionName \"1.0.$CODE\"/" build.gradle
           grep -E "versionCode|versionName" build.gradle
 
+      # Same signing key on every build, so a new file installs over the old one (no "app conflict").
+      - name: Restore the signing key
+        id: keycache
+        uses: actions/cache@v4
+        with:
+          path: tv-app/tv-signing.jks
+          key: tv-signing-key-v1
+
+      - name: Create the signing key (first time only)
+        run: |
+          if [ ! -s tv-signing.jks ]; then
+            keytool -genkeypair -keystore tv-signing.jks -alias tv -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass mxfz-tv-sign -keypass mxfz-tv-sign -dname "CN=MetsXMFanZone TV, O=MetsXMFanZone, C=US"
+          fi
+
       - name: Build APK
         working-directory: tv-app/android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Name the APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk MetsXMFanZone-TV.apk
+      - name: Sign and name the APK
+        run: |
+          BT="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          "$BT/zipalign" -f -p 4 android/app/build/outputs/apk/release/app-release-unsigned.apk aligned.apk
+          "$BT/apksigner" sign --ks tv-signing.jks --ks-key-alias tv --ks-pass pass:mxfz-tv-sign --key-pass pass:mxfz-tv-sign \
+            --out MetsXMFanZone-TV.apk aligned.apk
+          "$BT/apksigner" verify --print-certs MetsXMFanZone-TV.apk | head -3
+          rm -f aligned.apk
 
       - uses: actions/upload-artifact@v4
         with:
