@@ -105,3 +105,4 @@ jobs:
             --notes "Signed release bundle for the Amazon Appstore / Google Play. Members should keep using the android-app release. Built from $GITHUB_SHA."
 # Rebuilt with the dark blue tile and orange border launcher icon.
 # Circle orange border for round icons.
+# Border matches each icon shape (square / round).

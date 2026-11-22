@@ -103,3 +103,4 @@ jobs:
             --notes "Release build for uploading to the Amazon Appstore. Members should keep using the tv-app release. Built from $GITHUB_SHA."
 # Rebuilt with the dark blue tile and orange border launcher icon.
 # Circle orange border for round icons.
+# Border matches each icon shape (square / round).
