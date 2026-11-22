@@ -1,0 +1,106 @@
+name: Build Android app bundle (AAB)
+
+# Builds a signed RELEASE app bundle (.aab) of the phone and tablet app for the Amazon Appstore / Google Play.
+# It is separate from build-mobile-app.yml on purpose: that one keeps publishing the debug APK members install.
+# Run it by hand from the Actions tab. The bundle is published to the "android-app-aab" release.
+#
+# Signing key: if the secrets MOBILE_KEYSTORE_BASE64 and MOBILE_KEYSTORE_PASSWORD exist, that key is used.
+# If they do not, a key is made on the spot and saved as the private "upload-keystore" artifact of this run
+# (only people with access to the repo can download it). KEEP that file and add it as the secrets above:
+# Google Play needs every later upload to be signed with the same key.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-mobile-aab.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile-app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Version, permissions and branded icons
+        run: |
+          node scripts/patch-android.mjs
+          pip install --quiet pillow
+          python3 scripts/make_icons.py icons/app-icon.png
+          npx cap sync android
+
+      - name: Build release bundle
+        working-directory: mobile-app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon --stacktrace
+
+      - name: Sign the bundle
+        env:
+          KS_B64: ${{ secrets.MOBILE_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.MOBILE_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > release.jks
+            PASS="$KS_PASS"
+          else
+            PASS="mxfz-$(openssl rand -hex 12)"
+            keytool -genkeypair -keystore release.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "$PASS" -keypass "$PASS" -dname "CN=MetsXMFanZone, O=MetsXMFanZone, C=US"
+            mkdir -p keystore-out
+            cp release.jks keystore-out/upload-keystore.jks
+            printf 'alias: upload\nstore password: %s\nkey password: %s\n' "$PASS" "$PASS" > keystore-out/PASSWORD.txt
+          fi
+          ALIAS=$(keytool -list -keystore release.jks -storepass "$PASS" 2>/dev/null | awk -F, 'NR==7{print $1}')
+          [ -z "$ALIAS" ] && ALIAS=upload
+          cp android/app/build/outputs/bundle/release/app-release.aab MetsXMFanZone.aab
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 -keystore release.jks -storepass "$PASS" -keypass "$PASS" MetsXMFanZone.aab "$ALIAS"
+          jarsigner -verify MetsXMFanZone.aab | head -3
+          rm -f release.jks
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MetsXMFanZone-AAB
+          path: mobile-app/MetsXMFanZone.aab
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: upload-keystore
+          path: mobile-app/keystore-out
+          if-no-files-found: ignore
+
+      - name: Publish to the android-app-aab release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete android-app-aab --cleanup-tag --yes || true
+          gh release create android-app-aab MetsXMFanZone.aab \
+            --target "$GITHUB_SHA" \
+            --title "MetsXMFanZone Android app bundle (AAB)" \
+            --notes "Signed release bundle for the Amazon Appstore / Google Play. Members should keep using the android-app release. Built from $GITHUB_SHA."
