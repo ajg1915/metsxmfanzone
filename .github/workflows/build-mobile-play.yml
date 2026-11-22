@@ -3,7 +3,7 @@ name: Build Google Play app bundle (AAB)
 # Builds a signed RELEASE app bundle (.aab) of the phone and tablet app for GOOGLE PLAY ONLY.
 # Google Play requires new apps and updates to target Android 16 (API 36), so this build raises the target to 36.
 # The Amazon build (build-mobile-aab.yml) and the member APK build are left alone.
-# Run it by hand from the Actions tab. The bundle is published to the "android-app-play" release.
+# Run it by hand from the Actions tab (or edit this file). The bundle is published to the "android-app-play" release.
 #
 # Signing key: if the secrets MOBILE_KEYSTORE_BASE64 and MOBILE_KEYSTORE_PASSWORD exist, that key is used.
 # If they do not, a key is made on the spot and saved as the private "play-upload-keystore" artifact of this run
