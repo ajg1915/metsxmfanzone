@@ -31,7 +31,7 @@ async function stories() {
     title: cleanText(p.title) || "Untitled",
     summary: stripHtml(p.excerpt || p.content || "").slice(0, 160),
     url: `${SITE_URL}/blog/${encodeURIComponent(p.slug || "")}`,
-    image: i === 0 && p.featured_image_url ? resolveImage(p.featured_image_url) : "",
+    image: p.featured_image_url ? resolveImage(p.featured_image_url) : "",
   }));
 }
 
