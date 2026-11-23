@@ -355,6 +355,7 @@ export default function ArticleEditor() {
       <ImageCropDialog
         file={cropReq?.file ?? null}
         defaultAspect={cropReq?.kind === "featured" ? 16 / 9 : null}
+        coverMode={cropReq?.kind === "featured"}
         onCancel={() => setCropReq(null)}
         onDone={(cropped) => { const k = cropReq?.kind ?? "inline"; setCropReq(null); void finishImage(cropped, k); }}
       />

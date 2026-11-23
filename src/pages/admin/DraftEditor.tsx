@@ -688,6 +688,7 @@ export default function DraftEditor() {
       <ImageCropDialog
         file={cropReq?.file ?? null}
         defaultAspect={cropReq?.kind === "cover" ? 16 / 9 : null}
+        coverMode={cropReq?.kind === "cover"}
         onCancel={() => setCropReq(null)}
         onDone={(cropped) => { const k = cropReq?.kind ?? "inline"; setCropReq(null); void finishUpload(cropped, k); }}
       />

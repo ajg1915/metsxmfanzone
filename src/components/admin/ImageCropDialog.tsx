@@ -7,9 +7,13 @@ import { Loader2, RotateCcw, RotateCw } from "lucide-react";
  * Crop an image before it is uploaded. Opens when `file` is set.
  * - onDone gets the cropped image as a JPEG File (max 1600px wide)
  * - onCancel closes without uploading anything
+ * - coverMode: article cover photos are saved at least 1200px wide, the size
+ *   Facebook and X need to show the big photo card when an article is shared.
+ *   A warning shows when the photo itself is smaller than that.
  */
 
 const MAX_OUTPUT_WIDTH = 1600;
+const SHARE_MIN_WIDTH = 1200; // social share cards need at least this width
 const MIN_CROP = 48; // smallest crop side, in source pixels
 const EDGE_ROOM = 24; // space kept around the photo so the corner handles stay visible
 
@@ -29,11 +33,12 @@ const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 interface Props {
   file: File | null;
   defaultAspect?: number | null;
+  coverMode?: boolean;
   onCancel: () => void;
   onDone: (cropped: File) => void;
 }
 
-export default function ImageCropDialog({ file, defaultAspect = null, onCancel, onDone }: Props) {
+export default function ImageCropDialog({ file, defaultAspect = null, coverMode = false, onCancel, onDone }: Props) {
   const [src, setSrc] = useState<string | null>(null);
   const [nat, setNat] = useState({ w: 0, h: 0 });
   const [aspect, setAspect] = useState<number | null>(defaultAspect);
@@ -159,7 +164,11 @@ export default function ImageCropDialog({ file, defaultAspect = null, onCancel, 
     setCrop((c) => ({ ...c, x: clamp(c.x + v[0], 0, nat.w - c.w), y: clamp(c.y + v[1], 0, nat.h - c.h) }));
   };
 
-  const outW = Math.round(crop.w > MAX_OUTPUT_WIDTH ? MAX_OUTPUT_WIDTH : crop.w);
+  const cropW = Math.round(crop.w);
+  const outW = Math.round(
+    crop.w > MAX_OUTPUT_WIDTH ? MAX_OUTPUT_WIDTH : coverMode && crop.w > 0 && crop.w < SHARE_MIN_WIDTH ? SHARE_MIN_WIDTH : crop.w,
+  );
+  const tooSmall = coverMode && cropW > 0 && cropW < SHARE_MIN_WIDTH;
   const outH = Math.round(crop.w > 0 ? (crop.h * outW) / crop.w : 0);
 
   const finish = () => {
@@ -171,6 +180,8 @@ export default function ImageCropDialog({ file, defaultAspect = null, onCancel, 
     const g = c.getContext("2d");
     if (!g) { setBusy(false); return; }
     g.fillStyle = "#ffffff"; // JPEG has no transparency
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = "high";
     g.fillRect(0, 0, outW, outH);
     g.drawImage(im, crop.x, crop.y, crop.w, crop.h, 0, 0, outW, outH);
     c.toBlob(
@@ -250,6 +261,13 @@ export default function ImageCropDialog({ file, defaultAspect = null, onCancel, 
           <p className="shrink-0 text-xs text-muted-foreground tabular-nums">
             Uploads as {outW} &times; {outH} px (original {nat.w} &times; {nat.h} px)
           </p>
+          {tooSmall && (
+            <p role="status" className="shrink-0 rounded-md border border-orange-500/60 bg-orange-500/10 px-3 py-2 text-xs leading-snug text-foreground">
+              <strong className="text-orange-500">Small photo.</strong> Your crop is only {cropW} px wide, so it will be
+              enlarged to {SHARE_MIN_WIDTH} px and may look soft when shared. For a sharp, full-size photo on Facebook
+              and X, use a photo at least {SHARE_MIN_WIDTH} px wide.
+            </p>
+          )}
           </div>
 
           <DialogFooter className="shrink-0 flex-row justify-end gap-2 sm:gap-2">

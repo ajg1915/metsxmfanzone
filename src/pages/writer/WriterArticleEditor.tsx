@@ -637,6 +637,7 @@ export default function WriterArticleEditor() {
       <ImageCropDialog
         file={cropFile}
         defaultAspect={16 / 9}
+        coverMode
         onCancel={() => setCropFile(null)}
         onDone={(cropped) => { setCropFile(null); void uploadFeatured(cropped); }}
       />
