@@ -4,7 +4,7 @@ import {
   Megaphone, BookOpen, Trophy, Send, Wallpaper,
   Activity, PenLine, Settings, Layers, Sparkles, Monitor,
   ClipboardList, Star, BarChart3, Share2, FolderOpen, Gift, Bot, Search,
-  LayoutTemplate, Calendar, CreditCard, Tv, ClipboardCheck,
+  LayoutTemplate, Calendar, CreditCard, Tv, ClipboardCheck, ShoppingBag, Package,
 } from "lucide-react";
 
 type Icon = React.ComponentType<{ className?: string }>;
@@ -110,6 +110,21 @@ export const ADMIN_HUBS: AdminHub[] = [
           { title: "Community Posts", url: "/admin/posts", icon: FileText },
           { title: "Tutorials", url: "/admin/tutorials", icon: BookOpen },
           { title: "Mobile Guide", url: "/admin/guide", icon: BookOpen },
+        ],
+      },
+    ],
+  },
+  {
+    key: "shop",
+    title: "Shop",
+    icon: ShoppingBag,
+    hint: "Products, orders, shipping",
+    groups: [
+      {
+        title: "Shop",
+        items: [
+          { title: "Products", url: "/admin/shop/products", icon: Package },
+          { title: "View Shop", url: "/shop", icon: ShoppingBag },
         ],
       },
     ],
