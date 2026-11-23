@@ -104,7 +104,7 @@ function buildHtml(post, slug, siteUrl) {
 
   <meta property="article:published_time" content="${escapeHtml(post.published_at || "")}">
   <meta property="article:section" content="${escapeHtml(post.category || "")}">
-  <meta property="article:author" content="MetsXMFanZone">
+  <meta property="article:author" content="Anthony Gennaro">
   ${tagsMeta}
 
   <meta name="twitter:card" content="summary_large_image">

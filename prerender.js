@@ -153,7 +153,7 @@ function injectBody(html, bodyHtml) {
 }
 
 
-function buildArticleBody({ title, image, description, contentHtml, publishedTime, canonical, author = 'MetsXMFanZone' }) {
+function buildArticleBody({ title, image, description, contentHtml, publishedTime, canonical, author = 'Anthony Gennaro' }) {
   const safeTitle = escapeHtml(title || '');
   const body = contentHtml && String(contentHtml).trim().length > 0
     ? String(contentHtml)
@@ -223,7 +223,7 @@ function buildBlogHead(post) {
     image: [socialImage],
     datePublished: publishedTime,
     dateModified: modifiedTime,
-    author: { '@type': 'Organization', name: 'MetsXMFanZone', url: SITE_URL },
+    author: { '@type': 'Person', name: 'Anthony Gennaro', url: `${SITE_URL}/contact` },
     publisher: {
       '@type': 'Organization',
       name: 'MetsXMFanZone',
@@ -242,7 +242,7 @@ function buildBlogHead(post) {
     <meta property="article:published_time" content="${escapeHtml(publishedTime)}" />
     <meta property="article:modified_time" content="${escapeHtml(modifiedTime)}" />
     <meta property="article:section" content="${escapeHtml(post.category || '')}" />
-    <meta property="article:author" content="MetsXMFanZone" />
+    <meta property="article:author" content="Anthony Gennaro" />
     ${tagsMeta}
   `.trim();
 }

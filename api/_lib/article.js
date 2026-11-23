@@ -114,7 +114,7 @@ export function renderArticleBody(post) {
   <p class="crumbs"><a href="${SITE_URL}/">Home</a> / <a href="${SITE_URL}/blog">Blog</a></p>
   <p class="blog-kicker">${escapeHtml(cleanCategory(post.category) || "Mets News")}</p>
   <h1>${escapeHtml(title)}</h1>
-  <div class="byline"><span>By MetsXMFanZone</span><i class="dot"></i><time datetime="${escapeHtml(post.published_at || "")}">${escapeHtml(formatDate(post.published_at) || date)}</time><i class="dot"></i><span>${readMinutes(post)} min read</span></div>
+  <div class="byline"><span>By <a href="${SITE_URL}/contact" rel="author">Anthony Gennaro</a></span><i class="dot"></i><time datetime="${escapeHtml(post.published_at || "")}">${escapeHtml(formatDate(post.published_at) || date)}</time><i class="dot"></i><span>${readMinutes(post)} min read</span></div>
   <img class="blog-hero" fetchpriority="high" src="${escapeHtml(image)}" alt="${escapeHtml(title)}" width="1200" height="630">
   ${post.excerpt ? `<p class="blog-excerpt">${escapeHtml(post.excerpt)}</p>` : ""}
   <div class="blog-body">${body}</div>
@@ -165,7 +165,12 @@ export function buildMetaTags(post, slug, { canonical } = {}) {
     url: postUrl,
     inLanguage: "en-US",
     ...(section ? { articleSection: section } : {}),
-    author: organization,
+    author: {
+      "@type": "Person",
+      name: "Anthony Gennaro",
+      url: `${SITE_URL}/contact`,
+      worksFor: { "@id": `${SITE_URL}/#organization` },
+    },
     publisher: organization,
   };
   const breadcrumbs = {
@@ -193,6 +198,8 @@ export function buildMetaTags(post, slug, { canonical } = {}) {
   ${image === FALLBACK_IMAGE ? '<meta property="og:image:width" content="1200">\n  <meta property="og:image:height" content="630">' : ""}
   <meta property="og:image:alt" content="${escapeHtml(headline)}">
   <meta property="og:locale" content="en_US">
+  <meta name="author" content="Anthony Gennaro">
+  <meta property="article:author" content="Anthony Gennaro">
   <meta property="article:published_time" content="${escapeHtml(post.published_at || "")}">
   ${post.updated_at ? `<meta property="article:modified_time" content="${escapeHtml(post.updated_at)}">` : ""}
   ${section ? `<meta property="article:section" content="${escapeHtml(section)}">` : ""}
@@ -238,6 +245,7 @@ export const ARTICLE_STYLES = `
   .blog-kicker { display:inline-block; text-transform:uppercase; letter-spacing:.14em; font-size:.72rem; color:#fff; background:var(--orange); font-weight:800; margin:0 0 .8rem; padding:.28rem .6rem; border-radius:6px; }
   .blog-article h1 { font-size:clamp(1.75rem,5.4vw,2.9rem); line-height:1.12; letter-spacing:-.02em; margin:0 0 .8rem; }
   .byline { display:flex; flex-wrap:wrap; align-items:center; gap:.4rem .9rem; color:var(--muted); font-size:.86rem; margin-bottom:1.2rem; }
+  .byline a { color:inherit; text-decoration:none; font-weight:600; }
   .byline .dot { width:4px; height:4px; border-radius:50%; background:var(--line); }
   .blog-hero { display:block; width:100%; height:auto; aspect-ratio:1200/630; object-fit:cover; border-radius:16px; border:1px solid var(--line); margin:0 0 1.4rem; background:var(--panel); }
   .blog-excerpt { font-size:1.18rem; line-height:1.55; color:var(--soft); border-left:4px solid var(--orange); padding-left:1rem; margin:0 0 1.6rem; }

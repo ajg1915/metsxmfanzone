@@ -308,7 +308,7 @@ export default function BlogPost() {
     description: post.excerpt || post.title,
     image: post.featured_image_url,
     datePublished: post.published_at,
-    authorName: "MetsXMFanZone",
+    authorName: "Anthony Gennaro",
     url: canonicalUrl,
   });
 
@@ -324,7 +324,7 @@ export default function BlogPost() {
         twitterCard="summary_large_image"
         publishedTime={post.published_at}
         modifiedTime={post.published_at}
-        author="MetsXMFanZone"
+        author="Anthony Gennaro"
         section={post.category}
         tags={post.tags}
         readingTime={readingTime}
@@ -382,7 +382,7 @@ export default function BlogPost() {
                 <span className="text-sm">{readingTime} min read</span>
               </div>
               <p className="text-xs text-muted-foreground mb-4">
-                By <span className="font-semibold text-foreground">MetsXMFanZone</span> · <span className="text-primary">Orange & Blue Media</span>
+                By <span className="font-semibold text-foreground">Anthony Gennaro</span> · <span className="text-primary">Orange & Blue Media</span>
               </p>
               <div className="flex items-center gap-3 mb-4">
                 {/* Free Browser TTS Controls */}

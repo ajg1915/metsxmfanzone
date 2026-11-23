@@ -246,9 +246,9 @@ export function generateArticleSchema({
     "datePublished": datePublished,
     "dateModified": dateModified || datePublished,
     "author": {
-      "@type": "Organization",
+      "@type": authorName === SITE_NAME ? "Organization" : "Person",
       "name": authorName,
-      "url": BASE_URL,
+      "url": authorName === SITE_NAME ? BASE_URL : `${BASE_URL}/contact`,
     },
     "publisher": {
       "@type": "Organization",
