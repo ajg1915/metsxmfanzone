@@ -158,9 +158,8 @@ export default function Blog() {
               </p>
             ) : (
               <>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/blog/${filteredPosts[0].slug}`)}
+                <Link
+                  to={`/blog/${filteredPosts[0].slug}`}
                   className="relative mx-4 mt-3.5 block h-[196px] w-[calc(100%-2rem)] overflow-hidden rounded-[14px] border border-border/50 bg-card text-left"
                 >
                   {filteredPosts[0].featured_image_url && (
@@ -174,14 +173,13 @@ export default function Blog() {
                     </span>
                     <span className="text-[12.5px] text-foreground/80">{postDate(filteredPosts[0])}</span>
                   </div>
-                </button>
+                </Link>
 
                 <div className="mt-4 flex flex-col gap-4 px-4">
                   {filteredPosts.slice(1).map((post) => (
-                    <button
+                    <Link
                       key={post.id}
-                      type="button"
-                      onClick={() => navigate(`/blog/${post.slug}`)}
+                      to={`/blog/${post.slug}`}
                       className="flex items-center gap-3 text-left"
                     >
                       <div className="relative h-[78px] w-[104px] shrink-0 overflow-hidden rounded-[10px] border border-border/50 bg-gradient-to-br from-secondary/60 to-card">
@@ -193,7 +191,7 @@ export default function Blog() {
                         <p className="line-clamp-3 text-[15.5px] font-bold leading-tight text-foreground">{post.title}</p>
                         <p className="mt-1 text-[12.5px] text-muted-foreground">{postDate(post)}</p>
                       </div>
-                    </button>
+                    </Link>
                   ))}
                 </div>
               </>
@@ -240,12 +238,9 @@ export default function Blog() {
                     <span className="bg-primary text-primary-foreground px-2 py-0.5 rounded text-xs">FEATURED</span>
                     Latest Article
                   </h2>
+                  <Link to={`/blog/${filteredPosts[0].slug}`} className="block">
                   <Card 
                     className="hover:shadow-xl transition-shadow cursor-pointer overflow-hidden"
-                    onClick={() => navigate(`/blog/${filteredPosts[0].slug}`)}
-                    role="link"
-                    tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === "Enter") navigate(`/blog/${filteredPosts[0].slug}`); }}
                   >
                     <div className="grid md:grid-cols-2 gap-0">
                       {filteredPosts[0].featured_image_url && (
@@ -281,6 +276,7 @@ export default function Blog() {
                       </div>
                     </div>
                   </Card>
+                  </Link>
                 </div>
               )}
 
@@ -290,13 +286,9 @@ export default function Blog() {
                   <h2 className="text-lg font-semibold mb-4">More Articles</h2>
                   <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                     {filteredPosts.slice(1).map((post) => (
+                      <Link key={post.id} to={`/blog/${post.slug}`} className="block">
                       <Card 
-                        key={post.id} 
-                        className="hover:shadow-lg transition-shadow cursor-pointer"
-                        onClick={() => navigate(`/blog/${post.slug}`)}
-                    role="link"
-                    tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === "Enter") navigate(`/blog/${post.slug}`); }}
+                        className="hover:shadow-lg transition-shadow cursor-pointer h-full"
                       >
                         {post.featured_image_url && (
                           <div className="aspect-video overflow-hidden rounded-t-lg">
@@ -333,6 +325,7 @@ export default function Blog() {
                           )}
                         </CardContent>
                       </Card>
+                      </Link>
                     ))}
                   </div>
                 </>

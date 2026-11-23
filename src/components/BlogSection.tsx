@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Clock, ArrowRight, Sparkles } from "lucide-react";
@@ -66,11 +66,6 @@ const BlogSection = () => {
     if (diffInDays === 1) return "1 day ago";
     if (diffInDays < 7) return `${diffInDays} days ago`;
     return postDate.toLocaleDateString();
-  };
-
-  const openPost = (slug: string) => {
-    if (!slug) return;
-    navigate(`/blog/${slug}`);
   };
 
   if (loading) {
@@ -155,12 +150,9 @@ const BlogSection = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.4 }}
-            onClick={() => openPost(highlightPost.slug)}
             className="group glass-card hover-lift glow-blue mb-4 cursor-pointer overflow-hidden rounded-2xl"
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => e.key === "Enter" && openPost(highlightPost.slug)}
           >
+            <Link to={`/blog/${highlightPost.slug}`} className="block">
             <article className="flex min-w-0 flex-col md:flex-row">
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-card md:aspect-auto md:min-h-[300px] md:w-1/2">
                 {highlightPost.featured_image_url ? (
@@ -227,6 +219,7 @@ const BlogSection = () => {
                 </span>
               </div>
             </article>
+            </Link>
           </motion.div>
         )}
 
@@ -239,13 +232,10 @@ const BlogSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              onClick={() => openPost(post.slug)}
               className="group glass-card hover-lift glow-blue min-w-0 cursor-pointer overflow-hidden rounded-xl"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && openPost(post.slug)}
             >
-              <article className="flex min-w-0 items-stretch gap-3 p-2.5 md:flex-col md:gap-0 md:p-0">
+              <Link to={`/blog/${post.slug}`} className="block">
+            <article className="flex min-w-0 items-stretch gap-3 p-2.5 md:flex-col md:gap-0 md:p-0">
                 <div className="relative h-[84px] w-[112px] shrink-0 overflow-hidden rounded-lg bg-card md:aspect-video md:h-auto md:w-full md:rounded-none">
                   {post.featured_image_url ? (
                     <img
@@ -278,6 +268,7 @@ const BlogSection = () => {
                   {metaRow(post)}
                 </div>
               </article>
+            </Link>
             </motion.div>
           ))}
         </div>
