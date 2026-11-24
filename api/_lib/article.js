@@ -312,7 +312,7 @@ export const ARTICLE_STYLES = `
 
 const FOOT_COLUMNS = [
   ["Watch", [["/metsxmfanzone", "Live Network"], ["/gameday-live", "Game Day Live"], ["/replay-games", "Game Replays"], ["/broadcast-schedule", "TV Schedule"], ["/tv", "TV Mode"]]],
-  ["Read", [["/blog", "News"], ["/mets-game-recaps", "Game Recaps"], ["/mets-scores", "Scores"], ["/mets-schedule-2027", "2027 Schedule"], ["/mets-roster", "Roster"]]],
+  ["Read", [["/blog", "News"], ["/mets-game-recaps", "Game Recaps"], ["/mets-scores", "Scores"], ["/mets-schedule-2027", "2027 Schedule"], ["/rss.xml", "RSS"]]],
   ["Community", [["/community", "Community"], ["/podcast", "Podcast"], ["/video-gallery", "Highlights"], ["/social", "Follow Us"], ["/business-partner", "Business Partners"]]],
   ["Support", [["/help-center", "Help Center"], ["/faqs", "FAQ"], ["/contact", "Contact Us"], ["/pricing", "Plans & Pricing"], ["/install", "Install App"]]],
 ];
