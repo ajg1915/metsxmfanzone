@@ -25,6 +25,7 @@
 //   GET  /admin/products        every product (published or hidden)
 //   POST /admin/products        add a product
 //   PUT  /admin/products/<id>   change a product
+//   POST /admin/ai/describe     {image_url, shop} -> {title, description} written from the photo (needs the Workers AI binding AI)
 //   GET  /admin/orders, /admin/orders/export.csv (Pirate Ship), POST ship / tracking import / refund
 // Checkout:
 //   GET  /checkout/config, POST /checkout/paypal, POST /checkout/paypal/capture,
@@ -71,6 +72,47 @@ async function isAdmin(request, env) {
   if (adminCache.size > 200) adminCache.clear();
   adminCache.set(token, { ok, exp: Date.now() + ADMIN_CACHE_MS });
   return ok;
+}
+
+// ---------- auto-fill a listing from its photo (Workers AI, vision model) ----------
+const VISION_MODEL = "@cf/meta/llama-4-scout-17b-16e-instruct";
+async function describePhoto(env, imageUrl, shop) {
+  if (!env.AI) return json({ error: "Auto-fill isn't switched on yet: add the Workers AI binding named AI to the mets-shop Worker" }, 500);
+  if (!/^https:\/\/[^\s"<>]{1,500}$/.test(imageUrl)) return json({ error: "Send the photo link" }, 400);
+  const img = await fetch(imageUrl);
+  if (!img.ok) return json({ error: "Couldn't open the photo" }, 400);
+  const type = (img.headers.get("content-type") || "image/jpeg").split(";")[0];
+  if (!type.startsWith("image/")) return json({ error: "That link isn't a photo" }, 400);
+  const bytes = new Uint8Array(await img.arrayBuffer());
+  if (bytes.length > 8 * 1024 * 1024) return json({ error: "Photo is too big for auto-fill (8 MB max)" }, 400);
+  let bin = ""; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  const dataUrl = `data:${type};base64,${btoa(bin)}`;
+
+  const shopLine = shop === "merch"
+    ? "This is MetsXMFanZone brand merch (the fan site's own logo gear). Start the title with \"MetsXMFanZone\"."
+    : "This is New York Mets fan apparel sold in the Mets Shop. If a player name or number is visible, put it in the title (e.g. \"New York Mets Skubal #29 Short Sleeve Tee\").";
+  const prompt = `You write product listings for an online store. Look at the photo of the item.
+${shopLine}
+Return ONLY JSON: {"title": "...", "description": "..."}
+- title: 40-90 characters, item type, team/brand, player name and number if shown, color, sleeve length. No price, no emojis.
+- description: 2-4 short sentences. Describe exactly what is visible: color, graphics, lettering, numbers, collar, sleeves, material look. Mention it makes a great gift for Mets fans. Do not invent sizes, prices, brands or tags you can't see.`;
+
+  let text = "";
+  try {
+    const out = await env.AI.run(VISION_MODEL, {
+      messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: dataUrl } }] }],
+      max_tokens: 400, temperature: 0.4,
+    });
+    text = typeof out?.response === "string" ? out.response : JSON.stringify(out?.response ?? out ?? "");
+  } catch (e) {
+    return json({ error: `Auto-fill failed: ${e?.message || e}` }, 502);
+  }
+  const m = text.match(/\{[\s\S]*\}/);
+  let r = {}; try { r = m ? JSON.parse(m[0]) : {}; } catch {}
+  const title = String(r.title || "").replace(/\s+/g, " ").trim().slice(0, 160);
+  const description = String(r.description || "").trim().slice(0, 4000);
+  if (!title) return json({ error: "Couldn't read the photo. Try a clearer picture." }, 502);
+  return json({ title, description });
 }
 
 // ---------- products ----------
@@ -296,7 +338,9 @@ export default {
     const path = url.pathname.replace(/\/+$/, "") || "/";
     try {
       if (request.method === "GET" && path === "/products") {
-        const { results } = await env.SHOP.prepare("SELECT * FROM products WHERE published = 1 ORDER BY sort ASC, id DESC").all();
+        // ?shop=merch -> MetsXMFanZone Merch items only; default -> Mets Shop items (everything that isn't merch)
+        const merch = url.searchParams.get("shop") === "merch";
+        const { results } = await env.SHOP.prepare(`SELECT * FROM products WHERE published = 1 AND ${merch ? "category = 'merch'" : "(category IS NULL OR category != 'merch')"} ORDER BY sort ASC, id DESC`).all();
         return json({ products: results.map((r) => shape(r)) }, 200, "public, max-age=60");
       }
       let m = path.match(/^\/products\/([a-z0-9-]{1,90})$/);
@@ -385,6 +429,11 @@ export default {
           const keys = Object.keys(value);
           const row = await env.SHOP.prepare(`INSERT INTO products (${keys.join(",")}) VALUES (${keys.map(() => "?").join(",")}) RETURNING *`).bind(...keys.map((k) => value[k])).first();
           return json({ product: shape(row, true) }, 201);
+        }
+
+        if (request.method === "POST" && path === "/admin/ai/describe") {
+          const b = await request.json().catch(() => ({}));
+          return describePhoto(env, String(b.image_url || ""), b.shop === "merch" ? "merch" : "mets");
         }
 
         // ----- orders -----

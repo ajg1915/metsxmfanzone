@@ -44,7 +44,8 @@ async function call<T>(path: string, init?: RequestInit, admin = false): Promise
   return body as T;
 }
 
-export const shopProducts = () => call<{ products: ShopProduct[] }>("/products").then((r) => r.products);
+export const shopProducts = (shop: "mets" | "merch" = "mets") =>
+  call<{ products: ShopProduct[] }>(shop === "merch" ? "/products?shop=merch" : "/products").then((r) => r.products);
 export const adminShopProducts = () => call<{ products: ShopProduct[] }>("/admin/products", undefined, true).then((r) => r.products);
 
 export type ProductInput = {
@@ -64,6 +65,9 @@ export const adminCreateProduct = (p: ProductInput) =>
   call<{ product: ShopProduct }>("/admin/products", { method: "POST", body: JSON.stringify(p) }, true).then((r) => r.product);
 export const adminUpdateProduct = (id: number, p: ProductInput) =>
   call<{ product: ShopProduct }>(`/admin/products/${id}`, { method: "PUT", body: JSON.stringify(p) }, true).then((r) => r.product);
+
+export const adminDescribePhoto = (image_url: string, shop: "mets" | "merch") =>
+  call<{ title: string; description: string }>("/admin/ai/describe", { method: "POST", body: JSON.stringify({ image_url, shop }) }, true);
 
 // ---------- cart + checkout ----------
 export type CartLine = { slug: string; title: string; size: string; qty: number; price: number; image: string };

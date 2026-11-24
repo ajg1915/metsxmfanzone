@@ -185,39 +185,35 @@ function CartDialog({ open, onClose, cart, setCart }: { open: boolean; onClose: 
   );
 }
 
-const Shop = () => {
-  const { data, isLoading, isError } = useQuery({ queryKey: ["shop-products"], queryFn: shopProducts, staleTime: 60_000 });
+// Product grid + cart for one store. The cart is shared, so Mets Shop and Merch items check out together.
+export function ShopCatalog({ shop = "mets" }: { shop?: "mets" | "merch" }) {
+  const { data, isLoading, isError } = useQuery({ queryKey: ["shop-products", shop], queryFn: () => shopProducts(shop), staleTime: 60_000 });
   const [open, setOpen] = useState<ShopProduct | null>(null);
   const [cart, setCartState] = useState<CartLine[]>(() => loadCart());
   const [cartOpen, setCartOpen] = useState(false);
   const setCart = (c: CartLine[]) => { setCartState(c); saveCart(c); };
-  const products = useMemo(() => data ?? [], [data]);
+  const products = useMemo(() => (data ?? []).filter((p) => (p.category === "merch") === (shop === "merch")), [data, shop]);
   const count = cart.reduce((t, l) => t + l.qty, 0);
   const add = (line: CartLine) => {
     const i = cart.findIndex((l) => l.slug === line.slug && l.size === line.size);
     setCart(i >= 0 ? cart.map((l, j) => (j === i ? { ...l, qty: Math.min(10, l.qty + 1) } : l)) : [...cart, line]);
     setCartOpen(true);
   };
+  const isMets = shop === "mets";
   return (
-    <div className="min-h-screen bg-background">
-      <SEOHead title="Mets T-Shirts & Gear | MetsXMFanZone Shop" description="New York Mets T-shirts and fan gear from the MetsXMFanZone shop. $5.99 flat shipping, free gift wrap." canonical="https://metsxmfanzone.com/shop" />
-      <Navigation />
-      <main className="mx-auto max-w-6xl px-3 pb-28 pt-20 sm:px-4 md:pt-28">
-        <StoreHero title="Mets Shop" subtitle="Mets T-shirts and fan gear, packed and shipped by MetsXMFanZone."
-          perks={[{ icon: "truck", text: "$5.99 flat U.S. shipping" }, { icon: "gift", text: "Free gift wrap" }, { icon: "shield", text: "Secure PayPal checkout" }]} />
-        {isLoading && <div className={storeGrid}>{[0, 1, 2, 3].map((i) => <div key={i} className="aspect-[4/6] animate-pulse rounded-2xl bg-white/5" />)}</div>}
-        {isError && <p className="mt-10 text-center text-muted-foreground">The shop is taking a break. Please check back soon.</p>}
-        {!isLoading && !isError && products.length === 0 && <p className="mt-10 text-center text-muted-foreground">New Mets gear is on the way.</p>}
-        {products.length > 0 && (
-          <section className={storeGrid} aria-label="Mets shop products">
-            {products.map((p) => (
-              <StoreCard key={p.id} image={p.images[0]} altImage={p.images[1]} title={p.title} price={shopMoney(p.price)}
-                badge={p.condition} soldOut={p.sold_out} meta={groupSizes(p.sizes.filter((s) => s.in_stock)).map(([g, l]) => g || l.map((x) => x.label).join(" · ")).join(" · ") || "Sold out"} onOpen={() => setOpen(p)} />
-            ))}
-            {products.length < 4 && <ComingSoonCard />}
-          </section>
-        )}
-      </main>
+    <>
+      {isMets && isLoading && <div className={storeGrid}>{[0, 1, 2, 3].map((i) => <div key={i} className="aspect-[4/6] animate-pulse rounded-2xl bg-white/5" />)}</div>}
+      {isMets && isError && <p className="mt-10 text-center text-muted-foreground">The shop is taking a break. Please check back soon.</p>}
+      {isMets && !isLoading && !isError && products.length === 0 && <p className="mt-10 text-center text-muted-foreground">New Mets gear is on the way.</p>}
+      {products.length > 0 && (
+        <section className={isMets ? storeGrid : `${storeGrid} !mt-0 mb-3 sm:mb-5`} aria-label={isMets ? "Mets shop products" : "New merch"}>
+          {products.map((p) => (
+            <StoreCard key={p.id} image={p.images[0]} altImage={p.images[1]} title={p.title} price={shopMoney(p.price)}
+              badge={p.condition} soldOut={p.sold_out} meta={groupSizes(p.sizes.filter((s) => s.in_stock)).map(([g, l]) => g || l.map((x) => x.label).join(" · ")).join(" · ") || "Sold out"} onOpen={() => setOpen(p)} />
+          ))}
+          {isMets && products.length < 4 && <ComingSoonCard />}
+        </section>
+      )}
       {count > 0 && (
         <button type="button" onClick={() => setCartOpen(true)} className="fixed bottom-[92px] left-1/2 z-40 flex h-13 -translate-x-1/2 items-center gap-2 rounded-full bg-[#FF5910] px-6 py-3.5 font-extrabold text-white shadow-[0_10px_30px_rgba(255,89,16,0.45)] md:bottom-8 md:left-auto md:right-8 md:translate-x-0">
           <ShoppingCart className="h-5 w-5" /> View cart · {count}
@@ -225,9 +221,21 @@ const Shop = () => {
       )}
       <ProductDialog p={open} onClose={() => setOpen(null)} onAdd={add} />
       <CartDialog open={cartOpen} onClose={() => setCartOpen(false)} cart={cart} setCart={setCart} />
-      <Footer />
-    </div>
+    </>
   );
-};
+}
+
+const Shop = () => (
+  <div className="min-h-screen bg-background">
+    <SEOHead title="Mets T-Shirts & Gear | MetsXMFanZone Shop" description="New York Mets T-shirts and fan gear from the MetsXMFanZone shop. $5.99 flat shipping, free gift wrap." canonical="https://metsxmfanzone.com/shop" />
+    <Navigation />
+    <main className="mx-auto max-w-6xl px-3 pb-28 pt-20 sm:px-4 md:pt-28">
+      <StoreHero title="Mets Shop" subtitle="Mets T-shirts and fan gear, packed and shipped by MetsXMFanZone."
+        perks={[{ icon: "truck", text: "$5.99 flat U.S. shipping" }, { icon: "gift", text: "Free gift wrap" }, { icon: "shield", text: "Secure PayPal checkout" }]} />
+      <ShopCatalog shop="mets" />
+    </main>
+    <Footer />
+  </div>
+);
 
 export default Shop;

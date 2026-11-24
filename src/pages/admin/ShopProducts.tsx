@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, EyeOff, ImagePlus, Loader2, Package, Plus, Trash2, X } from "lucide-react";
+import { Eye, EyeOff, ImagePlus, Loader2, Package, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,10 +9,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { uploadToR2 } from "@/lib/r2Upload";
 import { AdminPage, AdminPageHeader, AdminLoading, AdminEmpty } from "@/components/admin/AdminUI";
-import { adminCreateProduct, adminShopProducts, adminUpdateProduct, shopMoney, type ShopProduct } from "@/lib/shopApi";
+import { adminCreateProduct, adminDescribePhoto, adminShopProducts, adminUpdateProduct, shopMoney, type ShopProduct } from "@/lib/shopApi";
 
 type Form = {
   id?: number;
+  shop: "mets" | "merch";
   title: string;
   description: string;
   price: string;
@@ -26,7 +27,7 @@ type Form = {
 };
 
 const blank: Form = {
-  title: "", description: "", price: "", images: [],
+  shop: "mets", title: "", description: "", price: "", images: [],
   sizes: [
     ...["S", "M", "L", "XL", "2XL"].map((x) => `Men ${x}`),
     ...["S", "M", "L", "XL", "2XL"].map((x) => `Women ${x}`),
@@ -36,7 +37,7 @@ const blank: Form = {
 };
 
 const toForm = (p: ShopProduct): Form => ({
-  id: p.id, title: p.title, description: p.description, price: p.price.toFixed(2), images: p.images,
+  id: p.id, shop: p.category === "merch" ? "merch" : "mets", title: p.title, description: p.description, price: p.price.toFixed(2), images: p.images,
   sizes: p.sizes.map((s) => ({ size: s.size, stock: s.stock === null || s.stock === undefined ? "" : String(s.stock) })),
   condition: p.condition, gift_wrap: p.gift_wrap, weight_oz: String(p.weight_oz ?? 6), published: !!p.published, sort: String(p.sort ?? 0),
 });
@@ -48,6 +49,20 @@ export default function ShopProducts() {
   const [form, setForm] = useState<Form | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [filling, setFilling] = useState(false);
+  const [shopFilter, setShopFilter] = useState<"all" | "mets" | "merch">("all");
+
+  // Reads the photo and writes the title + description. Price stays yours.
+  const autoFill = async (imageUrl: string, shop: Form["shop"]) => {
+    setFilling(true);
+    try {
+      const r = await adminDescribePhoto(imageUrl, shop);
+      setForm((f) => (f ? { ...f, title: r.title, description: r.description || f.description } : f));
+      toast({ title: "Filled in from the photo", description: "Check it over, then add your price." });
+    } catch (e) {
+      toast({ title: "Couldn't auto-fill", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
+    } finally { setFilling(false); }
+  };
 
   const load = () => adminShopProducts().then(setProducts).catch((e) => setError(e.message));
   useEffect(() => { load(); }, []);
@@ -64,6 +79,8 @@ export default function ShopProducts() {
         urls.push((await uploadToR2(f, "shop")).publicUrl);
       }
       set("images", [...form.images, ...urls]);
+      // First photo on a listing with no title yet -> write the listing for you
+      if (urls.length && !form.title.trim()) autoFill(urls[0], form.shop);
     } catch (e) {
       toast({ title: "Upload failed", description: e instanceof Error ? e.message : String(e), variant: "destructive" });
     } finally { setUploading(false); }
@@ -74,7 +91,7 @@ export default function ShopProducts() {
     setSaving(true);
     try {
       const body = {
-        title: form.title, description: form.description, price: Number(form.price), images: form.images,
+        category: form.shop === "merch" ? "merch" : "tee", title: form.title, description: form.description, price: Number(form.price), images: form.images,
         sizes: form.sizes.filter((s) => s.size.trim()).map((s) => ({ size: s.size.trim(), stock: s.stock.trim() === "" ? null : Number(s.stock) })),
         condition: form.condition, gift_wrap: form.gift_wrap, weight_oz: Number(form.weight_oz), published: form.published, sort: Number(form.sort) || 0,
       };
@@ -95,19 +112,24 @@ export default function ShopProducts() {
   return (
     <AdminPage>
       <AdminPageHeader icon={Package} title="Shop Products" count={products?.length} countLabel="products"
-        description="Mets T-shirts and gear sold on metsxmfanzone.com/shop"
+        description="Products for the Mets Shop (/shop) and MetsXMFanZone Merch (/merch)"
         actions={<Button size="sm" onClick={() => setForm({ ...blank })}><Plus className="mr-1 h-4 w-4" />Add product</Button>} />
       {error && <AdminEmpty message={error} />}
       {!products && !error && <AdminLoading />}
       {products?.length === 0 && <AdminEmpty message="No products yet. Tap Add product." />}
+      <div className="mb-3 flex gap-1.5">
+        {([["all", "All"], ["mets", "Mets Shop"], ["merch", "Merch"]] as const).map(([k, l]) => (
+          <Button key={k} size="sm" variant={shopFilter === k ? "default" : "outline"} onClick={() => setShopFilter(k)}>{l}</Button>
+        ))}
+      </div>
       <div className="grid gap-2">
-        {products?.map((p) => (
+        {products?.filter((p) => shopFilter === "all" || (shopFilter === "merch") === (p.category === "merch")).map((p) => (
           <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border/40 bg-card/60 p-2">
             <img src={p.images[0]} alt="" className="h-16 w-12 flex-shrink-0 rounded-md bg-muted object-cover" />
             <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setForm(toForm(p))}>
               <p className="truncate text-sm font-semibold">{p.title}</p>
               <p className="text-xs text-muted-foreground">
-                {shopMoney(p.price)} · {p.sizes.map((s) => `${s.size}: ${s.stock ?? "∞"}`).join(" · ")}
+                <span className="font-semibold text-foreground/80">{p.category === "merch" ? "Merch" : "Mets Shop"}</span> · {shopMoney(p.price)} · {p.sizes.map((s) => `${s.size}: ${s.stock ?? "∞"}`).join(" · ")}
               </p>
               <p className={`text-[11px] font-bold ${p.sold_out ? "text-red-400" : p.published ? "text-green-500" : "text-muted-foreground"}`}>
                 {p.sold_out ? "Sold out" : p.published ? "Live in the shop" : "Hidden"}
@@ -125,14 +147,16 @@ export default function ShopProducts() {
           <DialogHeader><DialogTitle>{form?.id ? "Edit product" : "Add product"}</DialogTitle></DialogHeader>
           {form && (
             <div className="space-y-3">
-              <div><Label>Title</Label><Input value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="New York Mets Skubal #29 Short Sleeve Tee" /></div>
-              <div className="grid grid-cols-2 gap-2">
-                <div><Label>Price ($)</Label><Input inputMode="decimal" value={form.price} onChange={(e) => set("price", e.target.value)} placeholder="24.48" /></div>
-                <div><Label>Condition</Label><Input value={form.condition} onChange={(e) => set("condition", e.target.value)} /></div>
-              </div>
-              <div><Label>Description</Label><Textarea rows={5} value={form.description} onChange={(e) => set("description", e.target.value)} /></div>
               <div>
-                <Label>Photos (first one is the main photo)</Label>
+                <Label>Which shop</Label>
+                <div className="mt-1 grid grid-cols-2 gap-2">
+                  {([["mets", "Mets Shop"], ["merch", "MetsXMFanZone Merch"]] as const).map(([k, l]) => (
+                    <Button key={k} type="button" variant={form.shop === k ? "default" : "outline"} onClick={() => set("shop", k)}>{l}</Button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label>Photos (first one is the main photo){!form.id && " — add one and the title and description fill in for you"}</Label>
                 <div className="mt-1 flex flex-wrap gap-2">
                   {form.images.map((u, i) => (
                     <div key={u + i} className="relative h-24 w-[72px]">
@@ -149,6 +173,22 @@ export default function ShopProducts() {
                   )}
                 </div>
               </div>
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Title</Label>
+                  {form.images[0] && (
+                    <button type="button" disabled={filling} onClick={() => autoFill(form.images[0], form.shop)} className="inline-flex items-center gap-1 text-xs font-semibold text-primary disabled:opacity-60">
+                      {filling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}{filling ? "Reading photo…" : "Auto-fill from photo"}
+                    </button>
+                  )}
+                </div>
+                <Input value={form.title} disabled={filling} onChange={(e) => set("title", e.target.value)} placeholder={filling ? "Writing the title…" : "New York Mets Skubal #29 Short Sleeve Tee"} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div><Label>Price ($)</Label><Input inputMode="decimal" value={form.price} onChange={(e) => set("price", e.target.value)} placeholder="24.48" /></div>
+                <div><Label>Condition</Label><Input value={form.condition} onChange={(e) => set("condition", e.target.value)} /></div>
+              </div>
+              <div><Label>Description</Label><Textarea rows={5} disabled={filling} placeholder={filling ? "Writing the description…" : ""} value={form.description} onChange={(e) => set("description", e.target.value)} /></div>
               <div>
                 <Label>Sizes and how many you have (leave blank for unlimited)</Label>
                 <div className="mt-1 space-y-1.5">
@@ -168,7 +208,7 @@ export default function ShopProducts() {
               </div>
               <div className="flex items-center justify-between"><Label>Offer Christmas gift wrap</Label><Switch checked={form.gift_wrap} onCheckedChange={(v) => set("gift_wrap", v)} /></div>
               <div className="flex items-center justify-between"><Label>Show in the shop</Label><Switch checked={form.published} onCheckedChange={(v) => set("published", v)} /></div>
-              <Button className="w-full" onClick={save} disabled={saving || uploading}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : form.id ? "Save changes" : "Add product"}</Button>
+              <Button className="w-full" onClick={save} disabled={saving || uploading || filling}>{saving ? <Loader2 className="h-4 w-4 animate-spin" /> : form.id ? "Save changes" : "Add product"}</Button>
             </div>
           )}
         </DialogContent>
