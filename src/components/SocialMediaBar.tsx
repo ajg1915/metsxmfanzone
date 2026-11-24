@@ -52,7 +52,7 @@ const SocialMediaBar = () => {
 
   // Keep hooks in the same order on every route. Returning before the hooks
   // caused React to crash when navigating from the public site into /admin.
-  if (isAdminRoute) return null;
+  if (isAdminRoute || /^\/(auth|confirm-account|admin-portal)(\/|$)/.test(location.pathname)) return null;
 
   const handleClick = (item: typeof navItems[0]) => {
     // Items requiring premium: redirect to pricing if not premium

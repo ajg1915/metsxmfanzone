@@ -1637,3 +1637,15 @@ h1, h2, h3, h4 { font-weight: 800; }
 p, li { line-height: 1.6; }
 
 @keyframes guideTimer { from { width: 0%; } to { width: 100%; } }
+
+/* Sign-in / sign-up pages: modern, quiet borders; orange only on the field you're typing in. */
+.auth-modern [class*="border-"],
+.auth-modern input,
+.auth-modern button,
+.auth-modern [role="button"] {
+  border-color: rgb(255 255 255 / 0.1) !important;
+}
+.auth-modern input:hover { border-color: rgb(255 255 255 / 0.2) !important; }
+.auth-modern input:focus { border-color: #FF5910 !important; }
+.auth-modern button[role="checkbox"] { border-color: rgb(255 255 255 / 0.35) !important; }
+.auth-modern button[role="checkbox"][data-state="checked"] { border-color: #FF5910 !important; background: #FF5910; }

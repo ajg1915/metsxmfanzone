@@ -1,13 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, LockKeyhole, Mail, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, LockKeyhole, Mail, Phone, RefreshCw, ShieldCheck, UserRound } from "lucide-react";
 import { z } from "zod";
-import AuthBackground from "@/components/AuthBackground";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +12,7 @@ import { isStaleBuildAuthError, recoverFromStaleBuild } from "@/utils/staleBuild
 import { trackFailedLogin } from "@/utils/securityAlerts";
 import { useBackgroundSettings } from "@/hooks/useBackgroundSettings";
 import authLogo from "@/assets/metsxmfanzone-logo-auth.png";
+import heroStadium from "@/assets/auth-citi-field.jpg";
 
 const phoneRegex = /^(\+1)?[\s.-]?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
 const SIGNUP_DRAFT_KEY = "metsxm_signup_draft";
@@ -56,9 +53,10 @@ const Auth = () => {
   const { data: modeArtwork } = useBackgroundSettings(isSignup ? "auth_signup" : "auth_login");
   const { data: sharedArtwork } = useBackgroundSettings("auth");
   const authArtwork = modeArtwork ?? sharedArtwork;
-  const artworkStyle = authArtwork?.background_type === "image"
-    ? { backgroundImage: `linear-gradient(hsl(var(--secondary) / 0.72), hsl(var(--background) / 0.78)), url(${authArtwork.background_value})`, backgroundSize: "cover", backgroundPosition: "center" }
-    : undefined;
+  // Admin-chosen artwork (Background settings) wins; otherwise the stadium photo.
+  const heroImage = authArtwork?.background_type === "image"
+    ? authArtwork.background_value.trim().replace(/^url\((['"]?)(.*)\1\)$/, "$2")
+    : heroStadium;
 
   const [forgotPassword, setForgotPassword] = useState(false);
   const [signupStep, setSignupStep] = useState(1);
@@ -373,133 +371,207 @@ const Auth = () => {
     navigate("/auth?mode=login", { replace: true });
   };
 
-  const title = isRecovery ? "Set a new password" : forgotPassword ? "Reset your password" : isSignup ? "Create your account" : "Welcome back";
+  const title = isRecovery ? "New password" : forgotPassword ? "Reset password" : isSignup ? (signupStep === 1 ? "Join the Zone" : "Last step") : "Welcome back";
   const subtitle = isRecovery
     ? "Choose a secure password for your account."
     : forgotPassword ? "We’ll send a secure reset link to your email."
-      : isSignup ? "Create your account first. You’ll choose Weekly, Monthly or Yearly after confirming your email."
-        : "Sign in to reach your Account.";
+      : isSignup ? (signupStep === 1 ? "Create your free account. You'll choose a plan after confirming your email." : "Add your phone so we can reach you on game day.")
+        : "Sign in to your MetsXMFanZone account.";
+
+  const showTabs = !forgotPassword && !isRecovery;
+  const perks = ["Live shows & streams", "Watch on phone, computer & TV", "Cancel anytime"];
 
   return (
-    <div className="relative min-h-[100dvh] overflow-y-auto bg-background px-3 py-4 sm:flex sm:items-center sm:px-6 sm:py-8">
+    <div className="auth-modern relative min-h-[100dvh] bg-[#050b18] text-white lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <Helmet>
         <title>{isSignup ? "Create Account" : "Member Sign In"} — MetsXMFanZone</title>
         <meta name="description" content="Create or access your MetsXMFanZone member account." />
         <meta name="robots" content="noindex,follow" />
         <link rel="canonical" href="https://metsxmfanzone.com/auth" />
       </Helmet>
-      <AuthBackground mode={isSignup ? "signup" : "login"} />
 
-      <main className="relative z-10 mx-auto grid w-full max-w-5xl overflow-hidden rounded-lg border border-border/50 bg-card/95 shadow-2xl backdrop-blur-xl lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="hidden border-r border-border/40 bg-secondary/20 p-8 lg:flex lg:flex-col lg:justify-between" style={artworkStyle}>
-          <div>
-            <img src={authLogo} alt="MetsXMFanZone" className="h-20 w-auto object-contain" />
-            <p className="mt-6 text-xs font-semibold uppercase text-primary">Member access</p>
-            <h1 className="mt-2 text-4xl leading-tight text-foreground">Your Mets home, on every screen.</h1>
-            <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">One account keeps your news, community, membership, and streaming access together.</p>
-          </div>
-          <div className="space-y-3 text-sm">
-            {["Weekly, Monthly or Yearly plans", "Watch on phone, computer and TV", "Secure PayPal billing, cancel anytime"].map((item) => (
-              <div key={item} className="flex items-center gap-3 border-t border-border/30 pt-3">
-                <CheckCircle2 className="h-4 w-4 text-primary" /><span>{item}</span>
-              </div>
+      {/* Stadium panel: full height on computers, a short header on phones */}
+      <aside className="relative h-[200px] overflow-hidden sm:h-[240px] lg:sticky lg:top-0 lg:h-[100dvh]">
+        <img src={heroImage} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover object-[50%_55%] lg:object-[58%_50%]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#050b18]/25 to-[#050b18] lg:bg-gradient-to-t lg:from-[#050b18] lg:via-[#050b18]/35 lg:to-transparent" />
+        <div className="absolute inset-y-0 right-0 hidden w-40 bg-gradient-to-r from-transparent to-[#050b18] lg:block" />
+                <Link to="/" className="absolute left-4 top-[max(1rem,env(safe-area-inset-top))] z-10 inline-flex items-center gap-1.5 rounded-full bg-black/35 px-3 py-1.5 text-xs font-semibold text-white/90 backdrop-blur-md hover:bg-black/50 lg:left-8 lg:top-8">
+          <ArrowLeft className="h-3.5 w-3.5" /> Home
+        </Link>
+        <div className="absolute inset-x-0 bottom-0 hidden p-10 xl:p-14 lg:block">
+          <img src={authLogo} alt="MetsXMFanZone" className="h-24 w-auto object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.5)]" />
+          <h1 className="mt-6 max-w-lg font-display text-5xl uppercase leading-[0.95] tracking-wide xl:text-6xl">
+            Your Mets home,<br /><span className="text-[#FF5910]">on every screen.</span>
+          </h1>
+          <p className="mt-4 max-w-md text-base leading-7 text-white/75">News, live shows, the community and streaming, all in one account.</p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {perks.map((p) => (
+              <span key={p} className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold backdrop-blur-md">
+                <CheckCircle2 className="h-3.5 w-3.5 text-[#FF5910]" />{p}
+              </span>
             ))}
           </div>
-        </section>
+        </div>
+      </aside>
 
-        <section className="min-w-0 p-4 sm:p-7 lg:p-9">
-          <div className="mx-auto max-w-md">
-            <div className="mb-5 flex items-center justify-between gap-3 lg:hidden">
-              <img src={authLogo} alt="MetsXMFanZone" className="h-12 w-auto object-contain" />
-              <span className="text-xs font-semibold text-primary">Member Access</span>
-            </div>
+      <main className="relative z-10 -mt-16 flex min-w-0 justify-center px-4 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6 lg:mt-0 lg:items-center lg:py-12">
+        <div className="w-full max-w-[440px]">
+          <div className="mb-5 flex justify-center lg:hidden">
+            <img src={authLogo} alt="MetsXMFanZone" className="h-20 w-auto object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.6)]" />
+          </div>
 
-            <header className="mb-5">
-              <p className="text-xs font-semibold uppercase text-primary">{isSignup ? `Registration · ${signupStep} of 2` : "Secure account access"}</p>
-              <h2 className="mt-1 text-3xl text-foreground">{title}</h2>
-              <p className="mt-1 text-sm leading-5 text-muted-foreground">{subtitle}</p>
+          <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl sm:p-8 lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-0">
+            {showTabs && (
+              <div className="mb-6 grid grid-cols-2 rounded-2xl bg-white/[0.06] p-1" role="tablist" aria-label="Account">
+                {[["login", "Sign in"], ["signup", "Join"]].map(([m, label]) => {
+                  const active = (m === "signup") === isSignup;
+                  return (
+                    <Link key={m} to={`/auth?mode=${m}`} replace role="tab" aria-selected={active}
+                      className={`rounded-xl py-2.5 text-center text-sm font-bold transition-colors ${active ? "bg-white text-[#002D72] shadow" : "text-white/65 hover:text-white"}`}>
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+
+            <header className="mb-6">
+              {isSignup && <p className="mb-1.5 text-xs font-bold uppercase tracking-[0.14em] text-[#FF5910]">Step {signupStep} of 2 · {signupStep === 1 ? "Your account" : "Almost done"}</p>}
+              <h2 className="font-display text-[34px] uppercase leading-none tracking-wide sm:text-4xl">{title}</h2>
+              <p className="mt-2 text-sm leading-6 text-white/65">{subtitle}</p>
             </header>
 
             {isSignup && (
-              <div className="mb-5 grid grid-cols-2 gap-2" aria-label={`Registration step ${signupStep} of 2`}>
-                {["Account", "Contact"].map((label, index) => (
-                  <div key={label}>
-                    <div className={`h-1 rounded-full ${signupStep >= index + 1 ? "bg-primary" : "bg-muted"}`} />
-                    <p className={`mt-1 text-center text-[11px] ${signupStep === index + 1 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{label}</p>
-                  </div>
-                ))}
+              <div className="mb-6 flex gap-1.5" aria-label={`Registration step ${signupStep} of 2`}>
+                {[1, 2].map((n) => <div key={n} className={`h-1.5 flex-1 rounded-full transition-colors ${signupStep >= n ? "bg-[#FF5910]" : "bg-white/10"}`} />)}
               </div>
             )}
 
             {actionTakingTooLong && (
-              <div className="mb-4 flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm">
-                <AlertTriangle className="mt-0.5 h-4 w-4 text-destructive" />
-                <div className="flex-1"><p className="font-semibold">This is taking longer than expected.</p><Button type="button" variant="link" className="h-auto p-0 text-xs" onClick={clearStuckLoginState}><RefreshCw className="h-3 w-3" />Reset sign-in</Button></div>
+              <div className="mb-5 flex items-start gap-3 rounded-2xl border border-red-400/30 bg-red-500/10 p-3.5 text-sm">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-300" />
+                <div className="flex-1"><p className="font-semibold">This is taking longer than expected.</p><button type="button" className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-[#FF8A50] hover:underline" onClick={clearStuckLoginState}><RefreshCw className="h-3 w-3" />Reset sign-in</button></div>
               </div>
             )}
 
             <form onSubmit={isRecovery ? handleUpdatePassword : forgotPassword ? handleForgotPassword : isSignup ? handleSignup : handleLogin} className="space-y-4">
-              <div className="pointer-events-none absolute -left-[9999px]" aria-hidden="true"><Input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} /></div>
+              <div className="pointer-events-none absolute -left-[9999px]" aria-hidden="true"><input tabIndex={-1} autoComplete="off" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} /></div>
 
               {isSignup && signupStep === 1 && (
                 <>
-                  <div className="space-y-1.5"><Label htmlFor="fullName">Full name</Label><div className="relative"><UserRound className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="fullName" value={fullName} onChange={(event) => setFullName(event.target.value)} className="h-11 pl-10" autoComplete="name" /></div></div>
-                  <div className="space-y-1.5"><Label htmlFor="signupEmail">Email</Label><div className="relative"><Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="signupEmail" type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 pl-10" autoComplete="email" /></div></div>
-                  <div className="space-y-1.5"><Label htmlFor="signupPassword">Password</Label><div className="relative"><LockKeyhole className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="signupPassword" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 px-10" autoComplete="new-password" /><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff /> : <Eye />}</Button></div><p className="text-[11px] text-muted-foreground">At least 6 characters. Your password is never saved in the form draft.</p></div>
+                  <Field id="fullName" label="Full name" icon={UserRound} value={fullName} onChange={setFullName} autoComplete="name" placeholder="First and last name" />
+                  <Field id="signupEmail" label="Email" icon={Mail} type="email" value={email} onChange={setEmail} autoComplete="email" placeholder="you@example.com" inputMode="email" />
+                  <Field id="signupPassword" label="Password" icon={LockKeyhole} type={showPassword ? "text" : "password"} value={password} onChange={setPassword} autoComplete="new-password" placeholder="At least 6 characters"
+                    trailing={<EyeToggle shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />} />
                 </>
               )}
 
               {isSignup && signupStep === 2 && (
                 <>
-                  <div className="space-y-1.5"><Label htmlFor="phoneNumber">Phone number</Label><Input id="phoneNumber" type="tel" value={phoneNumber} onChange={(event) => setPhoneNumber(event.target.value)} placeholder="555-123-4567" className="h-11" autoComplete="tel" /></div>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border/40 bg-muted/20 p-3"><Checkbox checked={smsOptIn} onCheckedChange={(value) => setSmsOptIn(value === true)} /><span><span className="block text-sm font-semibold">Text alerts</span><span className="block text-xs text-muted-foreground">Optional news and live-stream notifications. Message rates may apply.</span></span></label>
-                  <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border/40 bg-muted/20 p-3"><Checkbox checked={agreeToTerms} onCheckedChange={(value) => setAgreeToTerms(value === true)} /><span className="text-xs leading-5 text-muted-foreground">I agree to the <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>.</span></label>
-                  <div className="flex items-start gap-2 rounded-md bg-secondary/20 p-3 text-xs text-muted-foreground"><ShieldCheck className="h-4 w-4 shrink-0 text-primary" /><span>Nothing is charged now. You’ll choose Weekly, Monthly or Yearly after confirming your email.</span></div>
+                  <Field id="phoneNumber" label="Phone number" icon={Phone} type="tel" value={phoneNumber} onChange={setPhoneNumber} autoComplete="tel" placeholder="555-123-4567" inputMode="tel" />
+                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition-colors hover:bg-white/[0.07]"><Checkbox checked={smsOptIn} onCheckedChange={(value) => setSmsOptIn(value === true)} className="mt-0.5" /><span><span className="block text-sm font-semibold">Text me game-day alerts</span><span className="mt-0.5 block text-xs leading-5 text-white/55">Optional news and live-stream notifications. Message rates may apply.</span></span></label>
+                  <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition-colors hover:bg-white/[0.07]"><Checkbox checked={agreeToTerms} onCheckedChange={(value) => setAgreeToTerms(value === true)} className="mt-0.5" /><span className="text-sm leading-5 text-white/75">I agree to the <Link to="/terms" target="_blank" className="font-semibold text-[#FF8A50] hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="font-semibold text-[#FF8A50] hover:underline">Privacy Policy</Link>.</span></label>
+                  <div className="flex items-start gap-2.5 rounded-2xl bg-[#002D72]/40 p-4 text-xs leading-5 text-white/70"><ShieldCheck className="h-4 w-4 shrink-0 text-[#FF5910]" /><span>Nothing is charged now. You'll pick Weekly, Monthly or Yearly after you confirm your email.</span></div>
                 </>
               )}
 
               {!isSignup && !isRecovery && (
-                <div className="space-y-1.5"><Label htmlFor="email">Email</Label><div className="relative"><Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="email" name="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-11 pl-10" autoComplete="username" /></div></div>
+                <Field id="email" name="email" label="Email" icon={Mail} type="email" value={email} onChange={setEmail} autoComplete="username" placeholder="you@example.com" inputMode="email" />
               )}
 
               {!isSignup && !forgotPassword && !isRecovery && (
-                <div className="space-y-1.5"><div className="flex items-center justify-between"><Label htmlFor="password">Password</Label><Button type="button" variant="link" className="h-auto p-0 text-xs" onClick={() => setForgotPassword(true)}>Forgot password?</Button></div><div className="relative"><LockKeyhole className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" /><Input id="password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} className="h-11 px-10" autoComplete="current-password" /><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 h-9 w-9 -translate-y-1/2" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff /> : <Eye />}</Button></div></div>
+                <Field id="password" name="password" label="Password" icon={LockKeyhole} type={showPassword ? "text" : "password"} value={password} onChange={setPassword} autoComplete="current-password" placeholder="Your password"
+                  labelAction={<button type="button" className="text-xs font-semibold text-[#FF8A50] hover:underline" onClick={() => setForgotPassword(true)}>Forgot password?</button>}
+                  trailing={<EyeToggle shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />} />
               )}
 
               {isRecovery && (
-                <><div className="space-y-1.5"><Label htmlFor="newPassword">New password</Label><Input id="newPassword" type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-11" autoComplete="new-password" /></div><div className="space-y-1.5"><Label htmlFor="confirmPassword">Confirm password</Label><Input id="confirmPassword" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="h-11" autoComplete="new-password" /></div></>
-              )}
-
-              {!isSignup && !forgotPassword && !isRecovery && (
                 <>
-                  <p className="text-xs leading-5 text-muted-foreground">By signing in you agree to the <Link to="/terms" target="_blank" className="text-primary hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</Link>.</p>
-                  <label className="flex cursor-pointer items-start gap-2 text-sm text-muted-foreground"><Checkbox checked={rememberMe} onCheckedChange={(value) => setRememberMe(value === true)} className="mt-0.5" /><span>Save my login on this device<span className="block text-[11px] leading-4">Your device or browser keeps it, not us. Leave unchecked on shared devices.</span></span></label>
+                  <Field id="newPassword" label="New password" icon={LockKeyhole} type="password" value={password} onChange={setPassword} autoComplete="new-password" placeholder="At least 6 characters" />
+                  <Field id="confirmPassword" label="Confirm password" icon={LockKeyhole} type="password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" placeholder="Type it again" />
                 </>
               )}
 
-              {isSignup && signupStep === 1 ? (
-                <Button type="button" className="h-11 w-full" onClick={continueSignup}>Continue <ArrowRight /></Button>
-              ) : isSignup ? (
-                <div className="grid grid-cols-2 gap-2"><Button type="button" variant="outline" className="h-11" onClick={() => setSignupStep(1)}><ArrowLeft />Back</Button><Button type="submit" className="h-11" disabled={loading || !agreeToTerms}>{loading ? <Loader2 className="animate-spin" /> : "Create account"}</Button></div>
-              ) : (
-                <Button type="submit" className="h-11 w-full" disabled={loading || verifyingReset}>{loading ? <Loader2 className="animate-spin" /> : isRecovery ? "Update password" : forgotPassword ? "Send reset link" : "Sign in"}</Button>
+              {!isSignup && !forgotPassword && !isRecovery && (
+                <label className="flex cursor-pointer items-start gap-3 pt-1 text-sm text-white/75"><Checkbox checked={rememberMe} onCheckedChange={(value) => setRememberMe(value === true)} className="mt-0.5" /><span>Keep me signed in on this device<span className="mt-0.5 block text-[11px] leading-4 text-white/45">Your browser saves it, not us. Skip this on shared devices.</span></span></label>
+              )}
+
+              <div className="pt-2">
+                {isSignup && signupStep === 1 ? (
+                  <PrimaryButton type="button" onClick={continueSignup}>Continue <ArrowRight className="h-5 w-5" /></PrimaryButton>
+                ) : isSignup ? (
+                  <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2.5">
+                    <button type="button" onClick={() => setSignupStep(1)} className="inline-flex h-14 items-center gap-1.5 rounded-2xl border border-white/15 px-5 text-sm font-bold text-white/85 hover:bg-white/5"><ArrowLeft className="h-4 w-4" />Back</button>
+                    <PrimaryButton type="submit" disabled={loading || !agreeToTerms}>{loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Create account"}</PrimaryButton>
+                  </div>
+                ) : (
+                  <PrimaryButton type="submit" disabled={loading || verifyingReset}>{loading ? <Loader2 className="h-5 w-5 animate-spin" /> : isRecovery ? "Update password" : forgotPassword ? "Send reset link" : "Sign in"}</PrimaryButton>
+                )}
+              </div>
+
+              {!isSignup && !forgotPassword && !isRecovery && (
+                <p className="text-center text-xs leading-5 text-white/45">By signing in you agree to the <Link to="/terms" target="_blank" className="text-white/70 underline-offset-2 hover:underline">Terms</Link> and <Link to="/privacy" target="_blank" className="text-white/70 underline-offset-2 hover:underline">Privacy Policy</Link>.</p>
               )}
             </form>
 
-            <ul className="mt-5 space-y-1.5 text-sm text-muted-foreground lg:hidden">
-              {["Weekly, Monthly or Yearly plans", "Secure PayPal billing, cancel anytime"].map((item) => (
-                <li key={item} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />{item}</li>
-              ))}
-            </ul>
-
-            <div className="mt-5 border-t border-border/30 pt-4 text-center text-sm">
-              {forgotPassword ? <Button variant="link" onClick={() => setForgotPassword(false)}>Back to sign in</Button> : !isRecovery && <Button variant="link" asChild><Link to={isSignup ? "/auth?mode=login" : "/auth?mode=signup"}>{isSignup ? "Already have an account? Sign in" : "New member? Create an account"}</Link></Button>}
-            </div>
+            {(forgotPassword || isRecovery) && (
+              <div className="mt-6 text-center">
+                <Link to="/auth?mode=login" replace onClick={() => setForgotPassword(false)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/70 hover:text-white"><ArrowLeft className="h-4 w-4" />Back to sign in</Link>
+              </div>
+            )}
           </div>
-        </section>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-[11px] font-semibold uppercase tracking-wider text-white/40 lg:justify-start">
+            <span className="inline-flex items-center gap-1.5"><LockKeyhole className="h-3.5 w-3.5" />Secure sign-in</span>
+            <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5" />PayPal billing</span>
+            <span className="inline-flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" />Cancel anytime</span>
+          </div>
+        </div>
       </main>
     </div>
   );
 };
+
+type FieldProps = {
+  id: string; label: string; value: string; onChange: (v: string) => void;
+  icon: React.ComponentType<{ className?: string }>; type?: string; name?: string; autoComplete?: string;
+  placeholder?: string; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+  trailing?: React.ReactNode; labelAction?: React.ReactNode;
+};
+function Field({ id, label, value, onChange, icon: Icon, type = "text", name, autoComplete, placeholder, inputMode, trailing, labelAction }: FieldProps) {
+  return (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between">
+        <label htmlFor={id} className="text-[13px] font-semibold text-white/80">{label}</label>
+        {labelAction}
+      </div>
+      <div className="group relative">
+        <Icon className="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-white/40 transition-colors group-focus-within:text-[#FF5910]" />
+        <input id={id} name={name} type={type} value={value} onChange={(e) => onChange(e.target.value)} autoComplete={autoComplete} placeholder={placeholder} inputMode={inputMode}
+          className={`h-14 w-full min-w-0 rounded-2xl border border-white/10 bg-white/[0.06] pl-12 ${trailing ? "pr-12" : "pr-4"} text-base text-white outline-none transition placeholder:text-white/30 hover:border-white/20 focus:border-[#FF5910] focus:bg-white/[0.08] focus:ring-4 focus:ring-[#FF5910]/15`} />
+        {trailing}
+      </div>
+    </div>
+  );
+}
+
+function EyeToggle({ shown, onToggle }: { shown: boolean; onToggle: () => void }) {
+  return (
+    <button type="button" onClick={onToggle} aria-label={shown ? "Hide password" : "Show password"}
+      className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-xl text-white/50 hover:bg-white/10 hover:text-white">
+      {shown ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+    </button>
+  );
+}
+
+function PrimaryButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button {...props}
+      className="inline-flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#FF5910] to-[#ff7a33] text-base font-extrabold text-white shadow-[0_12px_30px_-8px_rgba(255,89,16,0.65)] transition hover:brightness-110 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none">
+      {children}
+    </button>
+  );
+}
+
 
 export default Auth;
