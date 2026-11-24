@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Gift, Loader2, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
-import { ComingSoonCard, StoreCard, StoreHero, storeGrid } from "@/components/shop/StoreChrome";
+import { ComingSoonCard, StoreCard, StoreHero, storeGrid, storeSheet } from "@/components/shop/StoreChrome";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
@@ -25,7 +25,7 @@ function groupSizes(sizes: { size: string; in_stock: boolean }[]) {
 }
 
 const STATES = "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY PR".split(" ");
-const field = "h-11 w-full rounded-lg border border-white/15 bg-white/5 px-3 text-[15px] text-white placeholder:text-white/40 focus:border-primary focus:outline-none";
+const field = "h-11 w-full min-w-0 rounded-lg border border-white/15 bg-white/5 px-3 text-[15px] text-white placeholder:text-white/40 focus:border-primary focus:outline-none";
 
 function ProductDialog({ p, onClose, onAdd }: { p: ShopProduct | null; onClose: () => void; onAdd: (line: CartLine) => void }) {
   const [img, setImg] = useState(0);
@@ -34,14 +34,14 @@ function ProductDialog({ p, onClose, onAdd }: { p: ShopProduct | null; onClose: 
   if (!p) return null;
   return (
     <Dialog open={!!p} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="max-h-[92svh] overflow-y-auto border-white/10 bg-[#0b1426] text-white sm:max-w-2xl">
+      <DialogContent className={`${storeSheet} sm:max-w-2xl`}>
         <DialogHeader>
           <DialogTitle className="pr-6 text-xl leading-tight">{p.title}</DialogTitle>
           <DialogDescription className="text-white/60">{p.condition}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <div className="aspect-[4/5] overflow-hidden rounded-xl bg-[#e9ecf1]">
+            <div className="mx-auto aspect-[4/5] max-h-[38dvh] overflow-hidden rounded-xl bg-[#e9ecf1] sm:max-h-none">
               {p.images[img] && <img src={p.images[img]} alt={p.title} className="h-full w-full object-cover" />}
             </div>
             {p.images.length > 1 && (
@@ -113,10 +113,10 @@ function CartDialog({ open, onClose, cart, setCart }: { open: boolean; onClose: 
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o && !busy) onClose(); }}>
-      <DialogContent className="max-h-[92svh] overflow-y-auto border-white/10 bg-[#0b1426] text-white sm:max-w-lg">
+      <DialogContent className={`${storeSheet} sm:max-w-xl`}>
         <DialogHeader>
-          <DialogTitle>Your cart</DialogTitle>
-          <DialogDescription className="text-white/60">US shipping only · {shopMoney(shipping)} flat rate</DialogDescription>
+          <DialogTitle className="text-left">Your cart</DialogTitle>
+          <DialogDescription className="text-left text-white/60">US shipping only · {shopMoney(shipping)} flat rate</DialogDescription>
         </DialogHeader>
         {cart.length === 0 ? <p className="py-6 text-center text-white/60">Your cart is empty.</p> : (
           <>
@@ -144,13 +144,17 @@ function CartDialog({ open, onClose, cart, setCart }: { open: boolean; onClose: 
             </div>
             <form className="space-y-2" onSubmit={(e) => e.preventDefault()}>
               <p className="pt-1 text-xs font-bold uppercase tracking-wide text-white/60">Ship to</p>
-              <input className={field} placeholder="Full name" autoComplete="name" value={c.name} onChange={(e) => set("name", e.target.value)} />
-              <input className={field} placeholder="Email (for your receipt and tracking)" type="email" autoComplete="email" value={c.email} onChange={(e) => set("email", e.target.value)} />
-              <input className={field} placeholder="Street address" autoComplete="address-line1" value={c.address1} onChange={(e) => set("address1", e.target.value)} />
-              <input className={field} placeholder="Apt, suite (optional)" autoComplete="address-line2" value={c.address2} onChange={(e) => set("address2", e.target.value)} />
-              <div className="grid grid-cols-[1fr_88px_104px] gap-2">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <input className={field} placeholder="Full name" autoComplete="name" value={c.name} onChange={(e) => set("name", e.target.value)} />
+                <input className={field} placeholder="Email (receipt + tracking)" type="email" autoComplete="email" value={c.email} onChange={(e) => set("email", e.target.value)} />
+              </div>
+              <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                <input className={field} placeholder="Street address" autoComplete="address-line1" value={c.address1} onChange={(e) => set("address1", e.target.value)} />
+                <input className={field} placeholder="Apt (optional)" autoComplete="address-line2" value={c.address2} onChange={(e) => set("address2", e.target.value)} />
+              </div>
+              <div className="grid grid-cols-[minmax(0,1fr)_76px_92px] gap-2">
                 <input className={field} placeholder="City" autoComplete="address-level2" value={c.city} onChange={(e) => set("city", e.target.value)} />
-                <select className={field} aria-label="State" autoComplete="address-level1" value={c.state} onChange={(e) => set("state", e.target.value)}>
+                <select className={`${field} px-2`} aria-label="State" autoComplete="address-level1" value={c.state} onChange={(e) => set("state", e.target.value)}>
                   {STATES.map((s) => <option key={s} value={s} className="bg-[#0b1426]">{s}</option>)}
                 </select>
                 <input className={field} placeholder="ZIP" inputMode="numeric" autoComplete="postal-code" value={c.zip} onChange={(e) => set("zip", e.target.value)} />
@@ -162,7 +166,7 @@ function CartDialog({ open, onClose, cart, setCart }: { open: boolean; onClose: 
               {gift && <input className={field} maxLength={300} placeholder="Gift note (optional)" value={note} onChange={(e) => setNote(e.target.value)} />}
             </form>
             {err && <p role="alert" className="rounded-lg bg-red-500/15 px-3 py-2 text-sm text-red-300">{err}</p>}
-            <div className="space-y-2">
+            <div className="sticky bottom-0 -mx-4 space-y-2 border-t border-white/10 bg-[#0b1426] px-4 pb-1 pt-3 sm:-mx-5 sm:px-5">
               {cfg?.paypal !== false && (
                 <button type="button" disabled={!!busy} onClick={() => pay("paypal")} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#FFC439] text-base font-extrabold text-[#111] disabled:opacity-60">
                   {busy === "paypal" ? <Loader2 className="h-5 w-5 animate-spin" /> : "Pay with PayPal"}

@@ -81,3 +81,10 @@ export function ComingSoonCard() {
 }
 
 export const storeGrid = "mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4";
+
+// Store pop-ups: a bottom sheet on phones (full width, fits under the keyboard), a centered card on bigger screens.
+export const storeSheet =
+  "grid-cols-[minmax(0,1fr)] gap-3 border-white/10 bg-[#0b1426] text-white " +
+  "max-sm:inset-x-0 max-sm:bottom-0 max-sm:left-0 max-sm:top-auto max-sm:w-full max-sm:max-w-full max-sm:translate-x-0 max-sm:translate-y-0 " +
+  "max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:max-h-[90dvh] max-sm:px-4 max-sm:pb-[max(1rem,env(safe-area-inset-bottom))] max-sm:pt-4 " +
+  "max-sm:data-[state=closed]:slide-out-to-left-0 max-sm:data-[state=open]:slide-in-from-left-0 max-sm:data-[state=closed]:slide-out-to-top-full max-sm:data-[state=open]:slide-in-from-top-full";

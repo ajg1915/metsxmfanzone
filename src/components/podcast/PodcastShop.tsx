@@ -4,13 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { COLORS, MERCH, merchFrom, merchImage, merchMoney, merchPrice, type MerchItem } from "@/lib/merchCatalog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { StoreCard, storeGrid } from "@/components/shop/StoreChrome";
+import { StoreCard, storeGrid, storeSheet } from "@/components/shop/StoreChrome";
 import { Label } from "@/components/ui/label";
 
 // MetsXMFanZone gear, paid with PayPal. Price depends on size and is re-checked on the server.
 
 const field =
-  "h-11 border-white/15 bg-white/5 text-[15px] text-white placeholder:text-white/40 focus-visible:ring-primary";
+  "h-11 min-w-0 border-white/15 bg-white/5 text-[15px] text-white placeholder:text-white/40 focus-visible:ring-primary";
 
 export default function PodcastShop({ all = false }: { all?: boolean }) {
   const items = (all ? MERCH : MERCH.filter((m) => ["tshirt", "hoodie", "jacket", "cap"].includes(m.sku))).filter((m) => !m.hidden);
@@ -89,7 +89,7 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
       </div>
 
       <Dialog open={!!buying} onOpenChange={(o) => { if (!o && !busy) setBuying(null); }}>
-        <DialogContent className="max-h-[92svh] overflow-y-auto border-white/10 bg-[#0b1426] text-white sm:max-w-2xl">
+        <DialogContent className={`${storeSheet} sm:max-w-2xl`}>
           {buying && step === "pick" && (
             <>
               <DialogHeader>
@@ -97,7 +97,7 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
                 <DialogDescription className="text-white/60">MetsXMFanZone gear · ships in the U.S.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-5 sm:grid-cols-2">
-                <div className="aspect-square overflow-hidden rounded-xl bg-[#e9ecf1]">
+                <div className="mx-auto aspect-square max-h-[34dvh] overflow-hidden rounded-xl bg-[#e9ecf1] sm:max-h-none">
                   <img src={merchImage(buying.sku, colorOf(buying), designOf(buying))} alt={`${buying.title} in ${COLORS.find((c) => c.id === colorOf(buying))?.label}`} className="h-full w-full object-cover" />
                 </div>
                 <div className="flex flex-col">
@@ -126,7 +126,7 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
                   {buying.sizes.length > 1 ? (
                     <>
                       <p className="mt-4 text-xs font-bold uppercase tracking-wide text-white/60">Size</p>
-                      <div className="mt-1.5 grid grid-cols-6 gap-1.5" role="radiogroup" aria-label="Size">
+                      <div className="mt-1.5 grid grid-cols-6 gap-1.5 max-[360px]:grid-cols-3" role="radiogroup" aria-label="Size">
                         {buying.sizes.map((s) => (
                           <button key={s} type="button" role="radio" aria-checked={size === s} onClick={() => setSizes((p) => ({ ...p, [buying.sku]: s }))}
                             className={`min-h-[40px] rounded-lg border text-[13px] font-bold ${size === s ? "border-[#FF5910] bg-[#FF5910] text-white" : "border-white/20 hover:border-[#FF5910]/60"}`}>{s}</button>
@@ -151,11 +151,15 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={submit} className="space-y-3">
-                <div><Label htmlFor="s-name" className="mb-1 block text-white/80">Full name</Label><Input id="s-name" required autoComplete="name" value={form.name} onChange={set("name")} className={field} /></div>
-                <div><Label htmlFor="s-email" className="mb-1 block text-white/80">Email</Label><Input id="s-email" type="email" required autoComplete="email" value={form.email} onChange={set("email")} className={field} /></div>
-                <div><Label htmlFor="s-l1" className="mb-1 block text-white/80">Address</Label><Input id="s-l1" required autoComplete="address-line1" value={form.line1} onChange={set("line1")} className={field} /></div>
-                <div><Label htmlFor="s-l2" className="mb-1 block text-white/80">Apt / suite (optional)</Label><Input id="s-l2" autoComplete="address-line2" value={form.line2} onChange={set("line2")} className={field} /></div>
-                <div className="grid grid-cols-[1fr_72px_96px] gap-2">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div><Label htmlFor="s-name" className="mb-1 block text-white/80">Full name</Label><Input id="s-name" required autoComplete="name" value={form.name} onChange={set("name")} className={field} /></div>
+                  <div><Label htmlFor="s-email" className="mb-1 block text-white/80">Email</Label><Input id="s-email" type="email" required autoComplete="email" value={form.email} onChange={set("email")} className={field} /></div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+                  <div><Label htmlFor="s-l1" className="mb-1 block text-white/80">Address</Label><Input id="s-l1" required autoComplete="address-line1" value={form.line1} onChange={set("line1")} className={field} /></div>
+                  <div><Label htmlFor="s-l2" className="mb-1 block text-white/80">Apt (optional)</Label><Input id="s-l2" autoComplete="address-line2" value={form.line2} onChange={set("line2")} className={field} /></div>
+                </div>
+                <div className="grid grid-cols-[minmax(0,1fr)_64px_92px] gap-2">
                   <div><Label htmlFor="s-city" className="mb-1 block text-white/80">City</Label><Input id="s-city" required autoComplete="address-level2" value={form.city} onChange={set("city")} className={field} /></div>
                   <div><Label htmlFor="s-st" className="mb-1 block text-white/80">State</Label><Input id="s-st" required maxLength={2} autoComplete="address-level1" value={form.state} onChange={set("state")} className={`${field} uppercase`} /></div>
                   <div><Label htmlFor="s-zip" className="mb-1 block text-white/80">ZIP</Label><Input id="s-zip" required inputMode="numeric" autoComplete="postal-code" value={form.zip} onChange={set("zip")} className={field} /></div>
