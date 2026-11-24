@@ -71,6 +71,7 @@ export class Router {
 
     const url = new URL(link.href, window.location.href);
     if (url.origin !== window.location.origin) return;
+    if (/\.[a-z0-9]+$/i.test(url.pathname)) return; // files like /rss.xml load normally
 
     event.preventDefault();
     window.history.pushState({}, "", `${url.pathname}${url.search}${url.hash}`);
