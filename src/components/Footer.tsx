@@ -3,14 +3,14 @@ import { motion } from "framer-motion";
 import { METSXMFANZONE_SOCIALS } from "@/components/SocialLinksSection";
 
 // The handful of links most fans want. Everything else lives in the site menu.
-const QUICK_LINKS: { label: string; to: string }[] = [
+const QUICK_LINKS: { label: string; to: string; file?: boolean }[] = [
   { label: "Live", to: "/metsxmfanzone" },
   { label: "News", to: "/blog" },
   { label: "Podcast", to: "/podcast" },
   { label: "Community", to: "/community" },
   { label: "Schedule", to: "/mets-schedule-2027" },
   { label: "Scores", to: "/mets-scores" },
-  { label: "Roster", to: "/mets-roster" },
+  { label: "RSS", to: "/rss.xml", file: true },
   { label: "Highlights", to: "/highlights" },
   { label: "Merch", to: "/merch" },
   { label: "Plans", to: "/pricing" },
@@ -54,11 +54,18 @@ const Footer = () => {
 
         {/* Quick links */}
         <nav aria-label="Footer" className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 border-y border-border/50 py-3 md:mt-8 md:gap-x-6 md:py-5">
-          {QUICK_LINKS.map((l) => (
-            <Link key={l.to} to={l.to} className="text-sm text-foreground/80 transition-colors hover:text-primary">
-              {l.label}
-            </Link>
-          ))}
+          {QUICK_LINKS.map((l) =>
+            l.file ? (
+              // The feed is a file from the server, so it needs a plain link, not an in-app route.
+              <a key={l.to} href={l.to} target="_blank" rel="noopener" title="MetsXMFanZone news feed (RSS)" className="text-sm text-foreground/80 transition-colors hover:text-primary">
+                {l.label}
+              </a>
+            ) : (
+              <Link key={l.to} to={l.to} className="text-sm text-foreground/80 transition-colors hover:text-primary">
+                {l.label}
+              </Link>
+            ),
+          )}
         </nav>
 
         {/* Legal */}
