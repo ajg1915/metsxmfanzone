@@ -100,6 +100,8 @@ const ResponsibleGambling = lazyWithRetry(() => import("./pages/ResponsibleGambl
 const Podcast = lazyWithRetry(() => import("./pages/Podcast"), "page-podcast");
 const Merch = lazyWithRetry(() => import("./pages/Merch"), "page-merch");
 const Shop = lazyWithRetry(() => import("./pages/Shop"), "page-shop");
+const ShopOrders = lazyWithRetry(() => import("./pages/admin/ShopOrders"), "page-admin-shop-orders");
+const ShopThanks = lazyWithRetry(() => import("./pages/ShopThanks"), "page-shop-thanks");
 const ShopProducts = lazyWithRetry(() => import("./pages/admin/ShopProducts"), "page-admin-shop-products");
 const MetsShop = lazyWithRetry(() => import("./pages/MetsShop"), "page-mets-shop");
 const ShopOrderSuccess = lazyWithRetry(() => import("./pages/ShopOrderSuccess"), "page-shop-order-success");
@@ -396,6 +398,7 @@ const AppContent = () => {
             <Route path="/merch" element={<Merch />} />
             <Route path="/mets-shop" element={<MetsShop />} />
             <Route path="/shop" element={<Shop />} />
+            <Route path="/shop/thanks" element={<ShopThanks />} />
             <Route path="/shop/order-success" element={<ShopOrderSuccess />} />
             <Route path="/community-podcast" element={<CommunityPodcast />} />
             <Route path="/podcaster-application" element={<PodcasterApplication />} />
@@ -427,6 +430,7 @@ const AppContent = () => {
               <Route path="live-notifications" element={<Navigate to="/admin/live-streams?tab=notifications" replace />} />
               <Route path="stories" element={<StoriesManagement />} />
               <Route path="shop/products" element={<ShopProducts />} />
+              <Route path="shop/orders" element={<ShopOrders />} />
               <Route path="events" element={<EventsManagement />} />
               <Route path="tutorial" element={<TutorialManagement />} />
               <Route path="newsletter" element={<NewsletterGenerator />} />
