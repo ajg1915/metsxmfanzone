@@ -263,6 +263,13 @@ async function orderEmails(env, row) {
 }
 
 // ---------- PayPal ----------
+// Accept the usual name variants so a slightly different secret name still works.
+const pick = (env, names) => { for (const n of names) { const v = env[n]; if (typeof v === "string" && v.trim()) return v.trim(); } return ""; };
+function withPayPalAliases(env) {
+  const id = pick(env, ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENTID", "PAYPAL_ID", "PAYPAL_CLIENT"]);
+  const secret = pick(env, ["PAYPAL_SECRET", "PAYPAL_CLIENT_SECRET", "PAYPAL_SECRET_KEY", "PAYPAL_SECRET_KEY_1", "PAYPAL_KEY"]);
+  return Object.assign(Object.create(env), { PAYPAL_CLIENT_ID: id, PAYPAL_SECRET: secret });
+}
 const paypalBase = (env) => env.PAYPAL_BASE_URL || "https://api-m.paypal.com";
 async function paypalToken(env) {
   const r = await fetch(`${paypalBase(env)}/v1/oauth2/token`, { method: "POST", headers: { Authorization: "Basic " + btoa(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_SECRET}`), "Content-Type": "application/x-www-form-urlencoded" }, body: "grant_type=client_credentials" });
@@ -331,7 +338,8 @@ async function shipOrder(env, id, carrier, tracking) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, rawEnv) {
+    const env = withPayPalAliases(rawEnv);
     if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
     if (!env.SHOP) return json({ error: "Shop database is not connected (add the D1 binding SHOP)" }, 500);
     const url = new URL(request.url);
@@ -352,7 +360,9 @@ export default {
 
       // ----- checkout -----
       if (request.method === "GET" && path === "/checkout/config") {
-        return json({ shipping: SHIPPING_CENTS / 100, paypal: !!(env.PAYPAL_CLIENT_ID && env.PAYPAL_SECRET), card: !!env.STRIPE_SECRET_KEY });
+        return json({ shipping: SHIPPING_CENTS / 100, paypal: !!(env.PAYPAL_CLIENT_ID && env.PAYPAL_SECRET), card: !!env.STRIPE_SECRET_KEY,
+          // yes/no only, never the values
+          setup: { paypal_client_id: !!env.PAYPAL_CLIENT_ID, paypal_secret: !!env.PAYPAL_SECRET, email: !!env.RESEND_API_KEY, ai_autofill: !!env.AI, database: !!env.SHOP } });
       }
       if (request.method === "POST" && path === "/checkout/paypal") {
         if (!env.PAYPAL_CLIENT_ID || !env.PAYPAL_SECRET) return json({ error: "PayPal checkout isn't set up yet" }, 503);
