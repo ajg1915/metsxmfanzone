@@ -73,8 +73,8 @@ export function StoreCard({ image, altImage, title, price, meta, badge, soldOut,
 
 export function ComingSoonCard() {
   return (
-    <div className="hidden flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 p-6 text-center sm:flex">
-      <p className="font-display text-2xl uppercase tracking-wide text-white/80">More drops soon</p>
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 p-4 text-center sm:p-6">
+      <p className="font-display text-xl uppercase tracking-wide text-white/80 sm:text-2xl">More drops soon</p>
       <p className="mt-1 text-xs text-white/50">New Mets tees are added often. Check back.</p>
     </div>
   );
