@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { NavLink } from "@/components/NavLink";
 import DesktopNavMenu from "@/components/DesktopNavMenu";
@@ -241,7 +242,8 @@ const Navigation = () => {
     if (user) {
       setMobileMenuOpen(false);
       await signOut();
-      navigate("/logout");
+      toast.success("You're signed out. See you soon!");
+      navigate("/", { replace: true });
     } else {
       navigate("/auth");
     }

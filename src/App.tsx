@@ -166,7 +166,6 @@ const CancelSubscription = lazyWithRetry(() => import("./pages/help/CancelSubscr
 const CookiesData = lazyWithRetry(() => import("./pages/help/CookiesData"), "page-help-cookies-data");
 const VpnUse = lazyWithRetry(() => import("./pages/help/VpnUse"), "page-help-vpn");
 const ReturnPolicy = lazyWithRetry(() => import("./pages/help/ReturnPolicy"), "page-help-return-policy");
-const Logout = lazyWithRetry(() => import("./pages/Logout"), "page-logout");
 const WriterAuth = lazyWithRetry(() => import("./pages/WriterAuth"), "page-writer-auth");
 const WriterDashboard = lazyWithRetry(() => import("./pages/writer/WriterDashboard"), "page-writer-dashboard");
 const WriterArticleEditor = lazyWithRetry(() => import("./pages/writer/WriterArticleEditor"), "page-writer-article-editor");
@@ -357,7 +356,7 @@ const AppContent = () => {
             <Route path="/writer-auth" element={<WriterAuth />} />
             <Route path="/writer-register" element={<WriterRegister />} />
             <Route path="/confirm-account" element={<ConfirmAccount />} />
-            <Route path="/logout" element={<Logout />} />
+            <Route path="/logout" element={<Navigate to="/" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/cancellation-status" element={<CancellationStatus />} />
 
