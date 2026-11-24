@@ -8,7 +8,8 @@
 //   D1 database   Variable name SHOP   Database mets-shop
 //
 // Worker secrets (Settings -> Variables and Secrets -> Add -> type Secret):
-//   PAYPAL_CLIENT_ID, PAYPAL_SECRET   same PayPal app your merch shop uses (live)
+//   PAYPAL_SECRET                     Live secret from PayPal app metsxmfanzoneapp (Client ID is built in;
+//                                     a secret saved under PAYPAL_CLIENT_ID is picked up too)
 //   STRIPE_SECRET_KEY                 optional, sk_live_... once Stripe approves you
 //   STRIPE_WEBHOOK_SECRET             optional, whsec_... for the Stripe webhook below
 //   RESEND_API_KEY                    optional, sends order and tracking emails
@@ -263,13 +264,17 @@ async function orderEmails(env, row) {
 }
 
 // ---------- PayPal ----------
-// Accept the usual name variants so a slightly different secret name still works.
-const pick = (env, names) => { for (const n of names) { const v = env[n]; if (typeof v === "string" && v.trim()) return v.trim(); } return ""; };
+// Accept the usual name variants, and sort the keys by their shape: PayPal Client IDs start with "A",
+// secrets start with "E". So a secret saved under PAYPAL_CLIENT_ID (or the other way round) still works.
+const PAYPAL_DEFAULT_CLIENT_ID = "AQOukQxGnilATx7-0joeKqoMzYYMZwAYL1ENFEtbbsGu5Gr9dDwMECMbs4GRKyNeFaj59Wn5vJ9L4rci"; // metsxmfanzoneapp (Live), public value
+const PAYPAL_NAMES = ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENTID", "PAYPAL_ID", "PAYPAL_CLIENT", "PAYPAL_SECRET", "PAYPAL_CLIENT_SECRET", "PAYPAL_SECRET_KEY", "PAYPAL_SECRET_KEY_1", "PAYPAL_SECRET_KEY_2", "PAYPAL_KEY"];
 function withPayPalAliases(env) {
-  const id = pick(env, ["PAYPAL_CLIENT_ID", "PAYPAL_CLIENTID", "PAYPAL_ID", "PAYPAL_CLIENT"]);
-  const secret = pick(env, ["PAYPAL_SECRET", "PAYPAL_CLIENT_SECRET", "PAYPAL_SECRET_KEY", "PAYPAL_SECRET_KEY_1", "PAYPAL_KEY"]);
+  const vals = PAYPAL_NAMES.map((n) => env[n]).filter((v) => typeof v === "string" && v.trim()).map((v) => v.trim());
+  const id = vals.find((v) => v.startsWith("A")) || PAYPAL_DEFAULT_CLIENT_ID;
+  const secret = vals.find((v) => v.startsWith("E")) || "";
   return Object.assign(Object.create(env), { PAYPAL_CLIENT_ID: id, PAYPAL_SECRET: secret });
 }
+
 const paypalBase = (env) => env.PAYPAL_BASE_URL || "https://api-m.paypal.com";
 async function paypalToken(env) {
   const r = await fetch(`${paypalBase(env)}/v1/oauth2/token`, { method: "POST", headers: { Authorization: "Basic " + btoa(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_SECRET}`), "Content-Type": "application/x-www-form-urlencoded" }, body: "grant_type=client_credentials" });
