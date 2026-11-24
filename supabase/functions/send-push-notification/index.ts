@@ -387,7 +387,10 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const isSystemCall = req.headers.get('X-System-Call') === 'true';
+    // Built-in jobs (game alerts, new-article pushes, member alerts) call with the service key.
+    // The X-System-Call header alone is not trusted any more: the key itself must match.
+    const bearer = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '').trim();
+    const isSystemCall = !!supabaseServiceKey && bearer === supabaseServiceKey;
     
     if (!isSystemCall) {
       const authHeader = req.headers.get('Authorization');
