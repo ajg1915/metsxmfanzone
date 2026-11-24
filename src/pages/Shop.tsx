@@ -11,6 +11,19 @@ import {
   type CartLine, type Customer, type ShopProduct,
 } from "@/lib/shopApi";
 
+// "Men M" -> group "Men", label "M". Sizes without a group word stay on their own.
+const GROUPS = ["Men", "Women", "Kids", "Youth"];
+function groupSizes(sizes: { size: string; in_stock: boolean }[]) {
+  const out = new Map<string, { size: string; label: string; in_stock: boolean }[]>();
+  for (const s of sizes) {
+    const g = GROUPS.find((x) => s.size.startsWith(x + " ")) || "";
+    const label = g ? s.size.slice(g.length + 1) : s.size;
+    if (!out.has(g)) out.set(g, []);
+    out.get(g)!.push({ ...s, label });
+  }
+  return [...out.entries()];
+}
+
 const STATES = "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY PR".split(" ");
 const field = "h-11 w-full rounded-lg border border-white/15 bg-white/5 px-3 text-[15px] text-white placeholder:text-white/40 focus:border-primary focus:outline-none";
 
@@ -45,14 +58,19 @@ function ProductDialog({ p, onClose, onAdd }: { p: ShopProduct | null; onClose: 
             <p className="text-2xl font-extrabold text-primary">{shopMoney(p.price)}</p>
             <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-white/80">{p.description}</p>
             <p className="mt-4 text-xs font-bold uppercase tracking-wide text-white/60">Size</p>
-            <div className="mt-1.5 flex flex-wrap gap-1.5" role="radiogroup" aria-label="Size">
-              {p.sizes.map((s) => (
-                <button key={s.size} type="button" role="radio" aria-checked={size === s.size} disabled={!s.in_stock} onClick={() => setSize(s.size)}
-                  className={`min-h-[40px] rounded-lg border px-3 text-[13px] font-bold disabled:cursor-not-allowed disabled:line-through disabled:opacity-35 ${size === s.size ? "border-primary bg-primary text-primary-foreground" : "border-white/20 hover:border-primary/60"}`}>
-                  {s.size}
-                </button>
-              ))}
-            </div>
+            {groupSizes(p.sizes).map(([group, list]) => (
+              <div key={group} className="mt-2">
+                {group && <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-white/50">{group}</p>}
+                <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={`${group || ""} size`.trim()}>
+                  {list.map((s) => (
+                    <button key={s.size} type="button" role="radio" aria-checked={size === s.size} aria-label={s.size} disabled={!s.in_stock} onClick={() => setSize(s.size)}
+                      className={`min-h-[40px] rounded-lg border px-1 text-[13px] font-bold disabled:cursor-not-allowed disabled:line-through disabled:opacity-35 ${size === s.size ? "border-primary bg-primary text-primary-foreground" : "border-white/20 hover:border-primary/60"}`}>
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
             {p.gift_wrap && <p className="mt-3 flex items-center gap-1.5 text-xs text-white/70"><Gift className="h-3.5 w-3.5 text-primary" /> Free Christmas gift wrap available at checkout</p>}
             <button type="button" disabled={p.sold_out || !size}
               onClick={() => { onAdd({ slug: p.slug, title: p.title, size, qty: 1, price: p.price, image: p.images[0] || "" }); onClose(); }}
@@ -190,7 +208,7 @@ const Shop = () => {
           <section className={storeGrid} aria-label="Mets shop products">
             {products.map((p) => (
               <StoreCard key={p.id} image={p.images[0]} altImage={p.images[1]} title={p.title} price={shopMoney(p.price)}
-                badge={p.condition} soldOut={p.sold_out} meta={p.sizes.filter((s) => s.in_stock).map((s) => s.size).join(" · ")} onOpen={() => setOpen(p)} />
+                badge={p.condition} soldOut={p.sold_out} meta={groupSizes(p.sizes.filter((s) => s.in_stock)).map(([g, l]) => g || l.map((x) => x.label).join(" · ")).join(" · ") || "Sold out"} onOpen={() => setOpen(p)} />
             ))}
             {products.length < 4 && <ComingSoonCard />}
           </section>

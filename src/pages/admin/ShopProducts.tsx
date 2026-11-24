@@ -27,7 +27,11 @@ type Form = {
 
 const blank: Form = {
   title: "", description: "", price: "", images: [],
-  sizes: ["Youth S", "Youth M", "Youth L", "Youth XL"].map((size) => ({ size, stock: "1" })),
+  sizes: [
+    ...["S", "M", "L", "XL", "2XL"].map((x) => `Men ${x}`),
+    ...["S", "M", "L", "XL", "2XL"].map((x) => `Women ${x}`),
+    ...["XS", "S", "M", "L", "XL"].map((x) => `Kids ${x}`),
+  ].map((size) => ({ size, stock: "" })),
   condition: "New with tags", gift_wrap: true, weight_oz: "6", published: true, sort: "0",
 };
 
