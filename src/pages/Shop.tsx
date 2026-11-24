@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Loader2, Minus, Plus, ShoppingBag, ShoppingCart, Trash2 } from "lucide-react";
+import { Gift, Loader2, Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { ComingSoonCard, StoreCard, StoreHero, storeGrid } from "@/components/shop/StoreChrome";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
@@ -12,24 +13,6 @@ import {
 
 const STATES = "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY PR".split(" ");
 const field = "h-11 w-full rounded-lg border border-white/15 bg-white/5 px-3 text-[15px] text-white placeholder:text-white/40 focus:border-primary focus:outline-none";
-
-function ProductCard({ p, onOpen }: { p: ShopProduct; onOpen: () => void }) {
-  const [front, back] = p.images;
-  return (
-    <button type="button" onClick={onOpen} className="group flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card/60 text-left transition-colors hover:border-primary/50">
-      <div className="relative aspect-[3/4] overflow-hidden bg-[#0d1b30]">
-        {front && <img src={front} alt={p.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-0" />}
-        {back && <img src={back} alt="" aria-hidden loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100" />}
-        <span className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[11px] font-bold ${p.sold_out ? "bg-black/80 uppercase text-white" : "bg-primary text-primary-foreground"}`}>{p.sold_out ? "Sold out" : p.condition}</span>
-      </div>
-      <div className="flex flex-1 flex-col p-3 sm:p-4">
-        <h3 className="line-clamp-2 text-[14px] font-semibold leading-snug text-foreground sm:text-[15px]">{p.title}</h3>
-        <p className="mt-1 text-lg font-extrabold text-primary" style={{ fontVariantNumeric: "tabular-nums" }}>{shopMoney(p.price)}</p>
-        <p className="mt-auto pt-1 text-xs text-muted-foreground">{p.sizes.filter((s) => s.in_stock).map((s) => s.size).join(" · ") || "Sold out"}</p>
-      </div>
-    </button>
-  );
-}
 
 function ProductDialog({ p, onClose, onAdd }: { p: ShopProduct | null; onClose: () => void; onAdd: (line: CartLine) => void }) {
   const [img, setImg] = useState(0);
@@ -45,7 +28,7 @@ function ProductDialog({ p, onClose, onAdd }: { p: ShopProduct | null; onClose: 
         </DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <div className="aspect-[3/4] overflow-hidden rounded-xl bg-[#0d1b30]">
+            <div className="aspect-[4/5] overflow-hidden rounded-xl bg-[#e9ecf1]">
               {p.images[img] && <img src={p.images[img]} alt={p.title} className="h-full w-full object-cover" />}
             </div>
             {p.images.length > 1 && (
@@ -197,24 +180,25 @@ const Shop = () => {
     <div className="min-h-screen bg-background">
       <SEOHead title="Mets T-Shirts & Gear | MetsXMFanZone Shop" description="New York Mets T-shirts and fan gear from the MetsXMFanZone shop. $5.99 flat shipping, free gift wrap." canonical="https://metsxmfanzone.com/shop" />
       <Navigation />
-      <main className="mx-auto max-w-6xl px-4 pb-24 pt-24 md:pt-28">
-        <header className="rounded-2xl border-t-4 border-t-primary bg-gradient-to-b from-[hsl(var(--mets-blue))] to-[hsl(var(--mets-blue-dark))] p-6 text-center text-white sm:p-10">
-          <ShoppingBag className="mx-auto h-9 w-9 text-primary" />
-          <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">Mets Shop</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-white/80 sm:text-base">Mets T-shirts and fan gear, shipped by MetsXMFanZone. $5.99 flat shipping and free gift wrap for the holidays.</p>
-        </header>
-        {isLoading && <p className="mt-10 text-center text-muted-foreground">Loading the shop…</p>}
+      <main className="mx-auto max-w-6xl px-3 pb-28 pt-20 sm:px-4 md:pt-28">
+        <StoreHero title="Mets Shop" subtitle="Mets T-shirts and fan gear, packed and shipped by MetsXMFanZone."
+          perks={[{ icon: "truck", text: "$5.99 flat U.S. shipping" }, { icon: "gift", text: "Free gift wrap" }, { icon: "shield", text: "Secure PayPal checkout" }]} />
+        {isLoading && <div className={storeGrid}>{[0, 1, 2, 3].map((i) => <div key={i} className="aspect-[4/6] animate-pulse rounded-2xl bg-white/5" />)}</div>}
         {isError && <p className="mt-10 text-center text-muted-foreground">The shop is taking a break. Please check back soon.</p>}
         {!isLoading && !isError && products.length === 0 && <p className="mt-10 text-center text-muted-foreground">New Mets gear is on the way.</p>}
         {products.length > 0 && (
-          <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4" aria-label="Mets shop products">
-            {products.map((p) => <ProductCard key={p.id} p={p} onOpen={() => setOpen(p)} />)}
+          <section className={storeGrid} aria-label="Mets shop products">
+            {products.map((p) => (
+              <StoreCard key={p.id} image={p.images[0]} altImage={p.images[1]} title={p.title} price={shopMoney(p.price)}
+                badge={p.condition} soldOut={p.sold_out} meta={p.sizes.filter((s) => s.in_stock).map((s) => s.size).join(" · ")} onOpen={() => setOpen(p)} />
+            ))}
+            {products.length < 4 && <ComingSoonCard />}
           </section>
         )}
       </main>
       {count > 0 && (
-        <button type="button" onClick={() => setCartOpen(true)} className="fixed bottom-24 right-4 z-40 flex h-14 items-center gap-2 rounded-full bg-primary px-5 font-extrabold text-primary-foreground shadow-2xl md:bottom-8">
-          <ShoppingCart className="h-5 w-5" /> Cart ({count})
+        <button type="button" onClick={() => setCartOpen(true)} className="fixed bottom-[92px] left-1/2 z-40 flex h-13 -translate-x-1/2 items-center gap-2 rounded-full bg-[#FF5910] px-6 py-3.5 font-extrabold text-white shadow-[0_10px_30px_rgba(255,89,16,0.45)] md:bottom-8 md:left-auto md:right-8 md:translate-x-0">
+          <ShoppingCart className="h-5 w-5" /> View cart · {count}
         </button>
       )}
       <ProductDialog p={open} onClose={() => setOpen(null)} onAdd={add} />

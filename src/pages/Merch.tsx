@@ -1,8 +1,8 @@
-import { ShoppingBag } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import PodcastShop from "@/components/podcast/PodcastShop";
+import { StoreHero } from "@/components/shop/StoreChrome";
 
 const Merch = () => (
   <div className="min-h-screen bg-background">
@@ -12,17 +12,12 @@ const Merch = () => (
       canonical="https://metsxmfanzone.com/merch"
     />
     <Navigation />
-    <main className="mx-auto max-w-6xl px-4 pb-24 pt-24 md:pt-28">
-      <header className="mb-6 rounded-2xl border-t-4 border-t-primary bg-gradient-to-b from-[hsl(var(--mets-blue))] to-[hsl(var(--mets-blue-dark))] p-6 text-center text-white sm:p-10">
-        <ShoppingBag className="mx-auto h-9 w-9 text-primary" />
-        <h1 className="mt-2 text-3xl font-extrabold sm:text-4xl">MetsXMFanZone Merch</h1>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-white/80 sm:text-base">
-          Tees, hoodies, jackets and caps. Pick your size, pay securely with PayPal, and we ship it to you in the U.S.
-        </p>
-      </header>
+    <main className="mx-auto max-w-6xl px-3 pb-28 pt-20 sm:px-4 md:pt-28">
+      <StoreHero title="MetsXMFanZone Merch" subtitle="Tees, hoodies, jackets and caps with the MetsXMFanZone logo. Pick your color and size, and we ship it to you."
+        perks={[{ icon: "truck", text: "Ships in the U.S." }, { icon: "shield", text: "Secure PayPal checkout" }, { icon: "gift", text: "Great holiday gift" }]} />
       <PodcastShop all />
-      <p className="mt-8 text-center text-sm text-muted-foreground">
-        Looking for official Mets jerseys and hats? <a href="/mets-shop" className="font-semibold text-primary underline">Visit the Mets Shop</a>
+      <p className="mt-10 text-center text-sm text-muted-foreground">
+        Looking for Mets player tees? <a href="/shop" className="font-semibold text-primary underline">Visit the Mets Shop</a>
       </p>
     </main>
     <Footer />

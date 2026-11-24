@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { COLORS, MERCH, merchFrom, merchImage, merchMoney, merchPrice, type MerchItem } from "@/lib/merchCatalog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { StoreCard, storeGrid } from "@/components/shop/StoreChrome";
 import { Label } from "@/components/ui/label";
 
 // MetsXMFanZone gear, paid with PayPal. Price depends on size and is re-checked on the server.
@@ -17,6 +18,7 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
   const [colors, setColors] = useState<Record<string, string>>({});
   const [designs, setDesigns] = useState<Record<string, string>>({});
   const [buying, setBuying] = useState<MerchItem | null>(null);
+  const [step, setStep] = useState<"pick" | "ship">("pick");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", email: "", line1: "", line2: "", city: "", state: "", zip: "" });
@@ -77,108 +79,97 @@ export default function PodcastShop({ all = false }: { all?: boolean }) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        {items.map((m) => {
-          const chosen = sizeOf(m);
-          const color = colorOf(m);
-          const design = designOf(m);
-          const price = chosen ? merchPrice(m.sku, chosen) : null;
-          return (
-            <div key={m.sku} className="group flex flex-col overflow-hidden rounded-2xl border border-border/50 bg-card/60 transition-colors hover:border-primary/50">
-              <div className="aspect-square overflow-hidden bg-[#0d1b30]">
-                <img src={merchImage(m.sku, color, design)} alt={`${m.title} in ${COLORS.find((c) => c.id === color)?.label}`} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              </div>
-              <div className="flex flex-1 flex-col p-3 sm:p-4">
-                <h3 className="line-clamp-2 text-[14px] font-semibold leading-snug text-foreground sm:text-[15px]">{m.title}</h3>
-                <p className="mt-1 text-lg font-extrabold text-primary" style={{ fontVariantNumeric: "tabular-nums" }}>
-                  {price !== null ? merchMoney(price) : m.sizes.length > 1 && merchFrom(m) !== merchPrice(m.sku, m.sizes[m.sizes.length - 1]) ? `From ${merchMoney(merchFrom(m))}` : merchMoney(merchFrom(m))}
-                </p>
-                {m.designs && (
-                  <div className="mt-2 flex gap-1.5" role="radiogroup" aria-label={`${m.title} design`}>
-                    {m.designs.map((d) => (
-                      <button
-                        key={d.id}
-                        type="button"
-                        role="radio"
-                        aria-checked={design === d.id}
-                        onClick={() => setDesigns((p) => ({ ...p, [m.sku]: d.id }))}
-                        className={`min-h-[34px] flex-1 rounded-lg border px-2 text-[12px] font-bold ${design === d.id ? "border-primary bg-primary text-primary-foreground" : "border-border/60 text-foreground hover:border-primary/60"}`}
-                      >
-                        {d.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                <div className="mt-2 flex items-center gap-2" role="radiogroup" aria-label={`${m.title} color`}>
-                  {COLORS.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={color === c.id}
-                      aria-label={c.label}
-                      title={c.label}
-                      onClick={() => setColors((p) => ({ ...p, [m.sku]: c.id }))}
-                      className={`h-7 w-7 rounded-full border-2 ${color === c.id ? "border-primary ring-2 ring-primary/40" : "border-border/60"}`}
-                      style={{ backgroundColor: c.hex }}
-                    />
-                  ))}
-                  <span className="text-xs text-muted-foreground">{COLORS.find((c) => c.id === color)?.label}</span>
-                </div>
-                {m.sizes.length > 1 && (
-                  <div className="mb-3 mt-2 flex flex-wrap gap-1.5" role="radiogroup" aria-label={`${m.title} size`}>
-                    {m.sizes.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        role="radio"
-                        aria-checked={chosen === s}
-                        onClick={() => setSizes((p) => ({ ...p, [m.sku]: s }))}
-                        className={`min-h-[34px] min-w-[38px] rounded-lg border px-2 text-[13px] font-bold ${chosen === s ? "border-primary bg-primary text-primary-foreground" : "border-border/60 text-foreground hover:border-primary/60"}`}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {m.sizes.length === 1 && <p className="mb-3 text-xs text-muted-foreground">{m.sizes[0]}</p>}
-                <button
-                  type="button"
-                  disabled={!chosen}
-                  onClick={() => { setError(""); setBuying(m); }}
-                  className="mt-auto flex h-11 w-full items-center justify-center rounded-xl bg-[#ffc439] text-[15px] font-extrabold text-[#111] transition-colors hover:bg-[#f2b920] disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
-                >
-                  {chosen ? "Buy with PayPal" : "Pick a size"}
-                </button>
-              </div>
-            </div>
-          );
-        })}
+      <div className={all ? storeGrid : "grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4"}>
+        {items.map((m) => (
+          <StoreCard key={m.sku} image={merchImage(m.sku, colorOf(m), designOf(m))} title={m.title}
+            price={m.sizes.length > 1 && merchFrom(m) !== merchPrice(m.sku, m.sizes[m.sizes.length - 1]) ? `From ${merchMoney(merchFrom(m))}` : merchMoney(merchFrom(m))}
+            swatches={COLORS.map((c) => c.hex)} meta={m.sizes.length > 1 ? `${m.sizes[0]}–${m.sizes[m.sizes.length - 1]}` : m.sizes[0]}
+            onOpen={() => { setError(""); setStep("pick"); setBuying(m); }} />
+        ))}
       </div>
 
       <Dialog open={!!buying} onOpenChange={(o) => { if (!o && !busy) setBuying(null); }}>
-        <DialogContent className="max-h-[92svh] overflow-y-auto border-white/10 bg-[#0b1426] text-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Where should we ship it?</DialogTitle>
-            <DialogDescription className="text-white/60">
-              {buying?.title}{buying?.designs && designOf(buying) === "podcast" ? " (Podcast Shop design)" : ""} · {buying ? COLORS.find((c) => c.id === colorOf(buying))?.label : ""} · Size {size} · {buying ? merchMoney(merchPrice(buying.sku, size)) : ""} · U.S. shipping address. You'll pay on PayPal next.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={submit} className="space-y-3">
-            <div><Label htmlFor="s-name" className="mb-1 block text-white/80">Full name</Label><Input id="s-name" required autoComplete="name" value={form.name} onChange={set("name")} className={field} /></div>
-            <div><Label htmlFor="s-email" className="mb-1 block text-white/80">Email</Label><Input id="s-email" type="email" required autoComplete="email" value={form.email} onChange={set("email")} className={field} /></div>
-            <div><Label htmlFor="s-l1" className="mb-1 block text-white/80">Address</Label><Input id="s-l1" required autoComplete="address-line1" value={form.line1} onChange={set("line1")} className={field} /></div>
-            <div><Label htmlFor="s-l2" className="mb-1 block text-white/80">Apt / suite (optional)</Label><Input id="s-l2" autoComplete="address-line2" value={form.line2} onChange={set("line2")} className={field} /></div>
-            <div className="grid grid-cols-[1fr_72px_96px] gap-2">
-              <div><Label htmlFor="s-city" className="mb-1 block text-white/80">City</Label><Input id="s-city" required autoComplete="address-level2" value={form.city} onChange={set("city")} className={field} /></div>
-              <div><Label htmlFor="s-st" className="mb-1 block text-white/80">State</Label><Input id="s-st" required maxLength={2} autoComplete="address-level1" value={form.state} onChange={set("state")} className={`${field} uppercase`} /></div>
-              <div><Label htmlFor="s-zip" className="mb-1 block text-white/80">ZIP</Label><Input id="s-zip" required inputMode="numeric" autoComplete="postal-code" value={form.zip} onChange={set("zip")} className={field} /></div>
-            </div>
-            {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
-            <button type="submit" disabled={busy} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#ffc439] text-base font-extrabold text-[#111] hover:bg-[#f2b920] disabled:opacity-70">
-              {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> Opening PayPal…</> : "Continue to PayPal"}
-            </button>
-          </form>
+        <DialogContent className="max-h-[92svh] overflow-y-auto border-white/10 bg-[#0b1426] text-white sm:max-w-2xl">
+          {buying && step === "pick" && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="pr-6 text-xl leading-tight">{buying.title}</DialogTitle>
+                <DialogDescription className="text-white/60">MetsXMFanZone gear · ships in the U.S.</DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="aspect-square overflow-hidden rounded-xl bg-[#e9ecf1]">
+                  <img src={merchImage(buying.sku, colorOf(buying), designOf(buying))} alt={`${buying.title} in ${COLORS.find((c) => c.id === colorOf(buying))?.label}`} className="h-full w-full object-cover" />
+                </div>
+                <div className="flex flex-col">
+                  <p className="text-2xl font-extrabold text-[#FF5910]" style={{ fontVariantNumeric: "tabular-nums" }}>
+                    {size ? merchMoney(merchPrice(buying.sku, size)) : buying.sizes.length > 1 ? `From ${merchMoney(merchFrom(buying))}` : merchMoney(merchFrom(buying))}
+                  </p>
+                  {buying.designs && (
+                    <>
+                      <p className="mt-4 text-xs font-bold uppercase tracking-wide text-white/60">Design</p>
+                      <div className="mt-1.5 flex gap-1.5" role="radiogroup" aria-label="Design">
+                        {buying.designs.map((d) => (
+                          <button key={d.id} type="button" role="radio" aria-checked={designOf(buying) === d.id} onClick={() => setDesigns((p) => ({ ...p, [buying.sku]: d.id }))}
+                            className={`min-h-[40px] flex-1 rounded-lg border px-3 text-[13px] font-bold ${designOf(buying) === d.id ? "border-[#FF5910] bg-[#FF5910] text-white" : "border-white/20 hover:border-[#FF5910]/60"}`}>{d.label}</button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  <p className="mt-4 text-xs font-bold uppercase tracking-wide text-white/60">Color · <span className="normal-case text-white/80">{COLORS.find((c) => c.id === colorOf(buying))?.label}</span></p>
+                  <div className="mt-1.5 flex gap-2" role="radiogroup" aria-label="Color">
+                    {COLORS.map((c) => (
+                      <button key={c.id} type="button" role="radio" aria-checked={colorOf(buying) === c.id} aria-label={c.label} title={c.label}
+                        onClick={() => setColors((p) => ({ ...p, [buying.sku]: c.id }))}
+                        className={`h-9 w-9 rounded-full border-2 ${colorOf(buying) === c.id ? "border-[#FF5910] ring-2 ring-[#FF5910]/40 ring-offset-2 ring-offset-[#0b1426]" : "border-white/30"}`} style={{ backgroundColor: c.hex }} />
+                    ))}
+                  </div>
+                  {buying.sizes.length > 1 ? (
+                    <>
+                      <p className="mt-4 text-xs font-bold uppercase tracking-wide text-white/60">Size</p>
+                      <div className="mt-1.5 grid grid-cols-6 gap-1.5" role="radiogroup" aria-label="Size">
+                        {buying.sizes.map((s) => (
+                          <button key={s} type="button" role="radio" aria-checked={size === s} onClick={() => setSizes((p) => ({ ...p, [buying.sku]: s }))}
+                            className={`min-h-[40px] rounded-lg border text-[13px] font-bold ${size === s ? "border-[#FF5910] bg-[#FF5910] text-white" : "border-white/20 hover:border-[#FF5910]/60"}`}>{s}</button>
+                        ))}
+                      </div>
+                    </>
+                  ) : <p className="mt-4 text-sm text-white/70">{buying.sizes[0]}</p>}
+                  <button type="button" disabled={!size} onClick={() => setStep("ship")}
+                    className="mt-6 flex h-12 w-full items-center justify-center rounded-xl bg-[#ffc439] text-base font-extrabold text-[#111] hover:bg-[#f2b920] disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/40">
+                    {size ? "Buy with PayPal" : "Pick a size"}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+          {buying && step === "ship" && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl">Where should we ship it?</DialogTitle>
+                <DialogDescription className="text-white/60">
+                  {buying.title}{buying.designs && designOf(buying) === "podcast" ? " (Podcast Shop design)" : ""} · {COLORS.find((c) => c.id === colorOf(buying))?.label} · Size {size} · {merchMoney(merchPrice(buying.sku, size))}. You'll pay on PayPal next.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={submit} className="space-y-3">
+                <div><Label htmlFor="s-name" className="mb-1 block text-white/80">Full name</Label><Input id="s-name" required autoComplete="name" value={form.name} onChange={set("name")} className={field} /></div>
+                <div><Label htmlFor="s-email" className="mb-1 block text-white/80">Email</Label><Input id="s-email" type="email" required autoComplete="email" value={form.email} onChange={set("email")} className={field} /></div>
+                <div><Label htmlFor="s-l1" className="mb-1 block text-white/80">Address</Label><Input id="s-l1" required autoComplete="address-line1" value={form.line1} onChange={set("line1")} className={field} /></div>
+                <div><Label htmlFor="s-l2" className="mb-1 block text-white/80">Apt / suite (optional)</Label><Input id="s-l2" autoComplete="address-line2" value={form.line2} onChange={set("line2")} className={field} /></div>
+                <div className="grid grid-cols-[1fr_72px_96px] gap-2">
+                  <div><Label htmlFor="s-city" className="mb-1 block text-white/80">City</Label><Input id="s-city" required autoComplete="address-level2" value={form.city} onChange={set("city")} className={field} /></div>
+                  <div><Label htmlFor="s-st" className="mb-1 block text-white/80">State</Label><Input id="s-st" required maxLength={2} autoComplete="address-level1" value={form.state} onChange={set("state")} className={`${field} uppercase`} /></div>
+                  <div><Label htmlFor="s-zip" className="mb-1 block text-white/80">ZIP</Label><Input id="s-zip" required inputMode="numeric" autoComplete="postal-code" value={form.zip} onChange={set("zip")} className={field} /></div>
+                </div>
+                {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
+                <div className="flex gap-2">
+                  <button type="button" disabled={busy} onClick={() => setStep("pick")} className="h-12 rounded-xl border border-white/20 px-4 font-bold text-white/80">Back</button>
+                  <button type="submit" disabled={busy} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-[#ffc439] text-base font-extrabold text-[#111] hover:bg-[#f2b920] disabled:opacity-70">
+                    {busy ? <><Loader2 className="h-4 w-4 animate-spin" /> Opening PayPal…</> : "Continue to PayPal"}
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </section>
