@@ -16,8 +16,9 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('VITE_SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('VITE_SUPABASE_PUBLISHABLE_KEY')!;
+    // SUPABASE_URL / SUPABASE_ANON_KEY are the names edge functions actually get.
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? Deno.env.get('VITE_SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') ?? Deno.env.get('VITE_SUPABASE_PUBLISHABLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const baseUrl = 'https://metsxmfanzone.com';
