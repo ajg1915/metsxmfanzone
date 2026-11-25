@@ -32,6 +32,7 @@ if (!run("node", ["prerender.js", "--postprocess"])) {
 // article links to the HTML for search engines. It loads the built page from
 // dist/blog-shell.html, so move dist/blog/index.html there (if it stayed, the
 // static file would be served first and the function would never run).
+const indexHtmlPath = resolve("dist/index.html");
 const blogDir = resolve("dist/blog");
 if (existsSync(blogDir)) {
   for (const name of readdirSync(blogDir)) {
@@ -45,7 +46,10 @@ if (existsSync(blogDir)) {
     // marker; put the marker back so api/blog-index.js can add fresh links.
     let shell = readFileSync(blogIndex, "utf8");
     if (!shell.includes("<!--app-html-->")) {
-      shell = shell.replace(/(<div id="root"[^>]*>)[\s\S]*?(<\/div>\s*<script)/i, "$1<!--app-html--></div>\n<script");
+      // Reuse the template's static nav (from dist/index.html) after the marker.
+      const tpl = existsSync(indexHtmlPath) ? readFileSync(indexHtmlPath, "utf8") : "";
+      const nav = (tpl.match(/<!--app-html-->(<nav[\s\S]*?<\/nav>)/) || [])[1] || "";
+      shell = shell.replace(/(<div id="root"[^>]*>)[\s\S]*?(<\/div>\s*<script)/i, (_m, open) => `${open}<!--app-html-->${nav}</div>\n<script`);
     }
     writeFileSync(resolve("dist/blog-shell.html"), shell);
     rmSync(blogIndex, { force: true });
