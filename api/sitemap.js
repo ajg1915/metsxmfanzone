@@ -6,7 +6,7 @@
 // right away without a redeploy. Lists only pages worth ranking; small help
 // and utility pages are left out on purpose so Google spends its crawl
 // budget on the content that matters. Unlisted pages are still crawlable.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL } from "./_lib/article.js";
+import { SUPABASE_URL, SITE_URL, supabaseGet } from "./_lib/article.js";
 
 const MAIN_PAGES = [
   "/",
@@ -65,11 +65,7 @@ async function fetchPosts() {
     `${SUPABASE_URL}/rest/v1/blog_posts` +
     `?select=slug,published_at,updated_at` +
     `&published=eq.true&order=published_at.desc&limit=5000`;
-  const res = await fetch(url, {
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-  });
-  if (!res.ok) throw new Error(`Supabase ${res.status}`);
-  const rows = await res.json();
+  const rows = await supabaseGet(url);
   return Array.isArray(rows) ? rows : [];
 }
 
@@ -78,11 +74,7 @@ async function fetchManagedPages() {
     `${SUPABASE_URL}/rest/v1/seo_settings` +
     `?select=page_path,sitemap_priority,robots,updated_at` +
     `&include_in_sitemap=eq.true&order=sitemap_priority.desc,page_path.asc`;
-  const res = await fetch(url, {
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-  });
-  if (!res.ok) throw new Error(`Supabase ${res.status}`);
-  const rows = await res.json();
+  const rows = await supabaseGet(url);
   if (!Array.isArray(rows)) return [];
   return rows
     .filter((r) => !String(r?.robots ?? "").toLowerCase().includes("noindex"))
@@ -101,21 +93,13 @@ function urlEntry(loc, lastmod, priority) {
 }
 
 export default async function handler(req, res) {
-  let posts = [];
-  let postsOk = true;
-  try {
-    posts = await fetchPosts();
-  } catch {
-    postsOk = false; // still serve the main pages rather than an error
-  }
-
-  let pages = [];
-  let pagesOk = true;
-  try {
-    pages = await fetchManagedPages();
-  } catch {
-    pagesOk = false;
-  }
+  // Both reads run at the same time so a slow database can't push the
+  // response past the function time limit.
+  const [postsRes, pagesRes] = await Promise.allSettled([fetchPosts(), fetchManagedPages()]);
+  const postsOk = postsRes.status === "fulfilled"; // still serve the main pages rather than an error
+  const pagesOk = pagesRes.status === "fulfilled";
+  let posts = postsOk ? postsRes.value : [];
+  let pages = pagesOk ? pagesRes.value : [];
   if (!pagesOk || pages.length === 0) {
     pages = MAIN_PAGES.map((path) => ({ path, priority: null, updated: null }));
   }

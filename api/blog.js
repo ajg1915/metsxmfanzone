@@ -3,7 +3,7 @@
 // the live database, so it opens in every browser (incl. social in-app browsers)
 // and link previews are always correct — even for posts newer than the last build.
 
-import { fetchPublishedPost, fetchRelatedPosts, renderStandalonePage } from "./_lib/article.js";
+import { fetchPublishedPost, fetchRelatedPosts, renderStandalonePage, sendUnavailable } from "./_lib/article.js";
 
 async function loadShell(req) {
   const host = req.headers["x-forwarded-host"] || req.headers.host || "metsxmfanzone.com";
@@ -47,13 +47,10 @@ export default async function handler(req, res) {
     res.setHeader("Cache-Control", "public, max-age=0, s-maxage=300, stale-while-revalidate=600");
     res.status(200).send(renderStandalonePage(post, slug, related));
   } catch {
-    // Never fail the page: fall back to the plain app shell.
-    try {
-      const shell = await loadShell(req);
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.status(200).send(shell);
-    } catch {
-      res.status(500).send("Internal Server Error");
-    }
+    // The database could not be read. Answer 503 + Retry-After so Google comes
+    // back later. Serving the home page shell here (as before) gave Google a
+    // 200 page whose content and canonical were the home page, and a failed
+    // lookup used to fall into the 404 branch, which makes Google drop the URL.
+    sendUnavailable(res);
   }
 }
