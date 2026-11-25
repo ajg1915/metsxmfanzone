@@ -145,3 +145,29 @@ test("scheduled articles go live when their time comes", async () => {
   assert.equal(live.body.post.approval_status, "approved");
   assert.equal(live.body.post.id, s.body.post.id);
 });
+
+test("sync import upserts rows only with the sync token", async () => {
+  const e = env();
+  const row = { id: "11111111-2222-3333-4444-555555555555", user_id: "u", title: "T", slug: "t", content: "<p>It's</p>", tags: ["a"], published: true, published_at: "2026-11-01T10:00:00.123456Z", created_at: "2026-11-01T09:00:00Z", approval_status: "approved" };
+  const post = (token, body) =>
+    worker.fetch(new Request("https://x/sync/import", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(body) }), e);
+  assert.equal((await post("s3cret", { rows: [row] })).status, 404, "off without SYNC_TOKEN");
+  e.SYNC_TOKEN = "s3cret";
+  assert.equal((await post("wrong", { rows: [row] })).status, 401);
+  assert.equal((await post("s3cret", { rows: [row] })).status, 200);
+  assert.equal((await post("s3cret", { rows: [{ ...row, title: "T2" }] })).status, 200, "second run updates");
+  const got = await call(e, "GET", "/posts/t");
+  assert.equal(got.body.post.title, "T2");
+  assert.equal(got.body.post.content, "<p>It's</p>");
+  assert.equal(got.body.post.published_at, "2026-11-01T10:00:00.123Z");
+  assert.deepEqual(got.body.post.tags, ["a"]);
+});
+
+test("publish-due endpoint publishes only what is due", async () => {
+  const e = env();
+  await call(e, "POST", "/manage/posts", { token: "admin-token", body: article({ scheduled_publish_at: "2020-01-01T00:00:00Z" }) });
+  await call(e, "POST", "/manage/posts", { token: "admin-token", body: article({ slug: "later", scheduled_publish_at: "2999-01-01T00:00:00Z" }) });
+  const r = await call(e, "POST", "/tasks/publish-due");
+  assert.equal(r.body.published, 1);
+  assert.equal((await call(e, "GET", "/posts/later")).status, 404);
+});

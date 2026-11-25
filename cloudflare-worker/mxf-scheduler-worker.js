@@ -8,6 +8,7 @@
 //        - emails are waiting in the queue → runs the process-email-queue function
 //   2. Mets games (straight from MLB, no Supabase) → runs auto-game-alerts only
 //      when a Mets game is about to start, just started, or just finished.
+//   Scheduled articles: asks the articles-api Worker to publish any whose time has come.
 // Every 10 minutes:
 //   3. New published blog posts become hero slides on the home page (one for visitors,
 //      one for members), newest first. Keeps the 5 newest automatic slides per audience
@@ -137,6 +138,14 @@ async function articles(env, params) {
   return Array.isArray(body.posts) ? body.posts : [];
 }
 
+// Scheduled articles: ask articles-api to publish anything whose time has come.
+async function runPublishDue(env) {
+  const base = String(env.ARTICLES_API || DEFAULT_ARTICLES_API).replace(/\/+$/, "");
+  const r = await fetch(`${base}/tasks/publish-due`, { method: "POST" });
+  if (!r.ok) throw new Error(`publish-due ${r.status}`);
+  return r.json();
+}
+
 // ---------- 3. Blog posts → hero slides ----------
 const HERO_KEEP = 5;
 const AUTO = "auto_blog";
@@ -260,6 +269,7 @@ async function tick(env, when = new Date()) {
   await step("due", () => runDueWork(api));
   await step("mets", () => runMetsAlerts(api, when.getTime()));
   // every run (cron is every 2 minutes), so a new post reaches the hero within about 2 minutes
+  await step("publishDue", () => runPublishDue(env));
   await step("blogHero", () => runBlogHero(api, env, when));
   await step("searchPing", () => runSearchPing(api, env, when));
   lastRun = result;

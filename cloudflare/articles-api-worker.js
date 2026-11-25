@@ -23,7 +23,13 @@
 //   PATCH  /manage/posts/<id>            change fields
 //   DELETE /manage/posts/<id>            admin only
 //
-// Every 5 minutes (cron) articles whose scheduled_publish_at has passed are published.
+// Scheduled publishing: POST /tasks/publish-due publishes articles whose scheduled_publish_at
+// has passed. The mxf-scheduler Worker calls it every 2 minutes (the free plan allows only 5 cron
+// triggers per account). It only ever does what the schedule already says, so it needs no sign-in.
+//
+// Migration / re-sync (only while the SYNC_TOKEN secret is set; remove it to switch this off):
+//   POST /sync/import  { rows: [ full article rows ] }   Authorization: Bearer <SYNC_TOKEN>
+//   Upserts each row by id, exactly as sent (used to copy articles over from Supabase).
 
 const DEFAULT_SUPABASE_URL = "https://rdmrxeplasttewtlfetc.supabase.co";
 // Publishable (public) key of the MetsXMFanZone app project.
@@ -401,6 +407,51 @@ async function deletePost(env, who, id) {
   return json({ deleted: id });
 }
 
+// ---------- migration / re-sync ----------
+async function sameSecret(a, b) {
+  const enc = new TextEncoder();
+  const [x, y] = await Promise.all([
+    crypto.subtle.digest("SHA-256", enc.encode(String(a))),
+    crypto.subtle.digest("SHA-256", enc.encode(String(b))),
+  ]);
+  const xa = new Uint8Array(x);
+  const ya = new Uint8Array(y);
+  let diff = 0;
+  for (let i = 0; i < xa.length; i++) diff |= xa[i] ^ ya[i];
+  return diff === 0;
+}
+
+async function syncImport(env, request) {
+  if (!env.SYNC_TOKEN) return json({ error: "Sync is switched off" }, 404);
+  const auth = request.headers.get("Authorization") || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!token || !(await sameSecret(token, env.SYNC_TOKEN))) return json({ error: "Not allowed" }, 401);
+  const body = await request.json().catch(() => null);
+  const rows = Array.isArray(body?.rows) ? body.rows : null;
+  if (!rows || !rows.length || rows.length > 100) return json({ error: "Send 1-100 rows" }, 400);
+  const stmts = [];
+  for (const r of rows) {
+    if (!r || !validId(r.id) || typeof r.title !== "string" || typeof r.slug !== "string" || !r.created_at) {
+      return json({ error: `Bad row ${r?.id || "?"}` }, 400);
+    }
+    const v = {
+      ...Object.fromEntries(ALL_COLUMNS.map((c) => [c, r[c] ?? null])),
+      tags: JSON.stringify(Array.isArray(r.tags) ? r.tags : []),
+      published: r.published ? 1 : 0,
+      is_draft: r.is_draft ? 1 : 0,
+    };
+    for (const k of ["published_at", "created_at", "updated_at", "scheduled_publish_at"]) v[k] = toIso(v[k]) ?? null;
+    stmts.push(
+      env.DB.prepare(
+        `INSERT INTO blog_posts (${ALL_COLUMNS.join(", ")}, saved_via, synced_to_supabase) VALUES (${ALL_COLUMNS.map(() => "?").join(", ")}, 'supabase-copy', 1)
+         ON CONFLICT(id) DO UPDATE SET ${ALL_COLUMNS.filter((c) => c !== "id").map((c) => `${c} = excluded.${c}`).join(", ")}, synced_to_supabase = 1, mirrored_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')`,
+      ).bind(...ALL_COLUMNS.map((c) => v[c])),
+    );
+  }
+  await env.DB.batch(stmts);
+  return json({ imported: stmts.length });
+}
+
 // ---------- scheduled publishing ----------
 export async function publishDue(env, now = new Date()) {
   const iso = now.toISOString();
@@ -429,6 +480,16 @@ export default {
       const path = url.pathname.replace(/\/+$/, "") || "/";
       if (path === "/") return json({ ok: true, service: "articles-api" });
       if (!env.DB) return json({ error: "Worker is missing its D1 binding named DB" }, 500);
+
+      if (path === "/tasks/publish-due") {
+        if (request.method !== "POST") return json({ error: "POST only" }, 405);
+        return json(await publishDue(env));
+      }
+
+      if (path === "/sync/import") {
+        if (request.method !== "POST") return json({ error: "POST only" }, 405);
+        return await syncImport(env, request);
+      }
 
       // Public
       if (path === "/posts" || path.startsWith("/posts/")) {

@@ -9,8 +9,8 @@ binding = "DB"
 database_name = "metsxm-articles"
 database_id = "bd322bd5-18a3-4d3e-87b6-ae94196f9233"
 
-[triggers]
-crons = ["*/5 * * * *"]
+# No cron here: the account's free plan allows 5 cron triggers in total, so the mxf-scheduler
+# Worker calls POST /tasks/publish-due every 2 minutes instead.
 
 [observability]
 enabled = true
