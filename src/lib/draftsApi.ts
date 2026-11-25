@@ -1,4 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
+import {
+  type Article,
+  createArticle,
+  deleteArticle,
+  getManagedArticle,
+  listManagedArticles,
+  updateArticle,
+} from "@/lib/articlesApi";
 
 // Drafts live in the owner's Cloudflare R2 bucket and are served by the
 // drafts-api Worker (cloudflare/drafts-api-worker.js). Supabase only gets the
@@ -90,7 +98,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 // ----- drafts the daily 5am task saves straight into the blog table -----
-// Those are articles in `blog_posts` with approval_status "pending" (or "rejected").
+// Those are articles in the Cloudflare articles service with approval_status "pending" (or "rejected").
 // They show up here beside the Worker's drafts, with ids like "post-<uuid>", so
 // this page is the one place to review and approve every waiting article.
 
@@ -137,30 +145,36 @@ const postDraft = (p: any): Draft => ({
 //   Waiting    not live, not rejected, no publish date set
 //   Published  live, or approved with a future publish date (shown as Scheduled)
 //   Rejected   rejected and not live
-const notRejected = "approval_status.is.null,approval_status.neq.rejected";
+// Articles come from the Cloudflare articles service (see articlesApi.ts).
+const isWaiting = (p: Article) => !p.published && p.approval_status !== "rejected" && !p.scheduled_publish_at;
+const isRejected = (p: Article) => !p.published && p.approval_status === "rejected";
+const isPublishedOrScheduled = (p: Article) =>
+  p.published || (!!p.scheduled_publish_at && p.approval_status === "approved");
+
+async function allPosts(fields: "card" | "full" = "card"): Promise<Article[]> {
+  return listManagedArticles({ limit: 2000, fields });
+}
 
 async function listPosts(status: DraftStatus): Promise<DraftSummary[]> {
   if (status === "approved") return []; // live articles have their own list, see listPublished
-  let q = supabase
-    .from("blog_posts")
-    .select("id, title, excerpt, category, tags, content, created_at, approval_status, published")
-    .eq("published", false);
-  q = status === "rejected"
-    ? q.eq("approval_status", "rejected")
-    : q.or(notRejected).is("scheduled_publish_at", null);
-  const { data, error } = await q.order("created_at", { ascending: false }).limit(50);
-  if (error) throw new Error("Could not load the waiting articles from the blog");
-  return (data || []).map(postSummary);
+  let rows: Article[];
+  try {
+    rows = await allPosts("full");
+  } catch {
+    throw new Error("Could not load the waiting articles from the blog");
+  }
+  return rows
+    .filter(status === "rejected" ? isRejected : isWaiting)
+    .slice(0, 50)
+    .map(postSummary);
 }
 
 async function countPosts(status: "pending" | "rejected"): Promise<number> {
-  let q = supabase.from("blog_posts").select("id", { count: "exact", head: true }).eq("published", false);
-  q = status === "rejected"
-    ? q.eq("approval_status", "rejected")
-    : q.or(notRejected).is("scheduled_publish_at", null);
-  const { count, error } = await q;
-  if (error) throw new Error("Could not count the waiting articles");
-  return count || 0;
+  try {
+    return (await allPosts()).filter(status === "rejected" ? isRejected : isWaiting).length;
+  } catch {
+    throw new Error("Could not count the waiting articles");
+  }
 }
 
 export interface PublishedPost {
@@ -175,42 +189,44 @@ export interface PublishedPost {
   at: string; // when it went live, or when it will
 }
 
-const publishedFilter = "published.eq.true,and(published.eq.false,scheduled_publish_at.not.is.null,approval_status.eq.approved)";
-
 /** Live articles, plus ones scheduled to go live, newest first. */
 export async function listPublished(): Promise<PublishedPost[]> {
-  const { data, error } = await supabase
-    .from("blog_posts")
-    .select("id, title, slug, excerpt, category, featured_image_url, published, published_at, scheduled_publish_at, created_at")
-    .or(publishedFilter)
-    .order("created_at", { ascending: false })
-    .limit(100);
-  if (error) throw new Error("Could not load your published articles");
-  return (data || []).map((p: any) => ({
-    id: POST_PREFIX + p.id,
-    postId: p.id,
-    title: p.title,
-    slug: p.slug,
-    excerpt: p.excerpt || "",
-    category: p.category || "",
-    featured_image_url: p.featured_image_url || null,
-    live: !!p.published,
-    at: (p.published ? p.published_at : p.scheduled_publish_at) || p.created_at,
-  }));
+  let rows: Article[];
+  try {
+    rows = await allPosts();
+  } catch {
+    throw new Error("Could not load your published articles");
+  }
+  return rows
+    .filter(isPublishedOrScheduled)
+    .slice(0, 100)
+    .map((p) => ({
+      id: POST_PREFIX + p.id,
+      postId: p.id,
+      title: p.title,
+      slug: p.slug,
+      excerpt: p.excerpt || "",
+      category: p.category || "",
+      featured_image_url: p.featured_image_url || null,
+      live: !!p.published,
+      at: (p.published ? p.published_at : p.scheduled_publish_at) || p.created_at,
+    }));
 }
 
 export async function countPublished(): Promise<number> {
-  const { count, error } = await supabase
-    .from("blog_posts")
-    .select("id", { count: "exact", head: true })
-    .or(publishedFilter);
-  if (error) throw new Error("Could not count your published articles");
-  return count || 0;
+  try {
+    return (await allPosts()).filter(isPublishedOrScheduled).length;
+  } catch {
+    throw new Error("Could not count your published articles");
+  }
 }
 
 export async function deletePost(postId: string): Promise<void> {
-  const { error } = await supabase.from("blog_posts").delete().eq("id", postId);
-  if (error) throw new Error("Could not delete the article");
+  try {
+    await deleteArticle(postId);
+  } catch {
+    throw new Error("Could not delete the article");
+  }
 }
 
 const workerList = (status: DraftStatus) =>
@@ -230,8 +246,8 @@ export async function listDrafts(status: DraftStatus): Promise<DraftSummary[]> {
 
 export async function getDraft(id: string): Promise<Draft> {
   if (isPostDraftId(id)) {
-    const { data, error } = await supabase.from("blog_posts").select("*").eq("id", postUuid(id)).maybeSingle();
-    if (error || !data) throw new Error("Draft not found");
+    const data = await getManagedArticle(postUuid(id)).catch(() => null);
+    if (!data) throw new Error("Draft not found");
     return postDraft(data);
   }
   return request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}`).then((r) => r.draft);
@@ -271,14 +287,10 @@ export async function updateDraft(id: string, edits: DraftEdits): Promise<Draft>
     if (edits.meta_description !== undefined) patch.meta_description = edits.meta_description;
     if (edits.category !== undefined) patch.category = edits.category;
     if (edits.tags !== undefined) patch.tags = edits.tags;
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .update(patch as any)
-      .eq("id", postUuid(id))
-      .eq("published", false)
-      .select("*")
-      .maybeSingle();
-    if (error || !data) throw new Error("Could not save your changes");
+    const current = await getManagedArticle(postUuid(id)).catch(() => null);
+    if (!current || current.published) throw new Error("Could not save your changes");
+    const data = await updateArticle(postUuid(id), patch as any).catch(() => null);
+    if (!data) throw new Error("Could not save your changes");
     return postDraft(data);
   }
   return request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}`, {
@@ -294,13 +306,13 @@ export async function setDraftStatus(
 ): Promise<Draft> {
   if (isPostDraftId(id)) {
     if (status === "approved") throw new Error("Use Approve & publish for this article");
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .update({ approval_status: status, published: false, is_draft: false, scheduled_publish_at: null } as any)
-      .eq("id", postUuid(id))
-      .select("*")
-      .maybeSingle();
-    if (error || !data) throw new Error("Could not update the article");
+    const data = await updateArticle(postUuid(id), {
+      approval_status: status,
+      published: false,
+      is_draft: false,
+      scheduled_publish_at: null,
+    }).catch(() => null);
+    if (!data) throw new Error("Could not update the article");
     return postDraft(data);
   }
   return request<{ draft: Draft }>(`/drafts/${encodeURIComponent(id)}/status`, {
@@ -331,7 +343,7 @@ async function sendNewArticlePush(title: string, slug: string, postId: string) {
 const todayStamp = () => new Date().toISOString().slice(0, 10);
 
 /**
- * Publishes an approved draft to the site (the blog_posts table the public site
+ * Publishes an approved draft to the site (the Cloudflare articles service the public site
  * reads), sends the same subscriber push the old Pending check mark sent, then
  * marks the draft approved in R2.
  *
@@ -347,26 +359,22 @@ export async function publishDraft(draft: Draft): Promise<{ postId: string; slug
   // An article the 5am task already saved in the blog table: approving just switches it on.
   if (isPostDraftId(draft.id)) {
     const uuid = postUuid(draft.id);
-    const { data: existing, error: readError } = await supabase
-      .from("blog_posts")
-      .select("id, slug, title, published, approval_status")
-      .eq("id", uuid)
-      .maybeSingle();
-    if (readError || !existing) throw new Error("Could not find this article on the site");
+    const existing = await getManagedArticle(uuid).catch(() => null);
+    if (!existing) throw new Error("Could not find this article on the site");
     if (existing.published && existing.approval_status === "approved") {
       return { postId: existing.id, slug: existing.slug, alreadyLive: true };
     }
-    const { error: updateError } = await supabase
-      .from("blog_posts")
-      .update({
+    try {
+      await updateArticle(uuid, {
         published: true,
         published_at: new Date().toISOString(),
         is_draft: false,
         approval_status: "approved",
         scheduled_publish_at: null,
-      } as any)
-      .eq("id", uuid);
-    if (updateError) throw new Error("Could not publish the article to the site");
+      });
+    } catch {
+      throw new Error("Could not publish the article to the site");
+    }
     await sendNewArticlePush(existing.title, existing.slug, existing.id);
     return { postId: existing.id, slug: existing.slug, alreadyLive: false };
   }
@@ -381,35 +389,33 @@ export async function publishDraft(draft: Draft): Promise<{ postId: string; slug
   let live: { postId: string; slug: string; alreadyLive: boolean } | null = null;
 
   for (const slug of candidates) {
-    const { data: existing, error } = await supabase
-      .from("blog_posts")
-      .select("id, slug, title, published")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (error) throw new Error("Could not check the site for an existing article");
+    let existing: { id: string; slug: string; title: string; published: boolean } | null = null;
+    try {
+      existing = (await allPosts()).find((p) => p.slug === slug) || null;
+    } catch {
+      throw new Error("Could not check the site for an existing article");
+    }
 
     if (!existing) {
-      const { data: created, error: insertError } = await supabase
-        .from("blog_posts")
-        .insert([
-          {
-            title: draft.title,
-            slug,
-            content: draft.content,
-            excerpt: draft.summary,
-            meta_description: draft.meta_description,
-            category: draft.category,
-            tags: draft.tags,
-            published: true,
-            published_at: new Date().toISOString(),
-            is_draft: false,
-            approval_status: "approved",
-            user_id: userId,
-          },
-        ])
-        .select("id, slug")
-        .single();
-      if (insertError || !created) throw new Error("Could not publish the article to the site");
+      let created: Article;
+      try {
+        created = await createArticle({
+          title: draft.title,
+          slug,
+          content: draft.content,
+          excerpt: draft.summary,
+          meta_description: draft.meta_description,
+          category: draft.category,
+          tags: draft.tags,
+          published: true,
+          published_at: new Date().toISOString(),
+          is_draft: false,
+          approval_status: "approved",
+          user_id: userId,
+        });
+      } catch {
+        throw new Error("Could not publish the article to the site");
+      }
       live = { postId: created.id, slug: created.slug, alreadyLive: false };
       break;
     }

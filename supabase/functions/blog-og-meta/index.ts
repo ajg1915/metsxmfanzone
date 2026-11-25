@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { getPublishedArticle } from "../_shared/articles.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -89,14 +90,13 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    const { data: post, error } = await supabase
-      .from("blog_posts")
-      .select(
-        "id, title, slug, excerpt, content, featured_image_url, category, tags, published_at"
-      )
-      .eq("slug", slug)
-      .eq("published", true)
-      .maybeSingle();
+    let post: any = null;
+    let error: unknown = null;
+    try {
+      post = await getPublishedArticle(slug);
+    } catch (e) {
+      error = e;
+    }
 
     if (error || !post) {
       return new Response("Post not found", {

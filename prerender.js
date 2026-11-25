@@ -248,19 +248,14 @@ function buildBlogHead(post) {
 }
 
 async function fetchPublishedBlogPosts() {
-  const query = new URLSearchParams({
-    published: 'eq.true',
-    select: 'slug,title,excerpt,content,featured_image_url,category,tags,published_at,updated_at',
-    order: 'published_at.desc.nullslast',
-  });
-  const response = await fetch(`${SUPABASE_URL}/rest/v1/blog_posts?${query.toString()}`, {
-    headers: { apikey: SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}` },
-  });
+  // Articles live on Cloudflare (articles-api Worker) since Nov 2026.
+  const api = (process.env.ARTICLES_API || 'https://articles-api.metsxmfan.workers.dev').replace(/\/+$/, '');
+  const response = await fetch(`${api}/posts?limit=500&fields=full`);
   if (!response.ok) {
     const body = await response.text();
     throw new Error(`Failed to fetch published blog posts [${response.status}]: ${body}`);
   }
-  return response.json();
+  return (await response.json()).posts || [];
 }
 
 async function fetchPublicRows(table, query) {

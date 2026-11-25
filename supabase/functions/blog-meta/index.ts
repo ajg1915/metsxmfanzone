@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { getPublishedArticle } from "../_shared/articles.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -77,12 +78,13 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch blog post
-    const { data: post, error } = await supabase
-      .from("blog_posts")
-      .select("*")
-      .eq("slug", slug)
-      .eq("published", true)
-      .single();
+    let post: any = null;
+    let error: unknown = null;
+    try {
+      post = await getPublishedArticle(slug);
+    } catch (e) {
+      error = e;
+    }
 
     if (error || !post) {
       console.error("Error fetching post:", error);

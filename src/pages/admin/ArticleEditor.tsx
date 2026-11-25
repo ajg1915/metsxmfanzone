@@ -23,6 +23,7 @@ import {
 import ArticlePreviewDialog from "@/components/admin/ArticlePreviewDialog";
 import { z } from "zod";
 
+import { getManagedArticle, listManagedArticles, updateArticle, createArticle } from "@/lib/articlesApi";
 const SITE_URL = "https://metsxmfanzone.com";
 
 const schema = z.object({
@@ -96,7 +97,7 @@ export default function ArticleEditor() {
     (async () => {
       let base: FormState = emptyForm;
       if (id) {
-        const { data } = await supabase.from("blog_posts").select("*").eq("id", id).maybeSingle();
+        const data = await getManagedArticle(id).catch(() => null);
         if (data) {
           setApprovalStatus((data as any).approval_status ?? null);
           setWasLive(!!data.published);
@@ -140,9 +141,9 @@ export default function ArticleEditor() {
       ready.current = true;
     })();
 
-    supabase.from("blog_posts").select("slug, id").then(({ data }) => {
-      setExistingSlugs(((data as any[]) || []).filter((p) => p.id !== id).map((p) => p.slug));
-    });
+    listManagedArticles({ limit: 2000 })
+      .then((data) => setExistingSlugs(data.filter((p) => p.id !== id).map((p) => p.slug)))
+      .catch(() => setExistingSlugs([]));
 
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -279,13 +280,9 @@ export default function ArticleEditor() {
     try {
       let saved: any;
       if (id) {
-        const { data, error } = await supabase.from("blog_posts").update(payload).eq("id", id).select().maybeSingle();
-        if (error) throw error;
-        saved = data;
+        saved = await updateArticle(id, payload);
       } else {
-        const { data, error } = await supabase.from("blog_posts").insert([payload]).select().maybeSingle();
-        if (error) throw error;
-        saved = data;
+        saved = await createArticle(payload);
       }
       clearLocal();
 

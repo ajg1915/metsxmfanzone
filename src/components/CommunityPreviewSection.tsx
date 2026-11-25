@@ -7,6 +7,7 @@ import NewBadge from "@/components/NewBadge";
 import { isFresh } from "@/lib/newItem";
 import { getStoryBgStyle } from "@/lib/storyBackgrounds";
 
+import { asResult, listPublishedArticles } from "@/lib/articlesApi";
 // The MetsXMFanZone Feed wall for signed-in members: cards scroll left to right,
 // laid out like the video sections (Replay Games, Live Streams).
 
@@ -86,12 +87,7 @@ const CommunityPreviewSection = () => {
             .select("id, user_id, content, image_url, created_at, is_pinned, pinned_at, profiles (full_name, email)")
             .order("created_at", { ascending: false })
             .limit(20),
-          supabase
-            .from("blog_posts")
-            .select("id, title, slug, featured_image_url, category, published_at, created_at")
-            .eq("published", true)
-            .order("published_at", { ascending: false })
-            .limit(1),
+          asResult(listPublishedArticles({ limit: 1 })),
           // Color text cards made in Admin > Stories
           supabase
             .from("stories")

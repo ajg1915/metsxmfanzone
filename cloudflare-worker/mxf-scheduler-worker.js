@@ -8,6 +8,7 @@
 //        - emails are waiting in the queue → runs the process-email-queue function
 //   2. Mets games (straight from MLB, no Supabase) → runs auto-game-alerts only
 //      when a Mets game is about to start, just started, or just finished.
+//   Scheduled articles: asks the articles-api Worker to publish any whose time has come.
 // Every 10 minutes:
 //   3. New published blog posts become hero slides on the home page (one for visitors,
 //      one for members), newest first. Keeps the 5 newest automatic slides per audience
@@ -15,7 +16,11 @@
 //      Hero Management are never touched.
 //   4. Search engine ping: when an article goes live, tells Google (WebSub hub that
 //      watches the RSS feed) and Bing/IndexNow right away, so it gets crawled in
-//      minutes instead of waiting for the next sitemap read.
+//      minutes instead of waiting for the next sitemap read. Articles that went live on
+//      their own at a scheduled time also get the "New Article" push to subscribers.
+//
+// Articles live on Cloudflare (articles-api Worker, D1 "metsxm-articles") since Nov 2026;
+// this Worker reads them from there. Optional variable ARTICLES_API overrides the address.
 //
 // SETUP (Cloudflare dashboard → Workers & Pages → mxf-scheduler):
 //   Settings → Variables and Secrets:
@@ -122,18 +127,34 @@ async function runMetsAlerts(api, now = Date.now()) {
   return { games: games.length, calls };
 }
 
+// ---------- articles (Cloudflare articles-api, public published list) ----------
+const DEFAULT_ARTICLES_API = "https://articles-api.metsxmfan.workers.dev";
+
+async function articles(env, params) {
+  const base = String(env.ARTICLES_API || DEFAULT_ARTICLES_API).replace(/\/+$/, "");
+  const r = await fetch(`${base}/posts?${new URLSearchParams(params).toString()}`);
+  if (!r.ok) throw new Error(`articles-api ${r.status}: ${(await r.text()).slice(0, 200)}`);
+  const body = await r.json();
+  return Array.isArray(body.posts) ? body.posts : [];
+}
+
+// Scheduled articles: ask articles-api to publish anything whose time has come.
+async function runPublishDue(env) {
+  const base = String(env.ARTICLES_API || DEFAULT_ARTICLES_API).replace(/\/+$/, "");
+  const r = await fetch(`${base}/tasks/publish-due`, { method: "POST" });
+  if (!r.ok) throw new Error(`publish-due ${r.status}`);
+  return r.json();
+}
+
 // ---------- 3. Blog posts → hero slides ----------
 const HERO_KEEP = 5;
 const AUTO = "auto_blog";
 
 const isLive = (p) => p.published === true && p.is_draft === false && (p.approval_status || "approved") === "approved";
 
-async function runBlogHero(api, now = new Date()) {
+async function runBlogHero(api, env, now = new Date()) {
   const since = new Date(now.getTime() - 3 * 86400000).toISOString();
-  const posts = await api.get(
-    `blog_posts?select=id,title,slug,excerpt,featured_image_url,published,is_draft,approval_status` +
-      `&published=eq.true&is_draft=eq.false&approval_status=eq.approved&published_at=gte.${since}&order=published_at.asc&limit=20`,
-  );
+  const posts = (await articles(env, { since, limit: "20" })).filter(isLive).reverse(); // oldest first
   const out = { posts: posts.length, created: 0, switchedOff: 0 };
 
   if (posts.length) {
@@ -171,7 +192,7 @@ async function runBlogHero(api, now = new Date()) {
   );
   if (auto.length) {
     const postIds = [...new Set(auto.map((a) => a.blog_post_id).filter(Boolean))].join(",");
-    const state = postIds ? await api.get(`blog_posts?select=id,published,is_draft,approval_status&id=in.(${postIds})`) : [];
+    const state = postIds ? await articles(env, { limit: "500" }) : [];
     const liveIds = new Set(state.filter(isLive).map((x) => x.id));
     const seen = { true: 0, false: 0 };
     const off = [];
@@ -192,17 +213,32 @@ const SITE = "https://metsxmfanzone.com";
 const INDEXNOW_KEY = "a33df096e9140f8cdb721c9667ba869a"; // matches public/a33df096e9140f8cdb721c9667ba869a.txt on the site
 const PING_WINDOW_MS = 2 * 60 * 1000; // same as the cron interval, so each post is pinged once
 
-async function runSearchPing(api, when) {
+async function runSearchPing(api, env, when) {
   const end = when.getTime();
   const since = new Date(end - PING_WINDOW_MS).toISOString();
   const until = new Date(end).toISOString();
-  const posts = await api.get(
-    `blog_posts?select=slug,published_at&published=eq.true&published_at=gte.${encodeURIComponent(since)}&published_at=lt.${encodeURIComponent(until)}&limit=20`,
-  );
+  const posts = (await articles(env, { since, limit: "20", fields: "card" })).filter((p) => p.published_at < until);
   const urls = posts.filter((p) => p.slug).map((p) => `${SITE}/blog/${encodeURIComponent(p.slug)}`);
   if (!urls.length) return { pinged: 0 };
 
   const out = { pinged: urls.length, urls };
+  // Articles that went live by themselves at their scheduled time: send the subscriber push
+  // (articles published by hand already sent it from the admin page).
+  const scheduled = posts.filter((p) => p.scheduled_publish_at && p.published_at >= p.scheduled_publish_at);
+  if (scheduled.length) {
+    out.push = [];
+    for (const p of scheduled) {
+      out.push.push(
+        await api.fn("send-push-notification", {
+          title: "📰 New Article on MetsXMFanZone!",
+          body: p.title,
+          url: `/blog/${p.slug}`,
+          icon: "/logo-192.png",
+          tag: `blog-${p.id}`,
+        }),
+      );
+    }
+  }
   // Google: WebSub hub. The RSS feed declares this hub, so Google re-reads the feed now.
   const hub = await Promise.all(
     [`${SITE}/blog/rss`, `${SITE}/rss.xml`].map((feed) =>
@@ -233,8 +269,9 @@ async function tick(env, when = new Date()) {
   await step("due", () => runDueWork(api));
   await step("mets", () => runMetsAlerts(api, when.getTime()));
   // every run (cron is every 2 minutes), so a new post reaches the hero within about 2 minutes
-  await step("blogHero", () => runBlogHero(api, when));
-  await step("searchPing", () => runSearchPing(api, when));
+  await step("publishDue", () => runPublishDue(env));
+  await step("blogHero", () => runBlogHero(api, env, when));
+  await step("searchPing", () => runSearchPing(api, env, when));
   lastRun = result;
   return result;
 }

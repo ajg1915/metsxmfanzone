@@ -27,6 +27,7 @@ import channelMlb from "@/assets/channel-mlb.jpg";
 import channelEspn from "@/assets/channel-espn.jpg";
 import channelMsg from "@/assets/channel-msg.jpg";
 
+import { listPublishedArticles } from "@/lib/articlesApi";
 export type TVCategory = "home" | "live" | "highlights" | "replays";
 
 const TVDashboard = () => {
@@ -134,14 +135,7 @@ const TVDashboard = () => {
   const { data: articles = [], isLoading: articlesLoading } = useQuery({
     queryKey: ["tv-articles"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("id, title, slug, excerpt, featured_image_url, published_at")
-        .eq("published", true)
-        .order("published_at", { ascending: false })
-        .limit(10);
-      if (error) throw error;
-      return data;
+      return listPublishedArticles({ limit: 10 });
     },
   });
 

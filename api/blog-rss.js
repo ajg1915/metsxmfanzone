@@ -1,6 +1,6 @@
 // Real RSS 2.0 feed for the blog, served as application/xml so feed readers
 // and search engines can fetch it without running JavaScript.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL, stripHtml, resolveImage, cleanText, cleanCategory } from "./_lib/article.js";
+import { SITE_URL, stripHtml, resolveImage, cleanText, cleanCategory, fetchPublishedPosts } from "./_lib/article.js";
 
 function xmlEscape(input) {
   return String(input ?? "").replace(
@@ -10,16 +10,7 @@ function xmlEscape(input) {
 }
 
 async function fetchPosts() {
-  const url =
-    `${SUPABASE_URL}/rest/v1/blog_posts` +
-    `?select=title,slug,excerpt,content,category,published_at,created_at,featured_image_url` +
-    `&published=eq.true&order=published_at.desc&limit=30`;
-  const res = await fetch(url, {
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-  });
-  if (!res.ok) return [];
-  const rows = await res.json();
-  return Array.isArray(rows) ? rows : [];
+  return fetchPublishedPosts({ limit: 30, fields: "full" }).catch(() => []);
 }
 
 export default async function handler(req, res) {

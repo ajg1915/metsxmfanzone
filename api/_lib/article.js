@@ -447,13 +447,39 @@ export async function supabaseGet(url, { attempts = 2, timeoutMs = 3500 } = {}) 
   throw last;
 }
 
+// Articles live on Cloudflare (articles-api Worker, D1 "metsxm-articles") since Nov 2026.
+export const ARTICLES_API = (process.env.ARTICLES_API || "https://articles-api.metsxmfan.workers.dev").replace(/\/+$/, "");
+
+/** GET from the articles service as JSON, with a per-try timeout and retries. Throws UpstreamError on failure. */
+export async function articlesGet(path, { attempts = 3, timeoutMs = 3500 } = {}) {
+  let last;
+  for (let i = 0; i < attempts; i++) {
+    if (i > 0) await sleep(300 * i);
+    try {
+      const res = await fetch(`${ARTICLES_API}${path}`, { signal: AbortSignal.timeout(timeoutMs) });
+      if (res.ok) return await res.json();
+      if (res.status === 404) return null;
+      last = new UpstreamError(`Articles service ${res.status}`);
+      if (res.status < 500 && res.status !== 429) break; // a 4xx will not fix itself
+    } catch (err) {
+      last = new UpstreamError(err?.message || "Articles service request failed");
+    }
+  }
+  throw last;
+}
+
+/** Published articles, newest first. params: limit, since, until, category, exclude, fields (card|seo|full). */
+export async function fetchPublishedPosts(params = {}, opts) {
+  const q = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null && v !== "") q.set(k, String(v));
+  const body = await articlesGet(`/posts?${q.toString()}`, opts);
+  return Array.isArray(body?.posts) ? body.posts : [];
+}
+
 export async function fetchRelatedPosts(slug, limit = 3) {
   try {
-    const query =
-      `${SUPABASE_URL}/rest/v1/blog_posts?published=eq.true&slug=neq.${encodeURIComponent(slug)}` +
-      `&select=title,slug,category,featured_image_url&order=published_at.desc.nullslast&limit=${limit}`;
-    const rows = await supabaseGet(query, { attempts: 1, timeoutMs: 2500 });
-    return Array.isArray(rows) ? rows : [];
+    const rows = await fetchPublishedPosts({ limit: limit + 1, fields: "seo" }, { attempts: 1, timeoutMs: 2500 });
+    return rows.filter((p) => p.slug !== slug).slice(0, limit);
   } catch {
     return [];
   }
@@ -465,11 +491,8 @@ export async function fetchRelatedPosts(slug, limit = 3) {
  * answer 503 (Google retries later) instead of 404 (Google drops the page).
  */
 export async function fetchPublishedPost(slug) {
-  const query =
-    `${SUPABASE_URL}/rest/v1/blog_posts?slug=eq.${encodeURIComponent(slug)}` +
-    `&published=eq.true&select=title,slug,excerpt,content,featured_image_url,published_at,updated_at,category&limit=1`;
-  const rows = await supabaseGet(query);
-  return Array.isArray(rows) ? rows[0] || null : null;
+  const body = await articlesGet(`/posts/${encodeURIComponent(slug)}`);
+  return body?.post || null;
 }
 
 /** Short page sent with a 503 while the database is unreachable. */

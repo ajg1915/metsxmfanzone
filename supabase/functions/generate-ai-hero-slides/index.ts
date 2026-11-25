@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { generateCloudflareText } from "../_shared/cloudflareAi.ts";
+import { listPublishedArticles } from "../_shared/articles.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +20,7 @@ serve(async (req) => {
 
     // 1. Gather content from all sources
     const [blogRes, streamsRes, podcastRes, newsRes] = await Promise.all([
-      supabase.from("blog_posts").select("id, title, excerpt, slug, featured_image_url, category").eq("published", true).order("published_at", { ascending: false }).limit(5),
+      listPublishedArticles({ limit: 5 }).then((data) => ({ data, error: null }), (error) => ({ data: [], error })),
       supabase.from("live_streams").select("id, title, description, status, thumbnail_url").eq("published", true).order("created_at", { ascending: false }).limit(5),
       supabase.from("podcast_shows").select("id, title, description, show_date, thumbnail_url").eq("published", true).order("show_date", { ascending: false }).limit(5),
       supabase.from("mets_news_tracker").select("id, title, details, player, type, image_url").eq("published", true).order("created_at", { ascending: false }).limit(5),

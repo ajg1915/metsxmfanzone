@@ -9,6 +9,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 
+import { asResult, listPublishedArticles } from "@/lib/articlesApi";
 interface UpdateItem {
   id: string;
   type: "feature" | "improvement" | "fix" | "coming-soon";
@@ -88,13 +89,7 @@ const WhatsNew = () => {
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
       const [blogRes, podcastRes, streamRes] = await Promise.all([
-        supabase
-          .from("blog_posts")
-          .select("id, title, created_at")
-          .eq("published", true)
-          .gte("created_at", oneWeekAgo.toISOString())
-          .order("created_at", { ascending: false })
-          .limit(5),
+        asResult(listPublishedArticles({ since: oneWeekAgo.toISOString(), dateField: "created_at", order: "created_at", limit: 5 })),
         supabase
           .from("podcasts")
           .select("id, title, created_at")
