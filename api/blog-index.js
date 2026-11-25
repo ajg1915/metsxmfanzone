@@ -12,18 +12,11 @@ async function loadShell(req) {
   const host = req.headers["x-forwarded-host"] || req.headers.host || "metsxmfanzone.com";
   const proto = req.headers["x-forwarded-proto"] || "https";
   // Built copy of the /blog page (title, description, canonical for /blog).
-  // Falls back to the home page shell if that copy is missing.
-  for (const path of ["/blog-shell", "/"]) {
-    try {
-      const res = await fetch(`${proto}://${host}${path}`, {
-        headers: { "user-agent": "internal-prerender" },
-        signal: AbortSignal.timeout(4000),
-      });
-      if (res.ok) return await res.text();
-    } catch {
-      // try the next one
-    }
-  }
+  const res = await fetch(`${proto}://${host}/blog-shell`, {
+    headers: { "user-agent": "internal-prerender" },
+    signal: AbortSignal.timeout(4000),
+  });
+  if (res.ok) return await res.text();
   throw new Error("Shell load failed");
 }
 
@@ -55,7 +48,11 @@ export default async function handler(req, res) {
   try {
     shell = await loadShell(req);
   } catch {
-    res.status(500).send("Internal Server Error");
+    // Never fall back to another page's shell: it would carry that page's
+    // title and canonical. Ask crawlers to retry instead.
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Retry-After", "120");
+    res.status(503).send("Temporarily unavailable");
     return;
   }
 
@@ -70,7 +67,7 @@ export default async function handler(req, res) {
     // Database unreachable: still serve the normal blog page.
   }
 
-  const html = list ? shell.replace("<!--app-html-->", list) : shell;
+  const html = list ? shell.replace("<!--app-html-->", () => list) : shell;
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.setHeader("Cache-Control", list ? "public, max-age=0, s-maxage=300, stale-while-revalidate=600" : "no-store");
   res.status(200).send(html);

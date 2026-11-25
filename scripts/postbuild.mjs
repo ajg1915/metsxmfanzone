@@ -3,7 +3,7 @@
 // download/launch can fail — in that case we still produce every page from the
 // prerender templates instead of failing the whole deployment.
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, readdirSync, rmSync, statSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 function run(cmd, args) {
@@ -41,7 +41,13 @@ if (existsSync(blogDir)) {
   console.log("removed dist/blog/<slug> article copies (served dynamically by /api/blog)");
   const blogIndex = resolve(blogDir, "index.html");
   if (existsSync(blogIndex)) {
-    copyFileSync(blogIndex, resolve("dist/blog-shell.html"));
+    // A react-snap snapshot has the rendered app in #root and no insertion
+    // marker; put the marker back so api/blog-index.js can add fresh links.
+    let shell = readFileSync(blogIndex, "utf8");
+    if (!shell.includes("<!--app-html-->")) {
+      shell = shell.replace(/(<div id="root"[^>]*>)[\s\S]*?(<\/div>\s*<script)/i, "$1<!--app-html--></div>\n<script");
+    }
+    writeFileSync(resolve("dist/blog-shell.html"), shell);
     rmSync(blogIndex, { force: true });
     console.log("moved dist/blog/index.html to dist/blog-shell.html (served with links by /api/blog-index)");
   }
