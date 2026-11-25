@@ -419,30 +419,68 @@ ${siteFooter()}
 </html>`;
 }
 
+// Supabase sometimes stalls or returns a 5xx for a few minutes. Google treats
+// the answer it gets at that moment as the truth, so every database read here
+// has a timeout and one retry, and a failed read is reported as an error
+// (never as "article not found").
+export class UpstreamError extends Error {}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** GET a Supabase REST URL as JSON, with a per-try timeout and retries. Throws UpstreamError on failure. */
+export async function supabaseGet(url, { attempts = 2, timeoutMs = 3500 } = {}) {
+  let last;
+  for (let i = 0; i < attempts; i++) {
+    if (i > 0) await sleep(300);
+    try {
+      const res = await fetch(url, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (res.ok) return await res.json();
+      last = new UpstreamError(`Supabase ${res.status}`);
+      if (res.status < 500 && res.status !== 429) break; // a 4xx will not fix itself
+    } catch (err) {
+      last = new UpstreamError(err?.message || "Supabase request failed");
+    }
+  }
+  throw last;
+}
+
 export async function fetchRelatedPosts(slug, limit = 3) {
   try {
     const query =
       `${SUPABASE_URL}/rest/v1/blog_posts?published=eq.true&slug=neq.${encodeURIComponent(slug)}` +
       `&select=title,slug,category,featured_image_url&order=published_at.desc.nullslast&limit=${limit}`;
-    const res = await fetch(query, {
-      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-    });
-    if (!res.ok) return [];
-    const rows = await res.json();
+    const rows = await supabaseGet(query, { attempts: 1, timeoutMs: 2500 });
     return Array.isArray(rows) ? rows : [];
   } catch {
     return [];
   }
 }
 
+/**
+ * Returns the published post, or null when the slug really does not exist.
+ * Throws UpstreamError when the database could not be read, so callers can
+ * answer 503 (Google retries later) instead of 404 (Google drops the page).
+ */
 export async function fetchPublishedPost(slug) {
   const query =
     `${SUPABASE_URL}/rest/v1/blog_posts?slug=eq.${encodeURIComponent(slug)}` +
     `&published=eq.true&select=title,slug,excerpt,content,featured_image_url,published_at,updated_at,category&limit=1`;
-  const res = await fetch(query, {
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-  });
-  if (!res.ok) return null;
-  const rows = await res.json();
+  const rows = await supabaseGet(query);
   return Array.isArray(rows) ? rows[0] || null : null;
+}
+
+/** Short page sent with a 503 while the database is unreachable. */
+export function unavailablePage() {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Loading article | MetsXMFanZone</title></head><body style="background:#0b1426;color:#e8eef9;font-family:system-ui;padding:2rem;line-height:1.6"><h1>This story is taking a moment to load</h1><p>We could not reach the newsroom just now. This page will try again in a few seconds.</p><p><a style="color:#ff8a4d" href="${SITE_URL}/blog">Browse the latest Mets news</a></p><script>setTimeout(function(){location.reload()},8000)</script></body></html>`;
+}
+
+/** Sends the 503 response used when Supabase could not be read. */
+export function sendUnavailable(res) {
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Retry-After", "120");
+  res.status(503).send(unavailablePage());
 }

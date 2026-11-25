@@ -1,7 +1,7 @@
 // Google News sitemap: /news-sitemap.xml
 // Lists articles published in the last 48 hours (Google News only reads those),
 // so new posts are discovered within minutes instead of days.
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL, cleanText } from "./_lib/article.js";
+import { SUPABASE_URL, SITE_URL, cleanText, supabaseGet } from "./_lib/article.js";
 
 const PUBLICATION_NAME = "MetsXMFanZone";
 const WINDOW_HOURS = 48;
@@ -20,11 +20,7 @@ async function fetchRecentPosts() {
     `?select=title,slug,published_at` +
     `&published=eq.true&published_at=gte.${encodeURIComponent(since)}` +
     `&order=published_at.desc&limit=1000`;
-  const res = await fetch(url, {
-    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-  });
-  if (!res.ok) throw new Error(`Supabase ${res.status}`);
-  const rows = await res.json();
+  const rows = await supabaseGet(url);
   return Array.isArray(rows) ? rows : [];
 }
 
@@ -61,10 +57,12 @@ export default async function handler(req, res) {
     res.setHeader("Cache-Control", "public, max-age=0, s-maxage=300, stale-while-revalidate=600");
     res.status(200).send(xml);
   } catch {
+    // Valid but empty sitemap rather than a 503: a failed fetch shows up in
+    // Search Console as "Couldn't fetch" until Google happens to retry.
     res.setHeader("Content-Type", "application/xml; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     res
-      .status(503)
+      .status(200)
       .send('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
   }
 }
