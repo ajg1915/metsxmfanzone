@@ -4,7 +4,7 @@
 // page (and the home page) gave it nothing to follow to the articles, so it
 // only found them through the sitemap and crawled them rarely. React replaces
 // this list as soon as the app starts, so visitors see the normal blog page.
-import { SUPABASE_URL, SITE_URL, supabaseGet, escapeHtml, cleanText, cleanCategory } from "./_lib/article.js";
+import { SITE_URL, fetchPublishedPosts, escapeHtml, cleanText, cleanCategory } from "./_lib/article.js";
 
 const LIMIT = 60;
 
@@ -58,10 +58,8 @@ export default async function handler(req, res) {
 
   let list = "";
   try {
-    const rows = await supabaseGet(
-      `${SUPABASE_URL}/rest/v1/blog_posts?published=eq.true` +
-        `&select=title,slug,excerpt,category,published_at&order=published_at.desc.nullslast&limit=${LIMIT}`,
-    );
+    // Articles live in Cloudflare D1, read through the articles Worker (newest first, published only).
+    const rows = await fetchPublishedPosts({ limit: LIMIT, fields: "card" });
     if (Array.isArray(rows) && rows.length) list = renderList(rows);
   } catch {
     // Database unreachable: still serve the normal blog page.
