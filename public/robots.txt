@@ -13,6 +13,7 @@ Disallow: /admin
 Disallow: /admin/
 Disallow: /admin-setup
 Disallow: /api/
+Disallow: /blog-shell
 Disallow: /dashboard
 Disallow: /logout
 Disallow: /confirm-account
