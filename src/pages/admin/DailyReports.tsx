@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminPage, AdminPageHeader, AdminStatGrid } from "@/components/admin/AdminUI";
 
+import { countPublishedArticles } from "@/lib/articlesApi";
 interface DailyStats {
   newUsers: number;
   activeUsers: number;
@@ -56,12 +57,7 @@ const DailyReports = () => {
         .lte('viewed_at', dayEnd);
 
       // Fetch new blog posts
-      const { count: newBlogPosts } = await supabase
-        .from('blog_posts')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', dayStart)
-        .lte('created_at', dayEnd)
-        .eq('published', true);
+      const newBlogPosts = await countPublishedArticles({ since: dayStart, until: dayEnd, dateField: 'created_at' }).catch(() => 0);
 
       // Fetch stream views
       const { count: streamViewers } = await supabase

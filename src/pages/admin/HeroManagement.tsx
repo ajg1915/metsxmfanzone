@@ -21,6 +21,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
+import { asResult, listPublishedArticles } from "@/lib/articlesApi";
 interface HeroSlide {
   id: string;
   title: string;
@@ -295,7 +296,7 @@ const HeroManagement = () => {
     try {
       const [slidesRes, blogsRes] = await Promise.all([
         supabase.from("hero_slides").select("*").order("display_order", { ascending: true }),
-        supabase.from("blog_posts").select("id, title, slug, featured_image_url, excerpt").eq("published", true).order("published_at", { ascending: false }).limit(50),
+        asResult(listPublishedArticles({ limit: 50 })),
       ]);
       if (slidesRes.error) throw slidesRes.error;
       if (blogsRes.error) throw blogsRes.error;

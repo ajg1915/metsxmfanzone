@@ -1,0 +1,12 @@
+# Deploy: npx wrangler deploy -c cloudflare-worker/mxf-scheduler.wrangler.toml
+# Variables (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) are set in the Cloudflare dashboard; keep_vars leaves them as they are.
+name = "mxf-scheduler"
+main = "mxf-scheduler-worker.js"
+compatibility_date = "2026-10-05"
+keep_vars = true
+
+[triggers]
+crons = ["*/2 * * * *"]
+
+[observability]
+enabled = true

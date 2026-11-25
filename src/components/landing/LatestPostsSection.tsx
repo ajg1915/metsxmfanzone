@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { sectionStyle, type SectionStyle } from "@/lib/frontPageSections";
 
+import { listPublishedArticles } from "@/lib/articlesApi";
 // "Latest from MetsXMFanZone": the 4 newest published blog posts, on the signed-out front page.
 
 type Post = {
@@ -23,14 +24,7 @@ export default function LatestPostsSection({ bg }: { bg?: SectionStyle }) {
   const { data: posts = [] } = useQuery({
     queryKey: ["landing-latest-posts"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("id, title, slug, featured_image_url, published_at, created_at")
-        .eq("published", true)
-        .order("published_at", { ascending: false })
-        .limit(4);
-      if (error) throw error;
-      return (data || []) as Post[];
+      return (await listPublishedArticles({ limit: 4 })) as unknown as Post[];
     },
     staleTime: 10 * 60_000,
   });

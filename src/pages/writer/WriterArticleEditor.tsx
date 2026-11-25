@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Send, Loader2, ImagePlus, ShieldCheck, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
+import { getManagedArticle, updateArticle, createArticle } from "@/lib/articlesApi";
 const CATEGORIES = [
   "News",
   "Analysis", 
@@ -131,14 +132,10 @@ export default function WriterArticleEditor() {
       setIsWriter(true);
 
       if (isEditing) {
-        const { data: article, error } = await supabase
-          .from("blog_posts")
-          .select("*")
-          .eq("id", id)
-          .eq("user_id", user.id)
-          .single();
+        const found = await getManagedArticle(id!).catch(() => null);
+        const article = found && found.user_id === user.id ? found : null;
 
-        if (error || !article) {
+        if (!article) {
           toast({
             title: "Article not found",
             description: "You can only edit your own articles.",
@@ -277,12 +274,7 @@ export default function WriterArticleEditor() {
       };
 
       if (isEditing) {
-        const { error } = await supabase
-          .from("blog_posts")
-          .update(articleData)
-          .eq("id", id);
-
-        if (error) throw error;
+        await updateArticle(id!, articleData);
 
         toast({
           title: submitForReview ? "Submitted for review" : "Article saved",
@@ -291,11 +283,7 @@ export default function WriterArticleEditor() {
             : "Your changes have been saved.",
         });
       } else {
-        const { error } = await supabase
-          .from("blog_posts")
-          .insert([articleData]);
-
-        if (error) throw error;
+        await createArticle(articleData);
 
         clearDraft();
         toast({

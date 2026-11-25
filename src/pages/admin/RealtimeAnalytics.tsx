@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import LiveVisitorsMonitor from "@/components/admin/LiveVisitorsMonitor";
 import { AdminPage, AdminPageHeader, AdminStatGrid, AdminStat } from "@/components/admin/AdminUI";
 
+import { articleTitlesById } from "@/lib/articlesApi";
 interface PresenceData {
   id: string;
   session_id: string;
@@ -59,14 +60,17 @@ export default function RealtimeAnalytics() {
       // Fetch blog view stats (last 24 hours)
       const { data: blogViews } = await supabase
         .from('blog_views')
-        .select('blog_post_id, blog_posts(title)')
+        .select('blog_post_id')
         .gte('viewed_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
 
       if (blogViews) {
+        const titles = await articleTitlesById([...new Set(blogViews.map((v: any) => v.blog_post_id).filter(Boolean))]).catch(
+          () => new Map(),
+        );
         const statsMap = new Map<string, { title: string; count: number }>();
         blogViews.forEach((view: any) => {
           const id = view.blog_post_id;
-          const title = view.blog_posts?.title || 'Unknown';
+          const title = titles.get(id)?.title || 'Unknown';
           if (statsMap.has(id)) {
             statsMap.get(id)!.count++;
           } else {

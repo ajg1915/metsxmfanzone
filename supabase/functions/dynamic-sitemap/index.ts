@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { listPublishedArticles } from "../_shared/articles.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -77,11 +78,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch all published blog posts
-    const { data: blogPosts } = await supabase
-      .from("blog_posts")
-      .select("slug, published_at, updated_at")
-      .eq("published", true)
-      .order("published_at", { ascending: false });
+    const blogPosts = await listPublishedArticles({ limit: 500, fields: "seo" }).catch(() => []);
 
     // Fetch published podcasts
     const { data: podcasts } = await supabase

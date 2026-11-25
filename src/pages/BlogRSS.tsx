@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+import { listPublishedArticles } from "@/lib/articlesApi";
 interface BlogPost {
   id: string;
   title: string;
@@ -20,14 +21,7 @@ export default function BlogRSS() {
 
   const generateRSS = async () => {
     try {
-      const { data: posts, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("published", true)
-        .order("published_at", { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
+      const posts = await listPublishedArticles({ limit: 20, fields: "full" });
 
       const baseUrl = window.location.origin;
       
@@ -40,7 +34,7 @@ export default function BlogRSS() {
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${baseUrl}/blog/rss" rel="self" type="application/rss+xml" />
-    ${posts?.map((post: BlogPost) => `
+    ${(posts as unknown as BlogPost[])?.map((post: BlogPost) => `
     <item>
       <title>${escapeXml(post.title)}</title>
       <link>${baseUrl}/blog/${post.slug}</link>

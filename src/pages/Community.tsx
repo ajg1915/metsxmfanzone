@@ -25,6 +25,7 @@ import BusinessAdsSection from "@/components/BusinessAdsSection";
 import Events from "./Events";
 import { z } from "zod";
 
+import { listPublishedArticles, withAuthors, type Article } from "@/lib/articlesApi";
 interface Post {
   id: string;
   user_id: string;
@@ -165,28 +166,10 @@ const Community = () => {
     }
 
     // Fetch published blog posts
-    const { data: blogData, error: blogError } = await supabase
-      .from("blog_posts")
-      .select(`
-        id,
-        user_id,
-        title,
-        excerpt,
-        content,
-        slug,
-        featured_image_url,
-        category,
-        published_at,
-        created_at,
-        profiles (
-          full_name,
-          email
-        )
-      `)
-      .eq("published", true)
-      .order("published_at", { ascending: false });
-
-    if (blogError) {
+    let blogData: Awaited<ReturnType<typeof withAuthors<Article>>> = [];
+    try {
+      blogData = await withAuthors(await listPublishedArticles({ limit: 500, fields: "full" }));
+    } catch (blogError) {
       console.error("Error fetching blog posts:", blogError);
     }
 
@@ -214,7 +197,7 @@ const Community = () => {
     );
 
     // Mark blog posts with type and admin flag
-    const blogPostsWithType = (blogData || []).map(blog => ({
+    const blogPostsWithType = ((blogData || []) as any[]).map(blog => ({
       ...blog,
       type: 'blog' as const,
       isAdmin: adminUserIds.has(blog.user_id)

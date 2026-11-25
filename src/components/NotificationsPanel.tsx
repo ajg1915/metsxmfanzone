@@ -4,6 +4,7 @@ import { Bell, Tv, FileText, MessageSquare, Trophy, Newspaper, Dot, X, Trash2 } 
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 
+import { asResult, listPublishedArticles } from "@/lib/articlesApi";
 type NotificationItem = {
   id: string;
   type: "live" | "game_alert" | "story" | "blog" | "post";
@@ -146,13 +147,7 @@ const NotificationsPanel = ({ children }: { children: React.ReactNode }) => {
         .gte("created_at", sinceISO)
         .order("created_at", { ascending: false })
         .limit(5),
-      supabase
-        .from("blog_posts")
-        .select("id, title, slug, published_at")
-        .eq("published", true)
-        .gte("published_at", sinceISO)
-        .order("published_at", { ascending: false })
-        .limit(5),
+      asResult(listPublishedArticles({ since: sinceISO, limit: 5 })),
     ]);
 
     const ls = lastSeen;

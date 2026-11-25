@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Calendar, ArrowRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
+import { listPublishedArticles } from "@/lib/articlesApi";
 interface RelatedPost {
   id: string;
   title: string;
@@ -26,27 +27,14 @@ export default function RelatedPosts({ currentPostId, category, tags }: RelatedP
   useEffect(() => {
     const fetchRelated = async () => {
       // Fetch posts from same category, excluding current
-      const { data } = await supabase
-        .from("blog_posts")
-        .select("id, title, slug, excerpt, featured_image_url, category, published_at")
-        .eq("published", true)
-        .eq("category", category)
-        .neq("id", currentPostId)
-        .order("published_at", { ascending: false })
-        .limit(6);
+      const data = await listPublishedArticles({ category, exclude: currentPostId, limit: 6 }).catch(() => []);
 
       if (data && data.length > 0) {
-        setPosts(data);
+        setPosts(data as unknown as RelatedPost[]);
       } else {
         // Fallback: fetch latest posts
-        const { data: latest } = await supabase
-          .from("blog_posts")
-          .select("id, title, slug, excerpt, featured_image_url, category, published_at")
-          .eq("published", true)
-          .neq("id", currentPostId)
-          .order("published_at", { ascending: false })
-          .limit(4);
-        setPosts(latest || []);
+        const latest = await listPublishedArticles({ exclude: currentPostId, limit: 4 }).catch(() => []);
+        setPosts(latest as unknown as RelatedPost[]);
       }
     };
     fetchRelated();

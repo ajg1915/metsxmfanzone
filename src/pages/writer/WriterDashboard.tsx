@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { PenLine, FileText, Clock, CheckCircle, XCircle, Plus, LogOut, User, ArrowLeft, Home } from "lucide-react";
 
+import { listManagedArticles } from "@/lib/articlesApi";
 interface BlogPost {
   id: string;
   title: string;
@@ -75,16 +76,10 @@ export default function WriterDashboard() {
       setProfile(profileData);
 
       // Fetch writer's articles
-      const { data: articlesData, error } = await supabase
-        .from("blog_posts")
-        .select("id, title, slug, excerpt, published, approval_status, created_at, updated_at")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
+      try {
+        setArticles((await listManagedArticles({ mine: true })) as any);
+      } catch (error) {
         console.error("Error fetching articles:", error);
-      } else {
-        setArticles(articlesData || []);
       }
 
       setLoading(false);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+import { listPublishedArticles } from "@/lib/articlesApi";
 const Sitemap = () => {
   const [xml, setXml] = useState<string>('');
 
@@ -9,11 +10,7 @@ const Sitemap = () => {
       const baseUrl = 'https://metsxmfanzone.com';
       
       // Fetch all published blog posts
-      const { data: posts } = await supabase
-        .from('blog_posts')
-        .select('slug, published_at')
-        .eq('published', true)
-        .order('published_at', { ascending: false });
+      const posts = await listPublishedArticles({ limit: 500, fields: 'seo' }).catch(() => []);
 
       // Static pages
       const staticPages = [

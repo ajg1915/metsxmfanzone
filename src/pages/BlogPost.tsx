@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useMarkEngaged } from "@/hooks/useMarkEngaged";
 
+import { getPublishedArticle } from "@/lib/articlesApi";
 interface BlogPost {
   id: string;
   title: string;
@@ -127,17 +128,7 @@ export default function BlogPost() {
         try { return decodeURIComponent(slug || ""); } catch { return slug || ""; }
       })();
 
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("slug", decodedSlug)
-        .eq("published", true)
-        .maybeSingle();
-
-      if (error) {
-        console.error("Slug fetch error:", error);
-        throw error;
-      }
+      const data = await getPublishedArticle(decodedSlug);
 
       if (data && data.featured_image_url) {
         if (!data.featured_image_url.startsWith('http') && !data.featured_image_url.startsWith('data:')) {
@@ -148,7 +139,7 @@ export default function BlogPost() {
         }
       }
       
-      setPost(data);
+      setPost(data as unknown as BlogPost);
     } catch (error) {
       console.error("Error fetching post:", error);
     } finally {

@@ -1,7 +1,7 @@
 // Google News sitemap: /news-sitemap.xml
 // Lists articles published in the last 48 hours (Google News only reads those),
 // so new posts are discovered within minutes instead of days.
-import { SUPABASE_URL, SITE_URL, cleanText, supabaseGet } from "./_lib/article.js";
+import { SITE_URL, cleanText, fetchPublishedPosts } from "./_lib/article.js";
 
 const PUBLICATION_NAME = "MetsXMFanZone";
 const WINDOW_HOURS = 48;
@@ -15,13 +15,7 @@ function xmlEscape(input) {
 
 async function fetchRecentPosts() {
   const since = new Date(Date.now() - WINDOW_HOURS * 3600 * 1000).toISOString();
-  const url =
-    `${SUPABASE_URL}/rest/v1/blog_posts` +
-    `?select=title,slug,published_at` +
-    `&published=eq.true&published_at=gte.${encodeURIComponent(since)}` +
-    `&order=published_at.desc&limit=1000`;
-  const rows = await supabaseGet(url);
-  return Array.isArray(rows) ? rows : [];
+  return fetchPublishedPosts({ since, limit: 500, fields: "seo" });
 }
 
 export default async function handler(req, res) {
