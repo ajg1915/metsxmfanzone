@@ -1,6 +1,6 @@
 // Retired in Nov 2026: articles moved to Cloudflare (articles-api Worker, D1 "metsxm-articles").
-// Scheduled articles are now published by that Worker's own cron every 5 minutes, and the
-// mxf-scheduler Worker sends the "New Article" push when one goes live.
+// Scheduled articles are now published every 2 minutes: the mxf-scheduler Worker calls the
+// articles-api /tasks/publish-due route and sends the "New Article" push when one goes live.
 // This function is kept so old callers get a clear answer instead of an error.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
