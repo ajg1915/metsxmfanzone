@@ -28,15 +28,23 @@ if (!run("node", ["prerender.js", "--postprocess"])) {
 // Blog articles are rendered on request by api/blog.js so that newly published
 // and freshly edited posts are always correct. Remove the build-time article
 // copies (dist/blog/<slug>/) so they can't shadow that route with stale content.
-// Keep dist/blog/index.html: it is the public /blog listing page, and without it
-// /blog has nothing to serve and returns a hosting 404.
+// The /blog listing page is served by api/blog-index.js, which adds the latest
+// article links to the HTML for search engines. It loads the built page from
+// dist/blog-shell.html, so move dist/blog/index.html there (if it stayed, the
+// static file would be served first and the function would never run).
 const blogDir = resolve("dist/blog");
 if (existsSync(blogDir)) {
   for (const name of readdirSync(blogDir)) {
     const entry = resolve(blogDir, name);
     if (statSync(entry).isDirectory()) rmSync(entry, { recursive: true, force: true });
   }
-  console.log("removed dist/blog/<slug> article copies (served dynamically by /api/blog); kept dist/blog/index.html");
+  console.log("removed dist/blog/<slug> article copies (served dynamically by /api/blog)");
+  const blogIndex = resolve(blogDir, "index.html");
+  if (existsSync(blogIndex)) {
+    copyFileSync(blogIndex, resolve("dist/blog-shell.html"));
+    rmSync(blogIndex, { force: true });
+    console.log("moved dist/blog/index.html to dist/blog-shell.html (served with links by /api/blog-index)");
+  }
 }
 
 // Safety net: any URL that has no prerendered file (e.g. an article published

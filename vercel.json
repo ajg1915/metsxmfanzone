@@ -92,7 +92,7 @@
   "rewrites": [
     {
       "source": "/blog",
-      "destination": "/"
+      "destination": "/api/blog-index"
     },
     {
       "source": "/blog/rss",
