@@ -6,7 +6,7 @@
 // right away without a redeploy. Lists only pages worth ranking; small help
 // and utility pages are left out on purpose so Google spends its crawl
 // budget on the content that matters. Unlisted pages are still crawlable.
-import { SUPABASE_URL, SITE_URL, supabaseGet } from "./_lib/article.js";
+import { SUPABASE_URL, SITE_URL, supabaseGet, fetchPublishedPosts } from "./_lib/article.js";
 
 const MAIN_PAGES = [
   "/",
@@ -61,12 +61,7 @@ function xmlEscape(input) {
 }
 
 async function fetchPosts() {
-  const url =
-    `${SUPABASE_URL}/rest/v1/blog_posts` +
-    `?select=slug,published_at,updated_at` +
-    `&published=eq.true&order=published_at.desc&limit=5000`;
-  const rows = await supabaseGet(url);
-  return Array.isArray(rows) ? rows : [];
+  return fetchPublishedPosts({ limit: 500, fields: "seo" });
 }
 
 async function fetchManagedPages() {

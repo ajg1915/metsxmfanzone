@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import { getManagedArticle, isSlugAvailable, updateArticle, createArticle } from "@/lib/articlesApi";
 const META_LIMIT = 160;
 
 const label = "text-[12px] font-extrabold tracking-wider text-[#FF9A6B]";
@@ -114,7 +115,13 @@ export default function DraftEditor() {
       let base: FormState = emptyForm;
       let nextMeta: PostMeta = newMeta;
       if (rawId) {
-        const { data, error } = await supabase.from("blog_posts").select("*").eq("id", rawId).maybeSingle();
+        let data: any = null;
+        let error: unknown = null;
+        try {
+          data = await getManagedArticle(rawId);
+        } catch (e) {
+          error = e;
+        }
         if (cancelled) return;
         if (error || !data) {
           setLoadError("Could not find this article.");
@@ -262,8 +269,7 @@ export default function DraftEditor() {
     const base = slugify(title);
     const day = new Date().toISOString().slice(0, 10);
     for (const slug of [base, `${base}-${day}`, `${base}-${day}-2`, `${base}-${day}-3`]) {
-      const { data } = await supabase.from("blog_posts").select("id").eq("slug", slug).maybeSingle();
-      if (!data) return slug;
+      if (await isSlugAvailable(slug)) return slug;
     }
     return `${base}-${Date.now()}`;
   };
@@ -282,19 +288,11 @@ export default function DraftEditor() {
   /** Writes the article (insert when new) and returns the saved row. */
   const persist = async (patch: Record<string, unknown>) => {
     if (meta.id) {
-      const { data, error } = await supabase.from("blog_posts").update(patch as any).eq("id", meta.id).select("*").single();
-      if (error || !data) throw new Error("Could not save the article");
-      return data as any;
+      return (await updateArticle(meta.id, patch as any)) as any;
     }
     if (!user) throw new Error("Not signed in");
     const slug = await uniqueSlug(form.title);
-    const { data, error } = await supabase
-      .from("blog_posts")
-      .insert([{ ...patch, slug, user_id: user.id } as any])
-      .select("*")
-      .single();
-    if (error || !data) throw new Error("Could not save the article");
-    return data as any;
+    return (await createArticle({ ...patch, slug, user_id: user.id } as any)) as any;
   };
 
   const afterSave = (row: any) => {

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { parseISO, isAfter } from "date-fns";
 import { Newspaper, Radio, Zap } from "lucide-react";
 
+import { listPublishedArticles } from "@/lib/articlesApi";
 interface NewContent {
   blogPosts: { title: string; slug: string }[];
   liveStreams: { title: string; status: string }[];
@@ -45,13 +46,9 @@ export const WelcomeBackToast = () => {
         };
 
         // Fetch new blog posts
-        const { data: blogPosts } = await supabase
-          .from('blog_posts')
-          .select('title, slug')
-          .eq('published', true)
-          .gt('created_at', lastVisit)
-          .order('created_at', { ascending: false })
-          .limit(3);
+        const blogPosts = await listPublishedArticles({ since: lastVisit, dateField: 'created_at', limit: 3 })
+          .then((rows) => rows.filter((r) => r.created_at > lastVisit).map((r) => ({ title: r.title, slug: r.slug })))
+          .catch(() => null);
 
         if (blogPosts) newContent.blogPosts = blogPosts;
 

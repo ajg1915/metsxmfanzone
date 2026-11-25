@@ -30,6 +30,7 @@ import { STORY_BG_STYLES, getStoryBgStyle } from "@/lib/storyBackgrounds";
 import { AdminPage, AdminPageHeader, AdminLoading, AdminEmpty } from "@/components/admin/AdminUI";
 import { Camera } from "lucide-react";
 
+import { listPublishedArticles } from "@/lib/articlesApi";
 interface BlogPost {
   id: string;
   title: string;
@@ -116,14 +117,8 @@ const StoriesManagement = () => {
 
   const fetchBlogPosts = async () => {
     try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("id, title, slug")
-        .eq("published", true)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-      setBlogPosts(data || []);
+      const data = await listPublishedArticles({ order: "created_at", limit: 500 });
+      setBlogPosts(data.map((p) => ({ id: p.id, title: p.title, slug: p.slug })));
     } catch (error) {
       console.error("Error fetching blog posts:", error);
     }

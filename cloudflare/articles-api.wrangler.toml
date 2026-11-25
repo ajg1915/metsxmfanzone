@@ -1,0 +1,16 @@
+# Deploy: npx wrangler deploy -c cloudflare/articles-api.wrangler.toml
+name = "articles-api"
+main = "articles-api-worker.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "metsxm-articles"
+database_id = "bd322bd5-18a3-4d3e-87b6-ae94196f9233"
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[observability]
+enabled = true

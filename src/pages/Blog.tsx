@@ -9,6 +9,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 
+import { listPublishedArticles } from "@/lib/articlesApi";
 interface BlogPost {
   id: string;
   title: string;
@@ -43,15 +44,9 @@ export default function Blog() {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("published", true)
-        .order("published_at", { ascending: false });
+      const data = await listPublishedArticles({ limit: 500 });
 
-      if (error) throw error;
-      
-      setPosts(data || []);
+      setPosts((data || []) as unknown as BlogPost[]);
       
       const uniqueCategories = [...new Set((data || []).map(post => post.category))];
       setCategories(uniqueCategories);

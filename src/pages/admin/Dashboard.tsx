@@ -17,6 +17,7 @@ import {
   Zap,
 } from "lucide-react";
 
+import { countManagedArticles } from "@/lib/articlesApi";
 type FeedState = { overall: string; problemCount: number } | null;
 
 /* --------------------------------- page ---------------------------------- */
@@ -47,7 +48,7 @@ export default function AdminDashboard() {
           .eq("status", "active")
           .or(`end_date.is.null,end_date.gt.${nowIso}`),
         supabase.from("live_streams").select("status"),
-        supabase.from("blog_posts").select("*", { count: "exact", head: true }),
+        countManagedArticles().then((count) => ({ count }), () => ({ count: 0 })),
         supabase.from("stories").select("*", { count: "exact", head: true }),
         supabase.from("podcasts").select("*", { count: "exact", head: true }),
       ]);

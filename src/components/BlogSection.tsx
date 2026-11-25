@@ -9,6 +9,7 @@ import logo from "@/assets/metsxmfanzone-logo.png";
 import NewBadge from "@/components/NewBadge";
 import { isFresh } from "@/lib/newItem";
 
+import { listPublishedArticles } from "@/lib/articlesApi";
 interface BlogPost {
   id: string;
   title: string;
@@ -30,15 +31,8 @@ const BlogSection = () => {
 
     const load = async () => {
       try {
-        const { data, error } = await supabase
-          .from("blog_posts")
-          .select("id, title, slug, excerpt, featured_image_url, category, published_at, created_at")
-          .eq("published", true)
-          .order("published_at", { ascending: false })
-          .limit(7);
-
-        if (error) throw error;
-        if (!cancelled) setPosts((data || []) as BlogPost[]);
+        const data = await listPublishedArticles({ limit: 7 });
+        if (!cancelled) setPosts(data as unknown as BlogPost[]);
       } catch (err) {
         console.error("Error fetching blog posts:", err);
       } finally {

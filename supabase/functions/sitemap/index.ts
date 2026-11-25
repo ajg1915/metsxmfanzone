@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { listPublishedArticles } from "../_shared/articles.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -23,11 +24,7 @@ Deno.serve(async (req) => {
     const today = new Date().toISOString().split('T')[0];
 
     // Fetch published blog posts
-    const { data: posts } = await supabase
-      .from('blog_posts')
-      .select('slug, published_at, category')
-      .eq('published', true)
-      .order('published_at', { ascending: false });
+    const posts = await listPublishedArticles({ limit: 500, fields: 'seo' }).catch(() => []);
 
     // Fetch published podcasts
     const { data: podcasts } = await supabase

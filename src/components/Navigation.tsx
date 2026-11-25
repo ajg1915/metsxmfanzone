@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/collapsible";
 import { formatDistanceToNow } from "date-fns";
 
+import { asResult, listPublishedArticles } from "@/lib/articlesApi";
 const Navigation = () => {
   const { user, signOut } = useAuth();
   const { tier, isPremium: isPaidMember } = useSubscription();
@@ -106,13 +107,7 @@ const Navigation = () => {
         .gte("created_at", sinceISO)
         .order("created_at", { ascending: false })
         .limit(10),
-      supabase
-        .from("blog_posts")
-        .select("id, title, slug, published_at")
-        .eq("published", true)
-        .gte("published_at", sinceISO)
-        .order("published_at", { ascending: false })
-        .limit(10),
+      asResult(listPublishedArticles({ since: sinceISO, limit: 10 })),
     ]);
 
     const list: NotifItem[] = [];

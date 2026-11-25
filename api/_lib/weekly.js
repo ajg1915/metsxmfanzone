@@ -3,7 +3,7 @@
 //   Auth: Authorization: Bearer $CRON_SECRET (Vercel Cron sends this automatically when CRON_SECRET is set).
 //   ?dry=1   returns the email HTML instead of sending.   ?force=1  skips the Monday-8AM check.
 import { weeklyRecap } from "./newsletter-templates.js";
-import { SUPABASE_URL, SUPABASE_ANON_KEY, SITE_URL, stripHtml, resolveImage, cleanText } from "./article.js";
+import { SITE_URL, stripHtml, resolveImage, cleanText, fetchPublishedPosts } from "./article.js";
 
 const SEGMENT_ID = "53422271-e367-4699-a322-b3e7d586f8a4";
 const FROM = "MetsXMFanZone <noreply@metsxmfanzone.com>";
@@ -20,12 +20,7 @@ const ymd = (d) => etParts(d).ymd;
 
 async function stories() {
   const since = new Date(Date.now() - 7 * 864e5).toISOString();
-  const url =
-    `${SUPABASE_URL}/rest/v1/blog_posts?select=title,slug,excerpt,content,category,published_at,featured_image_url` +
-    `&published=eq.true&published_at=gte.${since}&order=published_at.desc&limit=4`;
-  const r = await fetch(url, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } });
-  if (!r.ok) return [];
-  const rows = await r.json();
+  const rows = await fetchPublishedPosts({ since, limit: 4, fields: "full" }).catch(() => []);
   return (Array.isArray(rows) ? rows : []).map((p, i) => ({
     tag: i === 0 ? "Top story" : cleanText(p.category || ""),
     title: cleanText(p.title) || "Untitled",

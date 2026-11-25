@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import BlogShareDialog from "@/components/admin/BlogShareDialog";
 
+import { listManagedArticles, updateArticle, deleteArticle, withAuthors } from "@/lib/articlesApi";
 interface BlogPost {
   id: string;
   title: string;
@@ -51,11 +52,7 @@ export default function BlogManagement() {
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select(`*, profiles ( full_name, email )`)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
+      const data = await withAuthors(await listManagedArticles({ limit: 2000 }));
       // Articles waiting for approval are reviewed on the Drafts page, not here.
       const all: BlogPost[] = (data as any) || [];
       setWaitingInDrafts(all.filter((p) => p.approval_status === "pending" && !p.published).length);
@@ -90,10 +87,9 @@ export default function BlogManagement() {
 
   const handleApprove = async (post: BlogPost) => {
     try {
-      const { error } = await supabase.from("blog_posts").update({
+      await updateArticle(post.id, {
         approval_status: "approved", published: true, published_at: new Date().toISOString(),
-      }).eq("id", post.id);
-      if (error) throw error;
+      });
 
       try {
         await supabase.functions.invoke("send-push-notification", {
@@ -111,10 +107,7 @@ export default function BlogManagement() {
 
   const handleReject = async (post: BlogPost) => {
     try {
-      const { error } = await supabase.from("blog_posts").update({
-        approval_status: "rejected", published: false,
-      }).eq("id", post.id);
-      if (error) throw error;
+      await updateArticle(post.id, { approval_status: "rejected", published: false });
       toast({ title: "Rejected" });
       fetchPosts();
     } catch {
@@ -125,8 +118,7 @@ export default function BlogManagement() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this post permanently?")) return;
     try {
-      const { error } = await supabase.from("blog_posts").delete().eq("id", id);
-      if (error) throw error;
+      await deleteArticle(id);
       toast({ title: "Deleted" });
       fetchPosts();
     } catch {
