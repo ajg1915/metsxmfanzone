@@ -149,7 +149,7 @@
   {
     "path": "/mets-gamecast",
     "label": "Game Center",
-    "title": "Mets Gamecast \u2014 Live Updates | MetsXMFanZone",
+    "title": "Mets Gamecast — Live Updates | MetsXMFanZone",
     "description": "Follow Mets games with live scores, play-by-play, lineups, and box scores.",
     "image": "/share/mets-gamecast.jpg"
   },
@@ -184,7 +184,7 @@
   {
     "path": "/game-center",
     "label": "Game Center",
-    "title": "Mets Game Center \u2014 Lineups, Players to Watch, Stats & Replays | MetsXMFanZone",
+    "title": "Mets Game Center — Lineups, Players to Watch, Stats & Replays | MetsXMFanZone",
     "description": "Everything for game day in one place: Mets lineups, players to watch, stats, series, Spring Training games and full-game replays.",
     "image": "/share/gameday-live.jpg"
   },
@@ -267,119 +267,119 @@
   },
   {
     "path": "/help/create-account",
-    "label": "Help \u00b7 Account",
+    "label": "Help · Account",
     "title": "How to Create an Account | MetsXMFanZone",
     "description": "Create your MetsXMFanZone account and access member features.",
     "image": "/share/help-create-account.jpg"
   },
   {
     "path": "/help/navigate-platform",
-    "label": "Help \u00b7 Navigation",
+    "label": "Help · Navigation",
     "title": "Navigate MetsXMFanZone",
     "description": "Learn where to find live games, news, community features, and account settings.",
     "image": "/share/help-navigate-platform.jpg"
   },
   {
     "path": "/help/watch-streams",
-    "label": "Help \u00b7 Streaming",
+    "label": "Help · Streaming",
     "title": "How to Watch Streams | MetsXMFanZone",
     "description": "Learn how to open and watch live streams on MetsXMFanZone.",
     "image": "/share/help-watch-streams.jpg"
   },
   {
     "path": "/help/community-guidelines",
-    "label": "Help \u00b7 Community",
+    "label": "Help · Community",
     "title": "Community Guidelines | MetsXMFanZone",
     "description": "Read the standards that keep the MetsXMFanZone community welcoming and respectful.",
     "image": "/share/help-community-guidelines.jpg"
   },
   {
     "path": "/help/video-quality",
-    "label": "Help \u00b7 Video",
+    "label": "Help · Video",
     "title": "Video Quality Help | MetsXMFanZone",
     "description": "Troubleshoot video quality and improve streaming playback.",
     "image": "/share/help-video-quality.jpg"
   },
   {
     "path": "/help/premium-content",
-    "label": "Help \u00b7 Membership",
+    "label": "Help · Membership",
     "title": "Premium Content Help | MetsXMFanZone",
     "description": "Learn what is included with a MetsXMFanZone paid membership.",
     "image": "/share/help-premium-content.jpg"
   },
   {
     "path": "/help/offline-viewing",
-    "label": "Help \u00b7 Viewing",
+    "label": "Help · Viewing",
     "title": "Offline Viewing Help | MetsXMFanZone",
     "description": "Learn which MetsXMFanZone content and app features are available offline.",
     "image": "/share/help-offline-viewing.jpg"
   },
   {
     "path": "/help/playback-issues",
-    "label": "Help \u00b7 Playback",
+    "label": "Help · Playback",
     "title": "Playback Troubleshooting | MetsXMFanZone",
     "description": "Fix common MetsXMFanZone video and live-stream playback issues.",
     "image": "/share/help-playback-issues.jpg"
   },
   {
     "path": "/help/post-community",
-    "label": "Help \u00b7 Community",
+    "label": "Help · Community",
     "title": "How to Post in the Community | MetsXMFanZone",
     "description": "Learn how to share a post with the MetsXMFanZone community.",
     "image": "/share/help-post-community.jpg"
   },
   {
     "path": "/help/comments-reactions",
-    "label": "Help \u00b7 Community",
+    "label": "Help · Community",
     "title": "Comments and Reactions | MetsXMFanZone",
     "description": "Learn how comments and reactions work in the MetsXMFanZone community.",
     "image": "/share/help-comments-reactions.jpg"
   },
   {
     "path": "/help/follow-fans",
-    "label": "Help \u00b7 Community",
+    "label": "Help · Community",
     "title": "Follow Mets Fans | MetsXMFanZone",
     "description": "Learn how to connect with and follow other MetsXMFanZone members.",
     "image": "/share/help-follow-fans.jpg"
   },
   {
     "path": "/help/report-content",
-    "label": "Help \u00b7 Safety",
+    "label": "Help · Safety",
     "title": "Report Content | MetsXMFanZone",
     "description": "Learn how to report content that violates MetsXMFanZone community guidelines.",
     "image": "/share/help-report-content.jpg"
   },
   {
     "path": "/help/update-profile",
-    "label": "Help \u00b7 Profile",
+    "label": "Help · Profile",
     "title": "Update Your Profile | MetsXMFanZone",
     "description": "Learn how to update your MetsXMFanZone profile and account information.",
     "image": "/share/help-update-profile.jpg"
   },
   {
     "path": "/help/subscription-plans",
-    "label": "Help \u00b7 Plans",
+    "label": "Help · Plans",
     "title": "Subscription Plans Help | MetsXMFanZone",
     "description": "Compare MetsXMFanZone membership plans and benefits.",
     "image": "/share/help-subscription-plans.jpg"
   },
   {
     "path": "/help/payment-methods",
-    "label": "Help \u00b7 Payments",
+    "label": "Help · Payments",
     "title": "Payment Methods Help | MetsXMFanZone",
     "description": "Learn about supported payment methods for MetsXMFanZone memberships.",
     "image": "/share/help-payment-methods.jpg"
   },
   {
     "path": "/help/cancel-subscription",
-    "label": "Help \u00b7 Membership",
+    "label": "Help · Membership",
     "title": "Cancel a Membership | MetsXMFanZone",
     "description": "Learn how to cancel a MetsXMFanZone membership.",
     "image": "/share/help-cancel-subscription.jpg"
   },
   {
     "path": "/help/return-policy",
-    "label": "Help \u00b7 Returns",
+    "label": "Help · Returns",
     "title": "Return Policy | MetsXMFanZone",
     "description": "Read the MetsXMFanZone shop return and refund policy.",
     "image": "/share/help-return-policy.jpg"
@@ -387,56 +387,56 @@
   {
     "path": "/matchup/astros",
     "label": "Mets vs Houston Astros",
-    "title": "Mets vs Houston Astros \u2014 2026 Matchup | MetsXMFanZone",
+    "title": "Mets vs Houston Astros — 2026 Matchup | MetsXMFanZone",
     "description": "New York Mets vs Houston Astros matchup analysis, probable lineups, pitching, and head-to-head coverage.",
     "image": "/share/matchup-astros.jpg"
   },
   {
     "path": "/matchup/bluejays",
     "label": "Mets vs Toronto Blue Jays",
-    "title": "Mets vs Toronto Blue Jays \u2014 2026 Matchup | MetsXMFanZone",
+    "title": "Mets vs Toronto Blue Jays — 2026 Matchup | MetsXMFanZone",
     "description": "New York Mets vs Toronto Blue Jays matchup analysis, probable lineups, pitching, and head-to-head coverage.",
     "image": "/share/matchup-bluejays.jpg"
   },
   {
     "path": "/matchup/braves",
     "label": "Mets vs Atlanta Braves",
-    "title": "Mets vs Atlanta Braves \u2014 2026 Matchup | MetsXMFanZone",
+    "title": "Mets vs Atlanta Braves — 2026 Matchup | MetsXMFanZone",
     "description": "New York Mets vs Atlanta Braves matchup analysis, probable lineups, pitching, and head-to-head coverage.",
     "image": "/share/matchup-braves.jpg"
   },
   {
     "path": "/matchup/cardinals",
     "label": "Mets vs St. Louis Cardinals",
-    "title": "Mets vs St. Louis Cardinals \u2014 2026 Matchup | MetsXMFanZone",
+    "title": "Mets vs St. Louis Cardinals — 2026 Matchup | MetsXMFanZone",
     "description": "New York Mets vs St. Louis Cardinals matchup analysis, probable lineups, pitching, and head-to-head coverage.",
     "image": "/share/matchup-cardinals.jpg"
   },
   {
     "path": "/matchup/nationals",
     "label": "Mets vs Washington Nationals",
-    "title": "Mets vs Washington Nationals \u2014 2026 Matchup | MetsXMFanZone",
+    "title": "Mets vs Washington Nationals — 2026 Matchup | MetsXMFanZone",
     "description": "New York Mets vs Washington Nationals matchup analysis, probable lineups, pitching, and head-to-head coverage.",
     "image": "/share/matchup-nationals.jpg"
   },
   {
     "path": "/matchup/redsox",
     "label": "Mets vs Boston Red Sox",
-    "title": "Mets vs Boston Red Sox \u2014 2026 Matchup | MetsXMFanZone",
+    "title": "Mets vs Boston Red Sox — 2026 Matchup | MetsXMFanZone",
     "description": "New York Mets vs Boston Red Sox matchup analysis, probable lineups, pitching, and head-to-head coverage.",
     "image": "/share/matchup-redsox.jpg"
   },
   {
     "path": "/matchup/yankees",
     "label": "Mets vs New York Yankees",
-    "title": "Mets vs New York Yankees \u2014 2026 Matchup | MetsXMFanZone",
+    "title": "Mets vs New York Yankees — 2026 Matchup | MetsXMFanZone",
     "description": "New York Mets vs New York Yankees matchup analysis, probable lineups, pitching, and head-to-head coverage.",
     "image": "/share/matchup-yankees.jpg"
   },
   {
     "path": "/mets-shop",
     "label": "Mets Shop",
-    "title": "Mets Shop \u2014 Jerseys, Hats & Gear from Fanatics | MetsXMFanZone",
+    "title": "Mets Shop — Jerseys, Hats & Gear from Fanatics | MetsXMFanZone",
     "description": "Shop official New York Mets jerseys, hats, tees and more from Fanatics. Gear up for the 2027 season with MetsXMFanZone.",
     "image": "/share/home.jpg"
   },
@@ -449,14 +449,14 @@
   },
   {
     "path": "/help/vpn",
-    "label": "Help \u00b7 Streaming",
+    "label": "Help · Streaming",
     "title": "Using a VPN with MetsXMFanZone | MetsXMFanZone",
     "description": "What to know about using a VPN while watching MetsXMFanZone live streams, and how to fix playback problems it can cause.",
     "image": "/share/help-center.jpg"
   },
   {
     "path": "/help/cookies-data",
-    "label": "Help \u00b7 Privacy",
+    "label": "Help · Privacy",
     "title": "Cookies & Your Data | MetsXMFanZone",
     "description": "How MetsXMFanZone uses cookies and site data, and how to manage your choices.",
     "image": "/share/privacy.jpg"
@@ -467,5 +467,33 @@
     "title": "Cookie Policy | MetsXMFanZone",
     "description": "How MetsXMFanZone uses cookies and site data, and how to manage your choices.",
     "image": "/share/privacy.jpg"
+  },
+  {
+    "path": "/shop",
+    "label": "Mets Shop",
+    "title": "Mets T-Shirts & Fan Gear | MetsXMFanZone Shop",
+    "description": "Shop New York Mets T-shirts and fan gear in men's, women's and kids' sizes. $5.99 flat U.S. shipping and free gift wrap.",
+    "image": "/shop/items/skubal-29-back.jpg"
+  },
+  {
+    "path": "/merch",
+    "label": "Merch",
+    "title": "MetsXMFanZone Merch | Official Fan Zone Gear",
+    "description": "Official MetsXMFanZone tees and hoodies for fans of the show. Secure PayPal checkout and fast shipping.",
+    "image": "/share/podcast.jpg"
+  },
+  {
+    "path": "/game-events",
+    "label": "Game Events",
+    "title": "Mets Game Events & Watch Parties | MetsXMFanZone",
+    "description": "Upcoming MetsXMFanZone game events, watch parties and live shows for New York Mets fans.",
+    "image": "/share/gameday-live.jpg"
+  },
+  {
+    "path": "/spring-training-live",
+    "label": "Spring Training",
+    "title": "Mets Spring Training Live | MetsXMFanZone",
+    "description": "Follow New York Mets spring training with live coverage, schedules and updates on MetsXMFanZone.",
+    "image": "/share/mets-schedule-2027.jpg"
   }
 ]

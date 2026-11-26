@@ -209,6 +209,7 @@ export function buildMetaTags(post, slug, { canonical } = {}) {
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(image)}">
+  <link rel="alternate" type="application/rss+xml" title="MetsXMFanZone News" href="${SITE_URL}/rss.xml">
   <script type="application/ld+json">${jsonLd(schema)}</script>
   <script type="application/ld+json">${jsonLd(breadcrumbs)}</script>
 `;

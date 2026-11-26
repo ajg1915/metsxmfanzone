@@ -119,7 +119,7 @@
           "value": ".*(MetsXMFanZoneTV|AFT[A-Z]|Android TV|AndroidTV|GoogleTV|BRAVIA|SMART-TV|SmartTV).*"
         }
       ],
-      "destination": "/"
+      "destination": "/app-shell"
     },
     {
       "source": "/blog/:slug*",
@@ -129,7 +129,7 @@
           "key": "__chunk_retry"
         }
       ],
-      "destination": "/"
+      "destination": "/app-shell"
     },
     {
       "source": "/blog/:slug*",
@@ -139,7 +139,7 @@
           "key": "tv"
         }
       ],
-      "destination": "/"
+      "destination": "/app-shell"
     },
     {
       "source": "/blog/:slug*",
@@ -151,7 +151,7 @@
     },
     {
       "source": "/((?!api/|.*\\..*).*)",
-      "destination": "/"
+      "destination": "/app-shell"
     }
   ],
   "headers": [

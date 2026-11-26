@@ -153,6 +153,63 @@ function injectBody(html, bodyHtml) {
 }
 
 
+
+// ---------- Crawler-visible page bodies ----------
+// Every public page gets real HTML inside #root (menu, heading, summary, links, and for
+// Home/News the latest articles), so Google, link previews and feed tools see a full page
+// instead of an empty app shell. React's createRoot replaces it as soon as the app starts.
+const SHELL_STYLE = `<style>
+.seo-shell{min-height:100vh;background:#050b18;color:#e8edf7;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.seo-shell a{color:#ff8a50;text-decoration:none}.seo-shell a:hover{text-decoration:underline}
+.seo-shell header,.seo-shell main,.seo-shell footer{max-width:1100px;margin:0 auto;padding:16px 20px}
+.seo-shell header{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;border-bottom:1px solid rgba(255,255,255,.08)}
+.seo-shell header strong{font-size:20px;color:#fff;margin-right:auto}.seo-shell header strong span{color:#ff5910}
+.seo-shell nav{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px}.seo-shell nav a{color:#cdd6e6}
+.seo-shell h1{font-size:34px;line-height:1.15;margin:28px 0 8px;color:#fff}.seo-shell .lede{color:#aab6cc;max-width:720px}
+.seo-shell ul.posts{list-style:none;padding:0;display:grid;gap:14px;margin:24px 0}.seo-shell ul.posts li{border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px}
+.seo-shell ul.posts h2{font-size:18px;margin:0 0 4px}.seo-shell ul.posts p{margin:0;color:#aab6cc;font-size:14px}.seo-shell time{font-size:12px;color:#7f8ca3}
+.seo-shell footer{border-top:1px solid rgba(255,255,255,.08);font-size:13px;color:#7f8ca3}.seo-shell footer nav{margin:10px 0}
+</style>`;
+
+const SHELL_NAV = [
+  ['/', 'Home'], ['/blog', 'News'], ['/metsxmfanzone', 'Watch Live'], ['/podcast', 'Podcast'],
+  ['/mets-schedule-2027', 'Schedule'], ['/mets-scores', 'Scores'], ['/community', 'Community'],
+  ['/shop', 'Mets Shop'], ['/merch', 'Merch'], ['/pricing', 'Plans'],
+];
+const SHELL_FOOTER = [
+  ['/mets-game-recaps', 'Game Recaps'], ['/mets-roster', 'Roster'], ['/broadcast-schedule', 'TV Schedule'],
+  ['/game-center', 'Game Center'], ['/nl-scores', 'NL Scores'], ['/picks', 'Picks'], ['/mets-history', 'Mets History'],
+  ['/video-gallery', 'Highlights'], ['/gameday-live', 'Game Day Live'], ['/community-podcast', 'Community Podcast'],
+  ['/social', 'Follow Us'], ['/business-partner', 'Business Partners'], ['/install', 'Install App'],
+  ['/help-center', 'Help Center'], ['/faqs', 'FAQ'], ['/contact', 'Contact'], ['/privacy', 'Privacy'], ['/terms', 'Terms'],
+];
+const shellLinks = (list) => list.map(([href, label]) => `<a href="${SITE_URL}${href === '/' ? '/' : href}">${escapeHtml(label)}</a>`).join(' ');
+
+function postList(posts, limit) {
+  const items = [...(posts || [])].filter((p) => p && p.slug)
+    .sort((a, b) => String(b.published_at || '').localeCompare(String(a.published_at || '')))
+    .slice(0, limit).map((p) => {
+    const url = `${SITE_URL}/blog/${encodeURIComponent(p.slug)}`;
+    const summary = String(p.excerpt || stripHtml(p.content || '')).trim();
+    const short = summary.length > 220 ? `${summary.slice(0, 217)}...` : summary;
+    const date = String(p.published_at || '').slice(0, 10);
+    return `<li><h2><a href="${escapeHtml(url)}">${escapeHtml(p.title || '')}</a></h2>${date ? `<time datetime="${escapeHtml(p.published_at)}">${escapeHtml(date)}</time>` : ''}${short ? `<p>${escapeHtml(short)}</p>` : ''}</li>`;
+  });
+  return items.length ? `<ul class="posts">${items.join('')}</ul>` : '';
+}
+
+function buildPageBody(route, posts) {
+  const heading = String(route.title || '').replace(/\s*[|—–-]\s*MetsXMFanZone.*$/i, '').trim() || 'MetsXMFanZone';
+  let extra = '';
+  if (route.path === '/') extra = `<h2>Latest Mets news</h2>${postList(posts, 8)}<p><a href="${SITE_URL}/blog">All Mets news</a></p>`;
+  else if (route.path === '/blog') extra = postList(posts, 30);
+  return `<div class="seo-shell">${SHELL_STYLE}
+<header><strong><a href="${SITE_URL}/" style="color:#fff">MetsXM<span>FanZone</span></a></strong><nav aria-label="Main">${shellLinks(SHELL_NAV)}</nav></header>
+<main><h1>${escapeHtml(heading)}</h1><p class="lede">${escapeHtml(route.description || '')}</p>${extra}</main>
+<footer><nav aria-label="More">${shellLinks(SHELL_FOOTER)} <a href="${SITE_URL}/rss.xml" type="application/rss+xml">RSS</a></nav><p>© ${new Date().getUTCFullYear()} MetsXMFanZone. Built by Mets fans, for Mets fans.</p></footer>
+</div>`;
+}
+
 function buildArticleBody({ title, image, description, contentHtml, publishedTime, canonical, author = 'Anthony Gennaro' }) {
   const safeTitle = escapeHtml(title || '');
   const body = contentHtml && String(contentHtml).trim().length > 0
@@ -436,10 +493,23 @@ async function postprocessAll() {
   }
   const template = fs.readFileSync(templatePath, 'utf-8');
 
+  // Empty app shell for private/unlisted pages (vercel.json rewrites them here), so they
+  // never borrow the home page's content or canonical.
+  const shellPath = path.resolve(distDir, 'app-shell', 'index.html');
+  fs.mkdirSync(path.dirname(shellPath), { recursive: true });
+  fs.writeFileSync(shellPath, template
+    .replace(/<meta\s+name="robots"[^>]*>\s*/gi, '')
+    .replace(/<link\s+rel="canonical"[^>]*>\s*/gi, '')
+    .replace('</head>', '<meta name="robots" content="noindex, follow">\n</head>'));
+
+  let latestPosts = [];
+  try { latestPosts = await fetchPublishedBlogPosts(); } catch (e) { console.warn('Latest posts for page bodies skipped:', e.message); }
+
   const jobs = [];
   for (const route of STATIC_ROUTES) {
     jobs.push({
       routePath: route.path,
+      body: buildPageBody(route, latestPosts),
       head: buildHead({
         title: route.title,
         description: route.description,
