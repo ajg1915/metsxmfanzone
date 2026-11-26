@@ -39,7 +39,7 @@ export default function BlogRSS() {
       <title>${escapeXml(post.title)}</title>
       <link>${baseUrl}/blog/${post.slug}</link>
       <guid isPermaLink="true">${baseUrl}/blog/${post.slug}</guid>
-      <description>${escapeXml(post.excerpt || post.content.substring(0, 200))}</description>
+      <description>${escapeXml(post.excerpt || (post.content || "").substring(0, 200))}</description>
       <category>${escapeXml(post.category)}</category>
       <pubDate>${new Date(post.published_at).toUTCString()}</pubDate>
     </item>`).join("")}

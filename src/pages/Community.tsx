@@ -822,7 +822,7 @@ const Community = () => {
                             </h3>
                           </Link>
                           <p className="text-sm text-muted-foreground line-clamp-3">
-                            {item.excerpt || item.content.substring(0, 200)}...
+                            {(item.excerpt || (item.content || "").substring(0, 200)).trim()}
                           </p>
                           <Button size="sm" asChild className="h-11 px-5 rounded-full">
                             <Link to={`/blog/${item.slug}`}>Read article</Link>

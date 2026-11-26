@@ -14,8 +14,9 @@ interface BlogPost {
   id: string;
   title: string;
   slug: string;
-  content: string;
-  excerpt: string;
+  content?: string | null; // not included in the article list (only on the article page)
+  excerpt: string | null;
+  meta_description?: string | null;
   featured_image_url?: string;
   category: string;
   tags: string[];
@@ -59,9 +60,9 @@ export default function Blog() {
 
   const filteredPosts = posts.filter((post) => {
     const matchesSearch = 
-      post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      (post.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (post.content || post.excerpt || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (post.tags || []).some(tag => String(tag).toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesCategory = !selectedCategory || post.category === selectedCategory;
     
@@ -251,7 +252,7 @@ export default function Blog() {
                         <span className="text-xs text-primary font-medium mb-2">{filteredPosts[0].category}</span>
                         <h3 className="text-xl md:text-2xl font-bold mb-3 line-clamp-2">{filteredPosts[0].title}</h3>
                         <p className="text-muted-foreground line-clamp-3 mb-4">
-                          {filteredPosts[0].excerpt || filteredPosts[0].content.substring(0, 200)}...
+                          {(filteredPosts[0].excerpt || filteredPosts[0].meta_description || (filteredPosts[0].content || "").substring(0, 200)).trim()}
                         </p>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
@@ -303,7 +304,7 @@ export default function Blog() {
                         </CardHeader>
                         <CardContent>
                           <p className="text-muted-foreground line-clamp-3 mb-4">
-                            {post.excerpt || post.content.substring(0, 150)}...
+                            {(post.excerpt || post.meta_description || (post.content || "").substring(0, 150)).trim()}
                           </p>
                           {post.tags.length > 0 && (
                             <div className="flex gap-1 flex-wrap">
