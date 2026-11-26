@@ -87,6 +87,11 @@
       "source": "/tv-app",
       "destination": "https://github.com/ajg1915/metsxmfanzone/releases/download/tv-app/MetsXMFanZone-TV.apk",
       "permanent": false
+    },
+    {
+      "source": "/live",
+      "destination": "/metsxmfanzone",
+      "permanent": true
     }
   ],
   "rewrites": [
@@ -150,7 +155,7 @@
       "destination": "/api/blog-html?slug=:slug*"
     },
     {
-      "source": "/((?!api/|.*\\..*).*)",
+      "source": "/((?:admin|auth|dashboard|writer|tv|legal)(?:/.*)?|admin-portal|admin-pin-reset|writer-auth|writer-register|confirm-account|logout|claim-shirt|metsxm-player|private-player|payment-error|payment-success|paypal-success|unsubscribe|shop/order-success|shop/thanks|live/[^/]+|mets-game-recaps/[^/]+|matchup/[^/]+|player/[^/]+)",
       "destination": "/app-shell"
     }
   ],

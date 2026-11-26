@@ -41,8 +41,12 @@ if (existsSync(blogDir)) {
 
 // Safety net: any URL that has no prerendered file (e.g. an article published
 // after this build) must still load the app instead of a hosting 404 page.
+// It is the empty, noindex app shell (not the home page), so unknown addresses answer
+// a real 404 and the app shows its "Page not found" screen.
+const shellHtml = resolve("dist/app-shell/index.html");
 const indexHtml = resolve("dist/index.html");
-if (existsSync(indexHtml)) {
-  copyFileSync(indexHtml, resolve("dist/404.html"));
-  console.log("wrote dist/404.html SPA fallback");
+const notFoundSource = existsSync(shellHtml) ? shellHtml : indexHtml;
+if (existsSync(notFoundSource)) {
+  copyFileSync(notFoundSource, resolve("dist/404.html"));
+  console.log(`wrote dist/404.html from ${notFoundSource.includes("app-shell") ? "app shell" : "index.html"}`);
 }

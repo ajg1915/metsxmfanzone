@@ -8,8 +8,8 @@ import { fetchPublishedPost, fetchRelatedPosts, renderStandalonePage, sendUnavai
 async function loadShell(req) {
   const host = req.headers["x-forwarded-host"] || req.headers.host || "metsxmfanzone.com";
   const proto = req.headers["x-forwarded-proto"] || "https";
-  // Root path only — never /blog/*, so this can never call back into itself.
-  const res = await fetch(`${proto}://${host}/`, {
+  // The empty noindex app shell (never /blog/*, so this can never call back into itself).
+  const res = await fetch(`${proto}://${host}/app-shell`, {
     headers: { "user-agent": "internal-prerender" },
   });
   if (!res.ok) throw new Error(`Shell load failed: ${res.status}`);

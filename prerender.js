@@ -555,6 +555,10 @@ async function postprocessAll() {
       const description = String(recap.summary || stripHtml(recap.body || '') || recap.title).slice(0, 160);
       jobs.push({
         routePath: `/mets-game-recaps/${slug}`,
+        body: buildArticleBody({
+          title: recap.title, description, contentHtml: recap.body || '', publishedTime: recap.published_at,
+          image: resolveImage(recap.hero_image_url || '/share/mets-game-recaps.jpg'), canonical,
+        }),
         head: buildHead({
           title: `${recap.title} | Mets Game Recap`, description, canonical,
           image: resolveImage(recap.hero_image_url || '/share/mets-game-recaps.jpg'), type: 'article',
