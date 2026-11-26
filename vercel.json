@@ -92,6 +92,21 @@
       "source": "/live",
       "destination": "/metsxmfanzone",
       "permanent": true
+    },
+    {
+      "source": "/rss",
+      "destination": "/rss.xml",
+      "permanent": true
+    },
+    {
+      "source": "/feed",
+      "destination": "/rss.xml",
+      "permanent": true
+    },
+    {
+      "source": "/blog/feed",
+      "destination": "/rss.xml",
+      "permanent": true
     }
   ],
   "rewrites": [

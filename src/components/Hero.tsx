@@ -10,6 +10,7 @@ import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { Play, Info, ChevronLeft, ChevronRight, Bell, BellRing } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useToast } from "@/hooks/use-toast";
+import { listPublishedArticles } from "@/lib/articlesApi";
 
 interface HeroSlide {
   id: string;
@@ -32,10 +33,10 @@ const Hero = () => {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const { user } = useAuth();
   const { isPremium } = useSubscription();
-  const [memberSlides, setMemberSlides] = useState<HeroSlide[]>([]);
-  const [publicSlides, setPublicSlides] = useState<HeroSlide[]>([]);
-  const [membersLoaded, setMembersLoaded] = useState(false);
-  const [publicLoaded, setPublicLoaded] = useState(false);
+  // The hero shows the newest articles, read straight from Cloudflare (articles-api).
+  // Nothing about articles is read from Supabase.
+  const [articleSlides, setArticleSlides] = useState<HeroSlide[]>([]);
+  const [articlesLoaded, setArticlesLoaded] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
   const [isLiveNow, setIsLiveNow] = useState(false);
   const navigate = useNavigate();
@@ -66,23 +67,29 @@ const Hero = () => {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
-  // Fetch slides
+  // Fetch the newest articles for the hero (Cloudflare only).
   useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from("hero_slides").select("*").eq("is_for_members", true).eq("published", true).order("display_order");
-      if (data?.length) setMemberSlides(data);
-      setMembersLoaded(true);
-    };
-    if (user) fetch(); else setMembersLoaded(false);
-  }, [user]);
-
-  useEffect(() => {
-    const fetch = async () => {
-      const { data } = await supabase.from("hero_slides").select("*").eq("is_for_members", false).eq("published", true).order("display_order");
-      if (data) setPublicSlides(data);
-      setPublicLoaded(true);
-    };
-    fetch();
+    let cancelled = false;
+    listPublishedArticles({ limit: 4, fields: "card" })
+      .then((posts) => {
+        if (cancelled) return;
+        setArticleSlides(
+          (posts || []).filter((p) => p && p.slug && p.title).map((p, i) => ({
+            id: p.id,
+            title: p.title.trim(),
+            description: (p.excerpt || p.meta_description || "").trim(),
+            image_url: p.featured_image_url || null,
+            display_order: i,
+            link_url: `/blog/${p.slug}`,
+            link_text: "Read Article",
+            show_watch_live: true,
+            show_reminder: false,
+          })),
+        );
+      })
+      .catch(() => { /* fall back to the default slides */ })
+      .finally(() => { if (!cancelled) setArticlesLoaded(true); });
+    return () => { cancelled = true; };
   }, []);
 
   const defaultSlides = [
@@ -98,9 +105,9 @@ const Hero = () => {
 
   // Website hero (mobile, tablet, desktop): show only the first 4 articles. The TV app uses its own carousel.
   const MAX_HERO_SLIDES = 4;
-  const slidesToShow = (user
-    ? (memberSlides.length > 0 ? mapDbSlides(memberSlides, "MEMBER") : defaultSlides)
-    : (publicSlides.length > 0 ? mapDbSlides(publicSlides, "FEATURED") : defaultSlides)
+  const slidesToShow = (articleSlides.length > 0
+    ? mapDbSlides(articleSlides, user ? "MEMBER" : "FEATURED")
+    : defaultSlides
   ).slice(0, MAX_HERO_SLIDES);
 
   const mobileSlides = slidesToShow.map((sl, i) => ({
@@ -119,7 +126,7 @@ const Hero = () => {
     const t = window.setTimeout(() => setActive((i) => (i + 1) % count), HERO_SLIDE_MS);
     return () => window.clearTimeout(t);
   }, [current, count, paused]);
-  const slidesReady = user ? membersLoaded : publicLoaded;
+  const slidesReady = articlesLoaded;
   const reminderOn = permission === "granted" && isSubscribed;
 
   const onTouchEnd = (x: number) => {

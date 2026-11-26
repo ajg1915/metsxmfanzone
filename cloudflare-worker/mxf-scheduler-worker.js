@@ -270,7 +270,8 @@ async function tick(env, when = new Date()) {
   await step("mets", () => runMetsAlerts(api, when.getTime()));
   // every run (cron is every 2 minutes), so a new post reaches the hero within about 2 minutes
   await step("publishDue", () => runPublishDue(env));
-  await step("blogHero", () => runBlogHero(api, env, when));
+  // blogHero is off: the website hero reads the newest articles straight from Cloudflare now,
+  // so nothing about articles is written to (or read from) Supabase.
   await step("searchPing", () => runSearchPing(api, env, when));
   lastRun = result;
   return result;
