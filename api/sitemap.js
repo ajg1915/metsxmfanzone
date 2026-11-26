@@ -45,6 +45,10 @@ const MAIN_PAGES = [
   "/contact",
   "/whats-new",
   "/metsxmfanzone",
+  "/shop",
+  "/merch",
+  "/game-events",
+  "/spring-training-live",
 ];
 
 // URLs that redirect elsewhere, or are thin utility pages, must not be in the
@@ -102,7 +106,8 @@ export default async function handler(req, res) {
   const seen = new Set();
   const lines = [];
   // The old 2026 schedule URL now redirects to 2027: make sure 2027 is listed.
-  for (const must of ["/mets-schedule-2027", "/highlights"]) if (!pages.some((pg) => pg.path === must)) pages.push({ path: must, priority: 0.7, updated: null });
+  // Always list these (the shops and event pages aren't in the admin SEO list yet).
+  for (const must of ["/mets-schedule-2027", "/highlights", "/shop", "/merch", "/game-events", "/spring-training-live", "/podcast", "/blog"]) if (!pages.some((pg) => pg.path === must)) pages.push({ path: must, priority: 0.7, updated: null });
   for (const pg of pages.filter((x) => keepInSitemap(x.path))) {
     const loc = pg.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${pg.path}`;
     if (seen.has(loc)) continue;
