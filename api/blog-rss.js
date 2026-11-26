@@ -16,14 +16,14 @@ function xmlEscape(input) {
 async function fetchPosts() {
   // Let a database failure surface as a 503 (readers retry) instead of an empty feed
   // (an empty feed makes readers think every article was removed).
-  return fetchPublishedPosts({ limit: 30, fields: "full" });
+  return fetchPublishedPosts({ limit: 500, fields: "full" });
 }
 
 export default async function handler(req, res) {
   try {
     const posts = await fetchPosts();
     const items = posts
-      .map((post) => {
+      .map((post, index) => {
         const link = `${SITE_URL}/blog/${encodeURIComponent(post.slug || "")}`;
         const date = new Date(post.published_at || post.created_at || Date.now()).toUTCString();
         const description = stripHtml(post.excerpt || post.content || "").slice(0, 500);
@@ -45,7 +45,9 @@ export default async function handler(req, res) {
           "      <dc:creator>Anthony Gennaro</dc:creator>",
           cleanCategory(post.category) ? `      <category>${xmlEscape(cleanCategory(post.category))}</category>` : null,
           `      <description>${xmlEscape(description)}</description>`,
-          `      <content:encoded>${cdata(fullHtml)}</content:encoded>`,
+          // Full story for the newest 50 (what feed readers show); older ones keep the summary
+          // so the feed stays a reasonable size while still listing every article.
+          index < 50 ? `      <content:encoded>${cdata(fullHtml)}</content:encoded>` : null,
           image ? `      <media:content url="${xmlEscape(image)}" medium="image" type="${imageType}" />` : null,
           image ? `      <media:thumbnail url="${xmlEscape(image)}" />` : null,
           "    </item>",
