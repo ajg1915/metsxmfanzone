@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 import SEOHead from "@/components/SEOHead";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  loadCart, saveCart, shopConfig, shopMoney, shopProducts, startCard, startPayPal,
+  loadCart, saveCart, shopConfig, shopMoney, shopProducts, startPayPal,
   type CartLine, type Customer, type ShopProduct,
 } from "@/lib/shopApi";
 
@@ -91,18 +91,18 @@ function CartDialog({ open, onClose, cart, setCart }: { open: boolean; onClose: 
   const [c, setC] = useState<Customer>(blankCustomer);
   const [gift, setGift] = useState(false);
   const [note, setNote] = useState("");
-  const [busy, setBusy] = useState<"" | "paypal" | "card">("");
+  const [busy, setBusy] = useState<"" | "paypal">("");
   const [err, setErr] = useState("");
   const shipping = cfg?.shipping ?? 5.99;
   const subtotal = cart.reduce((t, l) => t + l.price * l.qty, 0);
   const set = (k: keyof Customer, v: string) => setC((x) => ({ ...x, [k]: v }));
   const qty = (i: number, d: number) => setCart(cart.map((l, j) => (j === i ? { ...l, qty: Math.max(1, Math.min(10, l.qty + d)) } : l)));
 
-  const pay = async (kind: "paypal" | "card") => {
+  const pay = async (kind: "paypal") => {
     setErr(""); setBusy(kind);
     try {
       const body = { customer: c, items: cart.map(({ slug, size, qty }) => ({ slug, size, qty })), gift_wrap: gift, gift_note: note };
-      const url = kind === "paypal" ? (await startPayPal(body)).approve_url : (await startCard(body)).checkout_url;
+      const url = (await startPayPal(body)).approve_url;
       if (!url) throw new Error("Couldn't open checkout. Please try again.");
       window.location.href = url;
     } catch (e) {
@@ -170,11 +170,6 @@ function CartDialog({ open, onClose, cart, setCart }: { open: boolean; onClose: 
               {cfg?.paypal !== false && (
                 <button type="button" disabled={!!busy} onClick={() => pay("paypal")} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#FFC439] text-base font-extrabold text-[#111] disabled:opacity-60">
                   {busy === "paypal" ? <Loader2 className="h-5 w-5 animate-spin" /> : "Pay with PayPal"}
-                </button>
-              )}
-              {cfg?.card && (
-                <button type="button" disabled={!!busy} onClick={() => pay("card")} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary text-base font-extrabold text-primary-foreground disabled:opacity-60">
-                  {busy === "card" ? <Loader2 className="h-5 w-5 animate-spin" /> : "Pay with card"}
                 </button>
               )}
             </div>

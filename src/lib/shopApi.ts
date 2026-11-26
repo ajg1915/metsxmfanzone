@@ -81,7 +81,6 @@ export type Customer = { name: string; email: string; address1: string; address2
 export type CheckoutBody = { customer: Customer; items: { slug: string; size: string; qty: number }[]; gift_wrap: boolean; gift_note: string };
 export const shopConfig = () => call<{ shipping: number; paypal: boolean; card: boolean }>("/checkout/config");
 export const startPayPal = (b: CheckoutBody) => call<{ order_id: string; approve_url: string }>("/checkout/paypal", { method: "POST", body: JSON.stringify(b) });
-export const startCard = (b: CheckoutBody) => call<{ order_id: string; checkout_url: string }>("/checkout/stripe", { method: "POST", body: JSON.stringify(b) });
 
 export type ShopOrder = {
   id: string; status: string; created_at: string; paid_at: string | null; shipped_at: string | null;
