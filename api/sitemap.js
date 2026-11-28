@@ -86,10 +86,23 @@ async function fetchManagedPages() {
     .filter((r) => /^\/[a-z0-9\-\/]*$/i.test(r.path));
 }
 
-function urlEntry(loc, lastmod, priority) {
-  const pr = priority != null && !Number.isNaN(Number(priority)) ? `<priority>${Number(priority).toFixed(1)}</priority>` : "";
-  return `  <url><loc>${xmlEscape(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}${pr}</url>`;
+// Every entry is written the same way: loc, lastmod (when known), changefreq, priority.
+function urlEntry(loc, lastmod, priority, changefreq) {
+  const pr = Number(priority);
+  return [
+    "  <url>",
+    `    <loc>${xmlEscape(loc)}</loc>`,
+    lastmod ? `    <lastmod>${lastmod}</lastmod>` : null,
+    `    <changefreq>${changefreq}</changefreq>`,
+    `    <priority>${(Number.isNaN(pr) ? 0.5 : pr).toFixed(1)}</priority>`,
+    "  </url>",
+  ].filter(Boolean).join("\n");
 }
+
+const isoDate = (d) => {
+  const t = d ? new Date(d) : null;
+  return t && !Number.isNaN(t.getTime()) ? t.toISOString() : null;
+};
 
 export default async function handler(req, res) {
   // Both reads run at the same time so a slow database can't push the
@@ -105,6 +118,9 @@ export default async function handler(req, res) {
 
   const seen = new Set();
   const lines = [];
+  // Newest article first, so the list reads top to bottom by date.
+  posts = [...posts].sort((a, b) => new Date(b?.published_at || b?.updated_at || 0) - new Date(a?.published_at || a?.updated_at || 0));
+  const newest = isoDate(posts[0]?.published_at || posts[0]?.updated_at);
   // The old 2026 schedule URL now redirects to 2027: make sure 2027 is listed.
   // Always list these (the shops and event pages aren't in the admin SEO list yet).
   for (const must of ["/mets-schedule-2027", "/highlights", "/shop", "/merch", "/game-events", "/spring-training-live", "/podcast", "/blog"]) if (!pages.some((pg) => pg.path === must)) pages.push({ path: must, priority: 0.7, updated: null });
@@ -112,7 +128,11 @@ export default async function handler(req, res) {
     const loc = pg.path === "/" ? `${SITE_URL}/` : `${SITE_URL}${pg.path}`;
     if (seen.has(loc)) continue;
     seen.add(loc);
-    lines.push(urlEntry(loc, null, pg.priority));
+    const isHome = pg.path === "/";
+    const priority = pg.priority != null && !Number.isNaN(Number(pg.priority)) ? pg.priority : isHome ? 1.0 : 0.7;
+    // Home and the blog index change whenever a new article goes up.
+    const fresh = isHome || pg.path === "/blog" ? newest : isoDate(pg.updated);
+    lines.push(urlEntry(loc, fresh, priority, isHome || pg.path === "/blog" ? "daily" : "weekly"));
   }
   for (const p of posts) {
     const slug = String(p?.slug ?? "").trim();
@@ -123,11 +143,12 @@ export default async function handler(req, res) {
     // lastmod = the exact date and time the article was published. (updated_at
     // gets touched by bulk edits, which made many posts share one fake date.)
     const stamp = p.published_at || p.updated_at;
-    lines.push(urlEntry(loc, stamp ? new Date(stamp).toISOString() : null));
+    lines.push(urlEntry(loc, isoDate(stamp), 0.6, "monthly"));
   }
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
+    '<?xml-stylesheet type="text/xsl" href="/sitemap.xsl"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...lines,
     "</urlset>",
