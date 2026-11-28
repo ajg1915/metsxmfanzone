@@ -103,7 +103,7 @@ const Podcast = () => {
           </div>
 
           {/* ---------- Our YouTube (signed-in members only) ---------- */}
-          <MemberVideoSections className="mt-6" />
+          <MemberVideoSections inContainer />
 
           {/* ---------- Socials ---------- */}
           <section id="follow" aria-labelledby="pod-follow" className="scroll-mt-24 py-8 sm:py-10">

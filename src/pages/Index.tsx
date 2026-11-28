@@ -277,7 +277,7 @@ const Index = () => {
         </div>
 
         {/* Our YouTube, right under the podcast: signed-in members only (hides itself for visitors) */}
-        <div data-guide="member-videos" className="container mx-auto max-w-7xl px-4 pt-3 sm:px-6 lg:px-8">
+        <div data-guide="member-videos">
           <MemberVideoSections />
         </div>
 
