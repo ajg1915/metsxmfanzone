@@ -27,6 +27,28 @@ function timeAgo(iso: string | null) {
   return new Date(iso).toLocaleDateString();
 }
 
+// YouTube thumbnail chain: big (maxres) -> standard (hq) -> medium (mq) -> logo.
+// A missing maxres comes back as a 120x90 gray box instead of an error, so check the size too.
+const thumbChain = (id: string, first?: string) =>
+  [first, `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, `https://i.ytimg.com/vi/${id}/mqdefault.jpg`, logo].filter(Boolean) as string[];
+
+function VideoThumb({ id, first, alt, className, lazy = true }: { id: string; first?: string; alt: string; className: string; lazy?: boolean }) {
+  const chain = thumbChain(id, first);
+  const [i, setI] = useState(0);
+  const next = () => setI((n) => Math.min(n + 1, chain.length - 1));
+  const isLogo = chain[i] === logo;
+  return (
+    <img
+      src={chain[i]}
+      alt={alt}
+      loading={lazy ? "lazy" : undefined}
+      className={isLogo ? `${className} !object-contain bg-[#0d1b30] p-6` : className}
+      onError={next}
+      onLoad={(e) => { if (!isLogo && e.currentTarget.naturalWidth <= 120) next(); }}
+    />
+  );
+}
+
 function Player({ video, onClose }: { video: YtVideo; onClose: () => void }) {
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -156,11 +178,12 @@ function YouTubeSection({ inContainer }: { inContainer: boolean }) {
               <button type="button" onClick={() => setPlaying(featured)} className="block w-full text-left">
                 <article className="flex min-w-0 flex-col md:flex-row">
                   <div className="relative aspect-video w-full overflow-hidden bg-card md:w-1/2">
-                    <img
-                      src={`https://i.ytimg.com/vi/${featured.id}/maxresdefault.jpg`}
+                    <VideoThumb
+                      id={featured.id}
+                      first={`https://i.ytimg.com/vi/${featured.id}/maxresdefault.jpg`}
                       alt={featured.title}
+                      lazy={false}
                       className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      onError={(e) => { const t = e.currentTarget; if (!t.dataset.fbk) { t.dataset.fbk = "1"; t.src = featured.thumbnail; } }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent md:bg-gradient-to-r md:from-transparent md:via-transparent md:to-card/40" />
                     <PlayDot big />
@@ -217,7 +240,7 @@ function YouTubeSection({ inContainer }: { inContainer: boolean }) {
                   <button type="button" onClick={() => setPlaying(v)} className="block w-full text-left">
                     <article className="flex min-w-0 items-stretch gap-3 p-2.5 md:flex-col md:gap-0 md:p-0">
                       <div className="relative h-[84px] w-[112px] shrink-0 overflow-hidden rounded-lg bg-card md:aspect-video md:h-auto md:w-full md:rounded-none">
-                        <img src={v.thumbnail} alt={v.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                        <VideoThumb id={v.id} first={v.thumbnail} alt={v.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                         <PlayDot />
                         {isFresh(v.published) && <NewBadge kind="upload" small className="absolute left-1 top-1" />}
                       </div>
