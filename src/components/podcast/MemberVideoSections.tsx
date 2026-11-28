@@ -1,18 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import { Play, Youtube, Music2, ExternalLink, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Play, Youtube, ExternalLink, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// "Our TikTok" and "Our YouTube" rows that sit under the podcast player.
+// "Our YouTube" row that sits under the podcast player.
 // Signed-in members only: signed-out visitors never see them.
 
-const TIKTOK_USER = "metsxmfanzone";
-const TIKTOK_URL = `https://www.tiktok.com/@${TIKTOK_USER}`;
 const YOUTUBE_URL = "https://www.youtube.com/@MetsXMFanZonePodcast";
 
 type YtVideo = { id: string; title: string; published: string | null; thumbnail: string };
-type TtVideo = { id: string; url: string; title: string; thumbnail: string; publishedAt: string | null };
-type Playing = { kind: "yt" | "tt"; id: string; title: string } | null;
+type Playing = { id: string; title: string } | null;
 
 function timeAgo(iso: string | null) {
   if (!iso) return "";
@@ -50,36 +47,19 @@ function SectionHeader({ icon, title, href, label }: { icon: React.ReactNode; ti
   );
 }
 
-// TikTok's own profile embed, used when the latest-posts list can't be loaded.
-function TikTokProfileEmbed() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!ref.current) return;
-    ref.current.innerHTML = `<blockquote class="tiktok-embed" cite="${TIKTOK_URL}" data-unique-id="${TIKTOK_USER}" data-embed-type="creator" style="max-width:780px;min-width:288px;margin:0 auto"><section><a target="_blank" href="${TIKTOK_URL}">@${TIKTOK_USER}</a></section></blockquote>`;
-    const s = document.createElement("script");
-    s.src = "https://www.tiktok.com/embed.js";
-    s.async = true;
-    ref.current.appendChild(s);
-  }, []);
-  return <div ref={ref} className="min-h-[300px] overflow-hidden rounded-xl" />;
-}
-
 function Player({ playing, onClose }: { playing: NonNullable<Playing>; onClose: () => void }) {
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
   }, [onClose]);
-  const tt = playing.kind === "tt";
-  const src = tt
-    ? `https://www.tiktok.com/player/v1/${playing.id}?autoplay=1&rel=0`
-    : `https://www.youtube-nocookie.com/embed/${playing.id}?autoplay=1&rel=0&playsinline=1`;
+  const src = `https://www.youtube-nocookie.com/embed/${playing.id}?autoplay=1&rel=0&playsinline=1`;
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4" onClick={onClose} role="dialog" aria-modal="true" aria-label={playing.title}>
       <button onClick={onClose} aria-label="Close video" className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20">
         <X className="h-6 w-6" />
       </button>
-      <div onClick={(e) => e.stopPropagation()} className={tt ? "aspect-[9/16] h-[80vh] max-w-full" : "aspect-video w-full max-w-4xl"}>
+      <div onClick={(e) => e.stopPropagation()} className="aspect-video w-full max-w-4xl">
         <iframe
           src={src}
           title={playing.title}
@@ -124,7 +104,6 @@ export default function MemberVideoSections({ className = "" }: { className?: st
 }
 
 function Sections({ className }: { className: string }) {
-  const tiktok = useJson<TtVideo>("/api/tiktok-feed", "items");
   const youtube = useJson<YtVideo>("/api/youtube-feed", "videos");
   const [playing, setPlaying] = useState<Playing>(null);
 
@@ -139,29 +118,6 @@ function Sections({ className }: { className: string }) {
 
   return (
     <div className={`space-y-4 ${className}`}>
-      <section aria-label="Our TikTok videos" className="rounded-2xl border border-border/60 bg-card/70 p-3 sm:p-4">
-        <SectionHeader icon={<Music2 className="h-5 w-5 text-primary" />} title="Our TikTok" href={TIKTOK_URL} label="Follow" />
-        {tiktok === null ? (
-          skeleton(true)
-        ) : tiktok.length === 0 ? (
-          <TikTokProfileEmbed />
-        ) : (
-          <div className={grid}>
-            {tiktok.slice(0, 6).map((v) => (
-              <Thumb
-                key={v.id}
-                tall
-                img={v.thumbnail}
-                title={v.title}
-                meta={timeAgo(v.publishedAt)}
-                badge={<span className="rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white">TikTok</span>}
-                onClick={() => setPlaying({ kind: "tt", id: v.id, title: v.title })}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
       <section aria-label="Our YouTube videos" className="rounded-2xl border border-border/60 bg-card/70 p-3 sm:p-4">
         <SectionHeader icon={<Youtube className="h-5 w-5 text-primary" />} title="Our YouTube" href={YOUTUBE_URL} label="Subscribe" />
         {youtube === null ? (
@@ -179,7 +135,7 @@ function Sections({ className }: { className: string }) {
                 title={v.title}
                 meta={timeAgo(v.published)}
                 badge={<span className="rounded-full bg-[#ff0000] px-2 py-0.5 text-[10px] font-bold text-white">YouTube</span>}
-                onClick={() => setPlaying({ kind: "yt", id: v.id, title: v.title })}
+                onClick={() => setPlaying({ id: v.id, title: v.title })}
               />
             ))}
           </div>

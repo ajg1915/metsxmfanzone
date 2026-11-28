@@ -102,7 +102,7 @@ const Podcast = () => {
             <LiveStatsSection className="mt-5" />
           </div>
 
-          {/* ---------- Our TikTok + Our YouTube (signed-in members only) ---------- */}
+          {/* ---------- Our YouTube (signed-in members only) ---------- */}
           <MemberVideoSections className="mt-6" />
 
           {/* ---------- Socials ---------- */}
