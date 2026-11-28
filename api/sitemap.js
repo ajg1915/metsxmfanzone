@@ -99,6 +99,8 @@ function urlEntry(loc, lastmod, priority, changefreq) {
   ].filter(Boolean).join("\n");
 }
 
+const PAGES_REBUILT = "2026-11-28T00:00:00.000Z";
+
 const isoDate = (d) => {
   const t = d ? new Date(d) : null;
   return t && !Number.isNaN(t.getTime()) ? t.toISOString() : null;
@@ -131,7 +133,8 @@ export default async function handler(req, res) {
     const isHome = pg.path === "/";
     const priority = pg.priority != null && !Number.isNaN(Number(pg.priority)) ? pg.priority : isHome ? 1.0 : 0.7;
     // Home and the blog index change whenever a new article goes up.
-    const fresh = isHome || pg.path === "/blog" ? newest : isoDate(pg.updated);
+    // Pages added in code (shops, events...) have no stored date: use when they were last rebuilt.
+    const fresh = isHome || pg.path === "/blog" ? newest : isoDate(pg.updated) || PAGES_REBUILT;
     lines.push(urlEntry(loc, fresh, priority, isHome || pg.path === "/blog" ? "daily" : "weekly"));
   }
   for (const p of posts) {
