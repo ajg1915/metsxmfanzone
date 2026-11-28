@@ -31,6 +31,13 @@ export default async function handler(req, res) {
     const post = await fetchPublishedPost(slug);
 
     if (!post) {
+      // Messy link (spaces, capitals, "&")? If the cleaned-up address is a real article, send it there for good.
+      const clean = slug.toLowerCase().replace(/&/g, " ").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      if (clean && clean !== slug && (await fetchPublishedPost(clean).catch(() => null))) {
+        res.setHeader("Cache-Control", "public, max-age=86400");
+        res.redirect(301, `/blog/${clean}`);
+        return;
+      }
       // Unknown slug: hand the app the shell so it can show its own 404 page.
       const shell = await loadShell(req).catch(() => null);
       res.setHeader("Content-Type", "text/html; charset=utf-8");
