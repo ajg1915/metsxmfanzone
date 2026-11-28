@@ -11,6 +11,7 @@ import SportsNetworksStrip from "@/components/tv/SportsNetworksStrip";
 
 import Footer from "@/components/Footer";
 import MemberGearSection from "@/components/MemberGearSection";
+import MemberVideoSections from "@/components/podcast/MemberVideoSections";
 import { Skeleton } from "@/components/ui/skeleton";
 import LazySection from "@/components/LazySection";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -273,6 +274,11 @@ const Index = () => {
               </div>
             </Suspense>
           </LazySection>
+        </div>
+
+        {/* Our TikTok + Our YouTube, right under the podcast: signed-in members only (hides itself for visitors) */}
+        <div data-guide="member-videos" className="container mx-auto max-w-7xl px-4 pt-3 sm:px-6 lg:px-8">
+          <MemberVideoSections />
         </div>
 
         {/* MetsXMFanZone gear, right under the podcast section: signed-in members only (hides itself for visitors) */}

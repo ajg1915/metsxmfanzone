@@ -8,6 +8,7 @@ import BlogSection from "@/components/BlogSection";
 import PodcastLivePlayer, { usePodcastLive } from "@/components/podcast/PodcastLivePlayer";
 import LiveStatsSection from "@/components/live/LiveStatsSection";
 import PodcastShop from "@/components/podcast/PodcastShop";
+import MemberVideoSections from "@/components/podcast/MemberVideoSections";
 import { useAuth } from "@/hooks/useAuth";
 import podcastLogo from "@/assets/podcast-logo.png";
 
@@ -100,6 +101,9 @@ const Podcast = () => {
             <PodcastLivePlayer />
             <LiveStatsSection className="mt-5" />
           </div>
+
+          {/* ---------- Our TikTok + Our YouTube (signed-in members only) ---------- */}
+          <MemberVideoSections className="mt-6" />
 
           {/* ---------- Socials ---------- */}
           <section id="follow" aria-labelledby="pod-follow" className="scroll-mt-24 py-8 sm:py-10">
