@@ -176,6 +176,15 @@
   ],
   "headers": [
     {
+      "source": "/live/:id",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {
